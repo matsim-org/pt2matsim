@@ -150,7 +150,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 						"\t\tmodes (rail is recommended) can be added, separated by commas.");
 		map.put(MAX_TRAVEL_COST_FACTOR,
 				"If all paths between two stops have a [travelCost] > ["+MAX_TRAVEL_COST_FACTOR+"] * [minTravelCost], \n" +
-						"\t\tan artificial link is created. If "+ TRAVEL_COST_TYPE +" is " + TravelCostType.travelTime +
+						"\t\tan artificial link is created. If "+ TRAVEL_COST_TYPE +" is " + TravelCostType.travelTime + "\n" +
 						"\t\tminTravelCost is the travelTime between stops from schedule. If "+ TRAVEL_COST_TYPE +" is \n" +
 						"\t\t"+ TravelCostType.linkLength + " minTravel cost is the beeline distance.");
 		map.put(NUM_OF_THREADS,

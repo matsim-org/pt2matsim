@@ -118,8 +118,8 @@ public class PlausibilityCheck {
 	 * 	<li>shp/schedule/StopFacilities.shp: Stop Facilities as point shapefile</li>
 	 * 	<li>shp/schedule/StopFacilities_refLinks.shp: The stop facilities' reference links as polyline shapefile</li>
 	 * </ul>
-	 * Shapefiles can be viewed in an GIS, a recommended open source GIS is QGIS. It is also possible to view them in senozon VIA. However, no
-	 * line attributes can be displayed or viewed there.
+	 * Shapefiles can be viewed in an GIS, a recommended open source GIS is QGIS. It is also possible to view them in senozon VIA.
+	 * However, no line attributes can be displayed or viewed there.
 	 * @param scheduleFile the schedule file
 	 * @param networkFile network file
 	 * @param coordinateSystem A name used by {@link MGC}. Use EPSG:* code to avoid problems.

@@ -1,0 +1,75 @@
+route_id,route_short_name,route_long_name,route_type,route_color,route_text_color
+1,1,QUEEN-RIVER,3,80298f,ffffff
+2,2,FOREST HEIGHTS,3,fcb94c,000000
+3,3,OTTAWA SOUTH,3,f05a71,ffffff
+4,4,GLASGOW,3,806950,ffffff
+5,5,ERB,3,008fd4,ffffff
+6,6,BRIDGE,3,2e3092,ffffff
+7,7,MAINLINE,3,ed1c24,ffffff
+8,8,UNIVERSITY/FAIRVIEW,3,00a550,ffffff
+9,9,LAKESHORE,3,f7931d,ffffff
+10,10,CONESTOGA COLLEGE,3,0071bb,ffffff
+11,11,COUNTRY HILLS,3,135887,ffffff
+12,12,WESTMOUNT,3,ec008b,ffffff
+13,13,LAURELWOOD,3,ffca04,000000
+14,14,WATERLOO INDUSTRIAL,3,496e6d,ffffff
+16,16,STRASBURG,3,86ac51,ffffff
+20,20,VICTORIA-FREDERICK,3,c7a0ca,000000
+21,21,ELMIRA,3,a6ce38,000000
+22,22,LAURENTIAN WEST,3,756fb3,ffffff
+23,23,IDLEWOOD,3,f6adcd,000000
+27,27,CHICOPEE,3,f58245,ffffff
+29,29,KEATS WAY,3,a54686,ffffff
+31,31,COLUMBIA,3,aaa575,000000
+33,33,HURON,3,5a2a00,ffffff
+34,34,BINGEMANS,3,91268f,ffffff
+51,51,HESPELER,3,ff0000,ffffff
+52,52,CORONATION,3,2e3092,ffffff
+53,53,FRANKLIN,3,00ff00,000000
+54,54,LISBON PINES,3,00ffff,000000
+55,55,ST. ANDREWS,3,9900cc,ffffff
+56,56,DUNBAR,3,006633,ffffff
+57,57,BLAIR,3,ff6600,ffffff
+58,58,ELMWOOD,3,663333,ffffff
+59,59,CHRISTOPHER,3,ff00ff,ffffff
+60,60,NORTHVIEW ACRES,3,003399,ffffff
+61,61,FOUNTAIN,3,00aaac,000000
+62,62,WOODSIDE,3,405980,ffffff
+63,63,CHAMPLAIN,3,ffb200,ffffff
+64,64,LANGS,3,cc0000,ffffff
+67,67,LOVELL INDUSTRIAL,3,6600ff,ffffff
+72,72,CHERRY BLOSSOM,3,a15641,ffffff
+73,73,NORTHLAKE,3,00adef,000000
+75,75,SAGINAW,3,ff6633,ffffff
+76,76,DOON SOUTH,3,2e3092,ffffff
+77,77,WILMOT,3,2e3092,ffffff
+78,78,HANSON,3,2e3092,ffffff
+91,91,LATE NIGHT LOOP,3,,
+92,92,UNIVERSITY LOOP,3,,
+110,110,COLLEGE EXPRESS,3,,
+111,111,COLLEGE EXPRESS,3,,
+116,116,COLLEGE EXPRESS,3,,
+200,200,iXPRESS,3,005aa7,fdbc3b
+201,201,iXPRESS,3,000000,a6ce38
+202,202,iXPRESS,3,000000,a6ce38
+203,203,iXPRESS,3,000000,a6ce38
+204,204,iXPRESS,3,000000,a6ce38
+8881,8881,Oktoberfest Concordia Shuttle,3,1ca2df,ffffff
+8882,8882,Oktoberfest Bingeman's Shuttle,3,1ca2df,ffffff
+8883,8883,Oktoberfest Queensmount Shuttle,3,1ca2df,ffffff
+8884,8884,Oktoberfest Chicopee Shuttle,3,1ca2df,ffffff
+9801,9801,GCI AM Special,3,,
+9851,9851,GCI PM Northview Special,3,,
+9901,9901,Huron Heights Special,3,,
+9903,9903,UW-Lakeshore/SMH-Fairview Express Special,3,,
+9904,9904,Rt 7 Eastwood Special,3,,
+9931,9931,Huron Industrial Special,3,,
+9932,9932,Northfield Industrial Special,3,,
+9951,9951,HHS-FGP/SMH-Fairview Special,3,,
+9952,9952,ECI-F1 Express Special,3,,
+9953,9953,ECI-F2 Express Special,3,,
+9954,9954,ECI-F3 Express Special,3,,
+9961,9961,ECI-King East Special,3,,
+9963,9963,ECI-Downtown 1 Special,3,,
+9964,9964,ECI-Downtown 2 Special,3,,
+9983,9983,Rt 14 and 7 Evening Special,3,,
