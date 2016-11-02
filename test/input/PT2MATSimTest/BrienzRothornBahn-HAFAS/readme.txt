@@ -1,4 +1,4 @@
-Extract of http://www.fahrplanfelder.ch/de/fahrplandaten.html => testdaten.zip, which is publicly available.
+Extract of http://www.fahrplanfelder.ch/de/fahrplandaten.html => testdaten.zip (accessed 02.11.2016), which is publicly available.
 
 Extracted the files
 	- BETRIEB_DE
