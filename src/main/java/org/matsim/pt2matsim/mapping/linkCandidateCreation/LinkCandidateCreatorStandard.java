@@ -144,7 +144,7 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 			TransitStopFacility parentStopFacility = manualCandidates.getStopFacilityId() != null ? schedule.getFacilities().get(manualCandidates.getStopFacilityId()) : null;
 			if(parentStopFacility == null && manualCandidates.getStopFacilityId() != null) {
-				log.warn("stopFacility id " + manualCandidates.getStopFacilityId() + " not available in schedule. Manual link candidates are for this facility are ignored.");
+				log.warn("stopFacility id " + manualCandidates.getStopFacilityId() + " not available in schedule. Manual link candidates for this facility are ignored.");
 			}
 
 			if(parentStopFacility != null) {

@@ -50,12 +50,17 @@ public class FastAStarRouter implements Router {
 	private final LeastCostPathCalculator pathCalculator;
 	private final Map<Tuple<LinkCandidate, LinkCandidate>, LeastCostPathCalculator.Path> paths;
 	private static PublicTransitMappingConfigGroup.TravelCostType travelCostType = PublicTransitMappingConfigGroup.TravelCostType.linkLength;
+	private static double uTurnCost = 0;
 
 	private Id<Node> uTurnFromNodeId = null;
 	private Id<Node> uTurnToNodeId = null;
 
 	public static void setTravelCostType(PublicTransitMappingConfigGroup.TravelCostType type) {
 		travelCostType = type;
+	}
+
+	public static void setUTurnCost(double cost) {
+		uTurnCost = cost;
 	}
 
 	public FastAStarRouter(Network network) {
@@ -163,15 +168,13 @@ public class FastAStarRouter implements Router {
 
 	@Override
 	public double getLinkMinimumTravelDisutility(Link link) {
-		return (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
-		/* u-turn punishment, experimental
+		// return (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
 		double travelCost = (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
 		if(link.getToNode().getId().equals(uTurnFromNodeId) && link.getFromNode().getId().equals(uTurnToNodeId)) {
-			return 30 + travelCost;
+			return uTurnCost + travelCost;
 		} else {
 			return travelCost;
 		}
-		*/
 	}
 
 	@Override

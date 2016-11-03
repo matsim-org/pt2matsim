@@ -149,6 +149,7 @@ public class PTMapperImpl implements PTMapper {
 		log.info("Creating mode separated network and routers...");
 		Map<String, Set<String>> modeRoutingAssignment = config.getModeRoutingAssignment();
 		FastAStarRouter.setTravelCostType(config.getTravelCostType());
+		FastAStarRouter.setUTurnCost(config.getUTurnCost());
 		for(String scheduleMode : scheduleTransportModes) {
 			log.info("Initiating network and router for schedule mode \"" +scheduleMode+"\", network modes " + modeRoutingAssignment.get(scheduleMode));
 			modeSeparatedRouters.put(scheduleMode, FastAStarRouter.createModeSeparatedRouter(network, modeRoutingAssignment.get(scheduleMode)));

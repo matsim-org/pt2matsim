@@ -117,9 +117,9 @@ public class PT2MATSimTest {
 	// to the pre-OSM-extracted network of the Waterloo Area, Canada.
 	@Test
 	public void mapScheduleToNetwork() {
-		// Create a mapping-Config:
+		// Create a mapping config:
 		CreateDefaultConfig.main(new String[]{output + "MapperConfig.xml"});
-		// Open the mapping-Config and set the paramters to the required values
+		// Open the mapping config and set the paramters to the required values
 		// (usually done manually by opening the config with a simple editor)
 		Config mapperConfig = ConfigUtils.loadConfig(
 				output + "MapperConfig.xml",
@@ -130,7 +130,8 @@ public class PT2MATSimTest {
 		mapperConfig.getModule("PublicTransitMapping").addParam("outputStreetNetworkFile", output + "MultiModalNetwork_StreetOnly.xml.gz");
 		mapperConfig.getModule("PublicTransitMapping").addParam("scheduleFile", input + "UnmappedTransitSchedule.xml.gz");
 		mapperConfig.getModule("PublicTransitMapping").addParam("scheduleFreespeedModes", "rail, light_rail");
-		// Save the mapping-Config
+		mapperConfig.getModule("PublicTransitMapping").addParam("uTurnCost", "30.0");
+		// Save the mapping config
 		// (usually done manually)
 		new ConfigWriter(mapperConfig).write(output + "MapperConfigAdjusted.xml");
 
