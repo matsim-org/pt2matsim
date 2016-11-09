@@ -28,11 +28,15 @@ import org.matsim.pt2matsim.config.CreateDefaultOsmConfig;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.gtfs.Gtfs2TransitSchedule;
+import org.matsim.pt2matsim.hafas.Hafas2TransitSchedule;
+import org.matsim.pt2matsim.hafas.HafasConverter;
 import org.matsim.pt2matsim.mapping.RunPublicTransitMapper;
 import org.matsim.pt2matsim.osm.Osm2MultimodalNetwork;
+import org.matsim.pt2matsim.osm.Osm2TransitSchedule;
 import org.matsim.pt2matsim.plausibility.PlausibilityCheck;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Usage test of PT2MATSim to document how the package can be used.
@@ -52,8 +56,12 @@ public class PT2MATSimTest {
 
 	// To use the PT2MATSim-Package, several steps are required:
 	public void runPT2MATSim() {
-		// 1. Convert a gtfs- or a hafas-schedule to an unmapped transit schedule
+		// 1. Convert a gtfs-schedule to an unmapped transit schedule
 		gtfsToSchedule();
+			// OR a hafas-schedule to an unmapped transit schedule
+			hafasToSchedule();
+			// OR an osm-file to an unmapped transit schedule
+			osmToSchedule();
 		// 2. Convert an osm-map to a network
 		osmToNetwork();
 		// 3. Map the schedule onto the network
@@ -62,9 +70,10 @@ public class PT2MATSimTest {
 		checkPlausability();
 	}
 
-	// 1. A GTFS- or HAFAS-Schedule has to be converted to an unmapped MATSim Transit Schedule.
+	// 1. A GTFS- or HAFAS-Schedule or a OSM-Map with information on public transport
+	// 		has to be converted to an unmapped MATSim Transit Schedule.
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// Here as an example, the GTFS-schedule of GrandRiverTransit, Waterloo-Area, Canada, is
+	// Here as a first example, the GTFS-schedule of GrandRiverTransit, Waterloo-Area, Canada, is
 	// converted.
 	@Test
 	public void gtfsToSchedule() {
@@ -85,6 +94,40 @@ public class PT2MATSimTest {
 				output + "GRTScheduleShapes/Shapes.shp"
 		};
 		Gtfs2TransitSchedule.main(gtfsConverterArgs);
+	}
+	// Here as a second example, the HAFAS-schedule of the BrienzRothornBahn, Switzerland, is
+	// converted.
+	@Test
+	public void hafasToSchedule() {
+		String[] hafasConverterArgs = new String[]{
+				// [0] hafasFolder
+				input + "BrienzRothornBahn-HAFAS/",
+				// [1] outputCoordinateSystem
+				"WGS84",
+				// [2] outputScheduleFile
+				output + "UnmappedBRBSchedule.xml.gz",
+				// [3] outputVehicleFile
+				output + "BRBVehicles.xml"
+		};
+		try {
+			Hafas2TransitSchedule.main(hafasConverterArgs);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	// And as a third example, the OSM-map of the Waterloo City Centre, Canada, is
+	// converted.
+	@Test
+	public void osmToSchedule() {
+		String[] osmConverterArgs = new String[]{
+				// [0] osm file
+				input + "WaterlooCityCentre.osm",
+				// [1] output schedule file
+				output + "UnmappedOSMSchedule.xml.gz",
+				// [2] output coordinate system (optional)
+				"WGS84"
+		};
+		Osm2TransitSchedule.main(osmConverterArgs);
 	}
 
 	// 2. A MATSim network of the area is required. If no such network is already available,
