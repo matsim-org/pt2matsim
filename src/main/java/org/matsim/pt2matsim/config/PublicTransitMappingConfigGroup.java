@@ -70,6 +70,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	// default values
 	private Map<String, Set<String>> modeRoutingAssignment = null;
 	private Map<String, LinkCandidateCreatorParams> linkCandidateParams = null;
+	private Set<ManualLinkCandidates> manualLinkCandidates = null;
+
 	private Set<String> scheduleFreespeedModes = new HashSet<>(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE_AS_SET);
 	private double maxTravelCostFactor = 5.0;	private Set<String> modesToKeepOnCleanUp = new HashSet<>();
 	private String manualLinkCandidateCsvFile = null;
@@ -188,6 +190,10 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		}
 	}
 
+	/**
+	 * Loads the parametersets for ModeRoutingAssignment, LinkCandidateCreator and ManualLinkCandidates for
+	 * easier access
+	 */
 	public void loadParameterSets() {
 		modeRoutingAssignment = new HashMap<>();
 		for(ConfigGroup e : this.getParameterSets(PublicTransitMappingConfigGroup.ModeRoutingAssignment.SET_NAME)) {
@@ -200,7 +206,42 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 			LinkCandidateCreatorParams lcp = (LinkCandidateCreatorParams) e;
 			linkCandidateParams.put(lcp.getScheduleMode(), lcp);
 		}
+
+		if(manualLinkCandidateCsvFile != null) {
+			loadManualLinkCandidatesCsv();
+		}
+
+		manualLinkCandidates = new HashSet<>();
+			for(ConfigGroup e : this.getParameterSets(PublicTransitMappingConfigGroup.ManualLinkCandidates.SET_NAME)) {
+				PublicTransitMappingConfigGroup.ManualLinkCandidates f = (PublicTransitMappingConfigGroup.ManualLinkCandidates) e;
+				if(f.getStopFacilityId() != null) {
+					manualLinkCandidates.add(f);
+				}
+			}
 	}
+
+	/**
+	 * loads manually defined link candidates from the csv file
+	 */
+	public void loadManualLinkCandidatesCsv() {
+		try {
+			CSVReader reader = new CSVReader(new FileReader(manualLinkCandidateCsvFile), ';');
+
+			String[] line = new String[0];
+			while(line != null) {
+				this.addParameterSet(new ManualLinkCandidates(line[0], line[1], line[2]));
+				line = reader.readNext();
+			}
+			reader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public Set<ManualLinkCandidates> getManualLinkCandidates() {
+		return manualLinkCandidates;
+	}
+
 
 	/**
 	 * References transportModes from the schedule (key) and the
@@ -242,6 +283,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		return linkCandidateParams.get(scheduleMode);
 	}
 
+
 	/**
 	 * All links that do not have a transit route on them are removed, except
 	 * the ones listed in this set (typically only car).
@@ -277,11 +319,11 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		}
 	}
 
+
 	/**
 	 * Defines whether at the end of mapping, all non-car link modes (bus, rail, etc)
 	 * should be replaced with pt (true) or not. Default: false.
 	 */
-
 	@StringGetter(COMBINE_PT_MODES)
 	public boolean getCombinePtModes() { return combinePtModes; }
 
@@ -292,7 +334,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	/**
 	 *
 	 */
-
 	@StringGetter(ADD_PT_MODE)
 	public boolean getAddPtMode() {
 		return addPtMode;
@@ -303,10 +344,10 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		this.addPtMode = addPtMode;
 	}
 
+
 	/**
 	 *
 	 */
-
 	@StringGetter(REMOVE_NOT_USED_STOP_FACILITIES)
 	public boolean getRemoveNotUsedStopFacilities() {
 		return removeNotUsedStopFacilities;
@@ -317,11 +358,11 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		this.removeNotUsedStopFacilities = v;
 	}
 
+
 	/**
 	 * Defines the radius [meter] from a stop facility within nodes are searched.
 	 * Mainly a maximum value for performance.
 	 */
-
 	@StringGetter(NODE_SEARCH_RADIUS)
 	public double getNodeSearchRadius() {
 		return nodeSearchRadius;
@@ -347,6 +388,9 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	}
 
 
+	/**
+	 *
+	 */
 	@StringGetter(TRAVEL_COST_TYPE)
 	public TravelCostType getTravelCostType() {
 		return travelCostType;
@@ -356,8 +400,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	public void setTravelCostType(TravelCostType type) {
 		this.travelCostType = type;
 	}
-
-
 
 
 	/**
@@ -445,34 +487,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	}
 
 
-	/**
-	 * loads manually defined link candidates from the csv file
-	 */
-	public void loadManualLinkCandidatesCsv() {
-		try {
-			CSVReader reader = new CSVReader(new FileReader(manualLinkCandidateCsvFile), ';');
-
-			String[] line = new String[0];
-			while(line != null) {
-				this.addParameterSet(new ManualLinkCandidates(line[0], line[1], line[2]));
-				line = reader.readNext();
-			}
-			reader.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public Set<ManualLinkCandidates> getManualLinkCandidates() {
-		Set<ManualLinkCandidates> manualCandidates = new HashSet<>();
-		for(ConfigGroup e : this.getParameterSets(PublicTransitMappingConfigGroup.ManualLinkCandidates.SET_NAME)) {
-			PublicTransitMappingConfigGroup.ManualLinkCandidates f = (PublicTransitMappingConfigGroup.ManualLinkCandidates) e;
-			if(f.getStopFacilityId() != null) {
-				manualCandidates.add(f);
-			}
-		}
-		return manualCandidates;
-	}
 
 	/**
 	 * Params for filepahts

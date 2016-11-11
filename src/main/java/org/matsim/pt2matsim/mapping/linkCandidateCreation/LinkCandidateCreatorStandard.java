@@ -127,9 +127,6 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 		/**
 		 * Add manually set link candidates from config
 		 */
-		if(config.getManualLinkCandidateCsvFile() != null) {
-			config.loadManualLinkCandidatesCsv();
-		}
 		addManualLinkCandidates(config.getManualLinkCandidates());
 
 	}
