@@ -351,37 +351,40 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 	}
 
 	/**
-	 * Adds service exceptions to {@link #services}
+	 * Adds service exceptions to {@link #services} (if available)
 	 * <p/>
 	 * <br/><br/>
 	 * calendar_dates.txt <i>[https://developers.google.com/transit/gtfs/reference]</i><br/>
 	 * Exceptions for the service IDs defined in the calendar.txt file. If calendar_dates.txt includes ALL
 	 * dates of service, this file may be specified instead of calendar.txt.
-	 *
-	 * @throws IOException
 	 */
-	private void loadCalendarDates() throws IOException {
-		log.info("Loading calendar_dates.txt");
-		CSVReader reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.CALENDAR_DATES.fileName));
-		String[] header = reader.readNext();
-		Map<String, Integer> col = getIndices(header, GTFSDefinitions.Files.CALENDAR_DATES.columns);
+	private void loadCalendarDates() {
+		// calendar dates are optional
+		log.info("Looking for calendar_dates.txt");
+		CSVReader reader;
+		try {
+			reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.CALENDAR_DATES.fileName));
+			String[] header = reader.readNext();
+			Map<String, Integer> col = getIndices(header, GTFSDefinitions.Files.CALENDAR_DATES.columns);
 
-		String[] line = reader.readNext();
-		while(line != null) {
-			Service currentService = services.get(line[col.get(GTFSDefinitions.SERVICE_ID)]);
-			if(currentService != null) {
-				if(line[col.get(GTFSDefinitions.EXCEPTION_TYPE)].equals("2"))
-					currentService.addException(line[col.get(GTFSDefinitions.DATE)]);
-				else
-					currentService.addAddition(line[col.get(GTFSDefinitions.DATE)]);
-			} else {
-				throw new RuntimeException("Service id \"" + line[col.get(GTFSDefinitions.SERVICE_ID)] + "\" not defined in calendar.txt");
+			String[] line = reader.readNext();
+			while(line != null) {
+				Service currentService = services.get(line[col.get(GTFSDefinitions.SERVICE_ID)]);
+				if(currentService != null) {
+					if(line[col.get(GTFSDefinitions.EXCEPTION_TYPE)].equals("2"))
+						currentService.addException(line[col.get(GTFSDefinitions.DATE)]);
+					else
+						currentService.addAddition(line[col.get(GTFSDefinitions.DATE)]);
+				} else {
+					throw new RuntimeException("Service id \"" + line[col.get(GTFSDefinitions.SERVICE_ID)] + "\" not defined in calendar.txt");
+				}
+				line = reader.readNext();
 			}
-			line = reader.readNext();
+			reader.close();
+			log.info("...     calendar_dates.txt loaded");
+		} catch (IOException e) {
+			log.info("...     no calendar dates file found.");
 		}
-
-		reader.close();
-		log.info("...     calendar_dates.txt loaded");
 	}
 
 	/**
@@ -415,6 +418,7 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 				currentShape.addPoint(transformation.transform(point), Integer.parseInt(line[col.get(GTFSDefinitions.SHAPE_PT_SEQUENCE)]));
 				line = reader.readNext();
 			}
+			reader.close();
 			log.info("...     shapes.txt loaded");
 		} catch (IOException e) {
 			log.info("...     no shapes file found.");
@@ -567,14 +571,14 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 			reader.close();
 			log.info("...     frequencies.txt loaded");
 		} catch (FileNotFoundException e1) {
-			log.info("...     no frequencies.txt found.");
+			log.info("...     no frequencies file found.");
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
 	}
 
 	/**
-	 * In case optional columns in a csv file are missing or are out of order, adressing array
+	 * In case optional columns in a csv file are missing or are out of order, addressing array
 	 * values directly via integer (i.e. where the column should be) does not work.
 	 *
 	 * @param header      the header (first line) of the csv file
