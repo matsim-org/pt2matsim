@@ -78,6 +78,7 @@ public final class HafasDefinitions {
 		ICB	("ICB",	TransportModes.BUS,			true,	15,		2.5,	0.0,	0.0,	VehicleType.DoorOperationMode.serial,	70,		0,		2.8,	true,	"intercity bus"),
 		BUS	("BUS",	TransportModes.BUS,			true,	18,		2.5,	0.5,	0.5,	VehicleType.DoorOperationMode.serial,	70,		0,		2.8,	true,	"Bus"),
 		EXB	("EXB",	TransportModes.BUS,			true,	18,		2.5,	0.5,	0.5,	VehicleType.DoorOperationMode.serial,	70,		0,		2.8,	true,	"ExpressBus"),
+		EB	("EB",	TransportModes.BUS,			true,	18,		2.5,	0.5,	0.5,	VehicleType.DoorOperationMode.serial,	70,		0,		2.8,	true,	"Eilbus"),
 		NB	("NB",	TransportModes.BUS,			true,	18,		2.5,	0.5,	0.5,	VehicleType.DoorOperationMode.serial,	70,		0,		2.8,	true,	"Night-Bus"),
 		NFB	("NFB",	TransportModes.BUS,			true,	18,		2.5,	0.5,	0.5,	VehicleType.DoorOperationMode.serial,	70,		0,		2.8,	true,	"Low-floor bus"),
 		TRO	("TRO",	TransportModes.BUS,			true,	18,		2.5,	0.5,	0.5,	VehicleType.DoorOperationMode.serial,	70,		0,		2.8,	true,	"trolley bus"),

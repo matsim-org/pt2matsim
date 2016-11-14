@@ -29,7 +29,6 @@ import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.gtfs.Gtfs2TransitSchedule;
 import org.matsim.pt2matsim.hafas.Hafas2TransitSchedule;
-import org.matsim.pt2matsim.hafas.HafasConverter;
 import org.matsim.pt2matsim.mapping.RunPublicTransitMapper;
 import org.matsim.pt2matsim.osm.Osm2MultimodalNetwork;
 import org.matsim.pt2matsim.osm.Osm2TransitSchedule;
@@ -54,27 +53,28 @@ public class PT2MATSimTest {
 		new File(output + "GRTScheduleShapes/").mkdirs();
 	}
 
-	// To use the PT2MATSim-Package, several steps are required:
+	// To use the PT2MATSim Package, several steps are required:
 	public void runPT2MATSim() {
-		// 1. Convert a gtfs-schedule to an unmapped transit schedule
+		// 1. Convert a gtfs schedule to an unmapped transit schedule
 		gtfsToSchedule();
-			// OR a hafas-schedule to an unmapped transit schedule
+			// OR a hafas schedule to an unmapped transit schedule
 			hafasToSchedule();
-			// OR an osm-file to an unmapped transit schedule
+			// OR an osm file to an unmapped transit schedule
 			osmToSchedule();
-		// 2. Convert an osm-map to a network
+		// 2. Convert an osm map to a network
 		osmToNetwork();
 		// 3. Map the schedule onto the network
 		mapScheduleToNetwork();
 		// 4. Do a plausibility check
-		checkPlausability();
+		checkPlausibility();
 	}
 
-	// 1. A GTFS- or HAFAS-Schedule or a OSM-Map with information on public transport
-	// 		has to be converted to an unmapped MATSim Transit Schedule.
-	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// Here as a first example, the GTFS-schedule of GrandRiverTransit, Waterloo-Area, Canada, is
-	// converted.
+	/**
+	 * 	1. A GTFS or HAFAS Schedule or a OSM map with information on public transport
+	 * 	has to be converted to an unmapped MATSim Transit Schedule.
+	 *
+	 * 	Here as a first example, the GTFS-schedule of GrandRiverTransit, Waterloo-Area, Canada, is converted.
+	 */
 	@Test
 	public void gtfsToSchedule() {
 		String[] gtfsConverterArgs = new String[]{
@@ -130,10 +130,12 @@ public class PT2MATSimTest {
 		Osm2TransitSchedule.main(osmConverterArgs);
 	}
 
-	// 2. A MATSim network of the area is required. If no such network is already available,
-	// 		the PT2MATSim package provides the possibility to use OSM-maps as data-input.
-	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// Here as an example, the OSM-extract of the city centre of Waterloo, Canada, is converted.
+	/**
+	 * 2. A MATSim network of the area is required. If no such network is already available,
+	 * the PT2MATSim package provides the possibility to use OSM-maps as data-input.
+	 *
+	 * Here as an example, the OSM-extract of the city centre of Waterloo, Canada, is converted.
+	 */
 	@Test
 	public void osmToNetwork() {
 		// Create an osmToNetwork-Config:
@@ -154,15 +156,17 @@ public class PT2MATSimTest {
 		Osm2MultimodalNetwork.main(new String[]{output + "OsmConverterConfigAdjusted.xml"});
 	}
 
-	// 3. The core of the PT2MATSim-package is the mapping process of the schedule to the network.
-	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// Here as an example, the pre-GTFS-extracted, unmapped schedule of GrandRiverTransit is mapped
-	// to the pre-OSM-extracted network of the Waterloo Area, Canada.
+	/**
+	 * 	3. The core of the PT2MATSim-package is the mapping process of the schedule to the network.
+	 *
+	 * 	Here as an example, the unmapped schedule of GrandRiverTransit (previously converted from GTFS) is mapped
+	 * 	to the converted OSM network of the Waterloo Area, Canada.
+	 */
 	@Test
 	public void mapScheduleToNetwork() {
 		// Create a mapping config:
 		CreateDefaultConfig.main(new String[]{output + "MapperConfig.xml"});
-		// Open the mapping config and set the paramters to the required values
+		// Open the mapping config and set the parameters to the required values
 		// (usually done manually by opening the config with a simple editor)
 		Config mapperConfig = ConfigUtils.loadConfig(
 				output + "MapperConfig.xml",
@@ -182,17 +186,19 @@ public class PT2MATSimTest {
 		RunPublicTransitMapper.main(new String[]{output + "MapperConfigAdjusted.xml"});
 	}
 
-	// 4. The PT2MATSim-package provides a plausibility checker to get quick feedback on the mapping process.
-	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// Here as an example, the mapped transit schedule and the multimodal network created in step 3 is
-	// checked for plausibility.
+	/**
+	 * 	4. The PT2MATSim package provides a plausibility checker to get quick feedback on the mapping process.
+	 *
+	 * 	Here as an example, the mapped transit schedule and the multimodal network created in step 3 is
+	 * 	checked for plausibility.
+	 */
 	@Test
-	public void checkPlausability() {
+	public void checkPlausibility() {
 		PlausibilityCheck.run(
 				input + "MappedTransitSchedule.xml.gz",
 				input + "MultiModalNetwork.xml.gz",
-				"EPSG:4326", // EPSG-identifyer for WGS84
-				output + "PlausabilityResults/"
+				"EPSG:4326", // EPSG identifier for WGS84
+				output + "PlausibilityResults/"
 		);
 	}
 
