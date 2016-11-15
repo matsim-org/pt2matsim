@@ -93,6 +93,7 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 	protected Map<String, GTFSRoute> gtfsRoutes = new TreeMap<>();
 	protected Map<String, Service> services = new HashMap<>();
 	protected Map<String, Shape> shapes = new HashMap<>();
+	private boolean warnStopTimes = true;
 
 	public GtfsConverter(TransitSchedule schedule, Vehicles vehicles, CoordinateTransformation transformation) {
 		super(schedule, vehicles, transformation);
@@ -508,22 +509,31 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 		String[] line = reader.readNext();
 		int i = 1, c = 1;
 		while(line != null) {
-			if(i == Math.pow(2, c)) {
-				log.info("        # " + i);
-				c++;
-			}
-			i++; // just for logging so something happens in the console
+			if(i == Math.pow(2, c)) { log.info("        # " + i); c++; } i++; // just for logging so something happens in the console
 
-			for(GTFSRoute actualGTFSRoute : gtfsRoutes.values()) {
-				Trip trip = actualGTFSRoute.getTrips().get(line[col.get(GTFSDefinitions.TRIP_ID)]);
+			for(GTFSRoute currentGTFSRoute : gtfsRoutes.values()) {
+				Trip trip = currentGTFSRoute.getTrips().get(line[col.get(GTFSDefinitions.TRIP_ID)]);
 				if(trip != null) {
 					try {
-						trip.putStopTime(
+						if(!line[col.get(GTFSDefinitions.ARRIVAL_TIME)].equals("")) {
+							trip.putStopTime(
 								Integer.parseInt(line[col.get(GTFSDefinitions.STOP_SEQUENCE)]),
 								new StopTime(Integer.parseInt(line[col.get(GTFSDefinitions.STOP_SEQUENCE)]),
 										timeFormat.parse(line[col.get(GTFSDefinitions.ARRIVAL_TIME)]),
 										timeFormat.parse(line[col.get(GTFSDefinitions.DEPARTURE_TIME)]),
 										line[col.get(GTFSDefinitions.STOP_ID)]));
+						}
+						/** GTFS Reference: If this stop isn't a time point, use an empty string value for the
+						 * arrival_time and departure_time fields.
+						 */
+						else {
+							trip.putStop(Integer.parseInt(line[col.get(GTFSDefinitions.STOP_SEQUENCE)]));
+							if(warnStopTimes) {
+								log.warn("No arrival time set! Stops without arrival times will be scheduled based on the " +
+										"nearest preceding timed stop. This message is only given once.");
+								warnStopTimes = false;
+							}
+						}
 					} catch (NumberFormatException | ParseException e) {
 						e.printStackTrace();
 					}
