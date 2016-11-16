@@ -346,4 +346,14 @@ public class CoordTools {
 
 		return 0;
 	}
+
+	/**
+	 * Calculates a new Coordinate given the original point, azimuth and distance.
+	 */
+	public static Coord calcNewPoint(Coord fromPoint, double azimuth, double distance) {
+		double dE = Math.cos(azimuth);
+		double dN = Math.sin(azimuth);
+
+		return new Coord(fromPoint.getX()+dE, fromPoint.getY()+dN);
+	}
 }

@@ -1,0 +1,2 @@
+feed_id,feed_publisher_name,feed_publisher_url,feed_lang,feed_version,feed_license,feed_contact_email,feed_contact_url,feed_start_date,feed_end_date
+addisoncounty-vt-us,"Trillium Solutions, Inc.",http://www.trilliumtransit.com,en,USA-Pacific: 07-Oct-2016 14:56,,support+addisoncounty-vt-us@trilliumtransit.com,http://support.trilliumtransit.com,20161007,20180101

@@ -44,7 +44,7 @@ public class StopTime {
 	/**
 	 * @return the position of the stopTime within the stopSequence
 	 */
-	public Integer getSeuencePosition() {
+	public Integer getSequencePosition() {
 		return sequencePosition;
 	}
 

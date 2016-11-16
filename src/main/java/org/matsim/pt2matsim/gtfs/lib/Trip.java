@@ -20,9 +20,10 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
-import org.matsim.api.core.v01.network.Link;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * Container for a GTFS Trip
@@ -37,8 +38,6 @@ public class Trip {
 	private final String name;
 	private final SortedMap<Integer,StopTime> stopTimes;
 	private final List<Frequency> frequencies;
-	private List<Link> links;
-	private Date previousArrivalTime;
 
 	//Methods
 	public Trip(String tripId, Service service, Shape shape, String name) {
@@ -50,7 +49,6 @@ public class Trip {
 		this.name = name;
 		stopTimes = new TreeMap<>();
 		frequencies = new ArrayList<>();
-		links = new ArrayList<>();
 	}
 
 	/**
@@ -100,8 +98,10 @@ public class Trip {
 	 * Puts a new stop without a time, uses the time of the preceding stop
 	 * @param stopSequencePosition which stop number in the stopSequence this stopTime is referencing
 	 */
-	public void putStop(Integer stopSequencePosition) {
-		stopTimes.put(stopSequencePosition, stopTimes.get(stopSequencePosition - 1));
+	public void putStop(Integer stopSequencePosition, String stopId) {
+		StopTime previousStopTime = stopTimes.get(stopSequencePosition - 1);
+		StopTime stopTime = new StopTime(stopSequencePosition, previousStopTime.getArrivalTime(), previousStopTime.getDepartureTime(), stopId);
+		stopTimes.put(stopSequencePosition, stopTime);
 	}
 
 	/**

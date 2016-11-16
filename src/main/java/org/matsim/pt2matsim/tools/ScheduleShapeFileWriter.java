@@ -65,8 +65,10 @@ public class ScheduleShapeFileWriter {
 	 *              [3] output folder
 	 */
 	public static void main(final String[] args) {
-		if(args.length == 3) {
+		if(args.length == 4) {
 			run(args[0], args[1], args[2], args[3]);
+		} else {
+			throw new RuntimeException("Incorrect number of arguments");
 		}
 	}
 

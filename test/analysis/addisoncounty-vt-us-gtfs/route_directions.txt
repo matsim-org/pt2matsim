@@ -1,0 +1,15 @@
+route_id,direction_id,direction_name
+1429,0,Northbound
+1431,0,No direction
+1440,0,Northbound
+1433,0,No direction
+1430,0,No direction
+1435,0,Northbound
+1434,0,No direction
+1437,0,No direction
+1438,0,No direction
+1439,0,No direction
+1432,0,No direction
+1429,1,Southbound
+1440,1,Southbound
+1435,1,Southbound
