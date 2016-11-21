@@ -63,6 +63,8 @@ public class HafasConverter extends Hafas2TransitSchedule {
 	public void createSchedule(String pathToInputFiles) throws IOException {
 		log.info("Creating the schedule based on HAFAS...");
 
+		if(!pathToInputFiles.endsWith("/")) pathToInputFiles += "/";
+
 		// 1. Read and create stop facilities
 		log.info("  Read transit stops...");
 		StopReader.run(schedule, transformation, pathToInputFiles + "BFKOORD_GEO");

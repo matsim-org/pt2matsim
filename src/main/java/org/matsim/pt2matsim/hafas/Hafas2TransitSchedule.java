@@ -23,6 +23,7 @@ package org.matsim.pt2matsim.hafas;
 
 import org.apache.log4j.Logger;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
+import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.vehicles.Vehicles;
@@ -45,27 +46,33 @@ public abstract class Hafas2TransitSchedule {
 	protected final CoordinateTransformation transformation;
 
 	/**
-	 * Converts all files in <tt>hafasFolder</tt> and writes the output schedule and vehicle file to
-	 * <tt>outputFolder</tt>. Stop Facility coordinates are transformed to <tt>outputCoordinateSystem</tt>.
+	 * Converts all files in <tt>hafasFolder</tt> and writes the output schedule and vehicles to the respective
+	 * files. Stop Facility coordinates are transformed from WGS84 to <tt>outputCoordinateSystem</tt>.
 	 *
 	 * @param args <br/>
 	 *             [0] hafasFolder<br/>
-	 *             [1] outputCoordinateSystem<br/>
+	 *             [1] outputCoordinateSystem. Use <tt>null</tt> if no transformation should be applied.<br/>
 	 *             [2] outputScheduleFile<br/>
 	 *             [3] outputVehicleFile<br/>
 	 */
 	public static void main(String[] args) throws IOException {
-		run(args[0], args[1], args[2], args[3]);
+		if(args.length == 4) {
+			run(args[0], args[1], args[2], args[3]);
+		} else {
+			throw new IllegalArgumentException(args.length + " instead of 4 arguments given");
+		}
+
 	}
 
 	/**
-	 * Converts all files in <tt>hafasFolder</tt> and writes the output schedule and vehicle file to
-	 * <tt>outputFolder</tt>. Stop Facility coordinates are transformed to <tt>outputCoordinateSystem</tt>.
+	 * Converts all files in <tt>hafasFolder</tt> and writes the output schedule and vehicles to the respective
+	 * files. Stop Facility coordinates are transformed from WGS84 to <tt>outputCoordinateSystem</tt>.
 	 */
 	public static void run(String hafasFolder, String outputCoordinateSystem, String outputScheduleFile, String outputVehicleFile) throws IOException {
 		TransitSchedule schedule = ScheduleTools.createSchedule();
 		Vehicles vehicles = ScheduleTools.createVehicles(schedule);
-		CoordinateTransformation transformation = TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem);
+		CoordinateTransformation transformation = !outputCoordinateSystem.equals("null") ?
+			TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem) : new IdentityTransformation();
 
 		new HafasConverter(schedule, vehicles, transformation).createSchedule(hafasFolder);
 
