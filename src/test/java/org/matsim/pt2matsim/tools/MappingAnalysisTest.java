@@ -23,18 +23,13 @@ import org.junit.Test;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
-import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
-import org.matsim.pt2matsim.mapping.PTMapper;
 import org.matsim.pt2matsim.mapping.PTMapperImpl;
-import org.matsim.pt2matsim.osm.OsmMultimodalNetworkConverter;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 
 import java.io.File;
-
-import static org.junit.Assert.*;
 
 /**
  * @author polettif
@@ -57,6 +52,7 @@ public class MappingAnalysisTest {
 		gtfsConverter = new GtfsConverter(schedule, vehicles, TransformationFactory.getCoordinateTransformation("WGS84", "EPSG:2032"));
 		gtfsConverter.run(input + "addisoncounty-vt-us-gtfs/", "all");
 		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), input + "mts/schedule_unmapped.xml.gz");
+		gtfsConverter.getShapeSchedule().writeShapeScheduleFile(input + "mts/schedule_gtfs_shapes.csv");
 
 		// read network
 		/*convert from osm
@@ -86,7 +82,7 @@ public class MappingAnalysisTest {
 	public void analysis() {
 		new File(input + "output/").mkdirs();
 
-		MappingAnalysis analysis = new MappingAnalysis(schedule, network, gtfsConverter.getReferencedShapes());
+		MappingAnalysis analysis = new MappingAnalysis(gtfsConverter.getShapeSchedule(), network);
 
 		analysis.run();
 		analysis.writeAllDistancesCsv(input+"output/DistancesAll.csv");

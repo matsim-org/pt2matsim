@@ -123,4 +123,7 @@ public class Trip {
 	}
 
 
+	public boolean hasShape() {
+		return shape != null;
+	}
 }

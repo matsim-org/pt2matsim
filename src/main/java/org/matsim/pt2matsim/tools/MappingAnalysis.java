@@ -31,6 +31,7 @@ import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.gtfs.lib.Shape;
+import org.matsim.pt2matsim.gtfs.lib.ShapeSchedule;
 
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
@@ -49,15 +50,13 @@ public class MappingAnalysis {
 
 	private static final Logger log = Logger.getLogger(MappingAnalysis.class);
 
-	private final TransitSchedule schedule;
+	private final ShapeSchedule schedule;
 	private final Network network;
-	private final Map<Id<TransitLine>, Map<Id<TransitRoute>, Shape>> shapes;
 	private final Map<Id<TransitLine>, Map<Id<TransitRoute>, List<Double>>> routeDistances = new HashMap<>();
 
-	public MappingAnalysis(TransitSchedule schedule, Network network, Map<Id<TransitLine>, Map<Id<TransitRoute>, Shape>> shapes) {
+	public MappingAnalysis(ShapeSchedule schedule, Network network) {
 		this.schedule = schedule;
 		this.network = network;
-		this.shapes = shapes;
 	}
 
 	public void run() {
@@ -69,7 +68,7 @@ public class MappingAnalysis {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				tr.incCounter();
 
-				Shape shape = shapes.get(transitLine.getId()).get(transitRoute.getId());
+				Shape shape = schedule.getShape(transitLine.getId(), transitRoute.getId());
 
 				List<Link> links = NetworkTools.getLinksFromIds(network, ScheduleTools.getTransitRouteLinkIds(transitRoute));
 				double lengthCarryOver = 0;

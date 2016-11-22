@@ -25,6 +25,7 @@ import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.pt2matsim.gtfs.lib.ShapeSchedule;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 import org.matsim.pt2matsim.tools.GtfsShapeFileTools;
@@ -43,9 +44,7 @@ public class Gtfs2TransitSchedule {
 	public static final String DAY_WITH_MOST_TRIPS = "dayWithMostTrips";
 	public static final String DAY_WITH_MOST_SERVICES = "dayWithMostServices";
 
-	public enum ServiceParam{dayWithMostTrips, dayWithMostServices, all}
-
-	protected TransitSchedule schedule;
+	protected ShapeSchedule schedule;
 	protected Vehicles vehicles;
 	protected CoordinateTransformation transformation;
 
@@ -140,7 +139,7 @@ public class Gtfs2TransitSchedule {
 	}
 
 	public Gtfs2TransitSchedule(TransitSchedule schedule, Vehicles vehicles, CoordinateTransformation transformation) {
-		this.schedule = schedule;
+		this.schedule = new ShapeSchedule(schedule);
 		this.vehicles = vehicles;
 		this.transformation = transformation;
 	}
