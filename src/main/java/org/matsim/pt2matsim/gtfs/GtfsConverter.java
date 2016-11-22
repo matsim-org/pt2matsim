@@ -31,7 +31,6 @@ import org.matsim.vehicles.Vehicles;
 import org.matsim.pt2matsim.gtfs.lib.*;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
-import javax.management.RuntimeErrorException;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -246,7 +245,9 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 						}
 					}
 
-					/* Save shape id for transit route */
+					/* Save transit route (and line) for current shape */
+					trip.getShape().addTransitRoute(transitLine.getId(), transitRoute.getId());
+
 					MapUtils.getMap(transitLine.getId(), scheduleShapes).put(transitRoute.getId(), trip.getShape());
 				}
 			} // foreach trip

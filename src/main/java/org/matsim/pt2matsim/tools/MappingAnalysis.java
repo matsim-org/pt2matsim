@@ -157,8 +157,8 @@ public class MappingAnalysis {
 	 */
 	public void writeAllDistancesCsv(String filename) {
 		Map<Tuple<Integer, Integer>, String> keyTable = new HashMap<>();
-		keyTable.put(new Tuple<>(1, 1), "transitRoute");
-		keyTable.put(new Tuple<>(1, 2), "transitLine");
+		keyTable.put(new Tuple<>(1, 1), "transitLine");
+		keyTable.put(new Tuple<>(1, 2), "transitRoute");
 		keyTable.put(new Tuple<>(1, 3), "distances");
 
 		int line = 2;

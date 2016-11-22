@@ -30,8 +30,6 @@ import org.matsim.vehicles.Vehicles;
 import org.matsim.pt2matsim.tools.GtfsShapeFileTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
-import java.io.IOException;
-
 /**
  * Contract class to read GTFS files and convert them to an unmapped MATSim Transit Schedule
  *
@@ -76,12 +74,14 @@ public class Gtfs2TransitSchedule {
 	 * Calls {@link #run}.
 	 */
 	public static void main(final String[] args) {
-		if(args.length == 6) {
-			run(args[0], args[1], args[2], args[3], args[4], args[5]);
+		if(args.length == 7) {
+			run(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
+		} else if(args.length == 6) {
+			run(args[0], args[1], args[2], args[3], args[4], args[5], null);
 		} else if(args.length == 5) {
-			run(args[0], args[1], args[2], args[3], args[4], null);
+			run(args[0], args[1], args[2], args[3], args[4], null, null);
 		} else if(args.length == 4) {
-			run(args[0], args[1], args[2], args[3], null, null);
+			run(args[0], args[1], args[2], args[3], null, null, null);
 		} else {
 			throw new IllegalArgumentException("Wrong number of input arguments.");
 		}
@@ -108,7 +108,7 @@ public class Gtfs2TransitSchedule {
 	 *                                  shows all trips contained in the schedule. (optional, output coordinate
 	 *                                  system needs to be in EPSG:* format or a name usable by geotools)
 	 */
-	public static void run(String gtfsFolder, String serviceIdsParam, String outputCoordinateSystem, String scheduleFile, String vehicleFile, String shapeFile) {
+	public static void run(String gtfsFolder, String serviceIdsParam, String outputCoordinateSystem, String scheduleFile, String vehicleFile, String shapeFile, String transitRouteShapeJoinFile) {
 		Logger.getLogger(MGC.class).setLevel(Level.ERROR);
 
 		TransitSchedule schedule = ScheduleTools.createSchedule();
@@ -133,6 +133,9 @@ public class Gtfs2TransitSchedule {
 			}
 			if(authExists)
 				GtfsShapeFileTools.writeGtfsTripsToFile(gtfsConverter.getGtfsRoutes(), gtfsConverter.getServiceIds(), outputCoordinateSystem, shapeFile);
+		}
+		if(transitRouteShapeJoinFile != null) {
+			// read file
 		}
 	}
 
