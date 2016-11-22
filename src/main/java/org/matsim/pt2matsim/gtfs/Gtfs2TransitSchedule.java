@@ -30,6 +30,8 @@ import org.matsim.vehicles.Vehicles;
 import org.matsim.pt2matsim.tools.GtfsShapeFileTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
+import java.io.IOException;
+
 /**
  * Contract class to read GTFS files and convert them to an unmapped MATSim Transit Schedule
  *
