@@ -246,9 +246,10 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 					}
 
 					/* Save transit route (and line) for current shape */
-					trip.getShape().addTransitRoute(transitLine.getId(), transitRoute.getId());
-
-					MapUtils.getMap(transitLine.getId(), scheduleShapes).put(transitRoute.getId(), trip.getShape());
+					if(trip.hasShape()) {
+						trip.getShape().addTransitRoute(transitLine.getId(), transitRoute.getId());
+						schedule.addShape(trip.getShape());
+					}
 				}
 			} // foreach trip
 		} // foreach route
@@ -755,9 +756,6 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 		return false;
 	}
 
-	public Map<Id<TransitLine>, Map<Id<TransitRoute>, Shape>> getReferencedShapes() {
-		return scheduleShapes;
-	}
 
 	/**
 	 * helper class for meaningful departureIds
@@ -784,6 +782,10 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 
 	public Set<String> getServiceIds() {
 		return serviceIds;
+	}
+
+	public ShapeSchedule getShapeSchedule() {
+		return schedule;
 	}
 
 }
