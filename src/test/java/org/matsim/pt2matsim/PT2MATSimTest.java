@@ -177,7 +177,7 @@ public class PT2MATSimTest {
 		mapperConfig.getModule("PublicTransitMapping").addParam("outputStreetNetworkFile", output + "MultiModalNetwork_StreetOnly.xml.gz");
 		mapperConfig.getModule("PublicTransitMapping").addParam("scheduleFile", input + "UnmappedTransitSchedule.xml.gz");
 		mapperConfig.getModule("PublicTransitMapping").addParam("scheduleFreespeedModes", "rail, light_rail");
-		mapperConfig.getModule("PublicTransitMapping").addParam("uTurnCost", "30.0");
+
 		// Save the mapping config
 		// (usually done manually)
 		new ConfigWriter(mapperConfig).write(output + "MapperConfigAdjusted.xml");

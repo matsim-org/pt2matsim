@@ -54,7 +54,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private static final String TRAVEL_COST_TYPE = "travelCostType";
 	private static final String PREFIX_ARTIFICIAL = "prefixArtificial";
 	private static final String MAX_TRAVEL_COST_FACTOR = "maxTravelCostFactor";
-	private static final String U_TURN_COST = "uTurnCost";
 	private static final String NETWORK_FILE = "networkFile";
 	private static final String SCHEDULE_FILE = "scheduleFile";
 	private static final String OUTPUT_NETWORK_FILE = "outputNetworkFile";
@@ -66,6 +65,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private static final String NUM_OF_THREADS = "numOfThreads";
 	private static final String MANUAL_LINK_CANDIDATE_CSV_FILE = "manualLinkCandidateCsvFile";
 	private static final String REMOVE_NOT_USED_STOP_FACILITIES = "removeNotUsedStopFacilities";
+//	private static final String U_TURN_COST = "uTurnCost";
 
 	// default values
 	private Map<String, Set<String>> modeRoutingAssignment = null;
@@ -78,8 +78,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private String prefixArtificial = "pt_";
 	private int numOfThreads = 2;
 	private double nodeSearchRadius = 500;
-	private double uTurnCost = 0;
-	private boolean removeNotUsedStopFacilities = true;
 	private boolean combinePtModes = false;
 	private boolean addPtMode = true;
 	private String networkFile = null;
@@ -87,9 +85,11 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private String outputNetworkFile = null;
 	private String outputStreetNetworkFile = null;
 	private String outputScheduleFile = null;
+//	private double uTurnCost = 0;
 
+	private boolean removeNotUsedStopFacilities = true;
 	public enum TravelCostType {
-		travelTime, linkLength
+		travelTime, linkLength;
 	}
 	private TravelCostType travelCostType = TravelCostType.linkLength;
 
@@ -147,8 +147,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 						"\t\thave any significant impact on performance.");
 		map.put(PREFIX_ARTIFICIAL,
 				"ID prefix used for all artificial links and nodes created during mapping.");
-		map.put(U_TURN_COST,
-				"Travel costs for u-turns. Is added to the travel costs starting link.'s opposite link. Unit depends on " + TRAVEL_COST_TYPE + "- Experimental! Default: 0");
+//		map.put(U_TURN_COST,
+//				"Travel costs for u-turns. Is added to the travel costs starting link.'s opposite link. Unit depends on " + TRAVEL_COST_TYPE + "- Experimental! Default: 0");
 		map.put(SCHEDULE_FREESPEED_MODES,
 				"After the schedule has been mapped, the free speed of links can be set according to the necessary travel \n" +
 						"\t\ttimes given by the transit schedule. The freespeed of a link is set to the minimal value needed by all \n" +
@@ -436,6 +436,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	/**
 	 *
 	 */
+	/*
 	@StringGetter(U_TURN_COST)
 	public double getUTurnCost() {
 		return uTurnCost;
@@ -448,7 +449,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		}
 		this.uTurnCost = uTurnCost;
 	}
-
+*/
 
 	/**
 	 *
