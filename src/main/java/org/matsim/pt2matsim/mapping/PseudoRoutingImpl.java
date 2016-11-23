@@ -136,7 +136,7 @@ public class PseudoRoutingImpl implements PseudoRouting {
 								if(nodeA != null && nodeB != null) {
 									String key = scheduleTransportMode + "--" + nodeA.toString() + "--" + nodeB.toString();
 									if(!localStoredPaths.containsKey(key)) {
-										leastCostPath = modeRouter.calcLeastCostPath(linkCandidateCurrent, linkCandidateNext);
+										leastCostPath = modeRouter.calcLeastCostPath(linkCandidateCurrent, linkCandidateNext, transitLine, transitRoute);
 										localStoredPaths.put(key, leastCostPath);
 									} else {
 										leastCostPath = localStoredPaths.get(key);

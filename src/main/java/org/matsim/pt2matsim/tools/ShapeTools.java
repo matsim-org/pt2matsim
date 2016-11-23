@@ -19,9 +19,11 @@
 package org.matsim.pt2matsim.tools;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.core.utils.gis.PolylineFeatureFactory;
 import org.matsim.core.utils.gis.ShapeFileWriter;
@@ -39,7 +41,7 @@ import java.util.*;
  *
  * @author polettif
  */
-public class GtfsShapeFileTools {
+public class ShapeTools {
 
 	/**
 	 * Converts a list of link ids to an array of coordinates for shp features
@@ -101,5 +103,42 @@ public class GtfsShapeFileTools {
 			}
 		}
 		ShapeFileWriter.writeGeometries(features, outFile);
+	}
+
+	/**
+	 * Calculates the minimal distance from a point to a given shape (from gtfs)
+	 */
+	public static double calcMinDistanceToShape(Coord point, Shape shape) {
+		List<Coord> shapePoints = new ArrayList<>(shape.getPoints().values());
+		double minDist = Double.MAX_VALUE;
+		// look for the minimal distance between the current point and all pairs of shape points
+		for(int i=0; i<shapePoints.size()-1; i++) {
+			double dist = CoordUtils.distancePointLinesegment(shapePoints.get(i), shapePoints.get(i + 1), point);
+			if(dist < minDist) {
+				minDist = dist;
+			}
+		}
+		return minDist;
+	}
+
+	public static double calcMinDistanceToShape(Link link, Shape shape) {
+		double measureInterval = 5;
+
+		double minDist = Double.MAX_VALUE;
+		double lengthOnLink = 0;
+		double azimuth = CoordTools.getAzimuth(link.getFromNode().getCoord(), link.getToNode().getCoord());
+		double linkLength = CoordUtils.calcEuclideanDistance(link.getFromNode().getCoord(), link.getToNode().getCoord());
+
+		while(lengthOnLink < linkLength) {
+			Coord currentPoint = CoordTools.calcNewPoint(link.getFromNode().getCoord(), azimuth, lengthOnLink);
+
+			// look for shortest distance to shape
+			double dist = ShapeTools.calcMinDistanceToShape(currentPoint, shape);
+			if(dist < minDist) {
+				minDist = dist;
+			}
+			lengthOnLink += measureInterval;
+		}
+		return minDist;
 	}
 }

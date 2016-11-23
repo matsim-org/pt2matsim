@@ -29,7 +29,6 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.gtfs.lib.Shape;
 import org.matsim.pt2matsim.gtfs.lib.ShapeSchedule;
 
@@ -81,7 +80,7 @@ public class MappingAnalysis {
 						Coord currentPoint = CoordTools.calcNewPoint(link.getFromNode().getCoord(), azimuth, lengthOnLink);
 
 						// look for shortest distance to shape
-						double minDistanceToShape = calcMinDistanceToShape(currentPoint, shape);
+						double minDistanceToShape = ShapeTools.calcMinDistanceToShape(currentPoint, shape);
 						MapUtils.getList(transitRoute.getId(), MapUtils.getMap(transitLine.getId(), routeDistances)).add(minDistanceToShape);
 						lengthOnLink += measureInterval;
 					}
@@ -89,22 +88,6 @@ public class MappingAnalysis {
 				}
 			}
 		}
-	}
-
-	/**
-	 * Calculates the minimal distance from a point to a given shape (from gtfs)
-	 */
-	private double calcMinDistanceToShape(Coord point, Shape shape) {
-		List<Coord> shapePoints = new ArrayList<>(shape.getPoints().values());
-		double minDist = Double.MAX_VALUE;
-		// look for the minimal distance between the current point and all pairs of shape points
-		for(int i=0; i<shapePoints.size()-1; i++) {
-			double dist = CoordUtils.distancePointLinesegment(shapePoints.get(i), shapePoints.get(i + 1), point);
-			if(dist < minDist) {
-				minDist = dist;
-			}
-		}
-		return minDist;
 	}
 
 

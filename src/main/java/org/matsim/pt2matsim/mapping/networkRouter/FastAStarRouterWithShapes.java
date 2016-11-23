@@ -31,10 +31,13 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
-import org.matsim.vehicles.Vehicle;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
+import org.matsim.pt2matsim.gtfs.lib.Shape;
+import org.matsim.pt2matsim.gtfs.lib.ShapeSchedule;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
+import org.matsim.pt2matsim.tools.ShapeTools;
 import org.matsim.pt2matsim.tools.NetworkTools;
+import org.matsim.vehicles.Vehicle;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +48,7 @@ import java.util.Set;
  *
  * @author polettif
  */
-public class FastAStarRouter implements Router {
+public class FastAStarRouterWithShapes implements Router {
 
 	private final Network network;
 
@@ -53,9 +56,11 @@ public class FastAStarRouter implements Router {
 	private final Map<Tuple<LinkCandidate, LinkCandidate>, LeastCostPathCalculator.Path> paths;
 	private static PublicTransitMappingConfigGroup.TravelCostType travelCostType = PublicTransitMappingConfigGroup.TravelCostType.linkLength;
 	private static double uTurnCost = 0;
+	private final ShapeSchedule shapeSchedule;
 
 	private Id<Node> uTurnFromNodeId = null;
 	private Id<Node> uTurnToNodeId = null;
+	private Shape shape;
 
 	public static void setTravelCostType(PublicTransitMappingConfigGroup.TravelCostType type) {
 		travelCostType = type;
@@ -65,9 +70,10 @@ public class FastAStarRouter implements Router {
 		uTurnCost = cost;
 	}
 
-	public FastAStarRouter(Network network) {
+	public FastAStarRouterWithShapes(Network network, ShapeSchedule shapeSchedule) {
 		this.paths = new HashMap<>();
 		this.network = network;
+		this.shapeSchedule = shapeSchedule;
 
 		LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory(network, this);
 		this.pathCalculator = factory.createPathCalculator(network, this, this);
@@ -76,18 +82,18 @@ public class FastAStarRouter implements Router {
 	/**
 	 * Filters the network with the given transport modes and creates a router with it
 	 */
-	public static Router createModeSeparatedRouter(Network network, Set<String> transportModes) {
+	public static Router createModeSeparatedRouter(Network network, Set<String> transportModes, ShapeSchedule shapeSchedule) {
 		Network filteredNetwork = NetworkTools.filterNetworkByLinkMode(network, transportModes);
-		return new FastAStarRouter(filteredNetwork);
+		return new FastAStarRouterWithShapes(filteredNetwork, shapeSchedule);
 	}
 
 	/**
 	 * Synchronized since {@link org.matsim.core.router.Dijkstra} is not thread safe.
-	 * transit line and transit route are ignored
 	 */
 	@Override
 	public synchronized LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, TransitLine transitLine, TransitRoute transitRoute) {
 		if(fromLinkCandidate != null && toLinkCandidate != null) {
+			setShape(transitLine.getId(), transitRoute.getId());
 			Tuple<LinkCandidate, LinkCandidate> nodes = new Tuple<>(fromLinkCandidate, toLinkCandidate);
 			if(!paths.containsKey(nodes)) {
 				Node nodeA = network.getNodes().get(fromLinkCandidate.getToNodeId());
@@ -96,12 +102,14 @@ public class FastAStarRouter implements Router {
 				setUTurnLink(fromLinkCandidate.getFromNodeId(), fromLinkCandidate.getToNodeId());
 				paths.put(nodes, pathCalculator.calcLeastCostPath(nodeA, nodeB, 0.0, null, null));
 				resetUTurnLink();
+				resetShape();
 			}
 			return paths.get(nodes);
 		} else {
 			return null;
 		}
 	}
+
 
 	private void resetUTurnLink() {
 		uTurnFromNodeId = null;
@@ -111,6 +119,15 @@ public class FastAStarRouter implements Router {
 	private void setUTurnLink(Id<Node> fromNodeId, Id<Node> toNodeId) {
 		uTurnFromNodeId = fromNodeId;
 		uTurnToNodeId = toNodeId;
+	}
+
+	private void setShape(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId) {
+		this.shape = shapeSchedule.getShape(transitLineId, transitRouteId);
+	}
+
+
+	private void resetShape() {
+		this.shape = null;
 	}
 
 	@Override
@@ -171,15 +188,29 @@ public class FastAStarRouter implements Router {
 
 	@Override
 	public double getLinkMinimumTravelDisutility(Link link) {
-		return (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
-		/* todo uTurns cannot be implemented this way
+		// return (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
 		double travelCost = (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
 		if(link.getToNode().getId().equals(uTurnFromNodeId) && link.getFromNode().getId().equals(uTurnToNodeId)) {
-			return uTurnCost + travelCost;
-		} else {
-			return travelCost;
+			travelCost += uTurnCost;
 		}
-		*/
+
+		/**
+		 * Change travel costs based on distance to path
+		 */
+		if(shape != null) {
+			double dist = ShapeTools.calcMinDistanceToShape(link, shape);
+			double factor = 1;
+			if(dist > 20 && dist < 100) {
+				factor = (dist - 20) /80;
+			} else if(dist > 100){
+				factor = 3;
+			} else if(dist < 20) {
+				factor = 0.9;
+			}
+			travelCost *= factor;
+		}
+
+		return travelCost;
 	}
 
 	@Override

@@ -44,19 +44,20 @@ import java.util.Map;
 public class ShapeSchedule implements TransitSchedule {
 
 	private final TransitSchedule schedule;
-	private Map<Id<TransitLine>, Map<Id<TransitRoute>, Shape>> refShapes;
-	private Map<String, Shape> shapes;
+	private Map<Id<TransitLine>, Map<Id<TransitRoute>, Shape>> refShapes = new HashMap<>();
+	private Map<String, Shape> shapes = new HashMap<>();
 
 	public ShapeSchedule() {
 		this.schedule = ScheduleTools.createSchedule();
-		this.refShapes = new HashMap<>();
-		this.shapes = new HashMap<>();
 	}
 
 	public ShapeSchedule(TransitSchedule transitSchedule) {
 		this.schedule = transitSchedule;
-		this.refShapes = new HashMap<>();
-		this.shapes = new HashMap<>();
+	}
+
+	public ShapeSchedule(String transitScheduleFile, String shapeRefFile) {
+		this.schedule = ScheduleTools.readTransitSchedule(transitScheduleFile);
+		readShapeScheduleFile(shapeRefFile);
 	}
 
 	public void addShape(Shape shape) {
