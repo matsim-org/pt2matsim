@@ -27,6 +27,8 @@ import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
+import org.matsim.pt.transitSchedule.api.TransitLine;
+import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt2matsim.mapping.PseudoRouting;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
@@ -41,9 +43,10 @@ public interface Router extends TravelDisutility, TravelTime {
     /**
      * @param fromLinkCandidate  Node to route from...
      * @param toLinkCandidate    Node to route to...
-     * @return  Least cost path.
+     * @param transitLine
+	 *@param transitRoute @return  Least cost path.
      */
-    LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate);
+    LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, TransitLine transitLine, TransitRoute transitRoute);
 
     Network getNetwork();
 

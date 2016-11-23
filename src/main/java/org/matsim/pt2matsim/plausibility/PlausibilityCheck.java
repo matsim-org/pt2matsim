@@ -337,7 +337,7 @@ public class PlausibilityCheck {
 
 			// Travel Time Warnings
 			if(createTravelTimeFeature) {
-				SimpleFeature f = travelTimeWarningsFF.createPolyline(GtfsShapeFileTools.linkIdList2Coordinates(network, e.getKey()));
+				SimpleFeature f = travelTimeWarningsFF.createPolyline(ShapeTools.linkIdList2Coordinates(network, e.getKey()));
 				f.setAttribute("warningIds", CollectionUtils.idSetToString(warningIds));
 				f.setAttribute("routeIds", CollectionUtils.setToString(routeIds));
 				f.setAttribute("linkIds", CollectionUtils.idSetToString(new HashSet<>(e.getKey())));
@@ -350,7 +350,7 @@ public class PlausibilityCheck {
 
 			// Direction Change Warning
 			if(createDirectionChangeFeature) {
-				SimpleFeature f = directionChangeWarnings.createPolyline(GtfsShapeFileTools.linkIdList2Coordinates(network, e.getKey()));
+				SimpleFeature f = directionChangeWarnings.createPolyline(ShapeTools.linkIdList2Coordinates(network, e.getKey()));
 				f.setAttribute("warningIds", CollectionUtils.idSetToString(warningIds));
 				f.setAttribute("routeIds", CollectionUtils.setToString(routeIds));
 				f.setAttribute("linkIds", CollectionUtils.idSetToString(new HashSet<>(e.getKey())));
@@ -361,7 +361,7 @@ public class PlausibilityCheck {
 
 			// Loop Warnings
 			if(createLoopFeature) {
-				SimpleFeature f = loopWarningsFF.createPolyline(GtfsShapeFileTools.linkIdList2Coordinates(network, e.getKey()));
+				SimpleFeature f = loopWarningsFF.createPolyline(ShapeTools.linkIdList2Coordinates(network, e.getKey()));
 				f.setAttribute("warningIds", CollectionUtils.idSetToString(warningIds));
 				f.setAttribute("routeIds", CollectionUtils.setToString(routeIds));
 				f.setAttribute("linkIds", CollectionUtils.idSetToString(new HashSet<>(e.getKey())));

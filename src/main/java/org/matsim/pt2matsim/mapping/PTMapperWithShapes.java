@@ -35,10 +35,11 @@ import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
-import org.matsim.pt2matsim.gtfs.GtfsConverter;
+import org.matsim.pt2matsim.gtfs.lib.ShapeSchedule;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorStandard;
 import org.matsim.pt2matsim.mapping.networkRouter.FastAStarRouter;
+import org.matsim.pt2matsim.mapping.networkRouter.FastAStarRouterWithShapes;
 import org.matsim.pt2matsim.mapping.networkRouter.Router;
 import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoSchedule;
 import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoScheduleImpl;
@@ -62,15 +63,13 @@ import java.util.*;
  *
  * @author polettif
  */
-public class PTMapperFromGtfs implements PTMapper {
+public class PTMapperWithShapes implements PTMapper {
 
-	protected static Logger log = Logger.getLogger(PTMapperFromGtfs.class);
-	private final String gtfsFolder;
-	private final String serviceParam;
+	protected static Logger log = Logger.getLogger(PTMapperWithShapes.class);
 
 	private PublicTransitMappingConfigGroup config;
 	private Network network;
-	private TransitSchedule schedule;
+	private ShapeSchedule schedule;
 
 
 	private final Map<String, Router> modeSeparatedRouters = new HashMap<>();
@@ -83,12 +82,13 @@ public class PTMapperFromGtfs implements PTMapper {
 	 *
 	 * @param configPath the config file
 	 */
-	public PTMapperFromGtfs(String configPath, String gtfsFolder, String serviceParam) {
+	public PTMapperWithShapes(String configPath, String shapeScheduleFile) {
 		Config configAll = ConfigUtils.loadConfig(configPath, new PublicTransitMappingConfigGroup());
 		this.config = ConfigUtils.addOrGetModule(configAll, PublicTransitMappingConfigGroup.GROUP_NAME, PublicTransitMappingConfigGroup.class );
+		TransitSchedule transitSchedule = config.getScheduleFile() == null ? null : ScheduleTools.readTransitSchedule(config.getScheduleFile());
+		this.schedule = new ShapeSchedule(transitSchedule);
+		this.schedule.readShapeScheduleFile(shapeScheduleFile);
 		this.network = config.getNetworkFile() == null ? null : NetworkTools.readNetwork(config.getNetworkFile());
-		this.gtfsFolder = gtfsFolder;
-		this.serviceParam = serviceParam;
 	}
 
 	/**
@@ -98,21 +98,11 @@ public class PTMapperFromGtfs implements PTMapper {
 	 * any former routes will be overwritten. Changes are done on the schedule
 	 * network provided here.
 	 * <p/>
-	 *
-
 	 */
-	public PTMapperFromGtfs(PublicTransitMappingConfigGroup config, String gtfsFolder, String serviceParam, Network network) {
+	public PTMapperWithShapes(PublicTransitMappingConfigGroup config, ShapeSchedule schedule, Network network) {
 		this.config = config;
 		this.network = network;
-		this.gtfsFolder = gtfsFolder;
-		this.serviceParam = serviceParam;
-	}
-
-
-	private void createSchedule() {
-		this.schedule = ScheduleTools.createSchedule();
-
-//		GtfsConverter gtfsConverter = new GtfsConverter(schedule, vehicles).run(config.getScheduleFile(), GtfsConverter.DAY_WITH_MOST_TRIPS); // todo move service param to config
+		this.schedule = schedule;
 	}
 
 	/**
@@ -160,7 +150,7 @@ public class PTMapperFromGtfs implements PTMapper {
 		FastAStarRouter.setUTurnCost(config.getUTurnCost());
 		for(String scheduleMode : scheduleTransportModes) {
 			log.info("Initiating network and router for schedule mode \"" +scheduleMode+"\", network modes " + modeRoutingAssignment.get(scheduleMode));
-			modeSeparatedRouters.put(scheduleMode, FastAStarRouter.createModeSeparatedRouter(network, modeRoutingAssignment.get(scheduleMode)));
+			modeSeparatedRouters.put(scheduleMode, FastAStarRouterWithShapes.createModeSeparatedRouter(network, modeRoutingAssignment.get(scheduleMode), schedule));
 		}
 
 		/** [2]
@@ -425,7 +415,7 @@ public class PTMapperFromGtfs implements PTMapper {
 
 	@Override
 	public void setSchedule(TransitSchedule schedule) {
-		this.schedule = schedule;
+		this.schedule = new ShapeSchedule(schedule);
 	}
 
 	@Override
