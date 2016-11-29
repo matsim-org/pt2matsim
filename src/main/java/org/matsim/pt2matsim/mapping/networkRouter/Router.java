@@ -21,6 +21,7 @@
 
 package org.matsim.pt2matsim.mapping.networkRouter;
 
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
@@ -38,18 +39,10 @@ import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
  *
  * @author polettif
  *
- * @deprecated use matsim directly routers within schedulerouters
  */
-@Deprecated
 public interface Router extends TravelDisutility, TravelTime {
 
-    /**
-     * @param fromLinkCandidate  Node to route from...
-     * @param toLinkCandidate    Node to route to...
-     * @param transitLine
-	 *@param transitRoute @return  Least cost path.
-     */
-    LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, TransitLine transitLine, TransitRoute transitRoute);
+	LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> toNode, Id<Node> fromNode);
 
     Network getNetwork();
 
@@ -74,6 +67,4 @@ public interface Router extends TravelDisutility, TravelTime {
 	 * the link length.
 	 */
 	double getArtificialLinkLength(double maxAllowedTravelCost, LinkCandidate linkCandidateCurrent, LinkCandidate linkCandidateNext);
-
-	LeastCostPathCalculator.Path calcLeastCostPath(Node toNode, Node fromNode);
 }

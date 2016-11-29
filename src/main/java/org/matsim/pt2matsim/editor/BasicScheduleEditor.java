@@ -284,8 +284,8 @@ public class BasicScheduleEditor implements ScheduleEditor {
 		NetworkRoute routeBeforeCut = transitRoute.getRoute().getSubRoute(transitRoute.getRoute().getStartLinkId(), cutFromLinkId);
 		NetworkRoute routeAfterCut = transitRoute.getRoute().getSubRoute(cutToLinkId, transitRoute.getRoute().getEndLinkId());
 
-		LeastCostPathCalculator.Path path1 = router.calcLeastCostPath(cutFromLink.getToNode(), viaLink.getFromNode());
-		LeastCostPathCalculator.Path path2 = router.calcLeastCostPath(viaLink.getToNode(), cutToLink.getFromNode());
+		LeastCostPathCalculator.Path path1 = router.calcLeastCostPath(cutFromLink.getToNode().getId(), viaLink.getFromNode().getId());
+		LeastCostPathCalculator.Path path2 = router.calcLeastCostPath(viaLink.getToNode().getId(), cutToLink.getFromNode().getId());
 
 		List<Id<Link>> newLinkSequence = new ArrayList<>();
 		if(path1 != null && path2 != null) {
@@ -494,7 +494,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			Link currentLink = network.getLinks().get(currentLinkId);
 			Link nextLink = network.getLinks().get(routeStops.get(i + 1).getStopFacility().getLinkId());
 
-			List<Id<Link>> path = PTMapperUtils.getLinkIdsFromPath(router.calcLeastCostPath(currentLink.getToNode(), nextLink.getFromNode()));
+			List<Id<Link>> path = PTMapperUtils.getLinkIdsFromPath(router.calcLeastCostPath(currentLink.getToNode().getId(), nextLink.getFromNode().getId()));
 
 			if(path != null)
 				linkSequence.addAll(path);

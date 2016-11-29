@@ -19,10 +19,12 @@
 
 package org.matsim.pt2matsim.mapping.networkRouter;
 
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
+import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 
 /**
@@ -35,7 +37,8 @@ public interface ScheduleRouters {
 	 */
 	LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, TransitLine transitLine, TransitRoute transitRoute);
 
-	LeastCostPathCalculator.Path calcLeastCostPath(Node toNode, Node fromNode, TransitLine transitLine, TransitRoute transitRoute);
+	LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNode, Id<Node> toNode, TransitLine transitLine, TransitRoute transitRoute);
+
 
 	Router getRouter(TransitLine transitLine, TransitRoute transitRoute);
 
@@ -44,4 +47,10 @@ public interface ScheduleRouters {
 	 */
 	@Deprecated
 	Router getRouter(String scheduleMode);
+
+	double getMinimalTravelCost(TransitRouteStop fromTransitRouteStop, TransitRouteStop toTransitRouteStop, TransitLine transitLine, TransitRoute transitRoute);
+
+	double getArtificialLinkFreeSpeed(double maxAllowedTravelCost, LinkCandidate linkCandidateCurrent, LinkCandidate linkCandidateNext, TransitLine transitLine, TransitRoute transitRoute);
+
+	double getArtificialLinkLength(double maxAllowedTravelCost, LinkCandidate linkCandidateCurrent, LinkCandidate linkCandidateNext, TransitLine transitLine, TransitRoute transitRoute);
 }

@@ -51,7 +51,7 @@ public class Shape {
 	 * A shape can be referenced to multiple transit routes
 	 */
 	private Set<Tuple<Id<TransitLine>, Id<TransitRoute>>> transitRoutes;
-	private Coord[] extent = new Coord[]{new Coord(Double.MAX_VALUE, Double.MAX_VALUE), new Coord(0, 0)};
+	private Coord[] extent = new Coord[]{new Coord(Double.MAX_VALUE, Double.MAX_VALUE), new Coord(Double.MIN_VALUE, Double.MIN_VALUE)};
 
 
 	//Methods

@@ -48,7 +48,7 @@ public class FastAStarRouter implements Router {
 	private final Network network;
 
 	private final LeastCostPathCalculator pathCalculator;
-	private final Map<Tuple<LinkCandidate, LinkCandidate>, LeastCostPathCalculator.Path> paths;
+	private final Map<Tuple<Id<Node>, Id<Node>>, LeastCostPathCalculator.Path> paths;
 	private static PublicTransitMappingConfigGroup.TravelCostType travelCostType = PublicTransitMappingConfigGroup.TravelCostType.linkLength;
 	private static double uTurnCost = 0;
 
@@ -79,36 +79,24 @@ public class FastAStarRouter implements Router {
 		return new FastAStarRouter(filteredNetwork);
 	}
 
+
 	/**
 	 * Synchronized since {@link org.matsim.core.router.Dijkstra} is not thread safe.
-	 * transit line and transit route are ignored
 	 */
 	@Override
-	public synchronized LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, TransitLine transitLine, TransitRoute transitRoute) {
-		if(fromLinkCandidate != null && toLinkCandidate != null) {
-			Tuple<LinkCandidate, LinkCandidate> nodes = new Tuple<>(fromLinkCandidate, toLinkCandidate);
-			if(!paths.containsKey(nodes)) {
-				Node nodeA = network.getNodes().get(fromLinkCandidate.getToNodeId());
-				Node nodeB = network.getNodes().get(toLinkCandidate.getFromNodeId());
+	public synchronized LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNode, Id<Node> toNode) {
+		if(fromNode != null && toNode != null) {
 
-				setUTurnLink(fromLinkCandidate.getFromNodeId(), fromLinkCandidate.getToNodeId());
+			Tuple<Id<Node>, Id<Node>> nodes = new Tuple<>(fromNode, toNode);
+			if(!paths.containsKey(nodes)) {
+				Node nodeA = network.getNodes().get(fromNode);
+				Node nodeB = network.getNodes().get(toNode);
 				paths.put(nodes, pathCalculator.calcLeastCostPath(nodeA, nodeB, 0.0, null, null));
-				resetUTurnLink();
 			}
 			return paths.get(nodes);
 		} else {
 			return null;
 		}
-	}
-
-	private void resetUTurnLink() {
-		uTurnFromNodeId = null;
-		uTurnToNodeId = null;
-	}
-
-	private void setUTurnLink(Id<Node> fromNodeId, Id<Node> toNodeId) {
-		uTurnFromNodeId = fromNodeId;
-		uTurnToNodeId = toNodeId;
 	}
 
 	@Override
@@ -151,16 +139,6 @@ public class FastAStarRouter implements Router {
 	}
 
 	@Override
-	public LeastCostPathCalculator.Path calcLeastCostPath(Node fromNode, Node toNode) {
-		try {
-			return pathCalculator.calcLeastCostPath(fromNode, toNode, 0.0, null, null);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	@Override
 	public double getLinkTravelCost(Link link) {
 		return getLinkMinimumTravelDisutility(link);
 	}
@@ -174,7 +152,7 @@ public class FastAStarRouter implements Router {
 
 	@Override
 	public double getLinkMinimumTravelDisutility(Link link) {
-		 return (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
+		return (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
 //		double travelCost = (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
 //		if(link.getToNode().getId().equals(uTurnFromNodeId) && link.getFromNode().getId().equals(uTurnToNodeId)) {
 //			return uTurnCost + travelCost;
