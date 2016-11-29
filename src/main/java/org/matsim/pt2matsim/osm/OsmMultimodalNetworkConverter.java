@@ -29,7 +29,6 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.network.LinkImpl;
-import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.network.NetworkWriter;
 import org.matsim.core.utils.collections.CollectionUtils;
@@ -517,8 +516,8 @@ public class OsmMultimodalNetworkConverter extends Osm2MultimodalNetwork {
 	private void cleanRoadNetwork() {
 		String tmpFilename = "tmpNetwork.xml.gz";
 		Set<String> roadModes = CollectionUtils.stringToSet("car,bus");
-		Network roadNetwork = NetworkTools.filterNetworkByLinkMode(network, roadModes);
-		Network restNetwork = NetworkTools.filterNetworkExceptLinkMode(network, roadModes);
+		Network roadNetwork = NetworkTools.createFilteredNetworkByLinkMode(network, roadModes);
+		Network restNetwork = NetworkTools.createFilteredNetworkExceptLinkMode(network, roadModes);
 
 		new NetworkCleaner().run(roadNetwork);
 		new NetworkWriter(roadNetwork).write(tmpFilename);

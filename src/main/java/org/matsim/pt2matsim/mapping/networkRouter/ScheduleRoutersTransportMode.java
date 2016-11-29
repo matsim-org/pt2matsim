@@ -13,9 +13,9 @@ import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
+import org.matsim.pt2matsim.tools.NetworkTools;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -69,10 +69,8 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters {
 					Set<String> networkTransportModes = modeRoutingAssignment.get(scheduleMode);
 
 					if(useArtificial) networkTransportModes.add(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE);
-//					Set<String> routingTransportModes = new HashSet<>(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE_AS_SET);
-//					if(modeRoutingAssignment.get(scheduleMode) != null) routingTransportModes.addAll(modeRoutingAssignment.get(scheduleMode));
 
-					tmpRouter = FastAStarRouter.createModeSeparatedRouter(network, networkTransportModes);
+					tmpRouter = new FastAStarRouter(NetworkTools.createFilteredNetworkByLinkMode(network, networkTransportModes));
 					routersByMode.put(scheduleMode, tmpRouter);
 				}
 				MapUtils.getMap(transitLine, routers).put(transitRoute, tmpRouter);

@@ -39,21 +39,17 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 	}
 
 	public void init() {
-		/**
-		 * Some schedule statistics
-		 */
-		RouterWithShapes.setTravelCostType(config.getTravelCostType());
-		RouterWithShapes.setModeRoutingAssignment(config.getModeRoutingAssignment());
+		RouterShapes.setTravelCostType(config.getTravelCostType());
 
 		for(TransitLine transitLine : this.shapeSchedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
-				log.info("Initiating network and router for transit route " + transitRoute.getId() + " (line: " + transitLine.getId() + ")");
+				log.info("Initiating network and router for transit route " + transitRoute.getId() + " (line " + transitLine.getId() + ")");
 				String shapeId = shapeSchedule.getShape(transitLine.getId(), transitRoute.getId()).getId();
 				Router tmpRouter = routersByShape.get(shapeId);
 				if(tmpRouter == null) {
-					log.info("New router for " + shapeId);
+					log.info("New router for shape \"" + shapeId + "\"");
 					Set<String> networkTransportModes = config.getModeRoutingAssignment().get(transitRoute.getTransportMode());
-					tmpRouter = new RouterWithShapes(network, networkTransportModes, shapeSchedule.getShape(transitLine.getId(), transitRoute.getId()));
+					tmpRouter = new RouterShapes(network, networkTransportModes, shapeSchedule.getShape(transitLine.getId(), transitRoute.getId()));
 					routersByShape.put(shapeId, tmpRouter);
 				}
 				MapUtils.getMap(transitLine, routers).put(transitRoute, tmpRouter);

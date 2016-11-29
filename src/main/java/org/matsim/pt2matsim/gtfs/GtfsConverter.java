@@ -441,7 +441,7 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 
 				Shape currentShape = shapes.get(line[col.get(GTFSDefinitions.SHAPE_ID)]);
 				if(currentShape == null) {
-					currentShape = new Shape(line[col.get(GTFSDefinitions.SHAPE_ID)]);
+					currentShape = new ShapeGtfs(line[col.get(GTFSDefinitions.SHAPE_ID)]);
 					shapes.put(line[col.get(GTFSDefinitions.SHAPE_ID)], currentShape);
 				}
 				Coord point = new Coord(Double.parseDouble(line[col.get(GTFSDefinitions.SHAPE_PT_LON)]), Double.parseDouble(line[col.get(GTFSDefinitions.SHAPE_PT_LAT)]));

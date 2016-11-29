@@ -37,8 +37,6 @@ import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorStandard;
-import org.matsim.pt2matsim.mapping.networkRouter.FastAStarRouter;
-import org.matsim.pt2matsim.mapping.networkRouter.Router;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersTransportMode;
 import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoSchedule;
@@ -71,9 +69,8 @@ public class PTMapperImpl implements PTMapper {
 	private Network network;
 	private TransitSchedule schedule;
 
-
-	private ScheduleRouters scheduleRouters;
 	private final PseudoSchedule pseudoSchedule = new PseudoScheduleImpl();
+	private ScheduleRouters scheduleRouters;
 
 	/**
 	 * Loads the PublicTransitMapping config file. If paths to input files
@@ -159,7 +156,6 @@ public class PTMapperImpl implements PTMapper {
 		log.info("===========================");
 		log.info("Creating link candidates...");
 		LinkCandidateCreator linkCandidates = new LinkCandidateCreatorStandard(this.schedule, this.network, this.config, this.scheduleRouters);
-		linkCandidates.createLinkCandidates();
 
 		/** [3]
 		 * PseudoRouting
@@ -316,7 +312,7 @@ public class PTMapperImpl implements PTMapper {
 				}
 			}
 			if(config.getOutputStreetNetworkFile() != null) {
-				NetworkTools.writeNetwork(NetworkTools.filterNetworkByLinkMode(network, Collections.singleton(TransportMode.car)), config.getOutputStreetNetworkFile());
+				NetworkTools.writeNetwork(NetworkTools.createFilteredNetworkByLinkMode(network, Collections.singleton(TransportMode.car)), config.getOutputStreetNetworkFile());
 			}
 		} else {
 			log.info("");

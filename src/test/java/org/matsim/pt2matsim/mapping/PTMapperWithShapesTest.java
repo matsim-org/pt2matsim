@@ -9,9 +9,8 @@ import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.pt2matsim.gtfs.lib.ShapeSchedule;
-import org.matsim.pt2matsim.tools.MappingAnalysis;
-import org.matsim.pt2matsim.tools.NetworkTools;
-import org.matsim.pt2matsim.tools.ScheduleTools;
+import org.matsim.pt2matsim.plausibility.PlausibilityCheck;
+import org.matsim.pt2matsim.tools.*;
 import org.matsim.vehicles.VehicleUtils;
 
 /**
@@ -21,26 +20,28 @@ public class PTMapperWithShapesTest {
 
 	protected static Logger log = Logger.getLogger(PTMapperWithShapesTest.class);
 
+	private String base = "test/analysis/";
+	private String networkName = base + "network/addison.xml.gz";
+	private String coordSys = "EPSG:2032";
+	private String gtfsFolder = base + "addisoncounty-vt-us-gtfs/";
+	private String serviceParam = GtfsConverter.ALL_SERVICE_IDS;
 
 	private GtfsConverter gtfsConverter;
 	private Network network;
-	private String base = "test/analysis/";
 
 	@Before
 	public void run() throws Exception {
-		network = NetworkTools.readNetwork(base + "network/addison.xml.gz");
+		network = NetworkTools.readNetwork(networkName);
 
 		gtfsConverter = new GtfsConverter(
 				ScheduleTools.createSchedule(),
 				VehicleUtils.createVehiclesContainer(),
-				TransformationFactory.getCoordinateTransformation("WGS84", "EPSG:2032"));
+				TransformationFactory.getCoordinateTransformation("WGS84", coordSys));
 
-		gtfsConverter.run(base + "addisoncounty-vt-us-gtfs/", "all");
-		gtfsConverter.getShapeSchedule().writeShapeScheduleFile(base +"shape/ss_file.csv");
+		gtfsConverter.run(gtfsFolder, serviceParam);
+		gtfsConverter.getShapeSchedule().writeShapeScheduleFile(base +"output/ss_file.csv");
 		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), base +"mts/unmapped_schedule.xml.gz");
-
-//		runNormalMapping();
-		runMappingWithShapes();
+//		ShapeTools.writeGtfsTripsToFile(gtfsConverter.getGtfsRoutes(), gtfsConverter.getServiceIds(), coordSys, base + "output/gtfsShapes.shp");
 	}
 
 	private void runNormalMapping() {
@@ -51,40 +52,54 @@ public class PTMapperWithShapesTest {
 		PTMapper ptMapper = new PTMapperImpl(config, schedule, network);
 		ptMapper.run();
 
-		NetworkTools.writeNetwork(network, base + "shape/output/normal_network.xml.gz");
-		ScheduleTools.writeTransitSchedule(ptMapper.getSchedule(), base + "shape/output/normal_schedule.xml.gz");
+		NetworkTools.writeNetwork(network, base + "output/normal_network.xml.gz");
+		ScheduleTools.writeTransitSchedule(ptMapper.getSchedule(), base + "output/normal_schedule.xml.gz");
 	}
-
 
 	private void runMappingWithShapes() {
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
 		config.setNumOfThreads(12);
 
-		ShapeSchedule shapeSchedule = new ShapeSchedule(base + "mts/unmapped_schedule.xml.gz", base + "shape/ss_file.csv");
+		ShapeSchedule shapeSchedule = new ShapeSchedule(base + "mts/unmapped_schedule.xml.gz", base + "output/ss_file.csv");
 		PTMapper ptMapper = new PTMapperWithShapes(config, shapeSchedule, network);
 		ptMapper.run();
 
-		NetworkTools.writeNetwork(network, base + "shape/output/shapes_network.xml.gz");
-		ScheduleTools.writeTransitSchedule(ptMapper.getSchedule(), base + "shape/output/shapes_schedule.xml.gz");
-	}
-
-	@Test
-	public void mappingAnalysisWithShapes() {
-		ShapeSchedule shapeSchedule = new ShapeSchedule(base + "shape/output/shapes_schedule.xml.gz", base + "shape/ss_file.csv");
-		MappingAnalysis analysis = new MappingAnalysis(shapeSchedule, NetworkTools.readNetwork(base + "shape/output/shapes_network.xml.gz"));
-
-		analysis.run();
-		analysis.writeQuantileDistancesCsv(base +"shape/output/Shapes_DistancesQuantile.csv");
-		System.out.println("with shapes: " + analysis.getQ8585());
+		NetworkTools.writeNetwork(network, base + "output/shapes_network.xml.gz");
+		ScheduleTools.writeTransitSchedule(ptMapper.getSchedule(), base + "output/shapes_schedule.xml.gz");
 	}
 
 	@Test
 	public void mappingAnalysisNormal() {
-		ShapeSchedule shapeSchedule = new ShapeSchedule(base + "shape/output/normal_schedule.xml.gz", base + "shape/ss_file.csv");
-		MappingAnalysis analysis = new MappingAnalysis(shapeSchedule, NetworkTools.readNetwork(base + "shape/output/normal_network.xml.gz"));
+		runNormalMapping();
+
+		ShapeSchedule shapeSchedule = new ShapeSchedule(base + "output/normal_schedule.xml.gz", base + "output/ss_file.csv");
+		MappingAnalysis analysis = new MappingAnalysis(shapeSchedule, NetworkTools.readNetwork(base + "output/normal_network.xml.gz"));
 
 		analysis.run();
-		analysis.writeQuantileDistancesCsv(base +"shape/output/Normal_DistancesQuantile.csv");
-		System.out.println("normal: " + analysis.getQ8585());
+		analysis.writeQuantileDistancesCsv(base +"output/Normal_DistancesQuantile.csv");
+		System.out.println("Q8585 normal: " + analysis.getQ8585());
 	}
+
+	@Test
+	public void mappingAnalysisWithShapes() {
+		runMappingWithShapes();
+
+		ShapeSchedule shapeSchedule = new ShapeSchedule(base + "output/shapes_schedule.xml.gz", base + "output/ss_file.csv");
+		MappingAnalysis analysis = new MappingAnalysis(shapeSchedule, NetworkTools.readNetwork(base + "output/shapes_network.xml.gz"));
+
+		analysis.run();
+		analysis.writeQuantileDistancesCsv(base +"/output/Shapes_DistancesQuantile.csv");
+		System.out.println("Q8585 with shapes: " + analysis.getQ8585());
+
+		/*
+		PlausibilityCheck.run(
+				base + "shape/output/shapes_schedule.xml.gz",
+				base + "shape/output/shapes_network.xml.gz",
+				"EPSG:2032",
+				base + "shape/output/check/"
+		);
+		*/
+	}
+
+
 }

@@ -22,7 +22,10 @@ import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.pt2matsim.gtfs.lib.ShapeSchedule;
 import org.matsim.pt2matsim.tools.ScheduleTools;
+
+import java.util.HashSet;
 
 /**
  * Extract one route from a schedule
@@ -34,6 +37,7 @@ public class ExtractDebugSchedule {
 	/**
 	 * Extracts one route from a schedule and writes it
 	 * to a new file.
+	 *
 	 * @param args [0] schedule file
 	 *             [1] transit route id
 	 *             [2] transit line id
@@ -62,6 +66,34 @@ public class ExtractDebugSchedule {
 			}
 		}
 		ScheduleTools.writeTransitSchedule(debug, args[3]);
+	}
+
+	/**
+	 * Extracts n transit routes randomly. Removes all other transit routes
+	 * from the schedule
+	 */
+	public static void removeRand(TransitSchedule schedule, int n) {
+		int nRoutes = 0;
+		for(TransitLine tl : schedule.getTransitLines().values()) {
+			nRoutes += tl.getRoutes().size();
+		}
+
+		double p = n / (double) nRoutes;
+
+		for(TransitLine tl : schedule.getTransitLines().values()) {
+			for(TransitRoute tr : new HashSet<>(tl.getRoutes().values())) {
+				double t = Math.random();
+				if(t > p) {
+					tl.removeRoute(tr);
+				}
+			}
+		}
+
+		for(TransitLine tl : new HashSet<>(schedule.getTransitLines().values())) {
+			if(tl.getRoutes().size() == 0) {
+				schedule.removeTransitLine(tl);
+			}
+		}
 	}
 
 }

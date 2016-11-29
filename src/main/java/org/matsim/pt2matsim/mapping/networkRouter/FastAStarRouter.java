@@ -50,35 +50,19 @@ public class FastAStarRouter implements Router {
 	private final LeastCostPathCalculator pathCalculator;
 	private final Map<Tuple<Id<Node>, Id<Node>>, LeastCostPathCalculator.Path> paths;
 	private static PublicTransitMappingConfigGroup.TravelCostType travelCostType = PublicTransitMappingConfigGroup.TravelCostType.linkLength;
-	private static double uTurnCost = 0;
 
-	private Id<Node> uTurnFromNodeId = null;
-	private Id<Node> uTurnToNodeId = null;
 
 	public static void setTravelCostType(PublicTransitMappingConfigGroup.TravelCostType type) {
 		travelCostType = type;
-	}
-
-	public static void setUTurnCost(double cost) {
-		uTurnCost = cost;
 	}
 
 	public FastAStarRouter(Network network) {
 		this.paths = new HashMap<>();
 		this.network = network;
 
-		LeastCostPathCalculatorFactory factory = new FastAStarEuclideanFactory(network, this);
+		LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory(network, this);
 		this.pathCalculator = factory.createPathCalculator(network, this, this);
 	}
-
-	/**
-	 * Filters the network with the given transport modes and creates a router with it
-	 */
-	public static Router createModeSeparatedRouter(Network network, Set<String> transportModes) {
-		Network filteredNetwork = NetworkTools.filterNetworkByLinkMode(network, transportModes);
-		return new FastAStarRouter(filteredNetwork);
-	}
-
 
 	/**
 	 * Synchronized since {@link org.matsim.core.router.Dijkstra} is not thread safe.
@@ -97,11 +81,6 @@ public class FastAStarRouter implements Router {
 		} else {
 			return null;
 		}
-	}
-
-	@Override
-	public Network getNetwork() {
-		return network;
 	}
 
 	@Override

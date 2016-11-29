@@ -60,10 +60,12 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 		this.network = network;
 		this.config = config;
 		this.scheduleRouters = scheduleRouters;
+
+		createLinkCandidates();
 	}
 
-	@Override
-	public void createLinkCandidates() {
+
+	private void createLinkCandidates() {
 		log.info("   search radius: " + config.getNodeSearchRadius());
 		log.info("   Note: loop links for stop facilities are created if no link candidate can be found.");
 
@@ -174,8 +176,8 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 	}
 
 	@Override
-	public SortedSet<LinkCandidate> getLinkCandidates(Id<TransitStopFacility> transitStopFacility, String scheduleTransportMode) {
-		return linkCandidates.get(scheduleTransportMode).get(transitStopFacility);
+	public SortedSet<LinkCandidate> getLinkCandidates(Id<TransitStopFacility> transitStopFacility, TransitLine transitLine, TransitRoute transitRoute) {
+		return linkCandidates.get(transitRoute.getTransportMode()).get(transitStopFacility);
 	}
 
 }

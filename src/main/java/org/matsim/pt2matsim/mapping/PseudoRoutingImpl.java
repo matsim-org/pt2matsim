@@ -83,9 +83,6 @@ public class PseudoRoutingImpl implements PseudoRouting {
 
 				String scheduleTransportMode = transitRoute.getTransportMode();
 
-//				Router transitRouter = scheduleRouters.getRouter(transitLine, transitRoute);
-//				Network modeNetwork = transitRouter.getNetwork();
-
 				/** [1]
 				 * Initiate pseudoGraph and Dijkstra algorithm for the current transitRoute.
 				 *
@@ -102,8 +99,8 @@ public class PseudoRoutingImpl implements PseudoRouting {
 				 */
 				List<TransitRouteStop> routeStops = transitRoute.getStops();
 				for(int i = 0; i < routeStops.size() - 1; i++) {
-					Set<LinkCandidate> linkCandidatesCurrent = linkCandidates.getLinkCandidates(routeStops.get(i).getStopFacility().getId(), scheduleTransportMode);
-					Set<LinkCandidate> linkCandidatesNext = linkCandidates.getLinkCandidates(routeStops.get(i + 1).getStopFacility().getId(), scheduleTransportMode);
+					Set<LinkCandidate> linkCandidatesCurrent = linkCandidates.getLinkCandidates(routeStops.get(i).getStopFacility().getId(), transitLine, transitRoute);
+					Set<LinkCandidate> linkCandidatesNext = linkCandidates.getLinkCandidates(routeStops.get(i + 1).getStopFacility().getId(), transitLine, transitRoute);
 
 					double minTravelCost = scheduleRouters.getMinimalTravelCost(routeStops.get(i), routeStops.get(i + 1), transitLine, transitRoute);
 					double maxAllowedTravelCost = minTravelCost * config.getMaxTravelCostFactor();
@@ -127,18 +124,18 @@ public class PseudoRoutingImpl implements PseudoRouting {
 							 * to search a least cost path on the network.
 							 */
 							if(!linkCandidateCurrent.isLoopLink() && !linkCandidateNext.isLoopLink()) {
-								LeastCostPathCalculator.Path leastCostPath = null;
+								LeastCostPathCalculator.Path leastCostPath;
 
 								/**
 								 * Calculate the least cost path on the network
 								 */
-//								String key = scheduleTransportMode + "--" + nodeA.toString() + "--" + nodeB.toString();
-//								if(!localStoredPaths.containsKey(key)) {
+								String key = scheduleTransportMode + "--" + linkCandidateCurrent.toString() + "--" + linkCandidateNext.toString();
+								if(!localStoredPaths.containsKey(key)) {
 									leastCostPath = scheduleRouters.calcLeastCostPath(linkCandidateCurrent, linkCandidateNext, transitLine, transitRoute);
-//									localStoredPaths.put(key, leastCostPath);
-//								} else {
-//									leastCostPath = localStoredPaths.get(key);
-//								}
+									localStoredPaths.put(key, leastCostPath);
+								} else {
+									leastCostPath = localStoredPaths.get(key);
+								}
 
 
 								if(leastCostPath != null) {
@@ -185,8 +182,8 @@ public class PseudoRoutingImpl implements PseudoRouting {
 				 * Finish the pseudoGraph by adding dummy nodes.
 				 */
 				pseudoGraph.addDummyEdges(routeStops,
-						linkCandidates.getLinkCandidates(routeStops.get(0).getStopFacility().getId(), scheduleTransportMode),
-						linkCandidates.getLinkCandidates(routeStops.get(routeStops.size() - 1).getStopFacility().getId(), scheduleTransportMode));
+						linkCandidates.getLinkCandidates(routeStops.get(0).getStopFacility().getId(), transitLine, transitRoute),
+						linkCandidates.getLinkCandidates(routeStops.get(routeStops.size() - 1).getStopFacility().getId(), transitLine, transitRoute));
 
 				/** [5]
 				 * Find the least cost path i.e. the PseudoRouteStop sequence
