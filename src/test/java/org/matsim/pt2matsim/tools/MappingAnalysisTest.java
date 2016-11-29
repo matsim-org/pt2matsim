@@ -87,5 +87,6 @@ public class MappingAnalysisTest {
 		analysis.run();
 		analysis.writeAllDistancesCsv(input+"output/DistancesAll.csv");
 		analysis.writeQuantileDistancesCsv(input+"output/DistancesQuantile.csv");
+		System.out.println(analysis.getQ8585());
 	}
 }

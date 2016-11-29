@@ -39,6 +39,8 @@ import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorStandard;
 import org.matsim.pt2matsim.mapping.networkRouter.FastAStarRouter;
 import org.matsim.pt2matsim.mapping.networkRouter.Router;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersTransportMode;
 import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoSchedule;
 import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoScheduleImpl;
 import org.matsim.pt2matsim.plausibility.StopFacilityHistogram;
@@ -70,7 +72,8 @@ public class PTMapperImpl implements PTMapper {
 	private TransitSchedule schedule;
 
 
-	private final Map<String, Router> modeSeparatedRouters = new HashMap<>();
+	private ScheduleRouters scheduleRouters;
+//	private final Map<String, Router> modeSeparatedRouters = new HashMap<>();
 	private final PseudoSchedule pseudoSchedule = new PseudoScheduleImpl();
 
 	/**
@@ -129,7 +132,7 @@ public class PTMapperImpl implements PTMapper {
 
 		/**
 		 * Some schedule statistics
- 		 */
+		 */
 		Set<String> scheduleTransportModes = new HashSet<>();
 		int nStopFacilities = schedule.getFacilities().size();
 		int nTransitRoutes = 0;
@@ -140,20 +143,13 @@ public class PTMapperImpl implements PTMapper {
 			}
 		}
 
-
 		/** [1]
 		 * Create a separate network for all schedule modes and
 		 * initiate routers.
 		 */
 		log.info("==============================================");
 		log.info("Creating mode separated network and routers...");
-		Map<String, Set<String>> modeRoutingAssignment = config.getModeRoutingAssignment();
-		FastAStarRouter.setTravelCostType(config.getTravelCostType());
-		FastAStarRouter.setUTurnCost(config.getUTurnCost());
-		for(String scheduleMode : scheduleTransportModes) {
-			log.info("Initiating network and router for schedule mode \"" +scheduleMode+"\", network modes " + modeRoutingAssignment.get(scheduleMode));
-			modeSeparatedRouters.put(scheduleMode, FastAStarRouter.createModeSeparatedRouter(network, modeRoutingAssignment.get(scheduleMode)));
-		}
+		scheduleRouters = new ScheduleRoutersTransportMode(config, schedule, network);
 
 		/** [2]
 		 * Load the closest links and create LinkCandidates. StopFacilities
@@ -163,7 +159,7 @@ public class PTMapperImpl implements PTMapper {
 		 */
 		log.info("===========================");
 		log.info("Creating link candidates...");
-		LinkCandidateCreator linkCandidates = new LinkCandidateCreatorStandard(this.schedule, this.network, this.config, this.modeSeparatedRouters);
+		LinkCandidateCreator linkCandidates = new LinkCandidateCreatorStandard(this.schedule, this.network, this.config, this.scheduleRouters);
 		linkCandidates.createLinkCandidates();
 
 		/** [3]
@@ -178,7 +174,7 @@ public class PTMapperImpl implements PTMapper {
 		int numThreads = config.getNumOfThreads() > 0 ? config.getNumOfThreads() : 1;
 		PseudoRouting[] pseudoRoutingRunnables = new PseudoRouting[numThreads];
 		for(int i = 0; i < numThreads; i++) {
-			pseudoRoutingRunnables[i] = new PseudoRoutingImpl(config, modeSeparatedRouters, linkCandidates);
+			pseudoRoutingRunnables[i] = new PseudoRoutingImpl(config, scheduleRouters, linkCandidates);
 		}
 		// spread transit lines on runnables
 		int thr = 0;
@@ -227,15 +223,16 @@ public class PTMapperImpl implements PTMapper {
 		 */
 		log.info("===========================================================================================");
 		log.info("Initiating final routers to map transit routes with referenced facilities to the network...");
-		Map<String, Router> finalRouters = new HashMap<>();
-		for(String scheduleMode : scheduleTransportModes) {
-			Set<String> routingTransportModes = new HashSet<>(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE_AS_SET);
-			if(modeRoutingAssignment.get(scheduleMode) != null) routingTransportModes.addAll(modeRoutingAssignment.get(scheduleMode));
-			log.info("Initiating network and router for schedule mode \"" +scheduleMode+"\", network modes " + routingTransportModes);
-
-			finalRouters.put(scheduleMode, FastAStarRouter.createModeSeparatedRouter(network, routingTransportModes));
-		}
-
+		ScheduleRouters finalRouters = new ScheduleRoutersTransportMode(config, schedule, network, true);
+//		Map<String, Router> finalRouters = new HashMap<>();
+//		Map<String, Set<String>> modeRoutingAssignment = config.getModeRoutingAssignment();
+//		for(String scheduleMode : scheduleTransportModes) {
+//			Set<String> routingTransportModes = new HashSet<>(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE_AS_SET);
+//			if(modeRoutingAssignment.get(scheduleMode) != null) routingTransportModes.addAll(modeRoutingAssignment.get(scheduleMode));
+//			log.info("Initiating network and router for schedule mode \"" +scheduleMode+"\", network modes " + routingTransportModes);
+//
+//			finalRouters.put(scheduleMode, FastAStarRouter.createModeSeparatedRouter(network, routingTransportModes));
+//		}
 
 		/** [7]
 		 * Route all transitRoutes with the new referenced links. The shortest path

@@ -33,6 +33,7 @@ import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
 import org.matsim.pt2matsim.mapping.networkRouter.Router;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.pseudoRouter.*;
 
 import java.util.*;
@@ -55,7 +56,7 @@ public class PseudoRoutingImpl implements PseudoRouting {
 
 	private final PublicTransitMappingConfigGroup config;
 	private final LinkCandidateCreator linkCandidates;
-	private final Map<String, Router> modeSeparatedRouters;
+	private final ScheduleRouters scheduleRouters;
 	private final List<TransitLine> queue = new ArrayList<>();
 
 	private final Set<ArtificialLink> necessaryArtificialLinks = new HashSet<>();
@@ -64,9 +65,9 @@ public class PseudoRoutingImpl implements PseudoRouting {
 
 	private final PseudoSchedule threadPseudoSchedule = new PseudoScheduleImpl();
 
-	public PseudoRoutingImpl(PublicTransitMappingConfigGroup config, Map<String, Router> modeSeparatedRouters, LinkCandidateCreator linkCandidates) {
+	public PseudoRoutingImpl(PublicTransitMappingConfigGroup config, ScheduleRouters scheduleRouters, LinkCandidateCreator linkCandidates) {
 		this.config = config;
-		this.modeSeparatedRouters = modeSeparatedRouters;
+		this.scheduleRouters = scheduleRouters;
 		this.linkCandidates = linkCandidates;
 	}
 
@@ -82,8 +83,8 @@ public class PseudoRoutingImpl implements PseudoRouting {
 
 				String scheduleTransportMode = transitRoute.getTransportMode();
 
-				Router modeRouter = modeSeparatedRouters.get(scheduleTransportMode);
-				Network modeNetwork = modeRouter.getNetwork();
+				Router transitRouter = scheduleRouters.getRouter(transitLine, transitRoute);
+				Network modeNetwork = transitRouter.getNetwork();
 
 				/** [1]
 				 * Initiate pseudoGraph and Dijkstra algorithm for the current transitRoute.
@@ -104,7 +105,7 @@ public class PseudoRoutingImpl implements PseudoRouting {
 					Set<LinkCandidate> linkCandidatesCurrent = linkCandidates.getLinkCandidates(routeStops.get(i).getStopFacility().getId(), scheduleTransportMode);
 					Set<LinkCandidate> linkCandidatesNext = linkCandidates.getLinkCandidates(routeStops.get(i + 1).getStopFacility().getId(), scheduleTransportMode);
 
-					double minTravelCost = modeRouter.getMinimalTravelCost(routeStops.get(i), routeStops.get(i + 1));
+					double minTravelCost = transitRouter.getMinimalTravelCost(routeStops.get(i), routeStops.get(i + 1));
 					double maxAllowedTravelCost = minTravelCost * config.getMaxTravelCostFactor();
 
 					if(minTravelCost == 0 && warnMinTravelCost) {
@@ -136,7 +137,7 @@ public class PseudoRoutingImpl implements PseudoRouting {
 								if(nodeA != null && nodeB != null) {
 									String key = scheduleTransportMode + "--" + nodeA.toString() + "--" + nodeB.toString();
 									if(!localStoredPaths.containsKey(key)) {
-										leastCostPath = modeRouter.calcLeastCostPath(linkCandidateCurrent, linkCandidateNext, transitLine, transitRoute);
+										leastCostPath = transitRouter.calcLeastCostPath(linkCandidateCurrent, linkCandidateNext, transitLine, transitRoute);
 										localStoredPaths.put(key, leastCostPath);
 									} else {
 										leastCostPath = localStoredPaths.get(key);
@@ -170,8 +171,8 @@ public class PseudoRoutingImpl implements PseudoRouting {
 							 * facility and the other linkCandidates).
 							 */
 							else {
-								double freespeed = modeRouter.getArtificialLinkFreeSpeed(maxAllowedTravelCost, linkCandidateCurrent, linkCandidateNext);
-								double length = modeRouter.getArtificialLinkLength(maxAllowedTravelCost, linkCandidateCurrent, linkCandidateNext);
+								double freespeed = transitRouter.getArtificialLinkFreeSpeed(maxAllowedTravelCost, linkCandidateCurrent, linkCandidateNext);
+								double length = transitRouter.getArtificialLinkLength(maxAllowedTravelCost, linkCandidateCurrent, linkCandidateNext);
 								ArtificialLink artificialLink = new ArtificialLinkImpl(linkCandidateCurrent, linkCandidateNext, freespeed, length);
 								allPossibleArtificialLinks.put(new Tuple<>(linkCandidateCurrent, linkCandidateNext), artificialLink);
 

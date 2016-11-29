@@ -27,6 +27,7 @@ import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.pt2matsim.gtfs.lib.ShapeSchedule;
 import org.matsim.vehicles.Vehicles;
 import org.matsim.pt2matsim.gtfs.lib.*;
 import org.matsim.pt2matsim.tools.ScheduleTools;

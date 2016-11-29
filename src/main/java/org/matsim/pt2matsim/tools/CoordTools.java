@@ -23,8 +23,11 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.utils.geometry.CoordUtils;
+import org.matsim.pt.transitSchedule.api.TransitRoute;
+import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
+import org.matsim.pt2matsim.gtfs.lib.Shape;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -155,6 +158,35 @@ public class CoordTools {
 			}
 		}
 
+		return new Coord[]{new Coord(minW, minS), new Coord(maxE, maxN)};
+	}
+
+	/**
+	 * Calculates the maximum x and y values of the stop coordinates.
+	 * @return Array of Coords with the minimal South-West and the
+	 * 		   maximal North-East Coordinates
+	 */
+	public static Coord[] getExtent(TransitRoute transitRoute) {
+		double maxE = 0;
+		double maxN = 0;
+		double minS = Double.MAX_VALUE;
+		double minW = Double.MAX_VALUE;
+
+		for(TransitRouteStop trs : transitRoute.getStops()) {
+			Coord c = trs.getStopFacility().getCoord();
+			if(c.getX() > maxE) {
+				maxE = c.getX();
+			}
+			if(c.getY() > maxN) {
+				maxN = c.getY();
+			}
+			if(c.getX() < minW) {
+				minW = c.getX();
+			}
+			if(c.getY() < minS) {
+				minS = c.getY();
+			}
+		}
 		return new Coord[]{new Coord(minW, minS), new Coord(maxE, maxN)};
 	}
 

@@ -27,6 +27,7 @@ import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
+import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -50,6 +51,7 @@ public class Shape {
 	 * A shape can be referenced to multiple transit routes
 	 */
 	private Set<Tuple<Id<TransitLine>, Id<TransitRoute>>> transitRoutes;
+	private Coord[] extent = new Coord[]{new Coord(Double.MAX_VALUE, Double.MAX_VALUE), new Coord(0, 0)};
 
 
 	//Methods
@@ -82,6 +84,19 @@ public class Shape {
 	 */
 	public void addPoint(Coord point, int pos) {
 		points.put(pos, point);
+
+		if(point.getX() < extent[0].getX()) {
+			extent[0].setX(point.getX());
+		}
+		if(point.getY() < extent[0].getY()) {
+			extent[0].setY(point.getY());
+		}
+		if(point.getX() > extent[1].getX()) {
+			extent[1].setX(point.getX());
+		}
+		if(point.getY() > extent[1].getY()) {
+			extent[1].setY(point.getY());
+		}
 	}
 
 	public Coordinate[] getCoordinates() {
@@ -103,5 +118,9 @@ public class Shape {
 
 	public Set<Tuple<Id<TransitLine>, Id<TransitRoute>>> getTransitRoutes() {
 		return transitRoutes;
+	}
+
+	public Coord[] getExtent() {
+		return extent;
 	}
 }

@@ -37,7 +37,10 @@ import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
  * A Router that calculates the least cost path on a network.
  *
  * @author polettif
+ *
+ * @deprecated use matsim directly routers within schedulerouters
  */
+@Deprecated
 public interface Router extends TravelDisutility, TravelTime {
 
     /**
