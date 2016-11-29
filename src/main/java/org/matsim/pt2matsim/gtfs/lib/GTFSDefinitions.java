@@ -56,7 +56,7 @@ public final class GTFSDefinitions {
 		STOPS("Stop", "stops.txt", new String[]{STOP_ID, STOP_LON, STOP_LAT, STOP_NAME}),
 		CALENDAR("Calendar", "calendar.txt", new String[]{SERVICE_ID, MONDAY, START_DATE, END_DATE}),
 		CALENDAR_DATES("CalendarDates", "calendar_dates.txt", new String[]{SERVICE_ID, DATE, EXCEPTION_TYPE}),
-		SHAPES("Shape", "shapes.txt", new String[]{SHAPE_ID, SHAPE_PT_LON, SHAPE_PT_LAT, SHAPE_PT_SEQUENCE}),
+		SHAPES("ShapeGtfs", "shapes.txt", new String[]{SHAPE_ID, SHAPE_PT_LON, SHAPE_PT_LAT, SHAPE_PT_SEQUENCE}),
 		ROUTES("Route", "routes.txt", new String[]{ROUTE_ID, ROUTE_SHORT_NAME, ROUTE_TYPE}),
 		TRIPS("Trip", "trips.txt", new String[]{ROUTE_ID, TRIP_ID, SERVICE_ID, SHAPE_ID}),
 		STOP_TIMES("StopTime", "stop_times.txt", new String[]{TRIP_ID, STOP_SEQUENCE, ARRIVAL_TIME, DEPARTURE_TIME, STOP_ID}),

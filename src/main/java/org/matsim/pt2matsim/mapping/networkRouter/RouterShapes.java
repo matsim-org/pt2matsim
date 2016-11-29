@@ -18,25 +18,27 @@
 
 package org.matsim.pt2matsim.mapping.networkRouter;
 
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.core.router.util.*;
+import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.network.algorithms.NetworkCleaner;
+import org.matsim.core.router.util.FastAStarLandmarksFactory;
+import org.matsim.core.router.util.LeastCostPathCalculator;
+import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.geometry.CoordUtils;
-import org.matsim.pt.transitSchedule.api.TransitLine;
-import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.gtfs.lib.Shape;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
-import org.matsim.pt2matsim.tools.ShapeTools;
 import org.matsim.pt2matsim.tools.NetworkTools;
+import org.matsim.pt2matsim.tools.ShapeTools;
 import org.matsim.vehicles.Vehicle;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -47,45 +49,52 @@ import java.util.Set;
  *
  * @author polettif
  */
-public class RouterWithShapes implements Router {
+public class RouterShapes implements Router {
 
 	private final Network network;
-
 	private final LeastCostPathCalculator pathCalculator;
+	private final Shape shape;
+
 	private final Map<Tuple<Id<Node>, Id<Node>>, LeastCostPathCalculator.Path> paths;
 	private static PublicTransitMappingConfigGroup.TravelCostType travelCostType = PublicTransitMappingConfigGroup.TravelCostType.linkLength;
-	private static Map<String, Set<String>> modeRoutingAssignment;
+	private static double maxWeightDistance = 30;
 
-	private Shape shape;
 
 	public static void setTravelCostType(PublicTransitMappingConfigGroup.TravelCostType type) {
 		travelCostType = type;
 	}
 
-	public RouterWithShapes(Network network, Set<String> networkTransportModes, Shape shape) {
-		Network filteredNetwork = NetworkTools.filterNetworkByLinkMode(network, networkTransportModes);
-		Coord[] extent = shape.getExtent();
-		double dx = extent[1].getX() - extent[0].getX();
-		double dy = extent[1].getY() - extent[0].getY();
-
-		if(dx < 0 || dy < 0) {
-			throw new RuntimeException("Coordinate system error!");
-		}
-
-		Coord sw = new Coord(extent[0].getX()-dx, extent[0].getY()-dy);
-		Coord ne = new Coord(extent[1].getX()+dx, extent[1].getY()+dy);
-		NetworkTools.cutNetwork(filteredNetwork, sw, ne);
-		this.network = filteredNetwork;
-
-		this.paths = new HashMap<>();
-		this.shape = shape;
-
-		LeastCostPathCalculatorFactory factory = new FastAStarEuclideanFactory(network, this);
-		this.pathCalculator = factory.createPathCalculator(network, this, this);
+	public static void setMaxWeightDistance(double distance) {
+		maxWeightDistance = distance;
 	}
 
-	public static void setModeRoutingAssignment(Map<String, Set<String>> modeRoutingAssignment) {
-		RouterWithShapes.modeRoutingAssignment = modeRoutingAssignment;
+	public RouterShapes(Network paramNetwork, Set<String> networkTransportModes, Shape shape) {
+		this.shape = shape;
+
+		this.network = NetworkTools.createFilteredNetworkByLinkMode(paramNetwork, networkTransportModes);
+		Collection<Node> nodesWithinBuffer = ShapeTools.getNodesWithinBuffer(network, shape, maxWeightDistance*70);
+		NetworkTools.cutNetwork(network, nodesWithinBuffer);
+//		new NetworkCleaner().run(network);
+
+		this.paths = new HashMap<>();
+
+		LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory(this.network, this);
+		this.pathCalculator = factory.createPathCalculator(this.network, this, this);
+	}
+
+	/**
+	 * Calculates the travel cost and change it based on distance to path
+	 */
+	private double calcLinkTravelCost(Link link) {
+		double travelCost = (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
+
+		if(shape != null) {
+			double dist = ShapeTools.calcMinDistanceToShape(link, shape);
+			double factor = dist / maxWeightDistance + 0.2;
+			if(factor > 2) factor = 2;
+			travelCost *= factor;
+		}
+		return travelCost;
 	}
 
 	/**
@@ -108,11 +117,6 @@ public class RouterWithShapes implements Router {
 	}
 
 	@Override
-	public Network getNetwork() {
-		return network;
-	}
-
-	@Override
 	public double getMinimalTravelCost(TransitRouteStop fromStop, TransitRouteStop toStop) {
 		double travelTime = (toStop.getArrivalOffset() - fromStop.getDepartureOffset());
 		double beelineDistance = CoordUtils.calcEuclideanDistance(fromStop.getStopFacility().getCoord(), toStop.getStopFacility().getCoord());
@@ -127,14 +131,6 @@ public class RouterWithShapes implements Router {
 	@Override
 	public double getArtificialLinkFreeSpeed(double maxAllowedTravelCost, LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate) {
 		return 1;
-		/* Varying freespeeds do not work with maxAllowedTravelcost == 0.
-		if(travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime)) {
-			double linkLength = CoordUtils.calcEuclideanDistance(fromLinkCandidate.getToNodeCoord(), toLinkCandidate.getFromNodeCoord());
-			return linkLength / maxAllowedTravelCost;
-		} else {
-			return 1;
-		}
-		*/
 	}
 
 	@Override
@@ -148,37 +144,18 @@ public class RouterWithShapes implements Router {
 
 	@Override
 	public double getLinkTravelCost(Link link) {
-		return this.getLinkMinimumTravelDisutility(link);
+		return this.calcLinkTravelCost(link);
 	}
-
 
 	// LeastCostPathCalculator methods
 	@Override
 	public double getLinkTravelDisutility(Link link, double time, Person person, Vehicle vehicle) {
-		return this.getLinkMinimumTravelDisutility(link);
+		return this.calcLinkTravelCost(link);
 	}
 
 	@Override
 	public double getLinkMinimumTravelDisutility(Link link) {
-		// return (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
-//		if(link.getToNode().getId().equals(uTurnFromNodeId) && link.getFromNode().getId().equals(uTurnToNodeId)) {
-//			travelCost += uTurnCost;
-// 		}
-
-		double travelCost = (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
-
-		/**
-		 * Change travel costs based on distance to path
-		 */
-
-		if(shape != null) {
-			double dist = ShapeTools.calcMinDistanceToShape(link, shape);
-			if(dist < 20 && dist > 0) {
-				travelCost *= 0.8;
-			}
-		}
-
-		return travelCost;
+		return this.calcLinkTravelCost(link);
 	}
 
 	@Override

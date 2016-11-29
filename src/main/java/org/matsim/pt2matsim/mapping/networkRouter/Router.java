@@ -44,8 +44,6 @@ public interface Router extends TravelDisutility, TravelTime {
 
 	LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> toNode, Id<Node> fromNode);
 
-    Network getNetwork();
-
 	/**
 	 * @return The minimal travel cost between two TransitRouteStops
 	 */

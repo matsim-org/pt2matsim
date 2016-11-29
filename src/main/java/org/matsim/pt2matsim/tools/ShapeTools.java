@@ -23,15 +23,16 @@ import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.core.utils.gis.PolylineFeatureFactory;
 import org.matsim.core.utils.gis.ShapeFileWriter;
-import org.opengis.feature.simple.SimpleFeature;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.pt2matsim.gtfs.lib.GTFSRoute;
 import org.matsim.pt2matsim.gtfs.lib.Shape;
 import org.matsim.pt2matsim.gtfs.lib.Trip;
+import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.*;
 
@@ -42,6 +43,56 @@ import java.util.*;
  * @author polettif
  */
 public class ShapeTools {
+
+	/**
+	 * Calculates the minimal distance from a point to a given shape (from gtfs)
+	 */
+	public static double calcMinDistanceToShape(Coord point, Shape shape) {
+		List<Coord> shapePoints = new ArrayList<>(shape.getPoints().values());
+		double minDist = Double.MAX_VALUE;
+		// look for the minimal distance between the current point and all pairs of shape points
+		for(int i=0; i<shapePoints.size()-1; i++) {
+			double dist = CoordUtils.distancePointLinesegment(shapePoints.get(i), shapePoints.get(i + 1), point);
+			if(dist < minDist) {
+				minDist = dist;
+			}
+		}
+		return minDist;
+	}
+
+	public static double calcMinDistanceToShape(Link link, Shape shape) {
+		double measureInterval = 5;
+
+		double minDist = Double.MAX_VALUE;
+		double lengthOnLink = 0;
+		double azimuth = CoordTools.getAzimuth(link.getFromNode().getCoord(), link.getToNode().getCoord());
+		double linkLength = CoordUtils.calcEuclideanDistance(link.getFromNode().getCoord(), link.getToNode().getCoord());
+
+		while(lengthOnLink < linkLength) {
+			Coord currentPoint = CoordTools.calcNewPoint(link.getFromNode().getCoord(), azimuth, lengthOnLink);
+
+			// look for shortest distance to shape
+			double dist = ShapeTools.calcMinDistanceToShape(currentPoint, shape);
+			if(dist < minDist) {
+				minDist = dist;
+			}
+			lengthOnLink += measureInterval;
+		}
+		return minDist;
+	}
+
+	/**
+	 * @return all nodes within a buffer distance from the shape
+	 */
+	public static Collection<Node> getNodesWithinBuffer(Network network, Shape shape, double buffer) {
+		Set<Node> nodesWithinBuffer = new HashSet<>();
+		for(Node node : network.getNodes().values()) {
+			if(calcMinDistanceToShape(node.getCoord(), shape) <= buffer) {
+				nodesWithinBuffer.add(node);
+			}
+		}
+		return nodesWithinBuffer;
+	}
 
 	/**
 	 * Converts a list of link ids to an array of coordinates for shp features
@@ -91,7 +142,15 @@ public class ShapeTools {
 				if(useTrip) {
 					Shape shape = trip.getShape();
 					if(shape != null) {
-						SimpleFeature f = ff.createPolyline(shape.getCoordinates());
+
+						Collection<Coord> points = shape.getPoints().values();
+						int i = 0;
+						Coordinate[] coordinates = new Coordinate[points.size()];
+						for(Coord coord : points) {
+							coordinates[i++] = MGC.coord2Coordinate(coord);
+						}
+
+						SimpleFeature f = ff.createPolyline(coordinates);
 						f.setAttribute("shape_id", shape.getId());
 						f.setAttribute("trip_id", trip.getId());
 						f.setAttribute("trip_name", trip.getName());
@@ -105,40 +164,4 @@ public class ShapeTools {
 		ShapeFileWriter.writeGeometries(features, outFile);
 	}
 
-	/**
-	 * Calculates the minimal distance from a point to a given shape (from gtfs)
-	 */
-	public static double calcMinDistanceToShape(Coord point, Shape shape) {
-		List<Coord> shapePoints = new ArrayList<>(shape.getPoints().values());
-		double minDist = Double.MAX_VALUE;
-		// look for the minimal distance between the current point and all pairs of shape points
-		for(int i=0; i<shapePoints.size()-1; i++) {
-			double dist = CoordUtils.distancePointLinesegment(shapePoints.get(i), shapePoints.get(i + 1), point);
-			if(dist < minDist) {
-				minDist = dist;
-			}
-		}
-		return minDist;
-	}
-
-	public static double calcMinDistanceToShape(Link link, Shape shape) {
-		double measureInterval = 5;
-
-		double minDist = Double.MAX_VALUE;
-		double lengthOnLink = 0;
-		double azimuth = CoordTools.getAzimuth(link.getFromNode().getCoord(), link.getToNode().getCoord());
-		double linkLength = CoordUtils.calcEuclideanDistance(link.getFromNode().getCoord(), link.getToNode().getCoord());
-
-		while(lengthOnLink < linkLength) {
-			Coord currentPoint = CoordTools.calcNewPoint(link.getFromNode().getCoord(), azimuth, lengthOnLink);
-
-			// look for shortest distance to shape
-			double dist = ShapeTools.calcMinDistanceToShape(currentPoint, shape);
-			if(dist < minDist) {
-				minDist = dist;
-			}
-			lengthOnLink += measureInterval;
-		}
-		return minDist;
-	}
 }
