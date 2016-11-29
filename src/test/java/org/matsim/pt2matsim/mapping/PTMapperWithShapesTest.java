@@ -1,5 +1,6 @@
 package org.matsim.pt2matsim.mapping;
 
+import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.matsim.api.core.v01.network.Network;
@@ -18,6 +19,9 @@ import org.matsim.vehicles.VehicleUtils;
  */
 public class PTMapperWithShapesTest {
 
+	protected static Logger log = Logger.getLogger(PTMapperWithShapesTest.class);
+
+
 	private GtfsConverter gtfsConverter;
 	private Network network;
 	private String base = "test/analysis/";
@@ -35,12 +39,13 @@ public class PTMapperWithShapesTest {
 		gtfsConverter.getShapeSchedule().writeShapeScheduleFile(base +"shape/ss_file.csv");
 		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), base +"mts/unmapped_schedule.xml.gz");
 
-		runMapping();
+//		runNormalMapping();
 		runMappingWithShapes();
 	}
 
-	public void runMapping() {
+	private void runNormalMapping() {
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
+		config.setNumOfThreads(6);
 
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(base + "mts/unmapped_schedule.xml.gz");
 		PTMapper ptMapper = new PTMapperImpl(config, schedule, network);
@@ -51,8 +56,9 @@ public class PTMapperWithShapesTest {
 	}
 
 
-	public void runMappingWithShapes() {
+	private void runMappingWithShapes() {
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
+		config.setNumOfThreads(12);
 
 		ShapeSchedule shapeSchedule = new ShapeSchedule(base + "mts/unmapped_schedule.xml.gz", base + "shape/ss_file.csv");
 		PTMapper ptMapper = new PTMapperWithShapes(config, shapeSchedule, network);
@@ -69,6 +75,7 @@ public class PTMapperWithShapesTest {
 
 		analysis.run();
 		analysis.writeQuantileDistancesCsv(base +"shape/output/Shapes_DistancesQuantile.csv");
+		System.out.println("with shapes: " + analysis.getQ8585());
 	}
 
 	@Test
@@ -78,6 +85,6 @@ public class PTMapperWithShapesTest {
 
 		analysis.run();
 		analysis.writeQuantileDistancesCsv(base +"shape/output/Normal_DistancesQuantile.csv");
+		System.out.println("normal: " + analysis.getQ8585());
 	}
-
 }

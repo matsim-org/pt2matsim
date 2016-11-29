@@ -52,6 +52,7 @@ public class MappingAnalysis {
 	private final ShapeSchedule schedule;
 	private final Network network;
 	private final Map<Id<TransitLine>, Map<Id<TransitRoute>, List<Double>>> routeDistances = new HashMap<>();
+	private boolean q8585;
 
 	public MappingAnalysis(ShapeSchedule schedule, Network network) {
 		this.schedule = schedule;
@@ -89,7 +90,6 @@ public class MappingAnalysis {
 			}
 		}
 	}
-
 
 	/**
 	 *
@@ -164,4 +164,24 @@ public class MappingAnalysis {
 
 	}
 
+	/**
+	 * 85%-quantiles are calculated for all transit routes. The 85%-quantile of these quantiles is returned.
+	 */
+	public double getQ8585() {
+		List<Double> q85 = new ArrayList<>();
+
+		for(TransitLine transitLine : schedule.getTransitLines().values()) {
+			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
+				Id<TransitLine> transitLineId = transitLine.getId();
+				Id<TransitRoute> transitRouteId = transitRoute.getId();
+
+				List<Double> values = routeDistances.get(transitLineId).get(transitRouteId);
+				values.sort(Double::compareTo);
+				int n = values.size();
+				q85.add(values.get((int) Math.round(n * 0.85) - 1));
+			}
+		}
+		q85.sort(Double::compareTo);
+		return q85.get((int) Math.round(q85.size() * 0.85) - 1);
+	}
 }

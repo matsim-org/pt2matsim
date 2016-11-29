@@ -21,17 +21,12 @@ package org.matsim.pt2matsim.gtfs.lib;
 import com.vividsolutions.jts.util.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.vehicles.VehicleUtils;
-import org.matsim.vehicles.Vehicles;
-
-import static org.junit.Assert.*;
 
 /**
  * @author polettif

@@ -30,6 +30,7 @@ import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.networkRouter.Router;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.tools.MiscUtils;
 import org.matsim.pt2matsim.tools.NetworkTools;
 
@@ -43,7 +44,7 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 	protected static Logger log = Logger.getLogger(LinkCandidateCreatorStandard.class);
 
 	private static final Set<String> loopLinkModes = CollectionUtils.stringToSet(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE+","+ PublicTransitMappingStrings.STOP_FACILITY_LOOP_LINK);
-	private final Map<String, Router> modeSeparatedRouters;
+	private final ScheduleRouters scheduleRouters;
 
 	private Map<String, PublicTransitMappingConfigGroup.LinkCandidateCreatorParams> lccParams;
 
@@ -54,11 +55,11 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 	private final Map<String, Map<Id<TransitStopFacility>, SortedSet<LinkCandidate>>> linkCandidates = new HashMap<>();
 	private final Set<Tuple<TransitStopFacility, String>> loopLinks = new HashSet<>();
 
-	public LinkCandidateCreatorStandard(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config, Map<String, Router> modeSeparatedRouters) {
+	public LinkCandidateCreatorStandard(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config, ScheduleRouters scheduleRouters) {
 		this.schedule = schedule;
 		this.network = network;
 		this.config = config;
-		this.modeSeparatedRouters = modeSeparatedRouters;
+		this.scheduleRouters = scheduleRouters;
 	}
 
 	@Override
@@ -82,7 +83,7 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 					PublicTransitMappingConfigGroup.LinkCandidateCreatorParams param = lccParams.get(scheduleTransportMode);
 
-					Router modeRouter = modeSeparatedRouters.get(scheduleTransportMode);
+					Router modeRouter = scheduleRouters.getRouter(transitLine, transitRoute);
 					TransitStopFacility stopFacility = transitRouteStop.getStopFacility();
 
 					SortedSet<LinkCandidate> modeLinkCandidates = MiscUtils.getSortedSet(stopFacility.getId(), MapUtils.getMap(scheduleTransportMode, linkCandidates));
@@ -146,7 +147,7 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 			if(parentStopFacility != null) {
 				for(String scheduleMode : scheduleModes) {
-					Router modeRouter = modeSeparatedRouters.get(scheduleMode);
+					Router modeRouter = scheduleRouters.getRouter(scheduleMode);
 
 					PublicTransitMappingConfigGroup.LinkCandidateCreatorParams lccParams = config.getLinkCandidateCreatorParams().get(scheduleMode);
 

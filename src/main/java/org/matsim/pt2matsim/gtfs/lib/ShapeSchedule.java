@@ -24,6 +24,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.pt2matsim.gtfs.lib.Shape;
 import org.matsim.pt2matsim.tools.CsvTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.utils.objectattributes.ObjectAttributes;

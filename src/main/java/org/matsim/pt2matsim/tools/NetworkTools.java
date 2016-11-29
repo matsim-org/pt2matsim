@@ -259,6 +259,14 @@ public class NetworkTools {
 		return filterManager.applyFilters();
 	}
 
+	public static void cutNetwork(Network network, Coord SW, Coord NE) {
+		for(Node n : new HashSet<>(network.getNodes().values())) {
+			if(!CoordTools.isInArea(n.getCoord(), SW, NE)) {
+				network.removeNode(n.getId());
+			}
+		}
+	}
+
 	/**
 	 * @return the opposite direction link. <tt>null</tt> if there is no opposite link.
 	 */

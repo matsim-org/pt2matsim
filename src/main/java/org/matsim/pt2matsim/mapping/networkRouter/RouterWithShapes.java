@@ -18,14 +18,12 @@
 
 package org.matsim.pt2matsim.mapping.networkRouter;
 
-import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.core.router.util.FastAStarLandmarksFactory;
-import org.matsim.core.router.util.LeastCostPathCalculator;
-import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
+import org.matsim.core.router.util.*;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
@@ -33,7 +31,6 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.gtfs.lib.Shape;
-import org.matsim.pt2matsim.gtfs.lib.ShapeSchedule;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.tools.ShapeTools;
 import org.matsim.pt2matsim.tools.NetworkTools;
@@ -44,47 +41,58 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A LeastCostPathCalculator using FastAStarLandmarks.
+ * A LeastCostPathCalculator using FastAStarEuclidian. One Router should be initialized
+ * for each GTFS shape.
  *
  * @author polettif
  */
-public class FastAStarRouterWithShapes implements Router {
+public class RouterWithShapes implements Router {
+
+	private static final double networkCutBuffer = 1000;
 
 	private final Network network;
 
 	private final LeastCostPathCalculator pathCalculator;
 	private final Map<Tuple<LinkCandidate, LinkCandidate>, LeastCostPathCalculator.Path> paths;
 	private static PublicTransitMappingConfigGroup.TravelCostType travelCostType = PublicTransitMappingConfigGroup.TravelCostType.linkLength;
-	private static double uTurnCost = 0;
-	private final ShapeSchedule shapeSchedule;
+	private static Map<String, Set<String>> modeRoutingAssignment;
 
-	private Id<Node> uTurnFromNodeId = null;
-	private Id<Node> uTurnToNodeId = null;
 	private Shape shape;
 
 	public static void setTravelCostType(PublicTransitMappingConfigGroup.TravelCostType type) {
 		travelCostType = type;
 	}
 
-	public static void setUTurnCost(double cost) {
-		uTurnCost = cost;
-	}
-
-	public FastAStarRouterWithShapes(Network network, ShapeSchedule shapeSchedule) {
+	public RouterWithShapes(Network network, Shape shape) {
 		this.paths = new HashMap<>();
 		this.network = network;
-		this.shapeSchedule = shapeSchedule;
+		this.shape = shape;
 
-		LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory(network, this);
+		LeastCostPathCalculatorFactory factory = new FastAStarEuclideanFactory(network, this);
 		this.pathCalculator = factory.createPathCalculator(network, this, this);
 	}
 
 	/**
 	 * Filters the network with the given transport modes and creates a router with it
-	 */
-	public static Router createModeSeparatedRouter(Network network, Set<String> transportModes, ShapeSchedule shapeSchedule) {
-		Network filteredNetwork = NetworkTools.filterNetworkByLinkMode(network, transportModes);
-		return new FastAStarRouterWithShapes(filteredNetwork, shapeSchedule);
+	*/
+	public static Router createRouter(Network network, TransitRoute transitRoute, Shape shape) {
+		Network filteredNetwork = NetworkTools.filterNetworkByLinkMode(network, modeRoutingAssignment.get(transitRoute.getTransportMode()));
+		Coord[] extent = shape.getExtent();
+		double dx = extent[1].getX() - extent[0].getX();
+		double dy = extent[1].getY() - extent[0].getY();
+
+		if(dx < 0 || dy < 0) {
+			throw new RuntimeException("Coordinate system error!");
+		}
+
+		Coord sw = new Coord(extent[0].getX()-dx, extent[0].getY()-dy);
+		Coord ne = new Coord(extent[1].getX()+dx, extent[1].getY()+dy);
+		NetworkTools.cutNetwork(filteredNetwork, sw, ne);
+		return new RouterWithShapes(filteredNetwork, shape);
+	}
+
+	public static void setModeRoutingAssignment(Map<String, Set<String>> modeRoutingAssignment) {
+		RouterWithShapes.modeRoutingAssignment = modeRoutingAssignment;
 	}
 
 	/**
@@ -93,41 +101,17 @@ public class FastAStarRouterWithShapes implements Router {
 	@Override
 	public synchronized LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, TransitLine transitLine, TransitRoute transitRoute) {
 		if(fromLinkCandidate != null && toLinkCandidate != null) {
-			setShape(transitLine.getId(), transitRoute.getId());
 			Tuple<LinkCandidate, LinkCandidate> nodes = new Tuple<>(fromLinkCandidate, toLinkCandidate);
 			if(!paths.containsKey(nodes)) {
 				Node nodeA = network.getNodes().get(fromLinkCandidate.getToNodeId());
 				Node nodeB = network.getNodes().get(toLinkCandidate.getFromNodeId());
 
-				setUTurnLink(fromLinkCandidate.getFromNodeId(), fromLinkCandidate.getToNodeId());
 				paths.put(nodes, pathCalculator.calcLeastCostPath(nodeA, nodeB, 0.0, null, null));
-				resetUTurnLink();
-				resetShape();
 			}
 			return paths.get(nodes);
 		} else {
 			return null;
 		}
-	}
-
-
-	private void resetUTurnLink() {
-		uTurnFromNodeId = null;
-		uTurnToNodeId = null;
-	}
-
-	private void setUTurnLink(Id<Node> fromNodeId, Id<Node> toNodeId) {
-		uTurnFromNodeId = fromNodeId;
-		uTurnToNodeId = toNodeId;
-	}
-
-	private void setShape(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId) {
-		this.shape = shapeSchedule.getShape(transitLineId, transitRouteId);
-	}
-
-
-	private void resetShape() {
-		this.shape = null;
 	}
 
 	@Override
@@ -189,25 +173,21 @@ public class FastAStarRouterWithShapes implements Router {
 	@Override
 	public double getLinkMinimumTravelDisutility(Link link) {
 		// return (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
+//		if(link.getToNode().getId().equals(uTurnFromNodeId) && link.getFromNode().getId().equals(uTurnToNodeId)) {
+//			travelCost += uTurnCost;
+// 		}
+
 		double travelCost = (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
-		if(link.getToNode().getId().equals(uTurnFromNodeId) && link.getFromNode().getId().equals(uTurnToNodeId)) {
-			travelCost += uTurnCost;
-		}
 
 		/**
 		 * Change travel costs based on distance to path
 		 */
+
 		if(shape != null) {
 			double dist = ShapeTools.calcMinDistanceToShape(link, shape);
-			double factor = 1;
-			if(dist > 20 && dist < 100) {
-				factor = (dist - 20) /80;
-			} else if(dist > 100){
-				factor = 3;
-			} else if(dist < 20) {
-				factor = 0.9;
+			if(dist < 20 && dist > 0) {
+				travelCost *= 0.8;
 			}
-			travelCost *= factor;
 		}
 
 		return travelCost;
@@ -217,4 +197,5 @@ public class FastAStarRouterWithShapes implements Router {
 	public double getLinkTravelTime(Link link, double time, Person person, Vehicle vehicle) {
 		return link.getLength() / link.getFreespeed();
 	}
+
 }

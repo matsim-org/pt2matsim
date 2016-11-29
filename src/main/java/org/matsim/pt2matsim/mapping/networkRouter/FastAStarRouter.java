@@ -23,9 +23,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.core.router.util.FastAStarLandmarksFactory;
-import org.matsim.core.router.util.LeastCostPathCalculator;
-import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
+import org.matsim.core.router.util.*;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
@@ -69,7 +67,7 @@ public class FastAStarRouter implements Router {
 		this.paths = new HashMap<>();
 		this.network = network;
 
-		LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory(network, this);
+		LeastCostPathCalculatorFactory factory = new FastAStarEuclideanFactory(network, this);
 		this.pathCalculator = factory.createPathCalculator(network, this, this);
 	}
 
@@ -154,7 +152,12 @@ public class FastAStarRouter implements Router {
 
 	@Override
 	public LeastCostPathCalculator.Path calcLeastCostPath(Node fromNode, Node toNode) {
-		return pathCalculator.calcLeastCostPath(fromNode, toNode, 0.0, null, null);
+		try {
+			return pathCalculator.calcLeastCostPath(fromNode, toNode, 0.0, null, null);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	@Override
@@ -171,15 +174,13 @@ public class FastAStarRouter implements Router {
 
 	@Override
 	public double getLinkMinimumTravelDisutility(Link link) {
-		return (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
-		/* todo uTurns cannot be implemented this way
-		double travelCost = (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
-		if(link.getToNode().getId().equals(uTurnFromNodeId) && link.getFromNode().getId().equals(uTurnToNodeId)) {
-			return uTurnCost + travelCost;
-		} else {
-			return travelCost;
-		}
-		*/
+		 return (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
+//		double travelCost = (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
+//		if(link.getToNode().getId().equals(uTurnFromNodeId) && link.getFromNode().getId().equals(uTurnToNodeId)) {
+//			return uTurnCost + travelCost;
+//		} else {
+//			return travelCost;
+//		}
 	}
 
 	@Override
