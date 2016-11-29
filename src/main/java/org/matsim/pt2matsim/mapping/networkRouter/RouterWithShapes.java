@@ -19,6 +19,7 @@
 package org.matsim.pt2matsim.mapping.networkRouter;
 
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
@@ -48,12 +49,10 @@ import java.util.Set;
  */
 public class RouterWithShapes implements Router {
 
-	private static final double networkCutBuffer = 1000;
-
 	private final Network network;
 
 	private final LeastCostPathCalculator pathCalculator;
-	private final Map<Tuple<LinkCandidate, LinkCandidate>, LeastCostPathCalculator.Path> paths;
+	private final Map<Tuple<Id<Node>, Id<Node>>, LeastCostPathCalculator.Path> paths;
 	private static PublicTransitMappingConfigGroup.TravelCostType travelCostType = PublicTransitMappingConfigGroup.TravelCostType.linkLength;
 	private static Map<String, Set<String>> modeRoutingAssignment;
 
@@ -63,20 +62,8 @@ public class RouterWithShapes implements Router {
 		travelCostType = type;
 	}
 
-	public RouterWithShapes(Network network, Shape shape) {
-		this.paths = new HashMap<>();
-		this.network = network;
-		this.shape = shape;
-
-		LeastCostPathCalculatorFactory factory = new FastAStarEuclideanFactory(network, this);
-		this.pathCalculator = factory.createPathCalculator(network, this, this);
-	}
-
-	/**
-	 * Filters the network with the given transport modes and creates a router with it
-	*/
-	public static Router createRouter(Network network, TransitRoute transitRoute, Shape shape) {
-		Network filteredNetwork = NetworkTools.filterNetworkByLinkMode(network, modeRoutingAssignment.get(transitRoute.getTransportMode()));
+	public RouterWithShapes(Network network, Set<String> networkTransportModes, Shape shape) {
+		Network filteredNetwork = NetworkTools.filterNetworkByLinkMode(network, networkTransportModes);
 		Coord[] extent = shape.getExtent();
 		double dx = extent[1].getX() - extent[0].getX();
 		double dy = extent[1].getY() - extent[0].getY();
@@ -88,7 +75,13 @@ public class RouterWithShapes implements Router {
 		Coord sw = new Coord(extent[0].getX()-dx, extent[0].getY()-dy);
 		Coord ne = new Coord(extent[1].getX()+dx, extent[1].getY()+dy);
 		NetworkTools.cutNetwork(filteredNetwork, sw, ne);
-		return new RouterWithShapes(filteredNetwork, shape);
+		this.network = filteredNetwork;
+
+		this.paths = new HashMap<>();
+		this.shape = shape;
+
+		LeastCostPathCalculatorFactory factory = new FastAStarEuclideanFactory(network, this);
+		this.pathCalculator = factory.createPathCalculator(network, this, this);
 	}
 
 	public static void setModeRoutingAssignment(Map<String, Set<String>> modeRoutingAssignment) {
@@ -99,13 +92,13 @@ public class RouterWithShapes implements Router {
 	 * Synchronized since {@link org.matsim.core.router.Dijkstra} is not thread safe.
 	 */
 	@Override
-	public synchronized LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, TransitLine transitLine, TransitRoute transitRoute) {
-		if(fromLinkCandidate != null && toLinkCandidate != null) {
-			Tuple<LinkCandidate, LinkCandidate> nodes = new Tuple<>(fromLinkCandidate, toLinkCandidate);
-			if(!paths.containsKey(nodes)) {
-				Node nodeA = network.getNodes().get(fromLinkCandidate.getToNodeId());
-				Node nodeB = network.getNodes().get(toLinkCandidate.getFromNodeId());
+	public synchronized LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNode, Id<Node> toNode) {
+		if(fromNode != null && toNode != null) {
 
+			Tuple<Id<Node>, Id<Node>> nodes = new Tuple<>(fromNode, toNode);
+			if(!paths.containsKey(nodes)) {
+				Node nodeA = network.getNodes().get(fromNode);
+				Node nodeB = network.getNodes().get(toNode);
 				paths.put(nodes, pathCalculator.calcLeastCostPath(nodeA, nodeB, 0.0, null, null));
 			}
 			return paths.get(nodes);
@@ -154,13 +147,8 @@ public class RouterWithShapes implements Router {
 	}
 
 	@Override
-	public LeastCostPathCalculator.Path calcLeastCostPath(Node fromNode, Node toNode) {
-		return pathCalculator.calcLeastCostPath(fromNode, toNode, 0.0, null, null);
-	}
-
-	@Override
 	public double getLinkTravelCost(Link link) {
-		return getLinkMinimumTravelDisutility(link);
+		return this.getLinkMinimumTravelDisutility(link);
 	}
 
 

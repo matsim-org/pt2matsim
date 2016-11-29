@@ -73,7 +73,6 @@ public class PTMapperImpl implements PTMapper {
 
 
 	private ScheduleRouters scheduleRouters;
-//	private final Map<String, Router> modeSeparatedRouters = new HashMap<>();
 	private final PseudoSchedule pseudoSchedule = new PseudoScheduleImpl();
 
 	/**
@@ -224,15 +223,7 @@ public class PTMapperImpl implements PTMapper {
 		log.info("===========================================================================================");
 		log.info("Initiating final routers to map transit routes with referenced facilities to the network...");
 		ScheduleRouters finalRouters = new ScheduleRoutersTransportMode(config, schedule, network, true);
-//		Map<String, Router> finalRouters = new HashMap<>();
-//		Map<String, Set<String>> modeRoutingAssignment = config.getModeRoutingAssignment();
-//		for(String scheduleMode : scheduleTransportModes) {
-//			Set<String> routingTransportModes = new HashSet<>(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE_AS_SET);
-//			if(modeRoutingAssignment.get(scheduleMode) != null) routingTransportModes.addAll(modeRoutingAssignment.get(scheduleMode));
-//			log.info("Initiating network and router for schedule mode \"" +scheduleMode+"\", network modes " + routingTransportModes);
-//
-//			finalRouters.put(scheduleMode, FastAStarRouter.createModeSeparatedRouter(network, routingTransportModes));
-//		}
+
 
 		/** [7]
 		 * Route all transitRoutes with the new referenced links. The shortest path

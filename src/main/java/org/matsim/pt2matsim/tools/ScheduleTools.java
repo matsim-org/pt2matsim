@@ -209,7 +209,7 @@ public class ScheduleTools {
 						Link currentLink = network.getLinks().get(currentLinkId);
 						Link nextLink = network.getLinks().get(routeStops.get(i + 1).getStopFacility().getLinkId());
 
-						LeastCostPathCalculator.Path leastCostPath = modeDependentRouter.calcLeastCostPath(currentLink.getToNode(), nextLink.getFromNode());
+						LeastCostPathCalculator.Path leastCostPath = modeDependentRouter.calcLeastCostPath(currentLink.getToNode().getId(), nextLink.getFromNode().getId());
 
 						List<Id<Link>> path = null;
 						if(leastCostPath != null) {
@@ -279,7 +279,7 @@ public class ScheduleTools {
 						Link currentLink = network.getLinks().get(currentLinkId);
 						Link nextLink = network.getLinks().get(routeStops.get(i + 1).getStopFacility().getLinkId());
 
-						LeastCostPathCalculator.Path leastCostPath = routers.calcLeastCostPath(currentLink.getToNode(), nextLink.getFromNode(), transitLine, transitRoute);
+						LeastCostPathCalculator.Path leastCostPath = routers.calcLeastCostPath(currentLink.getToNode().getId(), nextLink.getFromNode().getId(), transitLine, transitRoute);
 
 
 						List<Id<Link>> path = null;
