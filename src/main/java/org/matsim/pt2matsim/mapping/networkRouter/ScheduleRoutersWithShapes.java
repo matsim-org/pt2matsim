@@ -10,6 +10,7 @@ import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
+import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.gtfs.lib.ShapeSchedule;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 
@@ -26,20 +27,34 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 
 	private final PublicTransitMappingConfigGroup config;
 	private final ShapeSchedule shapeSchedule;
+	private final boolean useArtificial;
 	private Map<TransitLine, Map<TransitRoute, Router>> routers = new HashMap<>();
 	private Map<String, Router> routersByShape = new HashMap<>();
 	private Network network;
+
+	public ScheduleRoutersWithShapes(PublicTransitMappingConfigGroup config, ShapeSchedule shapeSchedule, Network network, boolean useArtificial) {
+		this.config = config;
+		this.shapeSchedule = shapeSchedule;
+		this.network = network;
+		this.useArtificial = useArtificial;
+
+		init();
+	}
 
 	public ScheduleRoutersWithShapes(PublicTransitMappingConfigGroup config, ShapeSchedule shapeSchedule, Network network) {
 		this.config = config;
 		this.shapeSchedule = shapeSchedule;
 		this.network = network;
+		this.useArtificial = false;
 
 		init();
 	}
 
+
 	public void init() {
 		RouterShapes.setTravelCostType(config.getTravelCostType());
+		RouterShapes.setNetworkCutBuffer(200);
+		RouterShapes.setMaxWeightDistance(50);
 
 		for(TransitLine transitLine : this.shapeSchedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
@@ -49,6 +64,8 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 				if(tmpRouter == null) {
 					log.info("New router for shape \"" + shapeId + "\"");
 					Set<String> networkTransportModes = config.getModeRoutingAssignment().get(transitRoute.getTransportMode());
+					if(useArtificial) networkTransportModes.add(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE);
+
 					tmpRouter = new RouterShapes(network, networkTransportModes, shapeSchedule.getShape(transitLine.getId(), transitRoute.getId()));
 					routersByShape.put(shapeId, tmpRouter);
 				}

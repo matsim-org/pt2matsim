@@ -57,6 +57,7 @@ public class RouterShapes implements Router {
 	private final Map<Tuple<Id<Node>, Id<Node>>, LeastCostPathCalculator.Path> paths;
 	private static PublicTransitMappingConfigGroup.TravelCostType travelCostType = PublicTransitMappingConfigGroup.TravelCostType.linkLength;
 	private static double maxWeightDistance = 30;
+	private static double cutBuffer = 1000;
 
 
 	public static void setTravelCostType(PublicTransitMappingConfigGroup.TravelCostType type) {
@@ -67,11 +68,15 @@ public class RouterShapes implements Router {
 		maxWeightDistance = distance;
 	}
 
+	public static void setNetworkCutBuffer(double buffer) {
+		cutBuffer = buffer;
+	}
+
 	public RouterShapes(Network paramNetwork, Set<String> networkTransportModes, Shape shape) {
 		this.shape = shape;
 
 		this.network = NetworkTools.createFilteredNetworkByLinkMode(paramNetwork, networkTransportModes);
-		Collection<Node> nodesWithinBuffer = ShapeTools.getNodesWithinBuffer(network, shape, maxWeightDistance*100);
+		Collection<Node> nodesWithinBuffer = ShapeTools.getNodesWithinBuffer(network, shape, cutBuffer);
 		NetworkTools.cutNetwork(network, nodesWithinBuffer);
 
 		this.paths = new HashMap<>();

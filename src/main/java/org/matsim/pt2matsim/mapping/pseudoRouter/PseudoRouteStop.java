@@ -84,6 +84,6 @@ public interface PseudoRouteStop extends Identifiable<PseudoRouteStop>, Comparab
 	/**
 	 * Used for Dijkstra in {@link PseudoGraph}
 	 */
-	void setClosestPrecedingRouteSTop(PseudoRouteStop stop);
+	void setClosestPrecedingRouteStop(PseudoRouteStop stop);
 
 }
