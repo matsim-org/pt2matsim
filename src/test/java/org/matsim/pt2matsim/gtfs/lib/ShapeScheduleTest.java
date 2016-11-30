@@ -42,8 +42,8 @@ public class ShapeScheduleTest {
 
 	@Before
 	public void prepare() {
-		gtfsConverter = new GtfsConverter(ScheduleTools.createSchedule(), VehicleUtils.createVehiclesContainer(), TransformationFactory.getCoordinateTransformation("WGS84", "EPSG:2032"));
-		gtfsConverter.run(input + "addisoncounty-vt-us-gtfs/", "all");
+		gtfsConverter = new GtfsConverter(input + "addisoncounty-vt-us-gtfs/", "EPSG:2032");
+		gtfsConverter.convert("all");
 
 		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), convertedScheduleFile);
 	}

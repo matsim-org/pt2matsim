@@ -49,8 +49,8 @@ public class MappingAnalysisTest {
 		// convert schedule
 		schedule = ScheduleTools.createSchedule();
 		vehicles = VehicleUtils.createVehiclesContainer();
-		gtfsConverter = new GtfsConverter(schedule, vehicles, TransformationFactory.getCoordinateTransformation("WGS84", "EPSG:2032"));
-		gtfsConverter.run(input + "addisoncounty-vt-us-gtfs/", "all");
+		gtfsConverter = new GtfsConverter(input + "addisoncounty-vt-us-gtfs/", "EPSG:2032");
+		gtfsConverter.convert("all", schedule, vehicles);
 		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), input + "mts/schedule_unmapped.xml.gz");
 		gtfsConverter.getShapeSchedule().writeShapeScheduleFile(input + "mts/schedule_gtfs_shapes.csv");
 
