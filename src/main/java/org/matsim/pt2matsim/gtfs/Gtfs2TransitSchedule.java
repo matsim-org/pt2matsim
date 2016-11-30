@@ -40,15 +40,6 @@ public class Gtfs2TransitSchedule {
 
 	protected static Logger log = Logger.getLogger(Gtfs2TransitSchedule.class);
 
-	public static final String ALL_SERVICE_IDS = "all";
-	public static final String DAY_WITH_MOST_TRIPS = "dayWithMostTrips";
-	public static final String DAY_WITH_MOST_SERVICES = "dayWithMostServices";
-
-	protected ShapeSchedule schedule;
-	protected Vehicles vehicles;
-	protected CoordinateTransformation transformation;
-
-
 	/**
 	 * Reads gtfs files in and converts them to an unmapped
 	 * MATSim Transit Schedule (mts). "Unmapped" means stopFacilities are not
@@ -112,11 +103,11 @@ public class Gtfs2TransitSchedule {
 
 		TransitSchedule schedule = ScheduleTools.createSchedule();
 		Vehicles vehicles = VehicleUtils.createVehiclesContainer();
-		CoordinateTransformation transformation = outputCoordinateSystem != null ? TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem) : new IdentityTransformation();
+//		CoordinateTransformation transformation = outputCoordinateSystem != null ? TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem) : new IdentityTransformation();
 
-		GtfsConverter gtfsConverter = new GtfsConverter(schedule, vehicles, transformation);
-		String param = serviceIdsParam == null ? DAY_WITH_MOST_SERVICES : serviceIdsParam;
-		gtfsConverter.run(gtfsFolder, param);
+		String param = serviceIdsParam == null ? GtfsConverter.DAY_WITH_MOST_SERVICES : serviceIdsParam;
+		GtfsConverter gtfsConverter = new GtfsConverter(gtfsFolder, outputCoordinateSystem);
+		gtfsConverter.convert(param, schedule, vehicles);
 
 		boolean authExists = true;
 		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), scheduleFile);
@@ -136,19 +127,6 @@ public class Gtfs2TransitSchedule {
 		if(transitRouteShapeJoinFile != null) {
 			// read file
 		}
-	}
-
-	public Gtfs2TransitSchedule(TransitSchedule schedule, Vehicles vehicles, CoordinateTransformation transformation) {
-		this.schedule = new ShapeSchedule(schedule);
-		this.vehicles = vehicles;
-		this.transformation = transformation;
-	}
-
-	public TransitSchedule getSchedule() {
-		return schedule;
-	}
-	public Vehicles getVehicles() {
-		return vehicles;
 	}
 
 }

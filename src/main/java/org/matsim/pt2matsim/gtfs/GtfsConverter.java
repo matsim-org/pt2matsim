@@ -25,9 +25,12 @@ import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
+import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
+import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.gtfs.lib.ShapeSchedule;
+import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 import org.matsim.pt2matsim.gtfs.lib.*;
 import org.matsim.pt2matsim.tools.ScheduleTools;
@@ -49,9 +52,13 @@ import java.util.Map.Entry;
  *
  * @author polettif
  */
-public class GtfsConverter extends Gtfs2TransitSchedule {
+public class GtfsConverter implements GtfsFeed {
 
 	private static final Logger log = Logger.getLogger(GtfsConverter.class);
+
+	public static final String ALL_SERVICE_IDS = "all";
+	public static final String DAY_WITH_MOST_TRIPS = "dayWithMostTrips";
+	public static final String DAY_WITH_MOST_SERVICES = "dayWithMostServices";
 
 	private boolean defaultAwaitDepartureTime = true;
 
@@ -82,7 +89,7 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 	/**
 	 * The types of dates that will be represented by the new file
 	 */
-	private Set<String> serviceIds = new HashSet<>();
+	private Set<String> serviceIdsToConvert = new HashSet<>();
 
 	/**
 	 * Set of service ids not defined in calendar.txt (only in calendar_dates.txt)
@@ -104,20 +111,30 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 	private Map<Id<TransitLine>, Map<Id<TransitRoute>, Shape>> scheduleShapes = new HashMap<>();
 	private boolean warnStopTimes = true;
 
-	public GtfsConverter(TransitSchedule schedule, Vehicles vehicles, CoordinateTransformation transformation) {
-		super(schedule, vehicles, transformation);
+	private final CoordinateTransformation transformation;
+	private ShapeSchedule schedule = null;
+	private Vehicles vehicles = null;
+
+	public GtfsConverter(String gtfsFolder, String outputCoordinateSystem) {
+		this.transformation = TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem);
+		loadFiles(gtfsFolder);
 	}
 
-	/*
-	TODO change class setup
-	gtfs files should be used in constructor, move conversion to matsim containers to methods
-	 */
-
-	public void run(String inputPath, String serviceIdsParam) {
-		loadFiles(inputPath);
-		getServiceIds(serviceIdsParam);
-		convert();
+	public GtfsConverter(String gtfsFolder) {
+		this.transformation = new IdentityTransformation();
+		loadFiles(gtfsFolder);
 	}
+
+	@Override
+	public void convert(String serviceIdsParam) {
+		convert(serviceIdsParam, ScheduleTools.createSchedule(), VehicleUtils.createVehiclesContainer());
+	}
+
+	@Override
+	public void convert() {
+		convert(ALL_SERVICE_IDS, ScheduleTools.createSchedule(), VehicleUtils.createVehiclesContainer());
+	}
+
 	/**
 	 * Converts the loaded gtfs data to a matsim transit schedule
 	 * <ol>
@@ -129,7 +146,12 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 	 * <li>add transitRoute to the transitLine and thus to the schedule</li>
 	 * </ol>
 	 */
-	private void convert() {
+	@Override
+	public void convert(String serviceIdsParam, TransitSchedule transitSchedule, Vehicles vehicles) {
+		getServiceIds(serviceIdsParam);
+
+		this.schedule = new ShapeSchedule(transitSchedule);
+		this.vehicles = vehicles;
 
 		scheduleFactory = schedule.getFactory();
 
@@ -172,7 +194,7 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 				boolean isService = false;
 
 				// if trip is part of used serviceId
-				for(String serviceId : serviceIds) {
+				for(String serviceId : serviceIdsToConvert) {
 					if(trip.getService().equals(services.get(serviceId))) {
 						isService = true;
 					}
@@ -278,7 +300,7 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 		vehicles = ScheduleTools.createVehicles(schedule);
 
 		log.info("    Created " + counterRoutes + " routes on " + counterLines + " lines.");
-		log.info("    Day " + dateUsed);
+		if(dateUsed != null) log.info("    Day " + dateUsed);
 		log.info("... GTFS converted to an unmapped MATSIM Transit Schedule");
 		log.info("#############################################################");
 	}
@@ -706,14 +728,14 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 			case ALL_SERVICE_IDS:
 				log.warn("    Using all trips is not recommended");
 				log.info("... Using all service IDs");
-				this.serviceIds = services.keySet();
+				this.serviceIdsToConvert = services.keySet();
 				break;
 
 			case DAY_WITH_MOST_SERVICES: {
 				for(Entry<LocalDate, Set<String>> e : Service.dateStats.entrySet()) {
 					try {
-						if(e.getValue().size() > serviceIds.size()) {
-							this.serviceIds = e.getValue();
+						if(e.getValue().size() > serviceIdsToConvert.size()) {
+							this.serviceIdsToConvert = e.getValue();
 							dateUsed = e.getKey();
 						}
 					} catch (Exception e1) {
@@ -721,7 +743,7 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 					}
 				}
 				log.info("... Using service IDs of the day with the most services (" + DAY_WITH_MOST_SERVICES + ").");
-				log.info("    " + serviceIds.size() + " services on " + dateUsed);
+				log.info("    " + serviceIdsToConvert.size() + " services on " + dateUsed);
 				break;
 			}
 
@@ -734,20 +756,20 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 					}
 					if(nTrips > maxTrips) {
 						maxTrips = nTrips;
-						this.serviceIds = e.getValue();
+						this.serviceIdsToConvert = e.getValue();
 						dateUsed = e.getKey();
 					}
 				}
 				log.info("... Using service IDs of the day with the most trips (" + DAY_WITH_MOST_TRIPS + ").");
-				log.info("    " + maxTrips + " trips and " + serviceIds.size() + " services on " + dateUsed);
+				log.info("    " + maxTrips + " trips and " + serviceIdsToConvert.size() + " services on " + dateUsed);
 				break;
 			}
 
 			default:
 				try {
 					dateUsed = LocalDate.of(Integer.parseInt(param.substring(0, 4)), Integer.parseInt(param.substring(4, 6)), Integer.parseInt(param.substring(6, 8)));
-					this.serviceIds = getServiceIdsOnDate(dateUsed);
-					log.info("        Using service IDs on " + param + ": " + this.serviceIds.size() + " services.");
+					this.serviceIdsToConvert = getServiceIdsOnDate(dateUsed);
+					log.info("        Using service IDs on " + param + ": " + this.serviceIdsToConvert.size() + " services.");
 				} catch (NumberFormatException e) {
 					throw new IllegalArgumentException("Service id param not recognized! Allowed: day in format \"yyyymmdd\", " + DAY_WITH_MOST_SERVICES + ", "+ DAY_WITH_MOST_TRIPS + ", " + ALL_SERVICE_IDS);
 				}
@@ -755,11 +777,7 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 		}
 	}
 
-	public void setTransformation(CoordinateTransformation transformation) {
-		super.transformation = transformation;
-	}
-
-	public Set<String> getServiceIdsOnDate(LocalDate checkDate) {
+	private Set<String> getServiceIdsOnDate(LocalDate checkDate) {
 		HashSet<String> idsOnCheckDate = new HashSet<>();
 		for(Service service : services.values()) {
 			if(dateIsOnService(checkDate, service)) {
@@ -818,11 +836,20 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 	}
 
 	public Set<String> getServiceIds() {
-		return serviceIds;
+		return serviceIdsToConvert;
 	}
 
 	public ShapeSchedule getShapeSchedule() {
 		return schedule;
 	}
+
+	public TransitSchedule getSchedule() {
+		return schedule;
+	}
+
+	public Vehicles getVehicles() {
+		return vehicles;
+	}
+
 
 }

@@ -41,12 +41,9 @@ public class PTMapperWithShapesTest {
 	public void run() throws Exception {
 		network = NetworkTools.readNetwork(networkName);
 
-		gtfsConverter = new GtfsConverter(
-				ScheduleTools.createSchedule(),
-				VehicleUtils.createVehiclesContainer(),
-				TransformationFactory.getCoordinateTransformation("WGS84", coordSys));
+		gtfsConverter = new GtfsConverter(gtfsFolder, coordSys);
+		gtfsConverter.convert(serviceParam);
 
-		gtfsConverter.run(gtfsFolder, serviceParam);
 		gtfsConverter.getShapeSchedule().writeShapeScheduleFile(base +"output/ss_file.csv");
 		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), base +"mts/unmapped_schedule.xml.gz");
 
