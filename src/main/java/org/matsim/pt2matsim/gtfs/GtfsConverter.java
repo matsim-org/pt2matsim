@@ -108,6 +108,11 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 		super(schedule, vehicles, transformation);
 	}
 
+	/*
+	TODO change class setup
+	gtfs files should be used in constructor, move conversion to matsim containers to methods
+	 */
+
 	public void run(String inputPath, String serviceIdsParam) {
 		loadFiles(inputPath);
 		getServiceIds(serviceIdsParam);
@@ -782,6 +787,10 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 			return service.getDays()[weekday];
 		}
 		return false;
+	}
+
+	public Map<String, Shape> getShapes() {
+		return shapes;
 	}
 
 

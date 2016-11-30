@@ -23,8 +23,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.core.network.NetworkUtils;
-import org.matsim.core.network.algorithms.NetworkCleaner;
+import org.matsim.core.router.util.FastAStarEuclideanFactory;
 import org.matsim.core.router.util.FastAStarLandmarksFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
@@ -72,13 +71,12 @@ public class RouterShapes implements Router {
 		this.shape = shape;
 
 		this.network = NetworkTools.createFilteredNetworkByLinkMode(paramNetwork, networkTransportModes);
-		Collection<Node> nodesWithinBuffer = ShapeTools.getNodesWithinBuffer(network, shape, maxWeightDistance*70);
+		Collection<Node> nodesWithinBuffer = ShapeTools.getNodesWithinBuffer(network, shape, maxWeightDistance*100);
 		NetworkTools.cutNetwork(network, nodesWithinBuffer);
-//		new NetworkCleaner().run(network);
 
 		this.paths = new HashMap<>();
 
-		LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory(this.network, this);
+		LeastCostPathCalculatorFactory factory = new FastAStarEuclideanFactory(this.network, this);
 		this.pathCalculator = factory.createPathCalculator(this.network, this, this);
 	}
 
@@ -90,8 +88,8 @@ public class RouterShapes implements Router {
 
 		if(shape != null) {
 			double dist = ShapeTools.calcMinDistanceToShape(link, shape);
-			double factor = dist / maxWeightDistance + 0.2;
-			if(factor > 2) factor = 2;
+			double factor = dist / maxWeightDistance + 0.1;
+			if(factor > 1) factor = 2;
 			travelCost *= factor;
 		}
 		return travelCost;
@@ -101,14 +99,15 @@ public class RouterShapes implements Router {
 	 * Synchronized since {@link org.matsim.core.router.Dijkstra} is not thread safe.
 	 */
 	@Override
-	public synchronized LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNode, Id<Node> toNode) {
-		if(fromNode != null && toNode != null) {
+	public synchronized LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNodeId, Id<Node> toNodeId) {
+		Node nodeA = network.getNodes().get(fromNodeId);
+		Node nodeB = network.getNodes().get(toNodeId);
 
-			Tuple<Id<Node>, Id<Node>> nodes = new Tuple<>(fromNode, toNode);
+		if(nodeA != null && nodeB != null) {
+			Tuple<Id<Node>, Id<Node>> nodes = new Tuple<>(fromNodeId, toNodeId);
 			if(!paths.containsKey(nodes)) {
-				Node nodeA = network.getNodes().get(fromNode);
-				Node nodeB = network.getNodes().get(toNode);
 				paths.put(nodes, pathCalculator.calcLeastCostPath(nodeA, nodeB, 0.0, null, null));
+
 			}
 			return paths.get(nodes);
 		} else {

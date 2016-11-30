@@ -529,6 +529,59 @@ public class NetworkTools {
 	}
 
 	/**
+	 * Links that only have one preceding and succeeding link (ignoring opposite links)
+	 * are removed except the link in that sequence that is closest to the coordinate
+	 */
+	public static void reduceSequencedLinks(Collection<? extends Link> links, Coord coord) {
+		Map<Link, Link> succeedingLinks = new HashMap<>();
+		Set<Link> originLinks = new HashSet<>();
+		Map<Link, Link> keepFromOriginLinks = new HashMap<>();
+		// get single link sets
+		for(Link currentLink : links) {
+			Link oppositeLink = getOppositeLink(currentLink);
+			// if current link is in single file i.e. has only one preceding and succeding link (ignoring its opposite link)
+			if((currentLink.getFromNode().getInLinks().values().size() == 2
+				&& currentLink.getToNode().getOutLinks().values().size() == 2
+				&& oppositeLink != null)
+				||
+				(currentLink.getFromNode().getInLinks().values().size() == 1
+ 				&& currentLink.getToNode().getOutLinks().values().size() == 1)) {
+				// put the preceding link in the succedingLinks map
+				for(Link fromInLink : currentLink.getFromNode().getInLinks().values()) {
+					if(fromInLink != oppositeLink) {
+						succeedingLinks.put(fromInLink, currentLink);
+						if(!originLinks.contains(fromInLink)) {
+							originLinks.add(fromInLink);
+							originLinks.remove(currentLink);
+						}
+					}
+				}
+			}
+		}
+
+		// find closest link for each origin set
+		for(Link originLink : originLinks) {
+			double minDist = Double.MAX_VALUE;
+			Link currentLink = originLink;
+			while(succeedingLinks.get(currentLink) != null) {
+				double dist = CoordUtils.distancePointLinesegment(currentLink.getFromNode().getCoord(), currentLink.getToNode().getCoord(), coord);
+				if(dist < minDist) {
+					minDist = dist;
+					keepFromOriginLinks.put(originLink, currentLink);
+				}
+				currentLink = succeedingLinks.get(currentLink);
+			}
+		}
+
+		// remove links (all succedingLinks are up for removal except the ones closest to the stop)
+		for(Link succLink : succeedingLinks.values()) {
+			if(!keepFromOriginLinks.containsValue(succLink)) {
+				links.remove(succLink);
+			}
+		}
+	}
+
+	/**
 	 * Link filters by mode
 	 */
 	private static class LinkFilter implements NetworkLinkFilter {

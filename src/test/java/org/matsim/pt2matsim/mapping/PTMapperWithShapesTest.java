@@ -8,10 +8,18 @@ import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
+import org.matsim.pt2matsim.gtfs.lib.GTFSRoute;
+import org.matsim.pt2matsim.gtfs.lib.Shape;
 import org.matsim.pt2matsim.gtfs.lib.ShapeSchedule;
+import org.matsim.pt2matsim.gtfs.lib.Trip;
 import org.matsim.pt2matsim.plausibility.PlausibilityCheck;
 import org.matsim.pt2matsim.tools.*;
 import org.matsim.vehicles.VehicleUtils;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author polettif
@@ -41,12 +49,32 @@ public class PTMapperWithShapesTest {
 		gtfsConverter.run(gtfsFolder, serviceParam);
 		gtfsConverter.getShapeSchedule().writeShapeScheduleFile(base +"output/ss_file.csv");
 		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), base +"mts/unmapped_schedule.xml.gz");
-//		ShapeTools.writeGtfsTripsToFile(gtfsConverter.getGtfsRoutes(), gtfsConverter.getServiceIds(), coordSys, base + "output/gtfsShapes.shp");
+
+		// debug shapes
+//		ShapeTools.writeShapeFile(Collections.singleton(gtfsConverter.getShapes().get("26")), coordSys, base + "output/gtfsShapeDebug.shp");
+	}
+
+	private static PublicTransitMappingConfigGroup createPTMConfig() {
+		PublicTransitMappingConfigGroup config = new PublicTransitMappingConfigGroup();
+		config.getModesToKeepOnCleanUp().add("car");
+		PublicTransitMappingConfigGroup.LinkCandidateCreatorParams lccParamsBus = new PublicTransitMappingConfigGroup.LinkCandidateCreatorParams("bus");
+		lccParamsBus.setNetworkModesStr("car,bus");
+		lccParamsBus.setMaxNClosestLinks(20);
+		lccParamsBus.setMaxLinkCandidateDistance(100);
+		lccParamsBus.setLinkDistanceTolerance(1.1);
+		config.addParameterSet(lccParamsBus);
+
+		PublicTransitMappingConfigGroup.ModeRoutingAssignment mraBus = new PublicTransitMappingConfigGroup.ModeRoutingAssignment("bus");
+		mraBus.setNetworkModesStr("car,bus");
+		config.addParameterSet(mraBus);
+
+		config.setNumOfThreads(8);
+
+		return config;
 	}
 
 	private void runNormalMapping() {
-		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
-		config.setNumOfThreads(6);
+		PublicTransitMappingConfigGroup config = createPTMConfig();
 
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(base + "mts/unmapped_schedule.xml.gz");
 		PTMapper ptMapper = new PTMapperImpl(config, schedule, network);
@@ -57,11 +85,11 @@ public class PTMapperWithShapesTest {
 	}
 
 	private void runMappingWithShapes() {
-		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
-		config.setNumOfThreads(12);
-
+		PublicTransitMappingConfigGroup config = createPTMConfig();
 		ShapeSchedule shapeSchedule = new ShapeSchedule(base + "mts/unmapped_schedule.xml.gz", base + "output/ss_file.csv");
+
 		PTMapper ptMapper = new PTMapperWithShapes(config, shapeSchedule, network);
+//		ExtractDebugSchedule.run(shapeSchedule, "TTSB/B_1438", "602798A4122B5456");
 		ptMapper.run();
 
 		NetworkTools.writeNetwork(network, base + "output/shapes_network.xml.gz");

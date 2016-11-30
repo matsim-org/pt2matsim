@@ -189,11 +189,12 @@ public class PseudoRoutingImpl implements PseudoRouting {
 				 * Find the least cost path i.e. the PseudoRouteStop sequence
 				 */
 				List<PseudoRouteStop> pseudoPath = pseudoGraph.getLeastCostStopSequence();
-				getNecessaryArtificialLinks(pseudoPath);
+
 
 				if(pseudoPath == null) {
 					log.warn("PseudoGraph has no path from SOURCE to DESTINATION for transit route " + transitRoute.getId() + " from \"" + routeStops.get(0).getStopFacility().getName() + "\" to \"" + routeStops.get(routeStops.size() - 1).getStopFacility().getName() + "\"");
 				} else {
+					getNecessaryArtificialLinks(pseudoPath);
 					threadPseudoSchedule.addPseudoRoute(transitLine, transitRoute, pseudoPath);
 				}
 				increaseCounter();

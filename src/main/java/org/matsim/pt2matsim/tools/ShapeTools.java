@@ -51,7 +51,7 @@ public class ShapeTools {
 		List<Coord> shapePoints = new ArrayList<>(shape.getPoints().values());
 		double minDist = Double.MAX_VALUE;
 		// look for the minimal distance between the current point and all pairs of shape points
-		for(int i=0; i<shapePoints.size()-1; i++) {
+		for(int i = 0; i < shapePoints.size() - 1; i++) {
 			double dist = CoordUtils.distancePointLinesegment(shapePoints.get(i), shapePoints.get(i + 1), point);
 			if(dist < minDist) {
 				minDist = dist;
@@ -164,4 +164,31 @@ public class ShapeTools {
 		ShapeFileWriter.writeGeometries(features, outFile);
 	}
 
+	public static void writeShapeFile(Set<Shape> shapes, String outputCoordinateSystem, String filename) {
+		Collection<SimpleFeature> features = new ArrayList<>();
+
+		PolylineFeatureFactory ff = new PolylineFeatureFactory.Builder()
+				.setName("shape")
+				.setCrs(MGC.getCRS(outputCoordinateSystem))
+				.addAttribute("shape_id", String.class)
+				.create();
+
+		for(Shape shape : shapes) {
+			if(shape != null) {
+
+				Collection<Coord> points = shape.getPoints().values();
+				int i = 0;
+				Coordinate[] coordinates = new Coordinate[points.size()];
+				for(Coord coord : points) {
+					coordinates[i++] = MGC.coord2Coordinate(coord);
+				}
+
+				SimpleFeature f = ff.createPolyline(coordinates);
+				f.setAttribute("shape_id", shape.getId());
+				features.add(f);
+			}
+		}
+		ShapeFileWriter.writeGeometries(features, filename);
+
+	}
 }

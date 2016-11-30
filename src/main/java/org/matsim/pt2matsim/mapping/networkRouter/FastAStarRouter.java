@@ -119,7 +119,7 @@ public class FastAStarRouter implements Router {
 
 	@Override
 	public double getLinkTravelCost(Link link) {
-		return getLinkMinimumTravelDisutility(link);
+		return this.getLinkMinimumTravelDisutility(link);
 	}
 
 

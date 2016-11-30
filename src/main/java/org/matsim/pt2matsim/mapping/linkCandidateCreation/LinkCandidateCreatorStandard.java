@@ -115,6 +115,8 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 								loopLinks.add(new Tuple<>(stopFacility, scheduleTransportMode));
 							}
 
+							NetworkTools.reduceSequencedLinks(closestLinks, stopFacility.getCoord());
+
 							/**
 							 * generate a LinkCandidate for each close link
 							 */
@@ -131,7 +133,6 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 		 * Add manually set link candidates from config
 		 */
 		addManualLinkCandidates(config.getManualLinkCandidates());
-
 	}
 
 	private void addManualLinkCandidates(Set<PublicTransitMappingConfigGroup.ManualLinkCandidates> manualLinkCandidatesSet) {

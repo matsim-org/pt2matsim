@@ -26,6 +26,7 @@ import org.matsim.pt2matsim.gtfs.lib.ShapeSchedule;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Extract one route from a schedule
@@ -66,6 +67,25 @@ public class ExtractDebugSchedule {
 			}
 		}
 		ScheduleTools.writeTransitSchedule(debug, args[3]);
+	}
+
+	public static void run(TransitSchedule schedule, String transitLineId, String transitRouteId) {
+		Set<TransitLine> toRemove = new HashSet<>();
+		for(TransitLine tl : new HashSet<>(schedule.getTransitLines().values())) {
+			if(tl.getId().toString().equals(transitLineId)) {
+				for(TransitRoute tr : new HashSet<>(tl.getRoutes().values())) {
+					if(!tr.getId().toString().equals(transitRouteId)) {
+						tl.removeRoute(tr);
+					}
+				}
+			} else {
+				toRemove.add(tl);
+			}
+		}
+
+		for(TransitLine tl : toRemove) {
+			schedule.removeTransitLine(tl);
+		}
 	}
 
 	/**
