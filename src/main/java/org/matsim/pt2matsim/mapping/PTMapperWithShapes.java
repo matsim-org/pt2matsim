@@ -217,7 +217,7 @@ public class PTMapperWithShapes implements PTMapper {
 		 */
 		log.info("===========================================================================================");
 		log.info("Initiating final routers to map transit routes with referenced facilities to the network...");
-		ScheduleRouters finalRouters = new ScheduleRoutersWithShapes(config, schedule, network);
+		ScheduleRouters finalRouters = new ScheduleRoutersWithShapes(config, schedule, network, true);
 
 		/* TODO get rid of finalRouters
 		 All routes and subroutes have already been calculated once. This data should be used again

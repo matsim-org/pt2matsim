@@ -177,8 +177,8 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 	}
 
 	@Override
-	public SortedSet<LinkCandidate> getLinkCandidates(Id<TransitStopFacility> transitStopFacility, TransitLine transitLine, TransitRoute transitRoute) {
-		return linkCandidates.get(transitRoute.getTransportMode()).get(transitStopFacility);
+	public SortedSet<LinkCandidate> getLinkCandidates(Id<TransitStopFacility> transitStopFacilityId, TransitLine transitLine, TransitRoute transitRoute) {
+		return linkCandidates.get(transitRoute.getTransportMode()).get(transitStopFacilityId);
 	}
 
 }

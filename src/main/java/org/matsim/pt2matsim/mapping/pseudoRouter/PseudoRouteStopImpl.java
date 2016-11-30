@@ -134,7 +134,7 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 		return previous;
 	}
 	@Override
-	public void setClosestPrecedingRouteSTop(PseudoRouteStop stop) {
+	public void setClosestPrecedingRouteStop(PseudoRouteStop stop) {
 		this.previous = stop;
 	}
 	@Override
@@ -151,7 +151,7 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 	@Override
 	public int compareTo(PseudoRouteStop other) {
 		if(this.equals(other)) {
-			return 0;
+			return 1;
 		}
 		int dCompare = Double.compare(travelCostToSource, other.getTravelCostToSource());
 		return (dCompare == 0 ? 1 : dCompare);
