@@ -101,8 +101,9 @@ public class MappingAnalysis {
 		keyTable.put(new Tuple<>(1, 3), "Q25");
 		keyTable.put(new Tuple<>(1, 4), "Q50");
 		keyTable.put(new Tuple<>(1, 5), "Q75");
-		keyTable.put(new Tuple<>(1, 6), "Q95");
-		keyTable.put(new Tuple<>(1, 7), "MAX_DISTANCE");
+		keyTable.put(new Tuple<>(1, 6), "Q85");
+		keyTable.put(new Tuple<>(1, 7), "Q95");
+		keyTable.put(new Tuple<>(1, 8), "MAX_DISTANCE");
 
 		int line=2;
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
@@ -119,8 +120,9 @@ public class MappingAnalysis {
 				keyTable.put(new Tuple<>(line, 3), values.get((int) Math.round(n * 0.25)-1).toString());
 				keyTable.put(new Tuple<>(line, 4), values.get((int) Math.round(n * 0.50)-1).toString());
 				keyTable.put(new Tuple<>(line, 5), values.get((int) Math.round(n * 0.75)-1).toString());
-				keyTable.put(new Tuple<>(line, 6), values.get((int) Math.round(n * 0.95)-1).toString());
-				keyTable.put(new Tuple<>(line, 7), values.get(n-1).toString());
+				keyTable.put(new Tuple<>(line, 6), values.get((int) Math.round(n * 0.85)-1).toString());
+				keyTable.put(new Tuple<>(line, 7), values.get((int) Math.round(n * 0.95)-1).toString());
+				keyTable.put(new Tuple<>(line, 8), values.get(n-1).toString());
 				line++;
 			}
 		}
