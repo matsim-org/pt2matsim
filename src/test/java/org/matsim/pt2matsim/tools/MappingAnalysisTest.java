@@ -25,6 +25,7 @@ import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
+import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.mapping.PTMapperImpl;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
@@ -39,7 +40,7 @@ public class MappingAnalysisTest {
 	private TransitSchedule schedule;
 	private Vehicles vehicles;
 	private Network network;
-	private GtfsConverter gtfsConverter;
+	private GtfsFeed gtfsConverter;
 
 	private String input = "test/analysis/";
 
@@ -52,12 +53,11 @@ public class MappingAnalysisTest {
 		gtfsConverter = new GtfsConverter(input + "addisoncounty-vt-us-gtfs/", "EPSG:2032");
 		gtfsConverter.convert("all", schedule, vehicles);
 
-		TransitSchedule schedule = gtfsConverter.getSchedule();
-
-		ExtractDebugSchedule.run(schedule, "SBSB_1437", "59468A1158B4286");
+//		TransitSchedule schedule = gtfsConverter.getSchedule();
+//		ExtractDebugSchedule.run(schedule, "SBSB_1437", "59468A1158B4286");
 
 		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), input + "mts/schedule_unmapped.xml.gz");
-		gtfsConverter.getShapeSchedule().writeShapeScheduleFile(input + "mts/schedule_gtfs_shapes.csv");
+		((GtfsConverter) gtfsConverter).getShapeSchedule().writeShapeScheduleFile(input + "mts/schedule_gtfs_shapes.csv");
 
 		// read network
 		/*convert from osm
@@ -87,7 +87,7 @@ public class MappingAnalysisTest {
 	public void analysis() {
 		new File(input + "output/").mkdirs();
 
-		MappingAnalysis analysis = new MappingAnalysis(gtfsConverter.getShapeSchedule(), network);
+		MappingAnalysis analysis = new MappingAnalysis(((GtfsConverter) gtfsConverter).getShapeSchedule(), network);
 
 		analysis.run();
 		analysis.writeAllDistancesCsv(input+"output/DistancesAll.csv");

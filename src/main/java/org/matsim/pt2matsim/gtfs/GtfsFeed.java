@@ -22,6 +22,8 @@ import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.vehicles.Vehicles;
 
 /**
+ * An interface to load and convert GTFS feeds
+ *
  * @author polettif
  */
 public interface GtfsFeed {
