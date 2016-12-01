@@ -533,54 +533,99 @@ public class NetworkTools {
 	 * are removed except the link in that sequence that is closest to the coordinate
 	 */
 	public static void reduceSequencedLinks(Collection<? extends Link> links, Coord coord) {
-		Map<Link, Link> succeedingLinks = new HashMap<>();
+		Map<Link, Link> linkSequence = new HashMap<>();
 		Set<Link> originLinks = new HashSet<>();
-		Map<Link, Link> originLinksToKeep = new HashMap<>();
-		// get single link sets
+		Map<Link, Link> linksToKeep = new HashMap<>();
+
+		Set<Link> found = new HashSet<>();
+
 		for(Link currentLink : links) {
-			Link oppositeLink = getOppositeLink(currentLink);
-			// if current link is in single file i.e. has only one preceding and succeding link (ignoring its opposite link)
-			if((currentLink.getFromNode().getInLinks().values().size() == 2
-				&& currentLink.getToNode().getOutLinks().values().size() == 2
-				&& oppositeLink != null)
-				||
-				(currentLink.getFromNode().getInLinks().values().size() == 1
- 				&& currentLink.getToNode().getOutLinks().values().size() == 1)) {
-				// put the preceding link in the succedingLinks map (loop for 2 links, opposite link and the one we need)
-				for(Link fromInLink : currentLink.getFromNode().getInLinks().values()) {
-					if(fromInLink != oppositeLink) {
-						succeedingLinks.put(fromInLink, currentLink);
-						// get the origin links
-						originLinks.add(currentLink);
-						if(!originLinks.contains(fromInLink) && links.contains(fromInLink)) {
-							originLinks.add(fromInLink);
-							originLinks.remove(currentLink);
-						}
+			if(!found.contains(currentLink)) {
+				Link actual = currentLink;
+				Link precedingLink;
+				do {
+					found.add(actual);
+					precedingLink = getSingleFilePrecedingLink(actual);
+					if(precedingLink != null) {
+						linkSequence.put(precedingLink, actual);
+						actual = precedingLink;
 					}
-				}
+				} while(precedingLink != null && links.contains(precedingLink));
+				originLinks.add(actual);
+
+				actual = currentLink;
+				Link succeedingLink;
+				do {
+					found.add(actual);
+					succeedingLink = getSingleFileSucceedingLink(actual);
+					if(succeedingLink != null) {
+						linkSequence.put(actual, succeedingLink);
+						actual = succeedingLink;
+					}
+				} while(succeedingLink != null && links.contains(succeedingLink));
 			}
 		}
 
 		// find closest link for each single link set
-		for(Link originLink : originLinks) {
-			double minDist = Double.MAX_VALUE;
-			Link currentLink = originLink;
-			do {
-				double dist = CoordUtils.distancePointLinesegment(currentLink.getFromNode().getCoord(), currentLink.getToNode().getCoord(), coord);
-				if(dist < minDist) {
-					minDist = dist;
-					originLinksToKeep.put(originLink, currentLink);
-				}
-				currentLink = succeedingLinks.get(currentLink);
-			} while(succeedingLinks.get(currentLink) != null);
-		}
+		if(originLinks.size() != 0) {
+			for(Link originLink : originLinks) {
+				double minDist = Double.MAX_VALUE;
+				Link actual = originLink;
+				do {
+					double dist = CoordUtils.distancePointLinesegment(actual.getFromNode().getCoord(), actual.getToNode().getCoord(), coord);
+					if(dist < minDist) {
+						minDist = dist;
+						linksToKeep.put(originLink, actual);
+					}
+					actual = linkSequence.get(actual);
+				} while(linkSequence.get(actual) != null);
+			}
 
-		// remove links (all succedingLinks are up for removal except the ones closest to the stop)
-		for(Link succLink : succeedingLinks.values()) {
-			if(!originLinksToKeep.containsValue(succLink)) {
-				links.remove(succLink);
+			// remove links (all succedingLinks are up for removal except the ones closest to the stop)
+			for(Link succLink : linkSequence.values()) {
+				if(!linksToKeep.containsValue(succLink)) {
+					links.remove(succLink);
+				}
 			}
 		}
+	}
+
+	/**
+	 * @return The preceding link if its the given link's only preceding link (ignoring opposite links)
+	 */
+	private static Link getSingleFilePrecedingLink(Link link) {
+		Link oppositeLink = getOppositeLink(link);
+		if((link.getFromNode().getInLinks().values().size() == 2
+				&& oppositeLink != null)
+				||
+				(link.getFromNode().getInLinks().values().size() == 1
+						&& oppositeLink == null)) {
+			for(Link fromInLink : link.getFromNode().getInLinks().values()) {
+				if(fromInLink != oppositeLink) {
+					return fromInLink;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * @return The succeeding link if its the given link's only preceding link (ignoring opposite links)
+	 */
+	private static Link getSingleFileSucceedingLink(Link link) {
+		Link oppositeLink = getOppositeLink(link);
+		if((link.getToNode().getOutLinks().values().size() == 2
+				&& oppositeLink != null)
+				||
+				(link.getToNode().getOutLinks().values().size() == 1
+						&& oppositeLink == null)) {
+			for(Link toOutLink : link.getToNode().getOutLinks().values()) {
+				if(toOutLink != oppositeLink) {
+					return toOutLink;
+				}
+			}
+		}
+		return null;
 	}
 
 	/**

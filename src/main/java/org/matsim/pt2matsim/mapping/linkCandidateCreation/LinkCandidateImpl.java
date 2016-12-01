@@ -118,6 +118,13 @@ public class LinkCandidateImpl implements LinkCandidate {
 		return stopFacilityDistance;
 	}
 
+	/*
+	TODO remove link travel cost from fields
+	instead let the ptmapper calulculate the travel costs by using the router and the link (or perhaps link id).
+	This is necessary because link travel costs differ with the routers used and are normally not known during
+	link candidate creation.
+	 */
+
 	@Override
 	public double getLinkTravelCost() {
 		return linkTravelCost;

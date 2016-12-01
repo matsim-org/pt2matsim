@@ -19,6 +19,11 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * Creates a Router for each shape (given by gtfs). Multiple transit routes
+ * might use the same shape.
+ *
+ * @see RouterShapes
+ *
  * @author polettif
  */
 public class ScheduleRoutersWithShapes implements ScheduleRouters {

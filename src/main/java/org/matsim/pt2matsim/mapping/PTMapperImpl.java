@@ -237,7 +237,7 @@ public class PTMapperImpl implements PTMapper {
 		log.info("Pulling child stop facilities...");
 		int nPulled = 1;
 		while(nPulled != 0) {
-			nPulled = PTMapperUtils.pullChildStopFacilitiesTogether(this.schedule, this.network);
+			nPulled = UtilsPTMapper.pullChildStopFacilitiesTogether(this.schedule, this.network);
 		}
 
 		/** [9]
@@ -278,7 +278,7 @@ public class PTMapperImpl implements PTMapper {
 		NetworkTools.resetLinkLength(network, PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE);
 
 		// changing the freespeed of the artificial links (value is used in simulations)
-		PTMapperUtils.setFreeSpeedBasedOnSchedule(network, schedule, config.getScheduleFreespeedModes());
+		UtilsPTMapper.setFreeSpeedBasedOnSchedule(network, schedule, config.getScheduleFreespeedModes());
 
 		// Remove unnecessary parts of schedule
 		ScheduleCleaner.removeNotUsedTransitLinks(schedule, network, config.getModesToKeepOnCleanUp(), true);

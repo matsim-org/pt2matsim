@@ -32,7 +32,7 @@ import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
-import org.matsim.pt2matsim.mapping.PTMapperUtils;
+import org.matsim.pt2matsim.mapping.UtilsPTMapper;
 import org.matsim.pt2matsim.mapping.networkRouter.Router;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
@@ -292,9 +292,9 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			newLinkSequence.add(routeBeforeCut.getStartLinkId());
 			newLinkSequence.addAll(routeBeforeCut.getLinkIds());
 			newLinkSequence.add(routeBeforeCut.getEndLinkId());
-			newLinkSequence.addAll(PTMapperUtils.getLinkIdsFromPath(path1));
+			newLinkSequence.addAll(UtilsPTMapper.getLinkIdsFromPath(path1));
 			newLinkSequence.add(viaLinkId);
-			newLinkSequence.addAll(PTMapperUtils.getLinkIdsFromPath(path2));
+			newLinkSequence.addAll(UtilsPTMapper.getLinkIdsFromPath(path2));
 			newLinkSequence.add(routeAfterCut.getStartLinkId());
 			newLinkSequence.addAll(routeAfterCut.getLinkIds());
 			newLinkSequence.add(routeAfterCut.getEndLinkId());
@@ -494,7 +494,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			Link currentLink = network.getLinks().get(currentLinkId);
 			Link nextLink = network.getLinks().get(routeStops.get(i + 1).getStopFacility().getLinkId());
 
-			List<Id<Link>> path = PTMapperUtils.getLinkIdsFromPath(router.calcLeastCostPath(currentLink.getToNode().getId(), nextLink.getFromNode().getId()));
+			List<Id<Link>> path = UtilsPTMapper.getLinkIdsFromPath(router.calcLeastCostPath(currentLink.getToNode().getId(), nextLink.getFromNode().getId()));
 
 			if(path != null)
 				linkSequence.addAll(path);

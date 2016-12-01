@@ -115,6 +115,10 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 								loopLinks.add(new Tuple<>(stopFacility, scheduleTransportMode));
 							}
 
+							/**
+							 * Links in sequence (single file links) are reduced to the link closest to the stop facility.
+							 * This removes a lot of redundant routing.
+							 */
 							NetworkTools.reduceSequencedLinks(closestLinks, stopFacility.getCoord());
 
 							/**

@@ -37,7 +37,7 @@ import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.vehicles.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
-import org.matsim.pt2matsim.mapping.PTMapperUtils;
+import org.matsim.pt2matsim.mapping.UtilsPTMapper;
 import org.matsim.pt2matsim.mapping.networkRouter.Router;
 
 import java.util.*;
@@ -82,11 +82,10 @@ public class ScheduleTools {
 
 	/**
 	 * Creates vehicles with default vehicle types depending on the schedule
-	 * transport mode.
+	 * transport mode. Adds the vehicles to the given vehicle container.
 	 */
-	public static Vehicles createVehicles(TransitSchedule schedule) {
+	public static void createVehicles(TransitSchedule schedule, Vehicles vehicles) {
 		log.info("Creating vehicles from schedule...");
-		Vehicles vehicles = VehicleUtils.createVehiclesContainer();
 		VehiclesFactory vf = vehicles.getFactory();
 		Map<String, VehicleType> vehicleTypes = new HashMap<>();
 
@@ -114,7 +113,6 @@ public class ScheduleTools {
 				}
 			}
 		}
-		return vehicles;
 	}
 
 	/**
@@ -213,7 +211,7 @@ public class ScheduleTools {
 
 						List<Id<Link>> path = null;
 						if(leastCostPath != null) {
-							path = PTMapperUtils.getLinkIdsFromPath(leastCostPath);
+							path = UtilsPTMapper.getLinkIdsFromPath(leastCostPath);
 						}
 
 						if(path != null)
@@ -284,7 +282,7 @@ public class ScheduleTools {
 
 						List<Id<Link>> path = null;
 						if(leastCostPath != null) {
-							path = PTMapperUtils.getLinkIdsFromPath(leastCostPath);
+							path = UtilsPTMapper.getLinkIdsFromPath(leastCostPath);
 						}
 
 						if(path != null)

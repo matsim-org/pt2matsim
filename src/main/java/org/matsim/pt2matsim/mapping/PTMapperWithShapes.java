@@ -50,6 +50,11 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
 import java.util.*;
 
 /**
+ * Different to the standard implementation, this mapper uses the shapes
+ * provided by a GTFS feed to vastly improve mapping results.
+ *
+ * ---
+ *
  * References an unmapped transit schedule to a network. Combines
  * finding link sequences for TransitRoutes and referencing
  * TransitStopFacilities to link. Calculates the least cost path
@@ -58,7 +63,7 @@ import java.util.*;
  *
  * Additional stop facilities are created if a stop facility has more
  * than one plausible link. Artificial links are added to the network
- * if no path can be found.
+ * if no path can be found.*
  *
  * @author polettif
  */
@@ -241,7 +246,7 @@ public class PTMapperWithShapes implements PTMapper {
 		log.info("Pulling child stop facilities...");
 		int nPulled = 1;
 		while(nPulled != 0) {
-			nPulled = PTMapperUtils.pullChildStopFacilitiesTogether(this.schedule, this.network);
+			nPulled = UtilsPTMapper.pullChildStopFacilitiesTogether(this.schedule, this.network);
 		}
 
 		/** [9]
@@ -282,7 +287,7 @@ public class PTMapperWithShapes implements PTMapper {
 		NetworkTools.resetLinkLength(network, PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE);
 
 		// changing the freespeed of the artificial links (value is used in simulations)
-		PTMapperUtils.setFreeSpeedBasedOnSchedule(network, schedule, config.getScheduleFreespeedModes());
+		UtilsPTMapper.setFreeSpeedBasedOnSchedule(network, schedule, config.getScheduleFreespeedModes());
 
 		// Remove unnecessary parts of schedule
 		ScheduleCleaner.removeNotUsedTransitLinks(schedule, network, config.getModesToKeepOnCleanUp(), true);

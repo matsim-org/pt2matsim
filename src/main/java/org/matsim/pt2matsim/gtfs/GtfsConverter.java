@@ -113,7 +113,7 @@ public class GtfsConverter implements GtfsFeed {
 
 	private final CoordinateTransformation transformation;
 	private ShapeSchedule schedule = null;
-	private Vehicles vehicles = null;
+	private Vehicles vhcls = null;
 
 	public GtfsConverter(String gtfsFolder, String outputCoordinateSystem) {
 		this.transformation = TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem);
@@ -151,7 +151,7 @@ public class GtfsConverter implements GtfsFeed {
 		getServiceIds(serviceIdsParam);
 
 		this.schedule = new ShapeSchedule(transitSchedule);
-		this.vehicles = vehicles;
+		this.vhcls = vehicles;
 
 		scheduleFactory = schedule.getFactory();
 
@@ -297,7 +297,7 @@ public class GtfsConverter implements GtfsFeed {
 		/**
 		 * Create default vehicles.
 		 */
-		vehicles = ScheduleTools.createVehicles(schedule);
+		ScheduleTools.createVehicles(schedule, vhcls);
 
 		log.info("    Created " + counterRoutes + " routes on " + counterLines + " lines.");
 		if(dateUsed != null) log.info("    Day " + dateUsed);
@@ -848,7 +848,7 @@ public class GtfsConverter implements GtfsFeed {
 	}
 
 	public Vehicles getVehicles() {
-		return vehicles;
+		return vhcls;
 	}
 
 

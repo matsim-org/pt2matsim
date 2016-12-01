@@ -41,9 +41,9 @@ import java.util.stream.Collectors;
  *
  * @author polettif
  */
-public class PTMapperUtils {
+public class UtilsPTMapper {
 
-	protected static Logger log = Logger.getLogger(PTMapperUtils.class);
+	protected static Logger log = Logger.getLogger(UtilsPTMapper.class);
 	private static final String suffixChildStopFacilities = PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES;
 	private static final String suffixChildStopFacilitiesRegex = PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES_REGEX;
 

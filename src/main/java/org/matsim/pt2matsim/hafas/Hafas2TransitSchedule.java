@@ -26,6 +26,7 @@ import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
@@ -70,7 +71,7 @@ public abstract class Hafas2TransitSchedule {
 	 */
 	public static void run(String hafasFolder, String outputCoordinateSystem, String outputScheduleFile, String outputVehicleFile) throws IOException {
 		TransitSchedule schedule = ScheduleTools.createSchedule();
-		Vehicles vehicles = ScheduleTools.createVehicles(schedule);
+		Vehicles vehicles = VehicleUtils.createVehiclesContainer();
 		CoordinateTransformation transformation = !outputCoordinateSystem.equals("null") ?
 			TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem) : new IdentityTransformation();
 
