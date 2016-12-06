@@ -19,7 +19,7 @@
  * *********************************************************************** *
  */
 
-package org.matsim.pt2matsim.hafas.v2;
+package org.matsim.pt2matsim.hafas.lib;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;

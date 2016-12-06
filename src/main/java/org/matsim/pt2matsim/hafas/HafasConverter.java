@@ -21,20 +21,19 @@
 
 package org.matsim.pt2matsim.hafas;
 
+import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.*;
-import org.matsim.vehicles.VehicleCapacity;
-import org.matsim.vehicles.VehicleType;
-import org.matsim.vehicles.Vehicles;
-import org.matsim.vehicles.VehiclesFactory;
+import org.matsim.pt2matsim.run.Gtfs2TransitSchedule;
+import org.matsim.vehicles.*;
 import org.matsim.pt2matsim.hafas.lib.BitfeldAnalyzer;
 import org.matsim.pt2matsim.hafas.lib.OperatorReader;
 import org.matsim.pt2matsim.hafas.lib.StopReader;
-import org.matsim.pt2matsim.hafas.v2.FPLANReader;
-import org.matsim.pt2matsim.hafas.v2.FPLANRoute;
+import org.matsim.pt2matsim.hafas.lib.FPLANReader;
+import org.matsim.pt2matsim.hafas.lib.FPLANRoute;
 import org.matsim.pt2matsim.tools.ScheduleCleaner;
 
 import java.io.IOException;
@@ -48,41 +47,49 @@ import java.util.Set;
  *
  * @author polettif
  */
-public class HafasConverter extends Hafas2TransitSchedule {
+public class HafasConverter {
 
-	private TransitScheduleFactory scheduleFactory;
-	private VehiclesFactory vehicleFactory;
+	protected static Logger log = Logger.getLogger(Gtfs2TransitSchedule.class);
+	private final TransitScheduleFactory scheduleFactory;
+	private final VehiclesFactory vehicleFactory;
 
-	public HafasConverter(TransitSchedule schedule, Vehicles vehicles, CoordinateTransformation transformation) {
-		super(schedule, vehicles, transformation);
+	private TransitSchedule schedule;
+	private Vehicles vehicles;
+	private CoordinateTransformation transformation;
+	private final String hafasFolder;
+
+	public HafasConverter(String hafasFolder, CoordinateTransformation transformation, TransitSchedule schedule, Vehicles vehicles) {
+		this.schedule = schedule;
+		this.vehicles = vehicles;
+		this.transformation = transformation;
+		if(!hafasFolder.endsWith("/")) hafasFolder += "/";
+		this.hafasFolder = hafasFolder;
+
 		this.scheduleFactory = schedule.getFactory();
 		this.vehicleFactory = vehicles.getFactory();
 	}
 
-	@Override
-	public void createSchedule(String pathToInputFiles) throws IOException {
+	public void run() throws IOException {
 		log.info("Creating the schedule based on HAFAS...");
-
-		if(!pathToInputFiles.endsWith("/")) pathToInputFiles += "/";
 
 		// 1. Read and create stop facilities
 		log.info("  Read transit stops...");
-		StopReader.run(schedule, transformation, pathToInputFiles + "BFKOORD_GEO");
+		StopReader.run(schedule, transformation, hafasFolder + "BFKOORD_GEO");
 		log.info("  Read transit stops... done.");
 
 		// 2. Read all operators from BETRIEB_DE
 		log.info("  Read operators...");
-		Map<String, String> operators = OperatorReader.readOperators(pathToInputFiles + "BETRIEB_DE");
+		Map<String, String> operators = OperatorReader.readOperators(hafasFolder + "BETRIEB_DE");
 		log.info("  Read operators... done.");
 
 		// 3. Read all ids for work-day-routes from HAFAS-BITFELD
 		log.info("  Read bitfeld numbers...");
-		Set<Integer> bitfeldNummern = BitfeldAnalyzer.findBitfeldnumbersOfBusiestDay(pathToInputFiles + "FPLAN", pathToInputFiles + "BITFELD");
+		Set<Integer> bitfeldNummern = BitfeldAnalyzer.findBitfeldnumbersOfBusiestDay(hafasFolder + "FPLAN", hafasFolder + "BITFELD");
 		log.info("  Read bitfeld numbers... done.");
 
 		// 4. Create all lines from HAFAS-Schedule
 		log.info("  Read transit lines...");
-		List<FPLANRoute> routes = FPLANReader.parseFPLAN(bitfeldNummern, operators, pathToInputFiles + "FPLAN");
+		List<FPLANRoute> routes = FPLANReader.parseFPLAN(bitfeldNummern, operators, hafasFolder + "FPLAN");
 		log.info("  Read transit lines... done.");
 
 		log.info("  Creating Transit Routes...");

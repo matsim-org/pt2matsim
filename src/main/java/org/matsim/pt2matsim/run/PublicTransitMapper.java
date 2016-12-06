@@ -19,7 +19,9 @@
  * *********************************************************************** *
  */
 
-package org.matsim.pt2matsim.mapping;
+package org.matsim.pt2matsim.run;
+
+import org.matsim.pt2matsim.mapping.PTMapperImpl;
 
 /**
  * Allows to run an implementation
@@ -30,13 +32,13 @@ package org.matsim.pt2matsim.mapping;
  *
  * @author polettif
  */
-public class RunPublicTransitMapper {
+public class PublicTransitMapper {
 
 	/**
 	 * Routes the unmapped MATSim Transit Schedule to the network using the file
 	 * paths specified in the config. Writes the resulting schedule and network to xml files.<p/>
 	 *
-	 * @see org.matsim.pt2matsim.config.CreateDefaultConfig
+	 * @see CreateDefaultPTMapperConfig
 	 *
 	 * @param args <br/>[0] PublicTransitMapping config file<br/>
 	 */
@@ -52,7 +54,7 @@ public class RunPublicTransitMapper {
 	 * Routes the unmapped MATSim Transit Schedule to the network using the file
 	 * paths specified in the config. Writes the resulting schedule and network to xml files.<p/>
 	 *
-	 * @see org.matsim.pt2matsim.config.CreateDefaultConfig
+	 * @see CreateDefaultPTMapperConfig
 	 *
 	 * @param configFile the PublicTransitMapping config file
 	 */
