@@ -28,7 +28,7 @@ import org.matsim.core.config.ReflectiveConfigGroup;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
-import org.matsim.pt2matsim.mapping.RunPublicTransitMapper;
+import org.matsim.pt2matsim.run.PublicTransitMapper;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -39,7 +39,7 @@ import java.util.Set;
 
 
 /**
- * Config Group usedd by {@link RunPublicTransitMapper}. Defines parameters for
+ * Config Group usedd by {@link PublicTransitMapper}. Defines parameters for
  * mapping public transit to a network.
  *
  * @author polettif
@@ -54,6 +54,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private static final String TRAVEL_COST_TYPE = "travelCostType";
 	private static final String PREFIX_ARTIFICIAL = "prefixArtificial";
 	private static final String MAX_TRAVEL_COST_FACTOR = "maxTravelCostFactor";
+//	private static final String U_TURN_COST = "uTurnCost";
 	private static final String NETWORK_FILE = "networkFile";
 	private static final String SCHEDULE_FILE = "scheduleFile";
 	private static final String OUTPUT_NETWORK_FILE = "outputNetworkFile";
@@ -65,7 +66,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private static final String NUM_OF_THREADS = "numOfThreads";
 	private static final String MANUAL_LINK_CANDIDATE_CSV_FILE = "manualLinkCandidateCsvFile";
 	private static final String REMOVE_NOT_USED_STOP_FACILITIES = "removeNotUsedStopFacilities";
-//	private static final String U_TURN_COST = "uTurnCost";
 
 	// default values
 	private Map<String, Set<String>> modeRoutingAssignment = null;
@@ -78,6 +78,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private String prefixArtificial = "pt_";
 	private int numOfThreads = 2;
 	private double nodeSearchRadius = 500;
+	private double uTurnCost = 0;
+	private boolean removeNotUsedStopFacilities = true;
 	private boolean combinePtModes = false;
 	private boolean addPtMode = true;
 	private String networkFile = null;
@@ -85,11 +87,9 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private String outputNetworkFile = null;
 	private String outputStreetNetworkFile = null;
 	private String outputScheduleFile = null;
-//	private double uTurnCost = 0;
 
-	private boolean removeNotUsedStopFacilities = true;
 	public enum TravelCostType {
-		travelTime, linkLength;
+		travelTime, linkLength
 	}
 	private TravelCostType travelCostType = TravelCostType.linkLength;
 
@@ -433,9 +433,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		this.maxTravelCostFactor = maxTravelCostFactor;
 	}
 
-	/**
-	 *
-	 */
 	/*
 	@StringGetter(U_TURN_COST)
 	public double getUTurnCost() {
@@ -449,7 +446,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		}
 		this.uTurnCost = uTurnCost;
 	}
-*/
+	*/
 
 	/**
 	 *

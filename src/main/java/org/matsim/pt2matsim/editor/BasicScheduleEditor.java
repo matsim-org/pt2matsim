@@ -150,7 +150,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			}
 		}
 		/**
-		 * Changes the referenced link of a stopfacility. Effectively creates a new child stop facility.
+		 * Change the referenced link of a stopfacility. Effectively creates a new child stop facility.
 		 * ["changeRefLink"] [StopFacilityId] [newlinkId]
 		 * ["changeRefLink"] [TransitLineId] [TransitRouteId] [ParentId] [newlinkId]
 		 * ["changeRefLink"] ["allTransitRoutesOnLink"] [linkId] [ParentId] [newlinkId]

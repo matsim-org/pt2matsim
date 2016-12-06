@@ -16,21 +16,22 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.config;
+package org.matsim.pt2matsim.run;
 
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.ConfigWriter;
+import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Creates a default publicTransitMapping config file.
+ * Creates a default osmConverter config file.
  *
  * @author polettif
  */
-public class CreateDefaultConfig {
+public class CreateDefaultOsmConfig {
 
 	/**
 	 * Creates a default publicTransitMapping config file.
@@ -39,9 +40,9 @@ public class CreateDefaultConfig {
 	public static void main(final String[] args) {
 		Config config = ConfigUtils.createConfig();
 
-		config.addModule(PublicTransitMappingConfigGroup.createDefaultConfig());
+		config.addModule(OsmConverterConfigGroup.createDefaultConfig());
 
-		Set<String> toRemove = config.getModules().keySet().stream().filter(module -> !module.equals(PublicTransitMappingConfigGroup.GROUP_NAME)).collect(Collectors.toSet());
+		Set<String> toRemove = config.getModules().keySet().stream().filter(module -> !module.equals(OsmConverterConfigGroup.GROUP_NAME)).collect(Collectors.toSet());
 		toRemove.forEach(config::removeModule);
 
 		new ConfigWriter(config).write(args[0]);

@@ -27,16 +27,20 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigGroup;
+import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.LinkImpl;
 import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.network.NetworkWriter;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
+import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.io.UncheckedIOException;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.osm.lib.*;
+import org.matsim.pt2matsim.run.Osm2MultimodalNetwork;
 import org.matsim.pt2matsim.tools.NetworkTools;
 
 import java.io.File;
@@ -49,9 +53,13 @@ import java.util.*;
  *
  * @author polettif
  */
-public class OsmMultimodalNetworkConverter extends Osm2MultimodalNetwork {
+public class OsmMultimodalNetworkConverter {
 
 	private final static Logger log = Logger.getLogger(OsmMultimodalNetworkConverter.class);
+
+	protected final OsmConverterConfigGroup config;
+	protected Network network;
+	protected final CoordinateTransformation transformation;
 
 	/**
 	 *  Maps for nodes, ways and relations
@@ -76,22 +84,30 @@ public class OsmMultimodalNetworkConverter extends Osm2MultimodalNetwork {
 	private final Set<String> unknownLanesTags = new HashSet<>();
 	private long id = 0;
 
+
 	/**
 	 * Constructor reading config from file.
 	 */
 	public OsmMultimodalNetworkConverter(final String osmConverterConfigFile) {
-		super(osmConverterConfigFile);
+		Config configAll = ConfigUtils.loadConfig(osmConverterConfigFile, new OsmConverterConfigGroup() ) ;
+		this.config = ConfigUtils.addOrGetModule(configAll, OsmConverterConfigGroup.GROUP_NAME, OsmConverterConfigGroup.class);
+		this.network = NetworkTools.createNetwork();
+		this.transformation = config.getCoordinateTransformation();
 	}
 
-	public OsmMultimodalNetworkConverter(OsmConverterConfigGroup configGroup) {
-		super(configGroup);
+	/**
+	 * Constructor using the a OsmCOnverterConfigGroup config.
+	 */
+	public OsmMultimodalNetworkConverter(final OsmConverterConfigGroup config) {
+		this.config = config;
+		this.network = NetworkTools.createNetwork();
+		this.transformation = config.getCoordinateTransformation();
 	}
 
 	/**
 	 * Converts the osm file specified in the config and writes
 	 * the network to a file (also defined in config).
 	 */
-	@Override
 	public void run() {
 		convert();
 		writeNetwork();
@@ -100,7 +116,6 @@ public class OsmMultimodalNetworkConverter extends Osm2MultimodalNetwork {
 	/**
 	 * Only converts the osm file, does not write the network to a file.
 	 */
-	@Override
 	public void convert() {
 		readWayParams();
 		parse();
@@ -530,6 +545,14 @@ public class OsmMultimodalNetworkConverter extends Osm2MultimodalNetwork {
 
 	private void writeNetwork() {
 		NetworkTools.writeNetwork(this.network, this.config.getOutputNetworkFile());
+	}
+
+
+	/**
+	 * @return the network
+	 */
+	public Network getNetwork() {
+		return this.network;
 	}
 
 }

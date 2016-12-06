@@ -31,7 +31,7 @@ import java.io.IOException;
 
 /**
  * Executes the BasicScheduleEditor with the given schedule, network and
- * command file.
+ * command file. Experimental
  *
  * @author polettif
  */
@@ -41,6 +41,27 @@ public class RunScheduleEditor {
 
 	/**
 	 * Loads the schedule and network, then executes all commands in the commands csv file.
+	 *
+	 * Possible Commands:
+	 * - Reroute TransitRoute via new Link
+	 * 		["rerouteViaLink"] [TransitLineId] [TransitRouteId] [oldLinkId] [newLinkId]
+	 *
+	 * - Reroute TransitRoute from a given stop facility
+	 * 		["rerouteFromStop"] [TransitLineId] [TransitRouteId] [fromStopId] [newLinkId]
+	 *
+	 * - Changes the referenced link of a stopfacility. Effectively creates a new child stop facility.
+	 * 		["changeRefLink"] [StopFacilityId] [newlinkId]
+	 * 		["changeRefLink"] [TransitLineId] [TransitRouteId] [ParentId] [newlinkId]
+	 * 		["changeRefLink"] ["allTransitRoutesOnLink"] [linkId] [ParentId] [newlinkId]
+	 *
+	 * - Add a link to the network. Uses the attributes (freespeed, nr of lanes, transportModes)
+	 *   of the attributeLink.
+	 * 		[addLink] [linkId] [fromNodeId] [toNodeId] [attributeLinkId]
+	 *
+	 * - Refreshes the given transit route (reroute all paths between referenced stop facility links)
+	 * 		[refreshTransitRoute] [transitLineId] [transitRouteId]
+	 *
+	 * // Comment
 	 *
 	 * @param args [0] schedule file
 	 *             [1] network file

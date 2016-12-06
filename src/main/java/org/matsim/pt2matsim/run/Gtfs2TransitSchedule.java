@@ -16,16 +16,13 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.gtfs;
+package org.matsim.pt2matsim.run;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.geotools.MGC;
-import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
-import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
-import org.matsim.pt2matsim.gtfs.lib.ShapeSchedule;
+import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 import org.matsim.pt2matsim.tools.ShapeTools;

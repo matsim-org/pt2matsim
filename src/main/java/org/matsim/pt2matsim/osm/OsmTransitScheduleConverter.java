@@ -23,10 +23,8 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
-import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.osm.lib.*;
-import org.matsim.pt2matsim.tools.ScheduleTools;
 
 import java.util.*;
 
@@ -37,13 +35,14 @@ import java.util.*;
  *
  * @author polettif
  */
-public class Osm2TransitSchedule {
+public class OsmTransitScheduleConverter {
 
-	private static final Logger log = Logger.getLogger(Osm2TransitSchedule.class);
+	private static final Logger log = Logger.getLogger(OsmTransitScheduleConverter.class);
 
 	private final CoordinateTransformation transformation;
 	private final TransitSchedule transitSchedule;
 	private final TransitScheduleFactory factory;
+	private final String osmInput;
 	private OsmParserHandler handler;
 
 	// parser
@@ -59,9 +58,10 @@ public class Osm2TransitSchedule {
 
 	private int routeNr = 0;
 
-	public Osm2TransitSchedule(TransitSchedule schedule, CoordinateTransformation transformation) {
+	public OsmTransitScheduleConverter(TransitSchedule schedule, CoordinateTransformation transformation, String osmInput) {
 		this.transitSchedule = schedule;
 		this.transformation = transformation;
+		this.osmInput = osmInput;
 
 		this.factory = transitSchedule.getFactory();
 
@@ -92,30 +92,14 @@ public class Osm2TransitSchedule {
 	}
 
 	/**
-	 * Converts the available public transit data of an osm file to a MATSim transit schedule
-	 * @param args [0] osm file
-	 *             [1] output schedule file
-	 *             [2] output coordinate system (optional)
+	 * Parses the osm file and converts it to a schedule
 	 */
-	public static void main(final String[] args) {
-		CoordinateTransformation ct = args.length == 3 ? TransformationFactory.getCoordinateTransformation("WGS84", args[2]) : null;
-		Osm2TransitSchedule osm2mts = new Osm2TransitSchedule(ScheduleTools.createSchedule(), ct);
-		osm2mts.parse(args[0]);
-		osm2mts.createSchedule();
-		osm2mts.writeFile(args[1]);
+	public void run() {
+		parse();
+		convert();
 	}
 
-	public void convertOsmFile(String filenameOSMinput) {
-		parse(filenameOSMinput);
-		createSchedule();
-	}
-
-	private void writeFile(String filenameMTSoutput) {
-		new TransitScheduleWriter(transitSchedule).writeFile(filenameMTSoutput);
-	}
-
-	private void parse(String filenameOSMinput) {
-
+	private void parse() {
 		TagFilter nodeFilter = new TagFilter();
 		nodeFilter.add(OsmTag.PUBLIC_TRANSPORT, OsmValue.STOP_POSITION);
 
@@ -141,14 +125,14 @@ public class Osm2TransitSchedule {
 		handler.addFilter(nodeFilter, wayFilter, relationFilter);
 		OsmParser parser = new OsmParser();
 		parser.addHandler(handler);
-		parser.readFile(filenameOSMinput);
+		parser.readFile(osmInput);
 	}
 
 	/**
 	 * Converts relations, nodes and ways from osm to an
 	 * unmapped MATSim Transit Schedule
 	 */
-	private void createSchedule() {
+	private void convert() {
 		Map<Id<TransitLine>, TransitLine> transitLinesDump = new HashMap<>();
 
 		this.nodes = handler.getNodes();
