@@ -23,7 +23,6 @@ import com.opencsv.CSVReader;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.population.Route;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
@@ -88,7 +87,6 @@ public class GtfsConverter implements GtfsFeed {
 	 * map for counting how many trips use each serviceId
 	 */
 	private Map<String, Integer> serviceIdsCount = new HashMap<>();
-	private TransitScheduleFactory scheduleFactory;
 
 	/**
 	 * The types of dates that will be represented by the new file
@@ -101,8 +99,6 @@ public class GtfsConverter implements GtfsFeed {
 	private Map<String, GTFSRoute> gtfsRoutes = new TreeMap<>();
 	private Map<String, Service> services = new HashMap<>();
 	private Map<Id<RouteShape>, RouteShape> shapes = new HashMap<>();
-	private Map<Id<TransitLine>, Map<Id<TransitRoute>, Id<RouteShape>>> routeShapeRef = new HashMap<>();
-//	private Map<Id<TransitLine>, Map<Id<TransitRoute>, RouteShape>> scheduleShapes = new HashMap<>();
 	private boolean warnStopTimes = true;
 
 	private final CoordinateTransformation transformation;
@@ -147,7 +143,7 @@ public class GtfsConverter implements GtfsFeed {
 		this.schedule = new ShapedSchedule(transitSchedule);
 		this.vhcls = vehicles;
 
-		scheduleFactory = schedule.getFactory();
+		TransitScheduleFactory scheduleFactory = schedule.getFactory();
 
 		log.info("Converting to MATSim transit schedule");
 
@@ -282,11 +278,6 @@ public class GtfsConverter implements GtfsFeed {
 				}
 			} // foreach trip
 		} // foreach route
-
-		/**
-		 * Removes stops that are not accessed by any route
-		 */
-//		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
 
 		/**
 		 * Create default vehicles.
@@ -800,11 +791,6 @@ public class GtfsConverter implements GtfsFeed {
 
 	public Vehicles getVehicles() {
 		return vhcls;
-	}
-
-	@Override
-	public void writeRouteShapeReferenceFile(String filename) {
-
 	}
 
 

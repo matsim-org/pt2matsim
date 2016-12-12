@@ -129,12 +129,10 @@ public class PTMapperImpl implements PTMapper {
 		/**
 		 * Some schedule statistics
 		 */
-		Set<String> scheduleTransportModes = new HashSet<>();
 		int nStopFacilities = schedule.getFacilities().size();
 		int nTransitRoutes = 0;
 		for(TransitLine transitLine : this.schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
-				scheduleTransportModes.add(transitRoute.getTransportMode());
 				nTransitRoutes++;
 			}
 		}

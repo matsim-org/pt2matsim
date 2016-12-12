@@ -53,7 +53,6 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 	private final PublicTransitMappingConfigGroup config;
 
 	private final Map<String, Map<Id<TransitStopFacility>, SortedSet<LinkCandidate>>> linkCandidates = new HashMap<>();
-	private final Set<Tuple<TransitStopFacility, String>> loopLinks = new HashSet<>();
 
 	public LinkCandidateCreatorStandard(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config, ScheduleRouters scheduleRouters) {
 		this.schedule = schedule;
@@ -112,7 +111,6 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 							if(closestLinks.size() == 0) {
 								Link loopLink = NetworkTools.createArtificialStopFacilityLink(stopFacility, network, config.getPrefixArtificial(), 20, loopLinkModes);
 								closestLinks.add(loopLink);
-								loopLinks.add(new Tuple<>(stopFacility, scheduleTransportMode));
 							}
 
 							/**
@@ -154,6 +152,7 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 			if(parentStopFacility != null) {
 				for(String scheduleMode : scheduleModes) {
+					// todo change link travel cost handling for link candidates
 					Router modeRouter = scheduleRouters.getRouter(scheduleMode);
 
 					PublicTransitMappingConfigGroup.LinkCandidateCreatorParams lccParams = config.getLinkCandidateCreatorParams().get(scheduleMode);

@@ -32,7 +32,6 @@ import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
-import org.matsim.pt2matsim.mapping.networkRouter.Router;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.pseudoRouter.*;
 

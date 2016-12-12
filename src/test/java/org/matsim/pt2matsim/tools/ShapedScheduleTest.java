@@ -18,11 +18,8 @@
 
 package org.matsim.pt2matsim.tools;
 
-import com.vividsolutions.jts.util.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.matsim.pt.transitSchedule.api.TransitLine;
-import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
 
 /**

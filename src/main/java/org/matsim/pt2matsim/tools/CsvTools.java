@@ -20,13 +20,8 @@
 package org.matsim.pt2matsim.tools;
 
 import com.opencsv.CSVReader;
-import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.collections.Tuple;
-import org.matsim.pt.transitSchedule.api.TransitLine;
-import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt2matsim.gtfs.GtfsConverter;
-import org.matsim.pt2matsim.gtfs.lib.GTFSRoute;
 
 import java.io.*;
 import java.util.*;
@@ -73,9 +68,6 @@ public class CsvTools {
 
 	/**
 	 * Writes a list of csvLines to a file
-	 *
-	 * @throws FileNotFoundException
-	 * @throws UnsupportedEncodingException
 	 */
 	public static void writeToFile(List<String> csvLines, String filename) throws FileNotFoundException, UnsupportedEncodingException {
 		PrintWriter writer = new PrintWriter(filename, "UTF-8");
@@ -111,6 +103,10 @@ public class CsvTools {
 		return indices;
 	}
 
+	/**
+	 * Writes a map within a map to a file, each value V is on a line with its corresponding
+	 * E and K values.
+	 */
 	public static <K, E, V> void writeNestedMapToFile(Map<K, Map<E, V>> map, String filename, char separator) throws IOException {
 		List<String> csvLines = new LinkedList<>();
 		for(Map.Entry<K, Map<E, V>> entry : map.entrySet()) {
@@ -125,12 +121,16 @@ public class CsvTools {
 		writeToFile(csvLines, filename);
 	}
 
+	/**
+	 * Writes a map within a map to a file, each value V is on a line with its corresponding
+	 * E and K values.
+	 */
 	public static <K, E, V> void writeNestedMapToFile(Map<K, Map<E, V>> map, String filename) throws IOException {
 		writeNestedMapToFile(map, filename, STANDARD_SEPARATOR);
 	}
 
 
-	public static Map<String, Map<String, String>> readMapFromFile(String fileName) throws IOException {
+	public static Map<String, Map<String, String>> readNestedMapFromFile(String fileName) throws IOException {
 		Map<String, Map<String, String>> map = new HashMap<>();
 
 		CSVReader reader = new CSVReader(new FileReader(fileName));

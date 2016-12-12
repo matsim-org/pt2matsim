@@ -40,7 +40,6 @@ import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.io.UncheckedIOException;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.osm.lib.*;
-import org.matsim.pt2matsim.run.Osm2MultimodalNetwork;
 import org.matsim.pt2matsim.tools.NetworkTools;
 
 import java.io.File;

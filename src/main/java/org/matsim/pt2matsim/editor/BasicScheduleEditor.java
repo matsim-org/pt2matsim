@@ -68,7 +68,6 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	// commands
 	public static final String RR_VIA_LINK = "rerouteViaLink";
 	public static final String RR_FROM_STOP = "rerouteFromStop";
-	public static final String REPLACE_STOP_FACILITY = "replaceStopFacility";
 	public static final String REFRESH_TRANSIT_ROUTE = "refreshTransitRoute";
 	public static final String ALL_TRANSIT_ROUTES_ON_LINK = "allTransitRoutesOnLink";
 	public static final String CHANGE_REF_LINK = "changeRefLink";
@@ -107,8 +106,6 @@ public class BasicScheduleEditor implements ScheduleEditor {
 
 	/**
 	 * Parses a command file (csv) and runs the commands specified
-	 *
-	 * @throws IOException
 	 */
 	public void parseCommandCsv(String filePath) throws IOException {
 		CSVReader reader = new CSVReader(new FileReader(filePath), ';');
