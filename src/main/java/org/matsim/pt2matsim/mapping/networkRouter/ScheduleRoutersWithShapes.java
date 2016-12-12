@@ -11,9 +11,9 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
-import org.matsim.pt2matsim.tools.ShapedSchedule;
 import org.matsim.pt2matsim.tools.RouteShape;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
+import org.matsim.pt2matsim.tools.ShapedTransitSchedule;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,13 +32,13 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 	protected static Logger log = Logger.getLogger(ScheduleRoutersWithShapes.class);
 
 	private final PublicTransitMappingConfigGroup config;
-	private final ShapedSchedule shapedSchedule;
+	private final ShapedTransitSchedule shapedSchedule;
 	private final boolean useArtificial;
 	private Map<TransitLine, Map<TransitRoute, Router>> routers = new HashMap<>();
 	private Map<Id<RouteShape>, Router> routersByShape = new HashMap<>();
 	private Network network;
 
-	public ScheduleRoutersWithShapes(PublicTransitMappingConfigGroup config, ShapedSchedule shapedSchedule, Network network, boolean useArtificial) {
+	public ScheduleRoutersWithShapes(PublicTransitMappingConfigGroup config, ShapedTransitSchedule shapedSchedule, Network network, boolean useArtificial) {
 		this.config = config;
 		this.shapedSchedule = shapedSchedule;
 		this.network = network;
@@ -47,7 +47,7 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 		init();
 	}
 
-	public ScheduleRoutersWithShapes(PublicTransitMappingConfigGroup config, ShapedSchedule shapedSchedule, Network network) {
+	public ScheduleRoutersWithShapes(PublicTransitMappingConfigGroup config, ShapedTransitSchedule shapedSchedule, Network network) {
 		this.config = config;
 		this.shapedSchedule = shapedSchedule;
 		this.network = network;

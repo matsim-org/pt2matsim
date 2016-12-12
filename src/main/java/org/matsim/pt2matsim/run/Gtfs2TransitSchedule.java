@@ -25,7 +25,6 @@ import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
-import org.matsim.pt2matsim.tools.ShapeTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
 /**
@@ -55,20 +54,18 @@ public class Gtfs2TransitSchedule {
 	 *              [2] the output coordinate system. Use WGS84 for no transformation.<br/>
 	 *              [3] output transit schedule file
 	 *              [4] output default vehicles file (optional)
-	 *              [5] output shape reference file. CSV file that references transit routes and shapes (optional)
-	 *              // todo output transitrouteshaperef file (currently *.shp)
+	 *              [5] output shape reference file, CSV file that references transit routes and shapes. Can
+	 *              	be used by certain PTMapper implementations and MappingAnalysis (optional)
 	 *
 	 * Calls {@link #run}.
 	 */
 	public static void main(final String[] args) {
-		if(args.length == 7) {
-			run(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
-		} else if(args.length == 6) {
-			run(args[0], args[1], args[2], args[3], args[4], args[5], null);
+		if(args.length == 6) {
+			run(args[0], args[1], args[2], args[3], args[4], args[5]);
 		} else if(args.length == 5) {
-			run(args[0], args[1], args[2], args[3], args[4], null, null);
+			run(args[0], args[1], args[2], args[3], args[4], null);
 		} else if(args.length == 4) {
-			run(args[0], args[1], args[2], args[3], null, null, null);
+			run(args[0], args[1], args[2], args[3], null, null);
 		} else {
 			throw new IllegalArgumentException("Wrong number of input arguments.");
 		}
@@ -91,16 +88,15 @@ public class Gtfs2TransitSchedule {
 	 * @param outputCoordinateSystem 	the output coordinate system. Use WGS84 for no transformation.
 	 * @param scheduleFile              output transit schedule file
 	 * @param vehicleFile               output default vehicles file (optional)
-	 * @param shapeFile                 output converted shape files. Is created based on shapes.txt and
-	 *                                  shows all trips contained in the schedule. (optional, output coordinate
+	 * @param transitRouteShapeRefFile  output route shape reference file. shape files. CSV file
+	 *                                  that references transit routes and shapes (optional, output coordinate
 	 *                                  system needs to be in EPSG:* format or a name usable by geotools)
 	 */
-	public static void run(String gtfsFolder, String serviceIdsParam, String outputCoordinateSystem, String scheduleFile, String vehicleFile, String shapeFile, String transitRouteShapeJoinFile) {
+	public static void run(String gtfsFolder, String serviceIdsParam, String outputCoordinateSystem, String scheduleFile, String vehicleFile, String transitRouteShapeRefFile) {
 		Logger.getLogger(MGC.class).setLevel(Level.ERROR);
 
 		TransitSchedule schedule = ScheduleTools.createSchedule();
 		Vehicles vehicles = VehicleUtils.createVehiclesContainer();
-//		CoordinateTransformation transformation = outputCoordinateSystem != null ? TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem) : new IdentityTransformation();
 
 		String param = serviceIdsParam == null ? GtfsConverter.DAY_WITH_MOST_SERVICES : serviceIdsParam;
 		GtfsConverter gtfsConverter = new GtfsConverter(gtfsFolder, outputCoordinateSystem);
@@ -111,7 +107,7 @@ public class Gtfs2TransitSchedule {
 		if(vehicleFile != null) {
 			ScheduleTools.writeVehicles(gtfsConverter.getVehicles(), vehicleFile);
 		}
-		if(shapeFile != null) {
+		if(transitRouteShapeRefFile != null) {
 			try {
 				MGC.getCRS(outputCoordinateSystem);
 			} catch (Exception e) {
@@ -119,10 +115,7 @@ public class Gtfs2TransitSchedule {
 				log.warn("Code " + outputCoordinateSystem + " not recognized by geotools. Shapefile not written.");
 			}
 			if(authExists)
-				ShapeTools.writeGtfsTripsToFile(gtfsConverter.getGtfsRoutes(), gtfsConverter.getServiceIds(), outputCoordinateSystem, shapeFile);
-		}
-		if(transitRouteShapeJoinFile != null) {
-			// read file
+				gtfsConverter.getShapedSchedule().writeRouteShapeReferenceFile(transitRouteShapeRefFile);
 		}
 	}
 

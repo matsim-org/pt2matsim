@@ -51,9 +51,8 @@ public class MappingAnalysis {
 	private final ShapedTransitSchedule schedule;
 	private final Network network;
 	private final Map<Id<TransitLine>, Map<Id<TransitRoute>, List<Double>>> routeDistances = new HashMap<>();
-	private boolean q8585;
 
-	public MappingAnalysis(ShapedSchedule schedule, Network network) {
+	public MappingAnalysis(ShapedTransitSchedule schedule, Network network) {
 		this.schedule = schedule;
 		this.network = network;
 	}

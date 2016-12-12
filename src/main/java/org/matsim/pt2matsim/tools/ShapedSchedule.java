@@ -22,7 +22,6 @@ import com.opencsv.CSVReader;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.collections.MapUtils;
-import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.*;
@@ -30,6 +29,7 @@ import org.matsim.pt2matsim.gtfs.lib.GTFSDefinitions;
 import org.matsim.pt2matsim.gtfs.lib.GtfsShape;
 import org.matsim.utils.objectattributes.ObjectAttributes;
 
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
@@ -49,12 +49,14 @@ public class ShapedSchedule implements ShapedTransitSchedule {
 	private Map<Id<TransitLine>, Map<Id<TransitRoute>, Id<RouteShape>>> routeShapeRef = new HashMap<>();
 	private Map<Id<RouteShape>, RouteShape> shapes = new HashMap<>();
 
-	public ShapedSchedule() {
-		this.schedule = ScheduleTools.createSchedule();
-	}
-
 	public ShapedSchedule(TransitSchedule transitSchedule) {
 		this.schedule = transitSchedule;
+	}
+
+	public ShapedSchedule(String transitScheduleFile, String routeShapeRefFile, String shapesFile, String gtfsOutputCoordSystem) {
+		this.schedule = ScheduleTools.readTransitSchedule(transitScheduleFile);
+		readRouteShapeReferenceFile(routeShapeRefFile);
+		readShapesFile(shapesFile, gtfsOutputCoordSystem);
 	}
 
 	@Override
@@ -65,12 +67,16 @@ public class ShapedSchedule implements ShapedTransitSchedule {
 
 	@Override
 	public RouteShape getShape(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId) {
-		return shapes.get(routeShapeRef.get(transitLineId).get(transitRouteId));
-	}
+		Map<Id<TransitRoute>, Id<RouteShape>> lineMap = routeShapeRef.get(transitLineId);
+		if(lineMap == null) {
+			throw new IllegalArgumentException("No shape ids given for transit line " + transitLineId);
+		}
+		Id<RouteShape> shapeId = lineMap.get(transitRouteId);
+		if(shapeId == null) {
+			throw new IllegalArgumentException("No shape id given for transit route " + transitRouteId);
+		}
+		return shapes.get(shapeId);
 
-	@Override
-	public Map<Id<TransitLine>, Map<Id<TransitRoute>, Id<RouteShape>>> getRouteShapeReference() {
-		return routeShapeRef;
 	}
 
 	@Override
@@ -95,10 +101,13 @@ public class ShapedSchedule implements ShapedTransitSchedule {
 				line = reader.readNext();
 			}
 			reader.close();
-		} catch (IOException e) {
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 			throw new RuntimeException("File not found!");
 		} catch (ArrayIndexOutOfBoundsException i) {
 			throw new RuntimeException("Emtpy line found file!");
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -124,9 +133,19 @@ public class ShapedSchedule implements ShapedTransitSchedule {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
 
-//		RouteShape currentShape = shapes.get(shapeId);
-//		currentShape.addTransitRoute(transitLineId, transitRouteId); // add transit route id to shape
+	@Override
+	public void writeRouteShapeReferenceFile(String routeShapeRefFile) {
+		if(routeShapeRef != null) {
+			try {
+				CsvTools.writeNestedMapToFile(routeShapeRef, routeShapeRefFile);
+			} catch (IOException e) {
+				throw new IllegalArgumentException("Could not write shape ref file!");
+			}
+		} else {
+			throw new IllegalArgumentException("No shapes defined, routeShapeRefFile could not be written!");
+		}
 	}
 
 	// TransitSchedule methods
@@ -176,86 +195,4 @@ public class ShapedSchedule implements ShapedTransitSchedule {
 		return this.schedule.getTransitStopsAttributes();
 	}
 
-	/**
-	 * Writes the shapeSchedule to a (bloated) csv file
-	 *
-	 * @param filename
-	 */
-	@Deprecated
-	private void writeShapeScheduleFile(String filename) {
-		Map<Tuple<Integer, Integer>, String> keyTable = new HashMap<>();
-		keyTable.put(new Tuple<>(1, 1), "shape_id");
-		keyTable.put(new Tuple<>(1, 2), "shape_pt_lon");
-		keyTable.put(new Tuple<>(1, 3), "shape_pt_lat");
-		keyTable.put(new Tuple<>(1, 4), "shape_pt_sequence");
-		keyTable.put(new Tuple<>(1, 5), "transitLineId");
-		keyTable.put(new Tuple<>(1, 6), "transitRouteId");
-/*
-		int line = 2;
-		for(Map.Entry<Id<TransitLine>, Map<Id<TransitRoute>, RouteShape>> transitLineEntry : routeShapeRef.entrySet()) {
-			for(Map.Entry<Id<TransitRoute>, RouteShape> transitRouteEntry : transitLineEntry.getValue().entrySet()) {
-				RouteShape shape = transitRouteEntry.getValue();
-				for(Map.Entry<Integer, Coord> point : transitRouteEntry.getValue().getPoints().entrySet()) {
-					keyTable.put(new Tuple<>(line, 1), shape.getId().toString());
-					keyTable.put(new Tuple<>(line, 2), Double.toString(point.getValue().getX()));
-					keyTable.put(new Tuple<>(line, 3), Double.toString(point.getValue().getY()));
-					keyTable.put(new Tuple<>(line, 4), Integer.toString((int) point.getKey()));
-					keyTable.put(new Tuple<>(line, 5), transitLineEntry.getKey().toString());
-					keyTable.put(new Tuple<>(line, 6), transitRouteEntry.getKey().toString());
-					line++;
-				}
-			}
-		}
-		List<String> csvLines = CsvTools.convertToCsvLines(keyTable, ',');
-		try {
-			CsvTools.writeToFile(csvLines, filename);
-		} catch (FileNotFoundException | UnsupportedEncodingException e) {
-			e.printStackTrace();
-		} */
-	}
-
-
-	/**
-	 * reads a shapes from a file
-	 */
-	@Deprecated
-	private void readShapeScheduleFile(String filename) {
-		Map<Id<RouteShape>, RouteShape> tmp = new HashMap<>();
-		CSVReader reader;
-		try {
-			reader = new CSVReader(new FileReader(filename));
-			String[] header = reader.readNext(); // read header
-
-			String[] line = reader.readNext();
-
-			// 0 shape_id
-			// 1 shape_pt_lon
-			// 2 shape_pt_lat
-			// 3 shape_pt_sequence
-			// 4 transitLineId
-			// 5 transitRouteId
-			while(line != null) {
-				Id<RouteShape> shapeId = Id.create(line[0], RouteShape.class);
-				Id<TransitLine> transitLineId = Id.create(line[4], TransitLine.class);
-				Id<TransitRoute> transitRouteId = Id.create(line[5], TransitRoute.class);
-
-				RouteShape currentShape = tmp.get(shapeId);
-				if(currentShape == null) {
-					currentShape = new GtfsShape(shapeId);
-					currentShape.addTransitRoute(transitLineId, transitRouteId);
-					shapes.put(shapeId, currentShape);
-				}
-				Coord point = new Coord(Double.parseDouble(line[1]), Double.parseDouble(line[2]));
-				currentShape.addPoint(point, Integer.parseInt(line[3]));
-
-				currentShape.addTransitRoute(transitLineId, transitRouteId);
-//				MapUtils.getMap(transitLineId, tmp).put(transitRouteId, currentShape);
-
-				line = reader.readNext();
-			}
-			reader.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 }

@@ -29,7 +29,6 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.StrategyConfigGroup;
 import org.matsim.core.network.NetworkImpl;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
@@ -37,18 +36,19 @@ import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
-import org.matsim.pt2matsim.tools.ShapedSchedule;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorStandard;
-import org.matsim.pt2matsim.mapping.networkRouter.*;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWithShapes;
 import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoSchedule;
 import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoScheduleImpl;
 import org.matsim.pt2matsim.plausibility.StopFacilityHistogram;
-import org.matsim.pt2matsim.tools.NetworkTools;
-import org.matsim.pt2matsim.tools.ScheduleCleaner;
-import org.matsim.pt2matsim.tools.ScheduleTools;
+import org.matsim.pt2matsim.tools.*;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Different to the standard implementation, this mapper uses the shapes
@@ -74,7 +74,7 @@ public class PTMapperWithShapes implements PTMapper {
 
 	private PublicTransitMappingConfigGroup config;
 	private Network network;
-	private ShapedSchedule schedule;
+	private ShapedTransitSchedule schedule;
 
 	private ScheduleRouters scheduleRouters;
 	private final PseudoSchedule pseudoSchedule = new PseudoScheduleImpl();
@@ -105,7 +105,7 @@ public class PTMapperWithShapes implements PTMapper {
 	 * network provided here.
 	 * <p/>
 	 */
-	public PTMapperWithShapes(PublicTransitMappingConfigGroup config, ShapedSchedule schedule, Network network) {
+	public PTMapperWithShapes(PublicTransitMappingConfigGroup config, ShapedTransitSchedule schedule, Network network) {
 		this.config = config;
 		this.network = network;
 		this.schedule = schedule;
@@ -134,12 +134,10 @@ public class PTMapperWithShapes implements PTMapper {
 		/**
 		 * Some schedule statistics
  		 */
-		Set<String> scheduleTransportModes = new HashSet<>();
 		int nStopFacilities = schedule.getFacilities().size();
 		int nTransitRoutes = 0;
 		for(TransitLine transitLine : this.schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
-				scheduleTransportModes.add(transitRoute.getTransportMode());
 				nTransitRoutes++;
 			}
 		}

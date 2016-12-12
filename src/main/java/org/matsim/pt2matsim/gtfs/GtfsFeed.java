@@ -18,15 +18,9 @@
 
 package org.matsim.pt2matsim.gtfs;
 
-import org.matsim.api.core.v01.Id;
-import org.matsim.pt.transitSchedule.api.TransitLine;
-import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
-import org.matsim.pt2matsim.tools.RouteShape;
 import org.matsim.pt2matsim.tools.ShapedTransitSchedule;
 import org.matsim.vehicles.Vehicles;
-
-import java.util.Map;
 
 /**
  * An interface to load and convert GTFS feeds
@@ -46,6 +40,4 @@ public interface GtfsFeed {
 	Vehicles getVehicles();
 
 	ShapedTransitSchedule getShapedSchedule();
-
-	void writeRouteShapeReferenceFile(String filename);
 }

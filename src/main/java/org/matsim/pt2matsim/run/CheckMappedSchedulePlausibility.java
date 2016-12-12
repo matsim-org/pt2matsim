@@ -102,6 +102,7 @@ public class CheckMappedSchedulePlausibility {
 		new File(outputFolder).mkdir();
 		new File(outputFolder+"shp/").mkdir();
 		new File(outputFolder+"shp/schedule/").mkdir();
+		//noinspection ResultOfMethodCallIgnored
 		new File(outputFolder+"shp/warnings/").mkdir();
 		check.writeCsv(outputFolder + "allPlausibilityWarnings.csv");
 		check.writeResultShapeFiles(outputFolder+"shp/warnings/");

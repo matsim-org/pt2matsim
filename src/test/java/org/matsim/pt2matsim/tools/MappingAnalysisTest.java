@@ -53,11 +53,10 @@ public class MappingAnalysisTest {
 		gtfsConverter = new GtfsConverter(input + "addisoncounty-vt-us-gtfs/", "EPSG:2032");
 		gtfsConverter.convert("all", schedule, vehicles);
 
-		TransitSchedule schedule = gtfsConverter.getSchedule();
 //		ExtractDebugSchedule.run(schedule, "SBSB_1437", "59468A1158B4286");
 
 		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), input + "mts/schedule_unmapped.xml.gz");
-		CsvTools.writeNestedMapToFile(gtfsConverter.getShapedSchedule().getRouteShapeReference(), input + "mts/route_shape_ref.csv");
+		gtfsConverter.getShapedSchedule().writeRouteShapeReferenceFile(input + "mts/route_shape_ref.csv");
 
 		// read network
 		/*convert from osm

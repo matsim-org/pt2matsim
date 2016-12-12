@@ -64,7 +64,7 @@ public class PseudoGraphImpl implements PseudoGraph {
 			currentStop = queue.pollFirst(); // vertex with shortest distance (first iteration will return source)
 
 			if(currentStop.getNeighbours().size() == 0) {
-//				throw new RuntimeException("PseudoRouteStop " + currentStop.getId() + " has no neighbours!");
+//				throw new RuntimeException("PseudoRouteStop " + currentStop.getId() + " has no neighbours in the PseudoGraph!");
 			}
 
 			//look at distances to each neighbour
