@@ -22,8 +22,6 @@ import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
-import org.matsim.pt2matsim.gtfs.lib.ShapeSchedule;
-import org.matsim.pt2matsim.tools.ScheduleTools;
 
 import java.util.HashSet;
 import java.util.Set;

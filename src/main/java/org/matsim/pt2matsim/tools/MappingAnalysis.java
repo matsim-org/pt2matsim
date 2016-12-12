@@ -29,8 +29,7 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt2matsim.gtfs.lib.Shape;
-import org.matsim.pt2matsim.gtfs.lib.ShapeSchedule;
+import org.matsim.pt.transitSchedule.api.TransitSchedule;
 
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
@@ -49,14 +48,22 @@ public class MappingAnalysis {
 
 	private static final Logger log = Logger.getLogger(MappingAnalysis.class);
 
-	private final ShapeSchedule schedule;
+	private final ShapedTransitSchedule schedule;
 	private final Network network;
 	private final Map<Id<TransitLine>, Map<Id<TransitRoute>, List<Double>>> routeDistances = new HashMap<>();
 	private boolean q8585;
 
-	public MappingAnalysis(ShapeSchedule schedule, Network network) {
+	public MappingAnalysis(ShapedSchedule schedule, Network network) {
 		this.schedule = schedule;
 		this.network = network;
+	}
+
+	public MappingAnalysis(TransitSchedule schedule, Network network, String routeShapeRefFile, String shapeFile, String outputCoordinateSystem) {
+		this.schedule = new ShapedSchedule(schedule);
+		this.schedule.readShapesFile(shapeFile, outputCoordinateSystem);
+		this.schedule.readRouteShapeReferenceFile(routeShapeRefFile);
+		this.network = network;
+
 	}
 
 	public void run() {
@@ -68,7 +75,7 @@ public class MappingAnalysis {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				tr.incCounter();
 
-				Shape shape = schedule.getShape(transitLine.getId(), transitRoute.getId());
+				RouteShape shape = schedule.getShape(transitLine.getId(), transitRoute.getId());
 
 				List<Link> links = NetworkTools.getLinksFromIds(network, ScheduleTools.getTransitRouteLinkIds(transitRoute));
 				double lengthCarryOver = 0;

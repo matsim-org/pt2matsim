@@ -20,6 +20,8 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
+import org.matsim.pt2matsim.tools.RouteShape;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
@@ -34,13 +36,13 @@ public class Trip {
 	private final String tripId;
 	private final String serviceId;
 	private final Service service;
-	private final Shape shape;
+	private final RouteShape shape;
 	private final String name;
 	private final SortedMap<Integer,StopTime> stopTimes;
 	private final List<Frequency> frequencies;
 
 	//Methods
-	public Trip(String tripId, Service service, Shape shape, String name) {
+	public Trip(String tripId, Service service, RouteShape shape, String name) {
 		super();
 		this.tripId = tripId;
 		this.service = service;
@@ -61,7 +63,7 @@ public class Trip {
 	/**
 	 * @return the shape
 	 */
-	public Shape getShape() {
+	public RouteShape getShape() {
 		return shape;
 	}
 

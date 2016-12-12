@@ -24,14 +24,13 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.router.util.FastAStarEuclideanFactory;
-import org.matsim.core.router.util.FastAStarLandmarksFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
-import org.matsim.pt2matsim.gtfs.lib.Shape;
+import org.matsim.pt2matsim.tools.RouteShape;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ShapeTools;
@@ -52,7 +51,7 @@ public class RouterShapes implements Router {
 
 	private final Network network;
 	private final LeastCostPathCalculator pathCalculator;
-	private final Shape shape;
+	private final RouteShape shape;
 
 	private final Map<Tuple<Id<Node>, Id<Node>>, LeastCostPathCalculator.Path> paths;
 	private static PublicTransitMappingConfigGroup.TravelCostType travelCostType = PublicTransitMappingConfigGroup.TravelCostType.linkLength;
@@ -72,7 +71,7 @@ public class RouterShapes implements Router {
 		cutBuffer = buffer;
 	}
 
-	public RouterShapes(Network paramNetwork, Set<String> networkTransportModes, Shape shape) {
+	public RouterShapes(Network paramNetwork, Set<String> networkTransportModes, RouteShape shape) {
 		this.shape = shape;
 
 		this.network = NetworkTools.createFilteredNetworkByLinkMode(paramNetwork, networkTransportModes);

@@ -21,7 +21,6 @@ package org.matsim.pt2matsim.tools;
 import org.junit.Before;
 import org.junit.Test;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
@@ -31,6 +30,7 @@ import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * @author polettif
@@ -46,18 +46,18 @@ public class MappingAnalysisTest {
 
 
 	@Before
-	public void prepare() {
+	public void prepare() throws IOException {
 		// convert schedule
 		schedule = ScheduleTools.createSchedule();
 		vehicles = VehicleUtils.createVehiclesContainer();
 		gtfsConverter = new GtfsConverter(input + "addisoncounty-vt-us-gtfs/", "EPSG:2032");
 		gtfsConverter.convert("all", schedule, vehicles);
 
-//		TransitSchedule schedule = gtfsConverter.getSchedule();
+		TransitSchedule schedule = gtfsConverter.getSchedule();
 //		ExtractDebugSchedule.run(schedule, "SBSB_1437", "59468A1158B4286");
 
 		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), input + "mts/schedule_unmapped.xml.gz");
-		((GtfsConverter) gtfsConverter).getShapeSchedule().writeShapeScheduleFile(input + "mts/schedule_gtfs_shapes.csv");
+		CsvTools.writeNestedMapToFile(gtfsConverter.getShapedSchedule().getRouteShapeReference(), input + "mts/route_shape_ref.csv");
 
 		// read network
 		/*convert from osm
@@ -87,7 +87,7 @@ public class MappingAnalysisTest {
 	public void analysis() {
 		new File(input + "output/").mkdirs();
 
-		MappingAnalysis analysis = new MappingAnalysis(((GtfsConverter) gtfsConverter).getShapeSchedule(), network);
+		MappingAnalysis analysis = new MappingAnalysis(schedule, network, input + "mts/route_shape_ref.csv", input + "addisoncounty-vt-us-gtfs/shapes.txt", "EPSG:2032");
 
 		analysis.run();
 		analysis.writeAllDistancesCsv(input+"output/DistancesAll.csv");

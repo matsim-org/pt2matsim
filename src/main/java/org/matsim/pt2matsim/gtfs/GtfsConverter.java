@@ -23,17 +23,17 @@ import com.opencsv.CSVReader;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.population.Route;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt.transitSchedule.api.*;
-import org.matsim.pt2matsim.gtfs.lib.ShapeSchedule;
+import org.matsim.pt2matsim.tools.*;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 import org.matsim.pt2matsim.gtfs.lib.*;
-import org.matsim.pt2matsim.tools.ScheduleTools;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -84,6 +84,10 @@ public class GtfsConverter implements GtfsFeed {
 	 */
 	private SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
 
+	/**
+	 * map for counting how many trips use each serviceId
+	 */
+	private Map<String, Integer> serviceIdsCount = new HashMap<>();
 	private TransitScheduleFactory scheduleFactory;
 
 	/**
@@ -91,28 +95,18 @@ public class GtfsConverter implements GtfsFeed {
 	 */
 	private Set<String> serviceIdsToConvert = new HashSet<>();
 
-	/**
-	 * Set of service ids not defined in calendar.txt (only in calendar_dates.txt)
-	 */
-	private Set<String> serviceIdsNotInCalendarTxt = new HashSet<>();
-
-	/**
-	 * map for counting how many trips use each serviceId
-	 */
-	private Map<String, Integer> serviceIdsCount = new HashMap<>();
-
-
 
 	// containers for storing gtfs data
 	private Map<String, GTFSStop> gtfsStops = new HashMap<>();
 	private Map<String, GTFSRoute> gtfsRoutes = new TreeMap<>();
 	private Map<String, Service> services = new HashMap<>();
-	private Map<String, Shape> shapes = new HashMap<>();
-	private Map<Id<TransitLine>, Map<Id<TransitRoute>, Shape>> scheduleShapes = new HashMap<>();
+	private Map<Id<RouteShape>, RouteShape> shapes = new HashMap<>();
+	private Map<Id<TransitLine>, Map<Id<TransitRoute>, Id<RouteShape>>> routeShapeRef = new HashMap<>();
+//	private Map<Id<TransitLine>, Map<Id<TransitRoute>, RouteShape>> scheduleShapes = new HashMap<>();
 	private boolean warnStopTimes = true;
 
 	private final CoordinateTransformation transformation;
-	private ShapeSchedule schedule = null;
+	private ShapedTransitSchedule schedule = null;
 	private Vehicles vhcls = null;
 
 	public GtfsConverter(String gtfsFolder, String outputCoordinateSystem) {
@@ -150,7 +144,7 @@ public class GtfsConverter implements GtfsFeed {
 	public void convert(String serviceIdsParam, TransitSchedule transitSchedule, Vehicles vehicles) {
 		getServiceIds(serviceIdsParam);
 
-		this.schedule = new ShapeSchedule(transitSchedule);
+		this.schedule = new ShapedSchedule(transitSchedule);
 		this.vhcls = vehicles;
 
 		scheduleFactory = schedule.getFactory();
@@ -283,7 +277,7 @@ public class GtfsConverter implements GtfsFeed {
 					/* Save transit route (and line) for current shape */
 					if(trip.hasShape()) {
 						trip.getShape().addTransitRoute(transitLine.getId(), transitRoute.getId());
-						schedule.addShape(trip.getShape());
+						schedule.addShape(transitLine.getId(), transitRoute.getId(), trip.getShape());
 					}
 				}
 			} // foreach trip
@@ -350,7 +344,7 @@ public class GtfsConverter implements GtfsFeed {
 		try {
 			reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.STOPS.fileName));
 			String[] header = reader.readNext(); // read header
-			Map<String, Integer> col = getIndices(header, GTFSDefinitions.Files.STOPS.columns); // get column numbers for required fields
+			Map<String, Integer> col = CsvTools.getIndices(header, GTFSDefinitions.Files.STOPS.columns); // get column numbers for required fields
 
 			String[] line = reader.readNext();
 			while(line != null) {
@@ -383,7 +377,7 @@ public class GtfsConverter implements GtfsFeed {
 		try {
 			CSVReader reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.CALENDAR.fileName));
 			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GTFSDefinitions.Files.CALENDAR.columns);
+			Map<String, Integer> col = CsvTools.getIndices(header, GTFSDefinitions.Files.CALENDAR.columns);
 
 			// assuming all days really do follow monday in the file
 			int indexMonday = col.get("monday");
@@ -428,38 +422,25 @@ public class GtfsConverter implements GtfsFeed {
 		try {
 			reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.CALENDAR_DATES.fileName));
 			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GTFSDefinitions.Files.CALENDAR_DATES.columns);
+			Map<String, Integer> col = CsvTools.getIndices(header, GTFSDefinitions.Files.CALENDAR_DATES.columns);
 
 			String[] line = reader.readNext();
 			while(line != null) {
 				Service currentService = services.get(line[col.get(GTFSDefinitions.SERVICE_ID)]);
-
-				if(currentService == null) {
-					currentService = new Service(
-							line[col.get(GTFSDefinitions.SERVICE_ID)],
-							new boolean[] { false, false, false, false, false, false, false },
-							"19700101", "29991231"
-					);
-
-					services.put(currentService.getId(), currentService);
-
-					if(serviceIdsNotInCalendarTxt.add(currentService.getId())) {
-						log.warn("Service id \"" + currentService.getId() + "\" not defined in calendar.txt, only in calendar_dates.txt. Service id will still be used.");
-					}
-				}
-
-				if(line[col.get(GTFSDefinitions.EXCEPTION_TYPE)].equals("2")) {
-					currentService.addException(line[col.get(GTFSDefinitions.DATE)]);
+				if(currentService != null) {
+					if(line[col.get(GTFSDefinitions.EXCEPTION_TYPE)].equals("2"))
+						currentService.addException(line[col.get(GTFSDefinitions.DATE)]);
+					else
+						currentService.addAddition(line[col.get(GTFSDefinitions.DATE)]);
 				} else {
-					currentService.addAddition(line[col.get(GTFSDefinitions.DATE)]);
+					throw new RuntimeException("Service id \"" + line[col.get(GTFSDefinitions.SERVICE_ID)] + "\" not defined in calendar.txt");
 				}
-
 				line = reader.readNext();
 			}
 			reader.close();
 			log.info("...     calendar_dates.txt loaded");
 		} catch (IOException e) {
-			log.info("...     no calendar dates file found.");
+		 	log.info("...     no calendar dates file found.");
 		} catch (ArrayIndexOutOfBoundsException i) {
 			throw new RuntimeException("Emtpy line found in calendar_dates.txt");
 		}
@@ -480,16 +461,18 @@ public class GtfsConverter implements GtfsFeed {
 			reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.SHAPES.fileName));
 
 			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GTFSDefinitions.Files.SHAPES.columns);
+			Map<String, Integer> col = CsvTools.getIndices(header, GTFSDefinitions.Files.SHAPES.columns);
 
 			String[] line = reader.readNext();
 			while(line != null) {
 				usesShapes = true; // shape file might exists but could be empty
 
-				Shape currentShape = shapes.get(line[col.get(GTFSDefinitions.SHAPE_ID)]);
+				Id<RouteShape> shapeId = Id.create(line[col.get(GTFSDefinitions.SHAPE_ID)], RouteShape.class);
+
+				RouteShape currentShape = shapes.get(shapeId);
 				if(currentShape == null) {
-					currentShape = new ShapeGtfs(line[col.get(GTFSDefinitions.SHAPE_ID)]);
-					shapes.put(line[col.get(GTFSDefinitions.SHAPE_ID)], currentShape);
+					currentShape = new GtfsShape(line[col.get(GTFSDefinitions.SHAPE_ID)]);
+					shapes.put(shapeId, currentShape);
 				}
 				Coord point = new Coord(Double.parseDouble(line[col.get(GTFSDefinitions.SHAPE_PT_LON)]), Double.parseDouble(line[col.get(GTFSDefinitions.SHAPE_PT_LAT)]));
 				currentShape.addPoint(transformation.transform(point), Integer.parseInt(line[col.get(GTFSDefinitions.SHAPE_PT_SEQUENCE)]));
@@ -518,7 +501,7 @@ public class GtfsConverter implements GtfsFeed {
 		try {
 			CSVReader reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.ROUTES.fileName));
 			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GTFSDefinitions.Files.ROUTES.columns);
+			Map<String, Integer> col = CsvTools.getIndices(header, GTFSDefinitions.Files.ROUTES.columns);
 
 			String[] line = reader.readNext();
 			while(line != null) {
@@ -554,13 +537,14 @@ public class GtfsConverter implements GtfsFeed {
 		try {
 			CSVReader reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.TRIPS.fileName));
 			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GTFSDefinitions.Files.TRIPS.columns);
+			Map<String, Integer> col = CsvTools.getIndices(header, GTFSDefinitions.Files.TRIPS.columns);
 
 			String[] line = reader.readNext();
 			while(line != null) {
 				GTFSRoute gtfsRoute = gtfsRoutes.get(line[col.get("route_id")]);
 				if(usesShapes) {
-					Trip newTrip = new Trip(line[col.get(GTFSDefinitions.TRIP_ID)], services.get(line[col.get(GTFSDefinitions.SERVICE_ID)]), shapes.get(line[col.get(GTFSDefinitions.SHAPE_ID)]), line[col.get(GTFSDefinitions.TRIP_ID)]);
+					Id<RouteShape> shapeId = Id.create(line[col.get(GTFSDefinitions.SHAPE_ID)], RouteShape.class);
+					Trip newTrip = new Trip(line[col.get(GTFSDefinitions.TRIP_ID)], services.get(line[col.get(GTFSDefinitions.SERVICE_ID)]), shapes.get(shapeId), line[col.get(GTFSDefinitions.TRIP_ID)]);
 					gtfsRoute.putTrip(line[col.get(GTFSDefinitions.TRIP_ID)], newTrip);
 				} else {
 					Trip newTrip = new Trip(line[col.get(GTFSDefinitions.TRIP_ID)], services.get(line[col.get(GTFSDefinitions.SERVICE_ID)]), null, line[col.get(GTFSDefinitions.TRIP_ID)]);
@@ -595,7 +579,7 @@ public class GtfsConverter implements GtfsFeed {
 		try {
 			CSVReader reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.STOP_TIMES.fileName));
 			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GTFSDefinitions.Files.STOP_TIMES.columns);
+			Map<String, Integer> col = CsvTools.getIndices(header, GTFSDefinitions.Files.STOP_TIMES.columns);
 
 			String[] line = reader.readNext();
 			int i = 1, c = 1;
@@ -654,7 +638,7 @@ public class GtfsConverter implements GtfsFeed {
 		try {
 			reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.FREQUENCIES.fileName));
 			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GTFSDefinitions.Files.FREQUENCIES.columns);
+			Map<String, Integer> col = CsvTools.getIndices(header, GTFSDefinitions.Files.FREQUENCIES.columns);
 
 			String[] line = reader.readNext();
 			while(line != null) {
@@ -681,39 +665,6 @@ public class GtfsConverter implements GtfsFeed {
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new RuntimeException("Emtpy line found in frequencies.txt");
 		}
-	}
-
-	/**
-	 * In case optional columns in a csv file are missing or are out of order, addressing array
-	 * values directly via integer (i.e. where the column should be) does not work.
-	 *
-	 * @param header      the header (first line) of the csv file
-	 * @param columnNames array of attributes you need the indices of
-	 * @return the index for each attribute given in columnNames
-	 */
-	private static Map<String, Integer> getIndices(String[] header, String[] columnNames) {
-		Map<String, Integer> indices = new HashMap<>();
-		Set<String> notfound = new HashSet<>();
-
-		for(String columnName : columnNames) {
-			boolean found = false;
-			for(int i = 0; i < header.length; i++) {
-				if(header[i].equals(columnName)) {
-					indices.put(columnName, i);
-					found = true;
-					break;
-				}
-			}
-			if(!found) {
-				notfound.add(columnName);
-			}
-		}
-
-		if(notfound.size() > 0) {
-			log.warn("Column name(s) "+notfound+" not found in csv. Might be some additional characters in the header or the encoding not being UTF-8.");
-		}
-
-		return indices;
 	}
 
 
@@ -807,7 +758,7 @@ public class GtfsConverter implements GtfsFeed {
 		return false;
 	}
 
-	public Map<String, Shape> getShapes() {
+	public Map<Id<RouteShape>, RouteShape> getShapes() {
 		return shapes;
 	}
 
@@ -839,7 +790,7 @@ public class GtfsConverter implements GtfsFeed {
 		return serviceIdsToConvert;
 	}
 
-	public ShapeSchedule getShapeSchedule() {
+	public ShapedTransitSchedule getShapedSchedule() {
 		return schedule;
 	}
 
@@ -849,6 +800,11 @@ public class GtfsConverter implements GtfsFeed {
 
 	public Vehicles getVehicles() {
 		return vhcls;
+	}
+
+	@Override
+	public void writeRouteShapeReferenceFile(String filename) {
+
 	}
 
 

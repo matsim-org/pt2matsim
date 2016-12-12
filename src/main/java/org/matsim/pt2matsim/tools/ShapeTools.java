@@ -30,7 +30,6 @@ import org.matsim.core.utils.gis.PolylineFeatureFactory;
 import org.matsim.core.utils.gis.ShapeFileWriter;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.pt2matsim.gtfs.lib.GTFSRoute;
-import org.matsim.pt2matsim.gtfs.lib.Shape;
 import org.matsim.pt2matsim.gtfs.lib.Trip;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -47,7 +46,7 @@ public class ShapeTools {
 	/**
 	 * Calculates the minimal distance from a point to a given shape (from gtfs)
 	 */
-	public static double calcMinDistanceToShape(Coord point, Shape shape) {
+	public static double calcMinDistanceToShape(Coord point, RouteShape shape) {
 		List<Coord> shapePoints = new ArrayList<>(shape.getPoints().values());
 		double minDist = Double.MAX_VALUE;
 		// look for the minimal distance between the current point and all pairs of shape points
@@ -60,7 +59,7 @@ public class ShapeTools {
 		return minDist;
 	}
 
-	public static double calcMinDistanceToShape(Link link, Shape shape) {
+	public static double calcMinDistanceToShape(Link link, RouteShape shape) {
 		double measureInterval = 5;
 
 		double minDist = Double.MAX_VALUE;
@@ -84,7 +83,7 @@ public class ShapeTools {
 	/**
 	 * @return all nodes within a buffer distance from the shape
 	 */
-	public static Collection<Node> getNodesWithinBuffer(Network network, Shape shape, double buffer) {
+	public static Collection<Node> getNodesWithinBuffer(Network network, RouteShape shape, double buffer) {
 		Set<Node> nodesWithinBuffer = new HashSet<>();
 		for(Node node : network.getNodes().values()) {
 			if(calcMinDistanceToShape(node.getCoord(), shape) <= buffer) {
@@ -140,7 +139,7 @@ public class ShapeTools {
 				}
 
 				if(useTrip) {
-					Shape shape = trip.getShape();
+					RouteShape shape = trip.getShape();
 					if(shape != null) {
 
 						Collection<Coord> points = shape.getPoints().values();
@@ -164,7 +163,7 @@ public class ShapeTools {
 		ShapeFileWriter.writeGeometries(features, outFile);
 	}
 
-	public static void writeShapeFile(Set<Shape> shapes, String outputCoordinateSystem, String filename) {
+	public static void writeShapeFile(Set<RouteShape> shapes, String outputCoordinateSystem, String filename) {
 		Collection<SimpleFeature> features = new ArrayList<>();
 
 		PolylineFeatureFactory ff = new PolylineFeatureFactory.Builder()
@@ -173,7 +172,7 @@ public class ShapeTools {
 				.addAttribute("shape_id", String.class)
 				.create();
 
-		for(Shape shape : shapes) {
+		for(RouteShape shape : shapes) {
 			if(shape != null) {
 
 				Collection<Coord> points = shape.getPoints().values();

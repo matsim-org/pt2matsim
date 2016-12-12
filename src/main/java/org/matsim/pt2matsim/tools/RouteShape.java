@@ -16,10 +16,11 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.gtfs.lib;
+package org.matsim.pt2matsim.tools;
 
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.Identifiable;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
@@ -31,9 +32,9 @@ import java.util.SortedMap;
 /**
  * @author polettif
  */
-public interface Shape {
+public interface RouteShape extends Identifiable {
 
-	String getId();
+	Id<RouteShape> getId();
 
 	void addPoint(Coord point, int pos);
 
