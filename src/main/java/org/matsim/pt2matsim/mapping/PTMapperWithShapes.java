@@ -29,6 +29,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.StrategyConfigGroup;
 import org.matsim.core.network.NetworkImpl;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
@@ -36,7 +37,7 @@ import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
-import org.matsim.pt2matsim.gtfs.lib.ShapeSchedule;
+import org.matsim.pt2matsim.tools.ShapedSchedule;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorStandard;
 import org.matsim.pt2matsim.mapping.networkRouter.*;
@@ -73,7 +74,7 @@ public class PTMapperWithShapes implements PTMapper {
 
 	private PublicTransitMappingConfigGroup config;
 	private Network network;
-	private ShapeSchedule schedule;
+	private ShapedSchedule schedule;
 
 	private ScheduleRouters scheduleRouters;
 	private final PseudoSchedule pseudoSchedule = new PseudoScheduleImpl();
@@ -85,13 +86,15 @@ public class PTMapperWithShapes implements PTMapper {
 	 *
 	 * @param configPath the config file
 	 */
-	public PTMapperWithShapes(String configPath, String shapeScheduleFile) {
+	public PTMapperWithShapes(String configPath, String shapeFile, String outputCoordinateSystem, String routeShapeRefFile) {
 		Config configAll = ConfigUtils.loadConfig(configPath, new PublicTransitMappingConfigGroup());
 		this.config = ConfigUtils.addOrGetModule(configAll, PublicTransitMappingConfigGroup.GROUP_NAME, PublicTransitMappingConfigGroup.class );
 		TransitSchedule transitSchedule = config.getScheduleFile() == null ? null : ScheduleTools.readTransitSchedule(config.getScheduleFile());
-		this.schedule = new ShapeSchedule(transitSchedule);
-		this.schedule.readShapeScheduleFile(shapeScheduleFile);
 		this.network = config.getNetworkFile() == null ? null : NetworkTools.readNetwork(config.getNetworkFile());
+
+		this.schedule = new ShapedSchedule(transitSchedule);
+		this.schedule.readShapesFile(shapeFile, outputCoordinateSystem);
+		this.schedule.readRouteShapeReferenceFile(routeShapeRefFile);
 	}
 
 	/**
@@ -102,7 +105,7 @@ public class PTMapperWithShapes implements PTMapper {
 	 * network provided here.
 	 * <p/>
 	 */
-	public PTMapperWithShapes(PublicTransitMappingConfigGroup config, ShapeSchedule schedule, Network network) {
+	public PTMapperWithShapes(PublicTransitMappingConfigGroup config, ShapedSchedule schedule, Network network) {
 		this.config = config;
 		this.network = network;
 		this.schedule = schedule;
@@ -410,7 +413,7 @@ public class PTMapperWithShapes implements PTMapper {
 
 	@Override
 	public void setSchedule(TransitSchedule schedule) {
-		this.schedule = new ShapeSchedule(schedule);
+		this.schedule = new ShapedSchedule(schedule);
 	}
 
 	@Override

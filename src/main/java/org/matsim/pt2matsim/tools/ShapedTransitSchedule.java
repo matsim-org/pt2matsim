@@ -16,36 +16,36 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.gtfs;
+package org.matsim.pt2matsim.tools;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
-import org.matsim.pt2matsim.tools.RouteShape;
-import org.matsim.pt2matsim.tools.ShapedTransitSchedule;
-import org.matsim.vehicles.Vehicles;
 
 import java.util.Map;
 
 /**
- * An interface to load and convert GTFS feeds
+ * Wrapper class for a transit schedule that contains shapes
  *
  * @author polettif
  */
-public interface GtfsFeed {
+public interface ShapedTransitSchedule extends TransitSchedule {
 
-	void convert(String serviceIdsParam, TransitSchedule transitSchedule, Vehicles vehicles);
+	void addShape(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId, RouteShape shape);
 
-	void convert(String serviceIdsParam);
+	RouteShape getShape(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId);
 
-	void convert();
+	Map<Id<TransitLine>, Map<Id<TransitRoute>, Id<RouteShape>>> getRouteShapeReference();
 
-	TransitSchedule getSchedule();
+	/**
+	 * Reads a gtfs formatted shapes file.
+	 *
+	 * @param shapesFilename normally called shapes.txt
+	 * @param outputCoordinateSystem output coordinate system, set to <tt>null</tt> if no transformation should be applied
+	 */
+	void readShapesFile(String shapesFilename, String outputCoordinateSystem);
 
-	Vehicles getVehicles();
+	void readRouteShapeReferenceFile(String routeShapeRefFile);
 
-	ShapedTransitSchedule getShapedSchedule();
-
-	void writeRouteShapeReferenceFile(String filename);
 }

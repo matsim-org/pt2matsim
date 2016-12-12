@@ -27,43 +27,45 @@ import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt.transitSchedule.api.TransitRouteStop;
+import org.matsim.pt2matsim.tools.RouteShape;
 
 import java.util.*;
 
-public class ShapeGtfs implements Shape {
+public class GtfsShape implements RouteShape {
 
 	/**
 	 * The id
 	 */
-	private String id;
+	private Id<RouteShape> id;
 
 	/**
 	 * The points of the shape
 	 */
-	private SortedMap<Integer, Coord> points;
+	private SortedMap<Integer, Coord> points = new TreeMap<>();
 
 	/**
 	 * A shape can be referenced to multiple transit routes
 	 */
-	private Set<Tuple<Id<TransitLine>, Id<TransitRoute>>> transitRoutes;
+	private Set<Tuple<Id<TransitLine>, Id<TransitRoute>>> transitRoutes = new HashSet<>();
 	private Coord[] extent = new Coord[]{new Coord(Double.MAX_VALUE, Double.MAX_VALUE), new Coord(Double.MIN_VALUE, Double.MIN_VALUE)};
 
 
 	/**
 	 * Constructs
 	 */
-	public ShapeGtfs(String id) {
-		this.id = id;
-		this.points = new TreeMap<>();
-		this.transitRoutes = new HashSet<>();
+	public GtfsShape(String id) {
+		this.id = Id.create(id, RouteShape.class);
+	}
+
+	public GtfsShape(Id<RouteShape> shapeId) {
+		this.id = shapeId;
 	}
 
 	/**
 	 * @return the id
 	 */
 	@Override
-	public String getId() {
+	public Id<RouteShape> getId() {
 		return id;
 	}
 
@@ -76,6 +78,11 @@ public class ShapeGtfs implements Shape {
 
 	public List<Coord> getCoords() {
 		return new ArrayList<>(points.values());
+	}
+
+	@Override
+	public Set<Tuple<Id<TransitLine>, Id<TransitRoute>>> getTransitRoutes() {
+		return transitRoutes;
 	}
 
 	/**
@@ -118,10 +125,6 @@ public class ShapeGtfs implements Shape {
 
 	public void addTransitRoute(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId) {
 		this.transitRoutes.add(new Tuple<>(transitLineId, transitRouteId));
-	}
-
-	public Set<Tuple<Id<TransitLine>, Id<TransitRoute>>> getTransitRoutes() {
-		return transitRoutes;
 	}
 
 	public Coord[] getExtent() {

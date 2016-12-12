@@ -55,8 +55,8 @@ public class Gtfs2TransitSchedule {
 	 *              [2] the output coordinate system. Use WGS84 for no transformation.<br/>
 	 *              [3] output transit schedule file
 	 *              [4] output default vehicles file (optional)
-	 *              [5] output converted shape files. Is created based on shapes.txt and
-	 *                  shows all trips contained in the schedule. (optional)
+	 *              [5] output shape reference file. CSV file that references transit routes and shapes (optional)
+	 *              // todo output transitrouteshaperef file (currently *.shp)
 	 *
 	 * Calls {@link #run}.
 	 */
