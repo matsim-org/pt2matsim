@@ -16,11 +16,12 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.tools;
+package org.matsim.pt2matsim.lib;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
+import org.matsim.pt2matsim.tools.ScheduleTools;
 
 /**
  * @author polettif

@@ -30,10 +30,16 @@ import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.pt2matsim.lib.RouteShape;
+import org.matsim.pt2matsim.lib.ShapedSchedule;
+import org.matsim.pt2matsim.lib.ShapedTransitSchedule;
 
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Analyses the mapping results if the shapes from a gtfs feed are available. Calculates the distances between
@@ -51,6 +57,7 @@ public class MappingAnalysis {
 	private final ShapedTransitSchedule schedule;
 	private final Network network;
 	private final Map<Id<TransitLine>, Map<Id<TransitRoute>, List<Double>>> routeDistances = new HashMap<>();
+	private final Map<Id<TransitLine>, Map<Id<TransitRoute>, Double>> lengthDiffs = new HashMap<>();
 
 	public MappingAnalysis(ShapedTransitSchedule schedule, Network network) {
 		this.schedule = schedule;
@@ -76,24 +83,43 @@ public class MappingAnalysis {
 
 				RouteShape shape = schedule.getShape(transitLine.getId(), transitRoute.getId());
 
-				List<Link> links = NetworkTools.getLinksFromIds(network, ScheduleTools.getTransitRouteLinkIds(transitRoute));
-				double lengthCarryOver = 0;
-				for(Link link : links) {
-					double lengthOnLink = lengthCarryOver;
-					double azimuth = CoordTools.getAzimuth(link.getFromNode().getCoord(), link.getToNode().getCoord());
-					double linkLength = CoordUtils.calcEuclideanDistance(link.getFromNode().getCoord(), link.getToNode().getCoord());
+				calcRouteShapeDistances(transitLine, transitRoute, shape);
 
-					while(lengthOnLink < linkLength) {
-						Coord currentPoint = CoordTools.calcNewPoint(link.getFromNode().getCoord(), azimuth, lengthOnLink);
-
-						// look for shortest distance to shape
-						double minDistanceToShape = ShapeTools.calcMinDistanceToShape(currentPoint, shape);
-						MapUtils.getList(transitRoute.getId(), MapUtils.getMap(transitLine.getId(), routeDistances)).add(minDistanceToShape);
-						lengthOnLink += measureInterval;
-					}
-					lengthCarryOver = lengthOnLink - linkLength;
-				}
+				// todo implement length difference calculations
+//				calcLengthDifferences(transitLine, transitRoute, shape);
 			}
+		}
+	}
+
+	private void calcLengthDifferences(TransitLine transitLine, TransitRoute transitRoute, RouteShape shape) {
+		double shapeLength = ShapeTools.getShapeLength(shape);
+		double routeLength = NetworkTools.calcRouteLength(network.getLinks(), ScheduleTools.getTransitRouteLinkIds(transitRoute), true);
+
+		double diff = Math.abs(shapeLength-routeLength);
+
+		MapUtils.getMap(transitLine.getId(), lengthDiffs).put(transitRoute.getId(), diff);
+	}
+
+	/**
+	 * Calculate the distances between the route and its corresponding shape
+	 */
+	private void calcRouteShapeDistances(TransitLine transitLine, TransitRoute transitRoute, RouteShape shape) {
+		List<Link> links = NetworkTools.getLinksFromIds(network, ScheduleTools.getTransitRouteLinkIds(transitRoute));
+		double lengthCarryOver = 0;
+		for(Link link : links) {
+			double lengthOnLink = lengthCarryOver;
+			double azimuth = CoordTools.getAzimuth(link.getFromNode().getCoord(), link.getToNode().getCoord());
+			double linkLength = CoordUtils.calcEuclideanDistance(link.getFromNode().getCoord(), link.getToNode().getCoord());
+
+			while(lengthOnLink < linkLength) {
+				Coord currentPoint = CoordTools.calcNewPoint(link.getFromNode().getCoord(), azimuth, lengthOnLink);
+
+				// look for shortest distance to shape
+				double minDistanceToShape = ShapeTools.calcMinDistanceToShape(currentPoint, shape);
+				MapUtils.getList(transitRoute.getId(), MapUtils.getMap(transitLine.getId(), routeDistances)).add(minDistanceToShape);
+				lengthOnLink += measureInterval;
+			}
+			lengthCarryOver = lengthOnLink - linkLength;
 		}
 	}
 

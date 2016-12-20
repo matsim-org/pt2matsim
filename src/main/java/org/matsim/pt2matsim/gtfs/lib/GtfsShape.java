@@ -27,7 +27,7 @@ import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt2matsim.tools.RouteShape;
+import org.matsim.pt2matsim.lib.RouteShape;
 
 import java.util.*;
 

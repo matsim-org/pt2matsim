@@ -29,6 +29,9 @@ import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.pt2matsim.lib.RouteShape;
+import org.matsim.pt2matsim.lib.ShapedSchedule;
+import org.matsim.pt2matsim.lib.ShapedTransitSchedule;
 import org.matsim.pt2matsim.tools.*;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
@@ -54,10 +57,6 @@ import java.util.Map.Entry;
 public class GtfsConverter implements GtfsFeed {
 
 	private static final Logger log = Logger.getLogger(GtfsConverter.class);
-
-	public static final String ALL_SERVICE_IDS = "all";
-	public static final String DAY_WITH_MOST_TRIPS = "dayWithMostTrips";
-	public static final String DAY_WITH_MOST_SERVICES = "dayWithMostServices";
 
 	private boolean defaultAwaitDepartureTime = true;
 

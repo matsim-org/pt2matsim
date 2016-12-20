@@ -7,6 +7,9 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
+import org.matsim.pt2matsim.gtfs.GtfsFeed;
+import org.matsim.pt2matsim.lib.ShapedSchedule;
+import org.matsim.pt2matsim.lib.ShapedTransitSchedule;
 import org.matsim.pt2matsim.tools.*;
 
 /**
@@ -20,7 +23,7 @@ public class PTMapperWithShapesTest {
 	private String networkName = base + "network/addison.xml.gz";
 	private String coordSys = "EPSG:2032";
 	private String gtfsFolder = base + "addisoncounty-vt-us-gtfs/";
-	private String serviceParam = GtfsConverter.ALL_SERVICE_IDS;
+	private String serviceParam = GtfsFeed.ALL_SERVICE_IDS;
 
 	private GtfsConverter gtfsConverter;
 	private Network network;
@@ -32,7 +35,7 @@ public class PTMapperWithShapesTest {
 		gtfsConverter = new GtfsConverter(gtfsFolder, coordSys);
 		gtfsConverter.convert(serviceParam);
 
-		gtfsConverter.getShapedSchedule().writeRouteShapeReferenceFile(base +"output/shapeRef.csv");
+		gtfsConverter.getShapedSchedule().getTransitRouteShapeReference().writeToFile(base +"output/shapeRef.csv");
 		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), base +"mts/unmapped_schedule.xml.gz");
 
 		// debug shapes

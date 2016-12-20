@@ -16,17 +16,17 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.tools;
+package org.matsim.pt2matsim.lib;
 
 import com.opencsv.CSVReader;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
-import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.gtfs.lib.GTFSDefinitions;
 import org.matsim.pt2matsim.gtfs.lib.GtfsShape;
+import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.utils.objectattributes.ObjectAttributes;
 
 import java.io.FileNotFoundException;
@@ -46,7 +46,7 @@ public class ShapedSchedule implements ShapedTransitSchedule {
 
 	private final TransitSchedule schedule;
 
-	private Map<Id<TransitLine>, Map<Id<TransitRoute>, Id<RouteShape>>> routeShapeRef = new HashMap<>();
+	private TransitRouteShapeReference transitRouteShapeRef = new TransitRouteShapeReferenceImpl();
 	private Map<Id<RouteShape>, RouteShape> shapes = new HashMap<>();
 
 	public ShapedSchedule(TransitSchedule transitSchedule) {
@@ -55,28 +55,24 @@ public class ShapedSchedule implements ShapedTransitSchedule {
 
 	public ShapedSchedule(String transitScheduleFile, String routeShapeRefFile, String shapesFile, String gtfsOutputCoordSystem) {
 		this.schedule = ScheduleTools.readTransitSchedule(transitScheduleFile);
-		readRouteShapeReferenceFile(routeShapeRefFile);
+		transitRouteShapeRef.readFile(routeShapeRefFile);
 		readShapesFile(shapesFile, gtfsOutputCoordSystem);
 	}
 
 	@Override
 	public void addShape(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId, RouteShape shape) {
 		shapes.put(shape.getId(), shape);
-		MapUtils.getMap(transitLineId, routeShapeRef).put(transitRouteId, shape.getId());
+		transitRouteShapeRef.setShapeId(transitLineId, transitRouteId, shape.getId());
 	}
 
 	@Override
 	public RouteShape getShape(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId) {
-		Map<Id<TransitRoute>, Id<RouteShape>> lineMap = routeShapeRef.get(transitLineId);
-		if(lineMap == null) {
-			throw new IllegalArgumentException("No shape ids given for transit line " + transitLineId);
-		}
-		Id<RouteShape> shapeId = lineMap.get(transitRouteId);
+		Id<RouteShape> shapeId = transitRouteShapeRef.getShapeId(transitLineId, transitRouteId);
 		if(shapeId == null) {
-			throw new IllegalArgumentException("No shape id given for transit route " + transitRouteId);
+			// todo change exception to log or return null
+			throw new IllegalArgumentException("No shape available for transit route "+ transitRouteId +" on transit line " + transitLineId);
 		}
 		return shapes.get(shapeId);
-
 	}
 
 	@Override
@@ -112,40 +108,18 @@ public class ShapedSchedule implements ShapedTransitSchedule {
 	}
 
 	@Override
-	public void readRouteShapeReferenceFile(String routeShapeRefFile) {
-		CSVReader reader;
-		try {
-			reader = new CSVReader(new FileReader(routeShapeRefFile));
-//			String[] header = reader.readNext(); // todo implement header in write method
-			String[] line = reader.readNext();
-			// 0 transitLineId
-			// 1 transitRouteId
-			// 2 shapeId
-			while(line != null) {
-				Id<TransitLine> transitLineId = Id.create(line[0], TransitLine.class);
-				Id<TransitRoute> transitRouteId = Id.create(line[1], TransitRoute.class);
-				Id<RouteShape> shapeId = Id.create(line[2], RouteShape.class);
-
-				MapUtils.getMap(transitLineId, routeShapeRef).put(transitRouteId, shapeId); // add shape id to transit route id
-				line = reader.readNext();
-			}
-			reader.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public TransitRouteShapeReference getTransitRouteShapeReference() {
+		return transitRouteShapeRef;
 	}
 
 	@Override
-	public void writeRouteShapeReferenceFile(String routeShapeRefFile) {
-		if(routeShapeRef != null) {
-			try {
-				CsvTools.writeNestedMapToFile(routeShapeRef, routeShapeRefFile);
-			} catch (IOException e) {
-				throw new IllegalArgumentException("Could not write shape ref file!");
-			}
-		} else {
-			throw new IllegalArgumentException("No shapes defined, routeShapeRefFile could not be written!");
-		}
+	public void setTransitRouteShapeReference(TransitRouteShapeReference ref) {
+		this.transitRouteShapeRef = ref;
+	}
+
+	@Override
+	public void readRouteShapeReferenceFile(String routeShapeRefFile) {
+		this.transitRouteShapeRef.readFile(routeShapeRefFile);
 	}
 
 	// TransitSchedule methods

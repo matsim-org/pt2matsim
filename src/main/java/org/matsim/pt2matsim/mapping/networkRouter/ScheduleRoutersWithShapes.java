@@ -11,9 +11,9 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
-import org.matsim.pt2matsim.tools.RouteShape;
+import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
-import org.matsim.pt2matsim.tools.ShapedTransitSchedule;
+import org.matsim.pt2matsim.lib.ShapedTransitSchedule;
 
 import java.util.HashMap;
 import java.util.Map;

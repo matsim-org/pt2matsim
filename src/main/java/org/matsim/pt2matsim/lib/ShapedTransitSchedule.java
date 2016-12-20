@@ -16,12 +16,13 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.tools;
+package org.matsim.pt2matsim.lib;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.pt2matsim.lib.RouteShape;
 
 /**
  * Wrapper class for a transit schedule that contains shapes
@@ -42,7 +43,13 @@ public interface ShapedTransitSchedule extends TransitSchedule {
 	 */
 	void readShapesFile(String shapesFilename, String outputCoordinateSystem);
 
+	TransitRouteShapeReference getTransitRouteShapeReference();
+
+	void setTransitRouteShapeReference(TransitRouteShapeReference ref);
+
 	void readRouteShapeReferenceFile(String routeShapeRefFile);
 
-	void writeRouteShapeReferenceFile(String routeShapeRefFile);
+//	void readRouteShapeReferenceFile(String routeShapeRefFile);
+
+//	void writeRouteShapeReferenceFile(String routeShapeRefFile);
 }
