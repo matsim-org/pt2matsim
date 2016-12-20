@@ -16,32 +16,26 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.gtfs;
+package org.matsim.pt2matsim.lib;
 
-import org.matsim.pt.transitSchedule.api.TransitSchedule;
-import org.matsim.pt2matsim.lib.ShapedTransitSchedule;
-import org.matsim.vehicles.Vehicles;
+import org.matsim.api.core.v01.Id;
+import org.matsim.pt.transitSchedule.api.TransitLine;
+import org.matsim.pt.transitSchedule.api.TransitRoute;
+
+import java.io.IOException;
 
 /**
- * An interface to load and convert GTFS feeds
+ * Interface to store the shape id belonging to transit routes.
  *
  * @author polettif
  */
-public interface GtfsFeed {
+public interface TransitRouteShapeReference {
 
-	String ALL_SERVICE_IDS = "all";
-	String DAY_WITH_MOST_TRIPS = "dayWithMostTrips";
-	String DAY_WITH_MOST_SERVICES = "dayWithMostServices";
+	Id<RouteShape> getShapeId(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId);
 
-	void convert(String serviceIdsParam, TransitSchedule transitSchedule, Vehicles vehicles);
+	void writeToFile(String filename);
 
-	void convert(String serviceIdsParam);
+	void readFile(String routeShapeRefFile);
 
-	void convert();
-
-	TransitSchedule getSchedule();
-
-	Vehicles getVehicles();
-
-	ShapedTransitSchedule getShapedSchedule();
+	void setShapeId(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId, Id<RouteShape> shapeId);
 }

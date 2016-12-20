@@ -629,6 +629,23 @@ public class NetworkTools {
 	}
 
 	/**
+	 * Calculates the length of a link sequence
+	 * @oaram uses the sum of all link lengths if <tt>false</tt>
+	 */
+	public static double calcRouteLength(Map<Id<Link>, ? extends Link> links, List<Id<Link>> linkIds, boolean euclidian) {
+		double length = 0;
+		for(Id<Link> linkId : linkIds) {
+			Link link = links.get(linkId);
+			if(euclidian) {
+				length += CoordUtils.calcEuclideanDistance(link.getFromNode().getCoord(), link.getToNode().getCoord());
+			} else {
+				length += link.getLength();
+			}
+		}
+		return length;
+	}
+
+	/**
 	 * Link filters by mode
 	 */
 	private static class LinkFilter implements NetworkLinkFilter {

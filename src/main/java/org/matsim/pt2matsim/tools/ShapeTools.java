@@ -31,6 +31,7 @@ import org.matsim.core.utils.gis.ShapeFileWriter;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.pt2matsim.gtfs.lib.GTFSRoute;
 import org.matsim.pt2matsim.gtfs.lib.Trip;
+import org.matsim.pt2matsim.lib.RouteShape;
 import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.*;
@@ -189,5 +190,17 @@ public class ShapeTools {
 		}
 		ShapeFileWriter.writeGeometries(features, filename);
 
+	}
+
+	/**
+	 * @return the length of a shape (sum of all its segment lengths)
+	 */
+	public static double getShapeLength(RouteShape shape) {
+		double length = 0;
+		List<Coord> coords = shape.getCoords();
+		for(int i = 0; i < coords.size()-1; i++) {
+			length += CoordUtils.calcEuclideanDistance(coords.get(i), coords.get(i + 1));
+		}
+		return length;
 	}
 }

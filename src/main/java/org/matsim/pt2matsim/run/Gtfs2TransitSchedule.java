@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
+import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 import org.matsim.pt2matsim.tools.ScheduleTools;
@@ -98,7 +99,7 @@ public class Gtfs2TransitSchedule {
 		TransitSchedule schedule = ScheduleTools.createSchedule();
 		Vehicles vehicles = VehicleUtils.createVehiclesContainer();
 
-		String param = serviceIdsParam == null ? GtfsConverter.DAY_WITH_MOST_SERVICES : serviceIdsParam;
+		String param = serviceIdsParam == null ? GtfsFeed.DAY_WITH_MOST_SERVICES : serviceIdsParam;
 		GtfsConverter gtfsConverter = new GtfsConverter(gtfsFolder, outputCoordinateSystem);
 		gtfsConverter.convert(param, schedule, vehicles);
 
@@ -115,7 +116,7 @@ public class Gtfs2TransitSchedule {
 				log.warn("Code " + outputCoordinateSystem + " not recognized by geotools. Shapefile not written.");
 			}
 			if(authExists)
-				gtfsConverter.getShapedSchedule().writeRouteShapeReferenceFile(transitRouteShapeRefFile);
+				gtfsConverter.getShapedSchedule().getTransitRouteShapeReference().writeToFile(transitRouteShapeRefFile);
 		}
 	}
 

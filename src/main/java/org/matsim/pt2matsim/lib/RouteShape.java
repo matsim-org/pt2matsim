@@ -16,7 +16,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.tools;
+package org.matsim.pt2matsim.lib;
 
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
