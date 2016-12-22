@@ -40,8 +40,8 @@ import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
-import org.matsim.pt2matsim.mapping.networkRouter.FastAStarRouter;
-import org.matsim.pt2matsim.mapping.networkRouter.Router;
+import org.matsim.pt2matsim.mapping.networkRouter.pathCalculators.FastAStarRouter;
+import org.matsim.pt2matsim.mapping.networkRouter.pathCalculators.Router;
 import org.matsim.core.network.NetworkImpl;
 
 import java.util.*;
@@ -569,6 +569,7 @@ public class NetworkTools {
 		// find closest link for each single link set
 		if(originLinks.size() != 0) {
 			for(Link originLink : originLinks) {
+				Set<Link> consideredLinks = new HashSet<>();
 				double minDist = Double.MAX_VALUE;
 				Link actual = originLink;
 				do {
@@ -578,6 +579,10 @@ public class NetworkTools {
 						linksToKeep.put(originLink, actual);
 					}
 					actual = linkSequence.get(actual);
+
+					if(!consideredLinks.add(actual)) {
+						linkSequence.put(actual, null); // loop found, abort
+					}
 				} while(linkSequence.get(actual) != null);
 			}
 
@@ -630,20 +635,31 @@ public class NetworkTools {
 
 	/**
 	 * Calculates the length of a link sequence
-	 * @oaram uses the sum of all link lengths if <tt>false</tt>
+	 * @param uses the sum of all link lengths if <tt>false</tt>
+	 * @throws Exception if links are not connected
 	 */
-	public static double calcRouteLength(Map<Id<Link>, ? extends Link> links, List<Id<Link>> linkIds, boolean euclidian) {
+	public static double calcRouteLength(List<Link> links, boolean euclidian) throws Exception {
 		double length = 0;
-		for(Id<Link> linkId : linkIds) {
-			Link link = links.get(linkId);
+		Link debugPrev = null;
+		for(Link link : links) {
+			if(debugPrev != null && !debugPrev.getToNode().getOutLinks().values().contains(link)) {
+				throw new NoSuchElementException("Links not connected!");
+			}
 			if(euclidian) {
 				length += CoordUtils.calcEuclideanDistance(link.getFromNode().getCoord(), link.getToNode().getCoord());
 			} else {
 				length += link.getLength();
 			}
+
+			debugPrev = link;
 		}
 		return length;
 	}
+
+	public static double calcRouteLength(Network network, TransitRoute transitRoute, boolean euclidian) throws Exception {
+		return calcRouteLength(NetworkUtils.getLinks(network, ScheduleTools.getTransitRouteLinkIds(transitRoute)), euclidian);
+	}
+
 
 	/**
 	 * Link filters by mode
