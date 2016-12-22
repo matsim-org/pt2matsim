@@ -20,7 +20,9 @@ package org.matsim.pt2matsim.tools;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
@@ -31,6 +33,7 @@ import org.matsim.vehicles.Vehicles;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * @author polettif
@@ -41,16 +44,22 @@ public class MappingAnalysisTest {
 	private Vehicles vehicles;
 	private Network network;
 	private GtfsFeed gtfsConverter;
+	private String coordinateSystem;
 
 	private String input = "test/analysis/";
 
 
 	@Before
 	public void prepare() throws IOException {
+
+		network = NetworkTools.readNetwork(input + "network/addison.xml.gz");
+
+		coordinateSystem = "EPSG:2032";
+
 		// convert schedule
 		schedule = ScheduleTools.createSchedule();
 		vehicles = VehicleUtils.createVehiclesContainer();
-		gtfsConverter = new GtfsConverter(input + "addisoncounty-vt-us-gtfs/", "EPSG:2032");
+		gtfsConverter = new GtfsConverter(input + "addisoncounty-vt-us-gtfs/", coordinateSystem);
 		gtfsConverter.convert("all", schedule, vehicles);
 
 //		ExtractDebugSchedule.run(schedule, "SBSB_1437", "59468A1158B4286");
@@ -69,7 +78,6 @@ public class MappingAnalysisTest {
 		new OsmMultimodalNetworkConverter(osmConfig).run();
 		*/
 
-		network = NetworkTools.readNetwork(input + "network/addison.xml.gz");
 	}
 
 	@Before
@@ -86,11 +94,12 @@ public class MappingAnalysisTest {
 	public void analysis() {
 		new File(input + "output/").mkdirs();
 
-		MappingAnalysis analysis = new MappingAnalysis(schedule, network, input + "mts/route_shape_ref.csv", input + "addisoncounty-vt-us-gtfs/shapes.txt", "EPSG:2032");
+		MappingAnalysis analysis = new MappingAnalysis(schedule, network, input + "mts/route_shape_ref.csv", input + "addisoncounty-vt-us-gtfs/shapes.txt", coordinateSystem);
 
 		analysis.run();
 		analysis.writeAllDistancesCsv(input+"output/DistancesAll.csv");
 		analysis.writeQuantileDistancesCsv(input+"output/DistancesQuantile.csv");
 		System.out.println(analysis.getQ8585());
+		System.out.println(Math.sqrt(analysis.getAverageSquaredLengthRatio()));
 	}
 }

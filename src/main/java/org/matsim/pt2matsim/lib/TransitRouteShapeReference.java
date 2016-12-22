@@ -22,8 +22,6 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 
-import java.io.IOException;
-
 /**
  * Interface to store the shape id belonging to transit routes.
  *

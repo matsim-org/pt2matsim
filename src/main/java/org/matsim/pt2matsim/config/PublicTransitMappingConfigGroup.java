@@ -54,7 +54,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private static final String TRAVEL_COST_TYPE = "travelCostType";
 	private static final String PREFIX_ARTIFICIAL = "prefixArtificial";
 	private static final String MAX_TRAVEL_COST_FACTOR = "maxTravelCostFactor";
-//	private static final String U_TURN_COST = "uTurnCost";
 	private static final String NETWORK_FILE = "networkFile";
 	private static final String SCHEDULE_FILE = "scheduleFile";
 	private static final String OUTPUT_NETWORK_FILE = "outputNetworkFile";
@@ -73,12 +72,12 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private Set<ManualLinkCandidates> manualLinkCandidates = null;
 
 	private Set<String> scheduleFreespeedModes = new HashSet<>(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE_AS_SET);
-	private double maxTravelCostFactor = 5.0;	private Set<String> modesToKeepOnCleanUp = new HashSet<>();
+	private Set<String> modesToKeepOnCleanUp = new HashSet<>();
+	private double maxTravelCostFactor = 5.0;
 	private String manualLinkCandidateCsvFile = null;
 	private String prefixArtificial = "pt_";
 	private int numOfThreads = 2;
 	private double nodeSearchRadius = 500;
-	private double uTurnCost = 0;
 	private boolean removeNotUsedStopFacilities = true;
 	private boolean combinePtModes = false;
 	private boolean addPtMode = true;
@@ -147,8 +146,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 						"\t\thave any significant impact on performance.");
 		map.put(PREFIX_ARTIFICIAL,
 				"ID prefix used for all artificial links and nodes created during mapping.");
-//		map.put(U_TURN_COST,
-//				"Travel costs for u-turns. Is added to the travel costs starting link.'s opposite link. Unit depends on " + TRAVEL_COST_TYPE + "- Experimental! Default: 0");
 		map.put(SCHEDULE_FREESPEED_MODES,
 				"After the schedule has been mapped, the free speed of links can be set according to the necessary travel \n" +
 						"\t\ttimes given by the transit schedule. The freespeed of a link is set to the minimal value needed by all \n" +
@@ -433,20 +430,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		this.maxTravelCostFactor = maxTravelCostFactor;
 	}
 
-	/*
-	@StringGetter(U_TURN_COST)
-	public double getUTurnCost() {
-		return uTurnCost;
-	}
-
-	@StringSetter(U_TURN_COST)
-	public void setUTurnCost(double uTurnCost) {
-		if(uTurnCost < 0) {
-			throw new RuntimeException("uTurnCost cannot be less than 0!");
-		}
-		this.uTurnCost = uTurnCost;
-	}
-	*/
 
 	/**
 	 *

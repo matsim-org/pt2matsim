@@ -40,8 +40,8 @@ import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
-import org.matsim.pt2matsim.mapping.networkRouter.pathCalculators.FastAStarRouter;
-import org.matsim.pt2matsim.mapping.networkRouter.pathCalculators.Router;
+import org.matsim.pt2matsim.mapping.networkRouter.FastAStarRouter;
+import org.matsim.pt2matsim.mapping.networkRouter.Router;
 import org.matsim.core.network.NetworkImpl;
 
 import java.util.*;
@@ -635,7 +635,7 @@ public class NetworkTools {
 
 	/**
 	 * Calculates the length of a link sequence
-	 * @param uses the sum of all link lengths if <tt>false</tt>
+	 * @param euclidian uses the sum of all link lengths if <tt>false</tt>
 	 * @throws Exception if links are not connected
 	 */
 	public static double calcRouteLength(List<Link> links, boolean euclidian) throws Exception {

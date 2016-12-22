@@ -28,7 +28,7 @@ public class CsvToolsTest {
 
 		CsvTools.writeNestedMapToFile(testMap, file);
 
-		Map<String, Map<String, String>> readMap = CsvTools.readNestedMapFromFile(file);
+		Map<String, Map<String, String>> readMap = CsvTools.readNestedMapFromFile(file, false);
 
 		Assert.equals(testMap, readMap);
 	}

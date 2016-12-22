@@ -107,8 +107,14 @@ public class CsvTools {
 	 * Writes a map within a map to a file, each value V is on a line with its corresponding
 	 * E and K values.
 	 */
-	public static <K, E, V> void writeNestedMapToFile(Map<K, Map<E, V>> map, String filename, char separator) throws IOException {
+	public static <K, E, V> void writeNestedMapToFile(Object[] header, Map<K, Map<E, V>> map, String filename, char separator) throws IOException {
 		List<String> csvLines = new LinkedList<>();
+
+		if(header != null) {
+			String headerLine = header[0].toString() + separator + header[1].toString() + separator + header[2].toString();
+			csvLines.add(headerLine);
+		}
+
 		for(Map.Entry<K, Map<E, V>> entry : map.entrySet()) {
 			for(Map.Entry<E, V> f : entry.getValue().entrySet()) {
 				String newLine = "";
@@ -121,19 +127,23 @@ public class CsvTools {
 		writeToFile(csvLines, filename);
 	}
 
-	/**
-	 * Writes a map within a map to a file, each value V is on a line with its corresponding
-	 * E and K values.
-	 */
-	public static <K, E, V> void writeNestedMapToFile(Map<K, Map<E, V>> map, String filename) throws IOException {
-		writeNestedMapToFile(map, filename, STANDARD_SEPARATOR);
+	public static <K, E, V> void writeNestedMapToFile(Map<K, Map<E, V>> map, String filename, char separator) throws IOException {
+		writeNestedMapToFile(null, map, filename, separator);
 	}
 
+	public static <K, E, V> void writeNestedMapToFile(Map<K, Map<E, V>> map, String filename) throws IOException {
+		writeNestedMapToFile(null, map, filename, STANDARD_SEPARATOR);
+	}
 
-	public static Map<String, Map<String, String>> readNestedMapFromFile(String fileName) throws IOException {
+	public static <K, E, V> void writeNestedMapToFile(Object[] header, Map<K, Map<E, V>> map, String filename) throws IOException {
+		writeNestedMapToFile(header, map, filename, STANDARD_SEPARATOR);
+	}
+
+	public static Map<String, Map<String, String>> readNestedMapFromFile(String fileName, boolean ignoreFirstLine) throws IOException {
 		Map<String, Map<String, String>> map = new HashMap<>();
 
 		CSVReader reader = new CSVReader(new FileReader(fileName));
+		if(ignoreFirstLine) reader.readNext();
 		String[] line = reader.readNext();
 		while(line != null) {
 			MapUtils.getMap(line[0], map).put(line[1], line[2]);

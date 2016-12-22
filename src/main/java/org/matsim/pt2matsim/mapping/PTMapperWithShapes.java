@@ -76,6 +76,8 @@ public class PTMapperWithShapes implements PTMapper {
 	private Network network;
 	private ShapedTransitSchedule schedule;
 
+	// todo make one implementation of ptmapper that uses different modules for link candidates and routing
+
 	private ScheduleRouters scheduleRouters;
 	private final PseudoSchedule pseudoSchedule = new PseudoScheduleImpl();
 
@@ -148,7 +150,7 @@ public class PTMapperWithShapes implements PTMapper {
 		 * initiate routers.
 		 */
 		log.info("==============================================");
-		log.info("Creating mode separated network and routers...");
+		log.info("Creating routers...");
 		scheduleRouters = new ScheduleRoutersWithShapes(config, schedule, network);
 
 

@@ -22,10 +22,12 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
-import org.matsim.pt2matsim.lib.RouteShape;
+
+import java.util.Collection;
+import java.util.Map;
 
 /**
- * Wrapper class for a transit schedule that contains shapes
+ * Wrapper class for a transit schedule that contains shapes for transit routes
  *
  * @author polettif
  */
@@ -35,6 +37,8 @@ public interface ShapedTransitSchedule extends TransitSchedule {
 
 	RouteShape getShape(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId);
 
+	Map<Id<RouteShape>, ? extends RouteShape> getShapes();
+
 	/**
 	 * Reads a gtfs formatted shapes file.
 	 *
@@ -43,11 +47,11 @@ public interface ShapedTransitSchedule extends TransitSchedule {
 	 */
 	void readShapesFile(String shapesFilename, String outputCoordinateSystem);
 
+	void readRouteShapeReferenceFile(String routeShapeRefFile);
+
 	TransitRouteShapeReference getTransitRouteShapeReference();
 
 	void setTransitRouteShapeReference(TransitRouteShapeReference ref);
-
-	void readRouteShapeReferenceFile(String routeShapeRefFile);
 
 //	void readRouteShapeReferenceFile(String routeShapeRefFile);
 

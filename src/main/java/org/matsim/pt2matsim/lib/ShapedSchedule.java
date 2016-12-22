@@ -69,8 +69,7 @@ public class ShapedSchedule implements ShapedTransitSchedule {
 	public RouteShape getShape(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId) {
 		Id<RouteShape> shapeId = transitRouteShapeRef.getShapeId(transitLineId, transitRouteId);
 		if(shapeId == null) {
-			// todo change exception to log or return null
-			throw new IllegalArgumentException("No shape available for transit route "+ transitRouteId +" on transit line " + transitLineId);
+			return null;
 		}
 		return shapes.get(shapeId);
 	}
@@ -120,6 +119,11 @@ public class ShapedSchedule implements ShapedTransitSchedule {
 	@Override
 	public void readRouteShapeReferenceFile(String routeShapeRefFile) {
 		this.transitRouteShapeRef.readFile(routeShapeRefFile);
+	}
+
+	@Override
+	public Map<Id<RouteShape>, ? extends RouteShape> getShapes() {
+		return this.shapes;
 	}
 
 	// TransitSchedule methods

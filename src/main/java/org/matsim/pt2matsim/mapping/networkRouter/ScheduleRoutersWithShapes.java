@@ -6,6 +6,7 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.utils.collections.MapUtils;
+import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
@@ -57,23 +58,36 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 	}
 
 
-	public void init() {
+	private void init() {
+		Counter c = new Counter(" # ");
+
 		RouterShapes.setTravelCostType(config.getTravelCostType());
 		RouterShapes.setNetworkCutBuffer(200);
 		RouterShapes.setMaxWeightDistance(50);
 
 		for(TransitLine transitLine : this.shapedSchedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
-				log.info("Initiating network and router for transit route " + transitRoute.getId() + " (line " + transitLine.getId() + ")");
-				Id<RouteShape> shapeId = shapedSchedule.getShape(transitLine.getId(), transitRoute.getId()).getId();
-				Router tmpRouter = routersByShape.get(shapeId);
-				if(tmpRouter == null) {
-					log.info("New router for shape \"" + shapeId + "\"");
-					Set<String> networkTransportModes = config.getModeRoutingAssignment().get(transitRoute.getTransportMode());
-					if(useArtificial) networkTransportModes.add(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE);
+				c.incCounter();
+				// log.info("Initiating network and router for transit route " + transitRoute.getId() + " (line " + transitLine.getId() + ")");
+				RouteShape shape = shapedSchedule.getShape(transitLine.getId(), transitRoute.getId());
 
-					tmpRouter = new RouterShapes(network, networkTransportModes, shapedSchedule.getShape(transitLine.getId(), transitRoute.getId()));
-					routersByShape.put(shapeId, tmpRouter);
+				Router tmpRouter;
+
+				if(shape == null) {
+					log.warn("No shape available. Transit Route will be mapped artificially! Consider removing routes without shapes beforehand.");
+					tmpRouter = new EmptyRouter();
+				}
+				else {
+					Id<RouteShape> shapeId = shape.getId();
+					tmpRouter = routersByShape.get(shapeId);
+					if(tmpRouter == null) {
+					//	log.info("New router for shape \"" + shapeId + "\"");
+						Set<String> networkTransportModes = config.getModeRoutingAssignment().get(transitRoute.getTransportMode());
+						if(useArtificial) networkTransportModes.add(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE);
+
+						tmpRouter = new RouterShapes(network, networkTransportModes, shapedSchedule.getShape(transitLine.getId(), transitRoute.getId()));
+						routersByShape.put(shapeId, tmpRouter);
+					}
 				}
 				MapUtils.getMap(transitLine, routers).put(transitRoute, tmpRouter);
 			}
