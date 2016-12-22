@@ -18,16 +18,16 @@
 
 package org.matsim.pt2matsim.lib;
 
-import com.opencsv.CSVReader;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt2matsim.tools.CsvTools;
 
-import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -57,9 +57,12 @@ public class TransitRouteShapeReferenceImpl implements TransitRouteShapeReferenc
 
 	@Override
 	public void writeToFile(String filename) {
-		// todo implement header in write method
+		String[] header = new String[3];
+		header[0] = "transitLineId";
+		header[1] = "transitRouteId";
+		header[2] = "shapeId";
 		try {
-			CsvTools.writeNestedMapToFile(routeShapeRefMap, filename);
+			CsvTools.writeNestedMapToFile(header, routeShapeRefMap, filename);
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new IllegalArgumentException("Could not write references to file.");
@@ -70,7 +73,7 @@ public class TransitRouteShapeReferenceImpl implements TransitRouteShapeReferenc
 	public void readFile(String routeShapeRefFile) {
 		Map<String, Map<String, String>> stringMap;
 		try {
-			stringMap = CsvTools.readNestedMapFromFile(routeShapeRefFile);
+			stringMap = CsvTools.readNestedMapFromFile(routeShapeRefFile, true);
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new IllegalArgumentException("Could not read references from file.");

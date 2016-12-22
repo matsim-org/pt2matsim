@@ -42,12 +42,12 @@ public class PTMapperWithShapesTest {
 //		ShapeTools.writeShapeFile(Collections.singleton(gtfsConverter.getShapes().get("26")), coordSys, base + "output/gtfsShapeDebug.shp");
 	}
 
-	private static PublicTransitMappingConfigGroup createPTMConfig() {
+	public static PublicTransitMappingConfigGroup createPTMConfig() {
 		PublicTransitMappingConfigGroup config = new PublicTransitMappingConfigGroup();
 		config.getModesToKeepOnCleanUp().add("car");
 		PublicTransitMappingConfigGroup.LinkCandidateCreatorParams lccParamsBus = new PublicTransitMappingConfigGroup.LinkCandidateCreatorParams("bus");
 		lccParamsBus.setNetworkModesStr("car,bus");
-		lccParamsBus.setMaxNClosestLinks(20);
+		lccParamsBus.setMaxNClosestLinks(12);
 		lccParamsBus.setMaxLinkCandidateDistance(100);
 		lccParamsBus.setLinkDistanceTolerance(1.1);
 		config.addParameterSet(lccParamsBus);
@@ -76,8 +76,6 @@ public class PTMapperWithShapesTest {
 		PublicTransitMappingConfigGroup config = createPTMConfig();
 		ShapedTransitSchedule shapedSchedule = new ShapedSchedule(base + "mts/unmapped_schedule.xml.gz", base + "output/shapeRef.csv", gtfsFolder+"shapes.txt", coordSys);
 
-		shapedSchedule.readRouteShapeReferenceFile(base + "output/shapeRef.csv");
-
 		PTMapper ptMapper = new PTMapperWithShapes(config, shapedSchedule, network);
 //		ExtractDebugSchedule.run(shapedSchedule, "TTSB/B_1438", "602798A4122B5456");
 		ptMapper.run();
@@ -98,6 +96,7 @@ public class PTMapperWithShapesTest {
 		analysis.run();
 		analysis.writeQuantileDistancesCsv(base +"output/Normal_DistancesQuantile.csv");
 		System.out.println("Q8585 normal: " + analysis.getQ8585());
+		System.out.println("Length diff. normal: " + Math.sqrt(analysis.getAverageSquaredLengthRatio())*100 + " %");
 
 	}
 
@@ -112,6 +111,8 @@ public class PTMapperWithShapesTest {
 		analysis.run();
 		analysis.writeQuantileDistancesCsv(base +"/output/Shapes_DistancesQuantile.csv");
 		System.out.println("Q8585 with shapes: " + analysis.getQ8585());
+		System.out.println("Length diff. shapes: " + Math.sqrt(analysis.getAverageSquaredLengthRatio())*100 + " %");
+
 
 		/*
 		PlausibilityCheck.run(
