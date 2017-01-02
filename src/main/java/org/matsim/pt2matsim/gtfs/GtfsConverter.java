@@ -396,14 +396,23 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 			String[] line = reader.readNext();
 			while(line != null) {
 				Service currentService = services.get(line[col.get(GTFSDefinitions.SERVICE_ID)]);
-				if(currentService != null) {
-					if(line[col.get(GTFSDefinitions.EXCEPTION_TYPE)].equals("2"))
-						currentService.addException(line[col.get(GTFSDefinitions.DATE)]);
-					else
-						currentService.addAddition(line[col.get(GTFSDefinitions.DATE)]);
-				} else {
-					throw new RuntimeException("Service id \"" + line[col.get(GTFSDefinitions.SERVICE_ID)] + "\" not defined in calendar.txt");
+
+				if(currentService == null) {
+					currentService = new Service(
+							line[col.get(GTFSDefinitions.SERVICE_ID)],
+							new boolean[] { false, false, false, false, false, false, false },
+							"19700101", "29991231"
+					);
+
+					services.put(currentService.getId(), currentService);
+					log.warn("Service id \"" + currentService.getId() + "\" not defined in calendar.txt (only defined in calendar_dates.txt?)");
 				}
+
+				if(line[col.get(GTFSDefinitions.EXCEPTION_TYPE)].equals("2"))
+					currentService.addException(line[col.get(GTFSDefinitions.DATE)]);
+				else
+					currentService.addAddition(line[col.get(GTFSDefinitions.DATE)]);
+
 				line = reader.readNext();
 			}
 			reader.close();
