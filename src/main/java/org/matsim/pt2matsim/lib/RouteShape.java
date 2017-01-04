@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.SortedMap;
 
 /**
+ * A polyline representing a route as a list of point coordinates.
+ *
  * @author polettif
  */
 public interface RouteShape extends Identifiable {
@@ -42,7 +44,4 @@ public interface RouteShape extends Identifiable {
 
 	List<Coord> getCoords();
 
-	Set<Tuple<Id<TransitLine>, Id<TransitRoute>>> getTransitRoutes();
-
-	void addTransitRoute(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId);
 }

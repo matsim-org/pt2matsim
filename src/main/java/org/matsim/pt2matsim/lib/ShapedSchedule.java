@@ -24,7 +24,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.*;
-import org.matsim.pt2matsim.gtfs.lib.GTFSDefinitions;
+import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions;
 import org.matsim.pt2matsim.gtfs.lib.GtfsShape;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.utils.objectattributes.ObjectAttributes;
@@ -82,17 +82,17 @@ public class ShapedSchedule implements ShapedTransitSchedule {
 		try {
 			reader = new CSVReader(new FileReader(shapesFilename));
 			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GTFSDefinitions.Files.SHAPES.columns);
+			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.SHAPES.columns);
 			String[] line = reader.readNext();
 			while(line != null) {
-				Id<RouteShape> shapeId = Id.create(line[col.get(GTFSDefinitions.SHAPE_ID)], RouteShape.class);
+				Id<RouteShape> shapeId = Id.create(line[col.get(GtfsDefinitions.SHAPE_ID)], RouteShape.class);
 				RouteShape currentShape = shapes.get(shapeId);
 				if(currentShape == null) {
-					currentShape = new GtfsShape(line[col.get(GTFSDefinitions.SHAPE_ID)]);
+					currentShape = new GtfsShape(line[col.get(GtfsDefinitions.SHAPE_ID)]);
 					shapes.put(shapeId, currentShape);
 				}
-				Coord point = new Coord(Double.parseDouble(line[col.get(GTFSDefinitions.SHAPE_PT_LON)]), Double.parseDouble(line[col.get(GTFSDefinitions.SHAPE_PT_LAT)]));
-				currentShape.addPoint(ct.transform(point), Integer.parseInt(line[col.get(GTFSDefinitions.SHAPE_PT_SEQUENCE)]));
+				Coord point = new Coord(Double.parseDouble(line[col.get(GtfsDefinitions.SHAPE_PT_LON)]), Double.parseDouble(line[col.get(GtfsDefinitions.SHAPE_PT_LAT)]));
+				currentShape.addPoint(ct.transform(point), Integer.parseInt(line[col.get(GtfsDefinitions.SHAPE_PT_SEQUENCE)]));
 				line = reader.readNext();
 			}
 			reader.close();

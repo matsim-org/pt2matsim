@@ -29,11 +29,26 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
  */
 public interface TransitRouteShapeReference {
 
+	/**
+	 * @return the shape id corresponding to the given transit route
+	 */
 	Id<RouteShape> getShapeId(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId);
 
+	/**
+	 * Sets the shape id for a transit route
+	 */
+	void setShapeId(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId, Id<RouteShape> shapeId);
+
+	/**
+	 * Writes the shape reference to a csv file with the header
+ 	 * <tt>transitLineId, transitRouteId, shapeId</tt>
+	 */
 	void writeToFile(String filename);
 
+	/**
+	 * Reads shape references from a csv file with the header
+	 * <tt>transitLineId, transitRouteId, shapeId</tt>
+	 */
 	void readFile(String routeShapeRefFile);
 
-	void setShapeId(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId, Id<RouteShape> shapeId);
 }

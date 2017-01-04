@@ -27,7 +27,9 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * Wrapper class for a transit schedule that contains shapes for transit routes
+ * Wrapper class for a transit schedule that contains
+ * routeShapes for transitRoutes. Is used for {@link org.matsim.pt2matsim.mapping.PTMapperWithShapes} and
+ * {@link org.matsim.pt2matsim.tools.MappingAnalysis}
  *
  * @author polettif
  */
@@ -47,13 +49,14 @@ public interface ShapedTransitSchedule extends TransitSchedule {
 	 */
 	void readShapesFile(String shapesFilename, String outputCoordinateSystem);
 
+	/**
+	 * Reads a route shape reference file, a csv with three columns and a header
+	 * <tt>transitLineId, transitRouteId, shapeId</tt>
+	 */
 	void readRouteShapeReferenceFile(String routeShapeRefFile);
 
 	TransitRouteShapeReference getTransitRouteShapeReference();
 
 	void setTransitRouteShapeReference(TransitRouteShapeReference ref);
 
-//	void readRouteShapeReferenceFile(String routeShapeRefFile);
-
-//	void writeRouteShapeReferenceFile(String routeShapeRefFile);
 }
