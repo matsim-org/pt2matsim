@@ -47,11 +47,6 @@ public interface Router extends TravelDisutility, TravelTime {
 	double getMinimalTravelCost(TransitRouteStop fromStop, TransitRouteStop toStop);
 
 	/**
-	 * @return The travel cost for the given link
-	 */
-	double getLinkTravelCost(Link link);
-
-	/**
 	 * If {@link PseudoRouting} needs to add an artificial link to the network, this method returns
 	 * the freespeed value.
 	 */

@@ -43,7 +43,6 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 	protected static Logger log = Logger.getLogger(LinkCandidateCreatorStandard.class);
 
 	private static final Set<String> loopLinkModes = CollectionUtils.stringToSet(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE+","+ PublicTransitMappingStrings.STOP_FACILITY_LOOP_LINK);
-	private final ScheduleRouters scheduleRouters;
 
 	private Map<String, PublicTransitMappingConfigGroup.LinkCandidateCreatorParams> lccParams;
 
@@ -53,11 +52,10 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 	private final Map<String, Map<Id<TransitStopFacility>, SortedSet<LinkCandidate>>> linkCandidates = new HashMap<>();
 
-	public LinkCandidateCreatorStandard(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config, ScheduleRouters scheduleRouters) {
+	public LinkCandidateCreatorStandard(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
 		this.schedule = schedule;
 		this.network = network;
 		this.config = config;
-		this.scheduleRouters = scheduleRouters;
 
 		createLinkCandidates();
 	}
@@ -83,7 +81,6 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 					PublicTransitMappingConfigGroup.LinkCandidateCreatorParams param = lccParams.get(scheduleTransportMode);
 
-					Router modeRouter = scheduleRouters.getRouter(transitLine, transitRoute);
 					TransitStopFacility stopFacility = transitRouteStop.getStopFacility();
 
 					SortedSet<LinkCandidate> modeLinkCandidates = MiscUtils.getSortedSet(stopFacility.getId(), MapUtils.getMap(scheduleTransportMode, linkCandidates));
@@ -93,7 +90,7 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 						// if stop facilty already has a referenced link
 						if(stopFacility.getLinkId() != null) {
 							Link link = network.getLinks().get(stopFacility.getLinkId());
-							modeLinkCandidates.add(new LinkCandidateImpl(link, stopFacility, modeRouter.getLinkTravelCost(link)));
+							modeLinkCandidates.add(new LinkCandidateImpl(link, stopFacility, getLinkTravelCost(link)));
 						// search for close links
 						} else {
 							List<Link> closestLinks;
@@ -122,7 +119,7 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 							 * generate a LinkCandidate for each close link
 							 */
 							for(Link link : closestLinks) {
-								modeLinkCandidates.add(new LinkCandidateImpl(link, stopFacility, modeRouter.getLinkTravelCost(link)));
+								modeLinkCandidates.add(new LinkCandidateImpl(link, stopFacility, getLinkTravelCost(link)));
 							}
 						}
 					}
@@ -152,7 +149,6 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 			if(parentStopFacility != null) {
 				for(String scheduleMode : scheduleModes) {
 					// todo change link travel cost handling for link candidates
-					Router modeRouter = scheduleRouters.getRouter(scheduleMode);
 
 					PublicTransitMappingConfigGroup.LinkCandidateCreatorParams lccParams = config.getLinkCandidateCreatorParams().get(scheduleMode);
 
@@ -168,7 +164,8 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 										"("+CoordUtils.calcEuclideanDistance(link.getCoord(), parentStopFacility.getCoord())+")");
 								log.info("Manual link candidate will still be used");
 							}
-							lcSet.add(new LinkCandidateImpl(link, parentStopFacility, modeRouter.getLinkTravelCost(link)));
+
+							lcSet.add(new LinkCandidateImpl(link, parentStopFacility, getLinkTravelCost(link)));
 						}
 					}
 					MapUtils.getMap(scheduleMode, linkCandidates).put(parentStopFacility.getId(), lcSet);
@@ -181,6 +178,11 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 	@Override
 	public SortedSet<LinkCandidate> getLinkCandidates(Id<TransitStopFacility> transitStopFacilityId, TransitLine transitLine, TransitRoute transitRoute) {
 		return linkCandidates.get(transitRoute.getTransportMode()).get(transitStopFacilityId);
+	}
+
+	private double getLinkTravelCost(Link link) {
+		return (config.getTravelCostType().equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ?
+				link.getLength() / link.getFreespeed() : link.getLength());
 	}
 
 }

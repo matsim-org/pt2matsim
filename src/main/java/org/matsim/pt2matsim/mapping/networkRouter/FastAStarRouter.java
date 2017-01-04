@@ -113,12 +113,6 @@ public class FastAStarRouter implements Router {
 		}
 	}
 
-	@Override
-	public double getLinkTravelCost(Link link) {
-		return this.getLinkMinimumTravelDisutility(link);
-	}
-
-
 	// LeastCostPathCalculator methods
 	@Override
 	public double getLinkTravelDisutility(Link link, double time, Person person, Vehicle vehicle) {

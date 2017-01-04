@@ -31,7 +31,7 @@ import java.io.IOException;
 
 /**
  * Executes the BasicScheduleEditor with the given schedule, network and
- * command file. Experimental
+ * command file. Experimental!
  *
  * @author polettif
  */

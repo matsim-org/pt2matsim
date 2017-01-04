@@ -116,7 +116,7 @@ public class Gtfs2TransitSchedule {
 				log.warn("Code " + outputCoordinateSystem + " not recognized by geotools. Shapefile not written.");
 			}
 			if(authExists)
-				gtfsConverter.getShapedSchedule().getTransitRouteShapeReference().writeToFile(transitRouteShapeRefFile);
+				gtfsConverter.getShapedTransitSchedule().getTransitRouteShapeReference().writeToFile(transitRouteShapeRefFile);
 		}
 	}
 

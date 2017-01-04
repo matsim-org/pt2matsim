@@ -162,7 +162,8 @@ public class PTMapperWithShapes implements PTMapper {
 		 */
 		log.info("===========================");
 		log.info("Creating link candidates...");
-		LinkCandidateCreator linkCandidates = new LinkCandidateCreatorStandard(this.schedule, this.network, this.config, this.scheduleRouters);
+		LinkCandidateCreator linkCandidates = new LinkCandidateCreatorStandard(this.schedule, this.network, this.config);
+
 
 		/** [3]
 		 * PseudoRouting

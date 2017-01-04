@@ -30,7 +30,7 @@ import org.matsim.vehicles.Vehicle;
 
 /**
  * Dummy class that always returns <tt>null</tt> as least cost paths.
- * Is used for transit routes that are always mapped artificially in
+ * Can be used for transitRoutes that are always mapped artificially in
  * {@link org.matsim.pt2matsim.mapping.PseudoRouting}
  *
  * @author polettif
@@ -45,11 +45,6 @@ public class EmptyRouter implements Router {
 	@Override
 	public double getMinimalTravelCost(TransitRouteStop fromStop, TransitRouteStop toStop) {
 		return Double.MAX_VALUE;
-	}
-
-	@Override
-	public double getLinkTravelCost(Link link) {
-		return 0;
 	}
 
 	@Override

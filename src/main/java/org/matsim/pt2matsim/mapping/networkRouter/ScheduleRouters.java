@@ -28,7 +28,7 @@ import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 
 /**
- * All Routers (i.e. LeastCostPathCalculators( for the transit routes are stored within
+ * All Routers (i.e. LeastCostPathCalculators) for the transit routes are stored within
  * an implementation of this interface. That way, the implementation can use different
  * routers for different transit routes while keeping the access the same.
  *
@@ -42,14 +42,6 @@ public interface ScheduleRouters {
 	LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, TransitLine transitLine, TransitRoute transitRoute);
 
 	LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNode, Id<Node> toNode, TransitLine transitLine, TransitRoute transitRoute);
-
-	Router getRouter(TransitLine transitLine, TransitRoute transitRoute);
-
-	/**
-	 * @deprecated routers should be called via transit line and route
-	 */
-	@Deprecated
-	Router getRouter(String scheduleMode);
 
 	double getMinimalTravelCost(TransitRouteStop fromTransitRouteStop, TransitRouteStop toTransitRouteStop, TransitLine transitLine, TransitRoute transitRoute);
 

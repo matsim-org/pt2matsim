@@ -20,9 +20,7 @@ package org.matsim.pt2matsim.tools;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
@@ -33,7 +31,6 @@ import org.matsim.vehicles.Vehicles;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 /**
  * @author polettif
@@ -65,7 +62,7 @@ public class MappingAnalysisTest {
 //		ExtractDebugSchedule.run(schedule, "SBSB_1437", "59468A1158B4286");
 
 		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), input + "mts/schedule_unmapped.xml.gz");
-		gtfsConverter.getShapedSchedule().getTransitRouteShapeReference().writeToFile(input + "mts/route_shape_ref.csv");
+		gtfsConverter.getShapedTransitSchedule().getTransitRouteShapeReference().writeToFile(input + "mts/route_shape_ref.csv");
 
 		// read network
 		/*convert from osm

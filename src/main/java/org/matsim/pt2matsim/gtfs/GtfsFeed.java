@@ -43,5 +43,5 @@ public interface GtfsFeed {
 
 	Vehicles getVehicles();
 
-	ShapedTransitSchedule getShapedSchedule();
+	ShapedTransitSchedule getShapedTransitSchedule();
 }

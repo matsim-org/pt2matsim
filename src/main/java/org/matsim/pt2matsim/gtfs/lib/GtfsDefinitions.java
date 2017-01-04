@@ -20,7 +20,7 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
-public final class GTFSDefinitions {
+public final class GtfsDefinitions {
 
 	// column names
 	public static final String SHAPE_ID = "shape_id";
