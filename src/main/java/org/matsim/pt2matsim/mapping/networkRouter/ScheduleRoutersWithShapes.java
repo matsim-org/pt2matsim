@@ -81,7 +81,6 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 					Id<RouteShape> shapeId = shape.getId();
 					tmpRouter = routersByShape.get(shapeId);
 					if(tmpRouter == null) {
-					//	log.info("New router for shape \"" + shapeId + "\"");
 						Set<String> networkTransportModes = config.getModeRoutingAssignment().get(transitRoute.getTransportMode());
 						if(useArtificial) networkTransportModes.add(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE);
 
@@ -105,16 +104,6 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 	@Override
 	public LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNodeId, Id<Node> toNodeId, TransitLine transitLine, TransitRoute transitRoute) {
 		return routers.get(transitLine).get(transitRoute).calcLeastCostPath(fromNodeId, toNodeId);
-	}
-
-	@Override
-	public Router getRouter(TransitLine transitLine, TransitRoute transitRoute) {
-		return routers.get(transitLine).get(transitRoute);
-	}
-
-	@Override
-	public Router getRouter(String scheduleMode) {
-		return null;
 	}
 
 	@Override

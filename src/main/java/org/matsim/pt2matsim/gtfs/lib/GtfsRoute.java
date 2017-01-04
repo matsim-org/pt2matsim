@@ -1,6 +1,6 @@
 /* *********************************************************************** *
  * project: org.matsim.*
- * Stop.java
+ * Route.java
  *                                                                         *
  * *********************************************************************** *
  *                                                                         *
@@ -20,38 +20,65 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
-import org.matsim.api.core.v01.Coord;
+import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions.RouteTypes;
 
-public class GTFSStop {
+import java.util.SortedMap;
+import java.util.TreeMap;
 
-	private Coord point;
-	private String name;
-	private boolean blocks;
+
+public class GtfsRoute {
+	                           
+	//Attributes
+	private String routeId;
+	private String shortName;
+	private RouteTypes routeType;
+	private SortedMap<String, Trip> trips;
 
 	//Methods
-	public GTFSStop(Coord point, String name, boolean blocks) {
+	public GtfsRoute(String routeId, String shortName, RouteTypes routeType) {
 		super();
-		this.point = point;
-		this.name = name;
-		this.blocks = blocks;
+		this.routeId = routeId;
+		this.shortName = shortName;
+		this.routeType = routeType;
+		trips = new TreeMap<>();
 	}
+
 	/**
-	 * @return the point
+	 * @return the routeId
 	 */
-	public Coord getPoint() {
-		return point;
+	public String getRouteId() {
+		return routeId;
 	}
+
 	/**
-	 * @return the name
+	 * @return the shortName
 	 */
-	public String getName() {
-		return name;
+	public String getShortName() {
+		return shortName;
 	}
+
 	/**
-	 * @return the blocks
+	 * @return the routeType
 	 */
-	public boolean isBlocks() {
-		return blocks;
+	public RouteTypes getRouteType() {
+		return routeType;
 	}
+
+	/**
+	 * @return the trips
+	 */
+	public SortedMap<String, Trip> getTrips() {
+		return trips;
+	}
+
+	/**
+	 * Puts a new trip
+	 * @param key id
+	 * @param trip trip
+	 */
+	public void putTrip(String key, Trip trip) {
+		trips.put(key, trip);
+	}
+	
 
 }

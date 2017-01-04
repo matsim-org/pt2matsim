@@ -25,7 +25,6 @@ import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
-import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
@@ -95,8 +94,8 @@ public class GtfsConverter implements GtfsFeed {
 
 
 	// containers for storing gtfs data
-	private Map<String, GTFSStop> gtfsStops = new HashMap<>();
-	private Map<String, GTFSRoute> gtfsRoutes = new TreeMap<>();
+	private Map<String, GtfsStop> gtfsStops = new HashMap<>();
+	private Map<String, GtfsRoute> gtfsRoutes = new TreeMap<>();
 	private Map<String, Service> services = new HashMap<>();
 	private Map<Id<RouteShape>, RouteShape> shapes = new HashMap<>();
 	private boolean warnStopTimes = true;
@@ -129,7 +128,7 @@ public class GtfsConverter implements GtfsFeed {
 	 * Converts the loaded gtfs data to a matsim transit schedule
 	 * <ol>
 	 * <li>generate transitStopFacilities from gtfsStops</li>
-	 * <li>Create a transitLine for each GTFSRoute</li>
+	 * <li>Create a transitLine for each GtfsRoute</li>
 	 * <li>Generate a transitRoute for each trip</li>
 	 * <li>Get the stop sequence of the trip</li>
 	 * <li>Calculate departures from stopTimes or frequencies</li>
@@ -154,7 +153,7 @@ public class GtfsConverter implements GtfsFeed {
 		 * generating transitStopFacilities (mts) from gtfsStops and add them to the schedule.
 		 * Coordinates are transformed here.
 		 */
-		for(Entry<String, GTFSStop> stopEntry : gtfsStops.entrySet()) {
+		for(Entry<String, GtfsStop> stopEntry : gtfsStops.entrySet()) {
 			Coord result = transformation.transform(stopEntry.getValue().getPoint());
 			TransitStopFacility stopFacility = scheduleFactory.createTransitStopFacility(Id.create(stopEntry.getKey(), TransitStopFacility.class), result, stopEntry.getValue().isBlocks());
 			stopFacility.setName(stopEntry.getValue().getName());
@@ -169,9 +168,9 @@ public class GtfsConverter implements GtfsFeed {
 
 		DepartureIds departureIds = new DepartureIds();
 
-		for(GTFSRoute gtfsRoute : gtfsRoutes.values()) {
+		for(GtfsRoute gtfsRoute : gtfsRoutes.values()) {
 			/** [2]
-			 * Create a MTS transitLine for each GTFSRoute
+			 * Create a MTS transitLine for each GtfsRoute
 			 */
 			TransitLine transitLine = scheduleFactory.createTransitLine(Id.create(gtfsRoute.getShortName() + "_" + gtfsRoute.getRouteId(), TransitLine.class));
 			schedule.addTransitLine(transitLine);
@@ -272,7 +271,6 @@ public class GtfsConverter implements GtfsFeed {
 
 					/* Save transit route (and line) for current shape */
 					if(trip.hasShape()) {
-						trip.getShape().addTransitRoute(transitLine.getId(), transitRoute.getId());
 						schedule.addShape(transitLine.getId(), transitRoute.getId(), trip.getShape());
 					}
 				}
@@ -333,15 +331,15 @@ public class GtfsConverter implements GtfsFeed {
 		CSVReader reader;
 
 		try {
-			reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.STOPS.fileName));
+			reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.STOPS.fileName));
 			String[] header = reader.readNext(); // read header
-			Map<String, Integer> col = CsvTools.getIndices(header, GTFSDefinitions.Files.STOPS.columns); // get column numbers for required fields
+			Map<String, Integer> col = CsvTools.getIndices(header, GtfsDefinitions.Files.STOPS.columns); // get column numbers for required fields
 
 			String[] line = reader.readNext();
 			while(line != null) {
-				Coord coord = new Coord(Double.parseDouble(line[col.get(GTFSDefinitions.STOP_LON)]), Double.parseDouble(line[col.get(GTFSDefinitions.STOP_LAT)]));
-				GTFSStop GTFSStop = new GTFSStop(coord, line[col.get(GTFSDefinitions.STOP_NAME)], false);
-				gtfsStops.put(line[col.get(GTFSDefinitions.STOP_ID)], GTFSStop);
+				Coord coord = new Coord(Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LON)]), Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LAT)]));
+				GtfsStop GtfsStop = new GtfsStop(coord, line[col.get(GtfsDefinitions.STOP_NAME)], false);
+				gtfsStops.put(line[col.get(GtfsDefinitions.STOP_ID)], GtfsStop);
 
 				line = reader.readNext();
 			}
@@ -366,9 +364,9 @@ public class GtfsConverter implements GtfsFeed {
 	private void loadCalendar() throws IOException {
 		log.info("Loading calendar.txt");
 		try {
-			CSVReader reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.CALENDAR.fileName));
+			CSVReader reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.CALENDAR.fileName));
 			String[] header = reader.readNext();
-			Map<String, Integer> col = CsvTools.getIndices(header, GTFSDefinitions.Files.CALENDAR.columns);
+			Map<String, Integer> col = CsvTools.getIndices(header, GtfsDefinitions.Files.CALENDAR.columns);
 
 			// assuming all days really do follow monday in the file
 			int indexMonday = col.get("monday");
@@ -386,7 +384,7 @@ public class GtfsConverter implements GtfsFeed {
 				for(int d = 0; d < 7; d++) {
 					days[d] = line[indexMonday + d].equals("1");
 				}
-				services.put(line[col.get(GTFSDefinitions.SERVICE_ID)], new Service(line[col.get(GTFSDefinitions.SERVICE_ID)], days, line[col.get(GTFSDefinitions.START_DATE)], line[col.get(GTFSDefinitions.END_DATE)]));
+				services.put(line[col.get(GtfsDefinitions.SERVICE_ID)], new Service(line[col.get(GtfsDefinitions.SERVICE_ID)], days, line[col.get(GtfsDefinitions.START_DATE)], line[col.get(GtfsDefinitions.END_DATE)]));
 
 				line = reader.readNext();
 			}
@@ -411,20 +409,20 @@ public class GtfsConverter implements GtfsFeed {
 		log.info("Looking for calendar_dates.txt");
 		CSVReader reader;
 		try {
-			reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.CALENDAR_DATES.fileName));
+			reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.CALENDAR_DATES.fileName));
 			String[] header = reader.readNext();
-			Map<String, Integer> col = CsvTools.getIndices(header, GTFSDefinitions.Files.CALENDAR_DATES.columns);
+			Map<String, Integer> col = CsvTools.getIndices(header, GtfsDefinitions.Files.CALENDAR_DATES.columns);
 
 			String[] line = reader.readNext();
 			while(line != null) {
-				Service currentService = services.get(line[col.get(GTFSDefinitions.SERVICE_ID)]);
+				Service currentService = services.get(line[col.get(GtfsDefinitions.SERVICE_ID)]);
 				if(currentService != null) {
-					if(line[col.get(GTFSDefinitions.EXCEPTION_TYPE)].equals("2"))
-						currentService.addException(line[col.get(GTFSDefinitions.DATE)]);
+					if(line[col.get(GtfsDefinitions.EXCEPTION_TYPE)].equals("2"))
+						currentService.addException(line[col.get(GtfsDefinitions.DATE)]);
 					else
-						currentService.addAddition(line[col.get(GTFSDefinitions.DATE)]);
+						currentService.addAddition(line[col.get(GtfsDefinitions.DATE)]);
 				} else {
-					throw new RuntimeException("Service id \"" + line[col.get(GTFSDefinitions.SERVICE_ID)] + "\" not defined in calendar.txt");
+					throw new RuntimeException("Service id \"" + line[col.get(GtfsDefinitions.SERVICE_ID)] + "\" not defined in calendar.txt");
 				}
 				line = reader.readNext();
 			}
@@ -449,24 +447,24 @@ public class GtfsConverter implements GtfsFeed {
 		log.info("Looking for shapes.txt");
 		CSVReader reader;
 		try {
-			reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.SHAPES.fileName));
+			reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.SHAPES.fileName));
 
 			String[] header = reader.readNext();
-			Map<String, Integer> col = CsvTools.getIndices(header, GTFSDefinitions.Files.SHAPES.columns);
+			Map<String, Integer> col = CsvTools.getIndices(header, GtfsDefinitions.Files.SHAPES.columns);
 
 			String[] line = reader.readNext();
 			while(line != null) {
 				usesShapes = true; // shape file might exists but could be empty
 
-				Id<RouteShape> shapeId = Id.create(line[col.get(GTFSDefinitions.SHAPE_ID)], RouteShape.class);
+				Id<RouteShape> shapeId = Id.create(line[col.get(GtfsDefinitions.SHAPE_ID)], RouteShape.class);
 
 				RouteShape currentShape = shapes.get(shapeId);
 				if(currentShape == null) {
-					currentShape = new GtfsShape(line[col.get(GTFSDefinitions.SHAPE_ID)]);
+					currentShape = new GtfsShape(line[col.get(GtfsDefinitions.SHAPE_ID)]);
 					shapes.put(shapeId, currentShape);
 				}
-				Coord point = new Coord(Double.parseDouble(line[col.get(GTFSDefinitions.SHAPE_PT_LON)]), Double.parseDouble(line[col.get(GTFSDefinitions.SHAPE_PT_LAT)]));
-				currentShape.addPoint(transformation.transform(point), Integer.parseInt(line[col.get(GTFSDefinitions.SHAPE_PT_SEQUENCE)]));
+				Coord point = new Coord(Double.parseDouble(line[col.get(GtfsDefinitions.SHAPE_PT_LON)]), Double.parseDouble(line[col.get(GtfsDefinitions.SHAPE_PT_LAT)]));
+				currentShape.addPoint(transformation.transform(point), Integer.parseInt(line[col.get(GtfsDefinitions.SHAPE_PT_SEQUENCE)]));
 				line = reader.readNext();
 			}
 			reader.close();
@@ -490,19 +488,19 @@ public class GtfsConverter implements GtfsFeed {
 	private void loadRoutes() throws IOException {
 		log.info("Loading routes.txt");
 		try {
-			CSVReader reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.ROUTES.fileName));
+			CSVReader reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.ROUTES.fileName));
 			String[] header = reader.readNext();
-			Map<String, Integer> col = CsvTools.getIndices(header, GTFSDefinitions.Files.ROUTES.columns);
+			Map<String, Integer> col = CsvTools.getIndices(header, GtfsDefinitions.Files.ROUTES.columns);
 
 			String[] line = reader.readNext();
 			while(line != null) {
-				int routeTypeNr = Integer.parseInt(line[col.get(GTFSDefinitions.ROUTE_TYPE)]);
+				int routeTypeNr = Integer.parseInt(line[col.get(GtfsDefinitions.ROUTE_TYPE)]);
 				if(routeTypeNr < 0 || routeTypeNr > 7) {
 					throw new RuntimeException("Invalid value for route type: " + routeTypeNr + " [https://developers.google.com/transit/gtfs/reference/routes-file]");
 				}
 
-				GTFSRoute newGtfsRoute = new GTFSRoute(line[col.get(GTFSDefinitions.ROUTE_ID)], line[col.get(GTFSDefinitions.ROUTE_SHORT_NAME)], GTFSDefinitions.RouteTypes.values()[routeTypeNr]);
-				gtfsRoutes.put(line[col.get(GTFSDefinitions.ROUTE_ID)], newGtfsRoute);
+				GtfsRoute newGtfsRoute = new GtfsRoute(line[col.get(GtfsDefinitions.ROUTE_ID)], line[col.get(GtfsDefinitions.ROUTE_SHORT_NAME)], GtfsDefinitions.RouteTypes.values()[routeTypeNr]);
+				gtfsRoutes.put(line[col.get(GtfsDefinitions.ROUTE_ID)], newGtfsRoute);
 
 				line = reader.readNext();
 			}
@@ -526,25 +524,25 @@ public class GtfsConverter implements GtfsFeed {
 	private void loadTrips() throws IOException {
 		log.info("Loading trips.txt");
 		try {
-			CSVReader reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.TRIPS.fileName));
+			CSVReader reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.TRIPS.fileName));
 			String[] header = reader.readNext();
-			Map<String, Integer> col = CsvTools.getIndices(header, GTFSDefinitions.Files.TRIPS.columns);
+			Map<String, Integer> col = CsvTools.getIndices(header, GtfsDefinitions.Files.TRIPS.columns);
 
 			String[] line = reader.readNext();
 			while(line != null) {
-				GTFSRoute gtfsRoute = gtfsRoutes.get(line[col.get("route_id")]);
+				GtfsRoute gtfsRoute = gtfsRoutes.get(line[col.get("route_id")]);
 				if(usesShapes) {
-					Id<RouteShape> shapeId = Id.create(line[col.get(GTFSDefinitions.SHAPE_ID)], RouteShape.class);
-					Trip newTrip = new Trip(line[col.get(GTFSDefinitions.TRIP_ID)], services.get(line[col.get(GTFSDefinitions.SERVICE_ID)]), shapes.get(shapeId), line[col.get(GTFSDefinitions.TRIP_ID)]);
-					gtfsRoute.putTrip(line[col.get(GTFSDefinitions.TRIP_ID)], newTrip);
+					Id<RouteShape> shapeId = Id.create(line[col.get(GtfsDefinitions.SHAPE_ID)], RouteShape.class);
+					Trip newTrip = new Trip(line[col.get(GtfsDefinitions.TRIP_ID)], services.get(line[col.get(GtfsDefinitions.SERVICE_ID)]), shapes.get(shapeId), line[col.get(GtfsDefinitions.TRIP_ID)]);
+					gtfsRoute.putTrip(line[col.get(GtfsDefinitions.TRIP_ID)], newTrip);
 				} else {
-					Trip newTrip = new Trip(line[col.get(GTFSDefinitions.TRIP_ID)], services.get(line[col.get(GTFSDefinitions.SERVICE_ID)]), null, line[col.get(GTFSDefinitions.TRIP_ID)]);
-					gtfsRoute.putTrip(line[col.get(GTFSDefinitions.TRIP_ID)], newTrip);
+					Trip newTrip = new Trip(line[col.get(GtfsDefinitions.TRIP_ID)], services.get(line[col.get(GtfsDefinitions.SERVICE_ID)]), null, line[col.get(GtfsDefinitions.TRIP_ID)]);
+					gtfsRoute.putTrip(line[col.get(GtfsDefinitions.TRIP_ID)], newTrip);
 				}
 
 				// each trip uses one service id, increase statistics accordingly
-				Integer count = MapUtils.getInteger(line[col.get(GTFSDefinitions.SERVICE_ID)], serviceIdsCount, 1);
-				serviceIdsCount.put(line[col.get(GTFSDefinitions.SERVICE_ID)], count + 1);
+				Integer count = MapUtils.getInteger(line[col.get(GtfsDefinitions.SERVICE_ID)], serviceIdsCount, 1);
+				serviceIdsCount.put(line[col.get(GtfsDefinitions.SERVICE_ID)], count + 1);
 
 				line = reader.readNext();
 			}
@@ -568,32 +566,32 @@ public class GtfsConverter implements GtfsFeed {
 	private void loadStopTimes() throws IOException {
 		log.info("Loading stop_times.txt");
 		try {
-			CSVReader reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.STOP_TIMES.fileName));
+			CSVReader reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.STOP_TIMES.fileName));
 			String[] header = reader.readNext();
-			Map<String, Integer> col = CsvTools.getIndices(header, GTFSDefinitions.Files.STOP_TIMES.columns);
+			Map<String, Integer> col = CsvTools.getIndices(header, GtfsDefinitions.Files.STOP_TIMES.columns);
 
 			String[] line = reader.readNext();
 			int i = 1, c = 1;
 			while(line != null) {
 				if(i == Math.pow(2, c)) { log.info("        # " + i); c++; } i++; // just for logging so something happens in the console
 
-				for(GTFSRoute currentGTFSRoute : gtfsRoutes.values()) {
-					Trip trip = currentGTFSRoute.getTrips().get(line[col.get(GTFSDefinitions.TRIP_ID)]);
+				for(GtfsRoute currentGtfsRoute : gtfsRoutes.values()) {
+					Trip trip = currentGtfsRoute.getTrips().get(line[col.get(GtfsDefinitions.TRIP_ID)]);
 					if(trip != null) {
 						try {
-							if(!line[col.get(GTFSDefinitions.ARRIVAL_TIME)].equals("")) {
+							if(!line[col.get(GtfsDefinitions.ARRIVAL_TIME)].equals("")) {
 								trip.putStopTime(
-									Integer.parseInt(line[col.get(GTFSDefinitions.STOP_SEQUENCE)]),
-									new StopTime(Integer.parseInt(line[col.get(GTFSDefinitions.STOP_SEQUENCE)]),
-											timeFormat.parse(line[col.get(GTFSDefinitions.ARRIVAL_TIME)]),
-											timeFormat.parse(line[col.get(GTFSDefinitions.DEPARTURE_TIME)]),
-											line[col.get(GTFSDefinitions.STOP_ID)]));
+									Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]),
+									new StopTime(Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]),
+											timeFormat.parse(line[col.get(GtfsDefinitions.ARRIVAL_TIME)]),
+											timeFormat.parse(line[col.get(GtfsDefinitions.DEPARTURE_TIME)]),
+											line[col.get(GtfsDefinitions.STOP_ID)]));
 							}
 							/** GTFS Reference: If this stop isn't a time point, use an empty string value for the
 							 * arrival_time and departure_time fields.
 							 */
 							else {
-								trip.putStop(Integer.parseInt(line[col.get(GTFSDefinitions.STOP_SEQUENCE)]), line[col.get(GTFSDefinitions.STOP_ID)]);
+								trip.putStop(Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]), line[col.get(GtfsDefinitions.STOP_ID)]);
 								if(warnStopTimes) {
 									log.warn("No arrival time set! Stops without arrival times will be scheduled based on the " +
 											"nearest preceding timed stop. This message is only given once.");
@@ -627,19 +625,19 @@ public class GtfsConverter implements GtfsFeed {
 		// frequencies are optional
 		CSVReader reader;
 		try {
-			reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.FREQUENCIES.fileName));
+			reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.FREQUENCIES.fileName));
 			String[] header = reader.readNext();
-			Map<String, Integer> col = CsvTools.getIndices(header, GTFSDefinitions.Files.FREQUENCIES.columns);
+			Map<String, Integer> col = CsvTools.getIndices(header, GtfsDefinitions.Files.FREQUENCIES.columns);
 
 			String[] line = reader.readNext();
 			while(line != null) {
 				usesFrequencies = true;    // frequencies file might exists but could be empty
 
-				for(GTFSRoute actualGTFSRoute : gtfsRoutes.values()) {
-					Trip trip = actualGTFSRoute.getTrips().get(line[col.get(GTFSDefinitions.TRIP_ID)]);
+				for(GtfsRoute actualGtfsRoute : gtfsRoutes.values()) {
+					Trip trip = actualGtfsRoute.getTrips().get(line[col.get(GtfsDefinitions.TRIP_ID)]);
 					if(trip != null) {
 						try {
-							trip.addFrequency(new Frequency(timeFormat.parse(line[col.get(GTFSDefinitions.START_TIME)]), timeFormat.parse(line[col.get(GTFSDefinitions.END_TIME)]), Integer.parseInt(line[col.get(GTFSDefinitions.HEADWAY_SECS)])));
+							trip.addFrequency(new Frequency(timeFormat.parse(line[col.get(GtfsDefinitions.START_TIME)]), timeFormat.parse(line[col.get(GtfsDefinitions.END_TIME)]), Integer.parseInt(line[col.get(GtfsDefinitions.HEADWAY_SECS)])));
 						} catch (NumberFormatException | ParseException e) {
 							e.printStackTrace();
 						}
@@ -773,7 +771,7 @@ public class GtfsConverter implements GtfsFeed {
 		}
 	}
 
-	public Map<String, GTFSRoute> getGtfsRoutes() {
+	public Map<String, GtfsRoute> getGtfsRoutes() {
 		return gtfsRoutes;
 	}
 
@@ -781,7 +779,7 @@ public class GtfsConverter implements GtfsFeed {
 		return serviceIdsToConvert;
 	}
 
-	public ShapedTransitSchedule getShapedSchedule() {
+	public ShapedTransitSchedule getShapedTransitSchedule() {
 		return schedule;
 	}
 

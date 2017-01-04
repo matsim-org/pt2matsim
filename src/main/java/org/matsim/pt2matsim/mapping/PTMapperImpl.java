@@ -70,7 +70,6 @@ public class PTMapperImpl implements PTMapper {
 	private TransitSchedule schedule;
 
 	private final PseudoSchedule pseudoSchedule = new PseudoScheduleImpl();
-	private ScheduleRouters scheduleRouters;
 
 	/**
 	 * Loads the PublicTransitMapping config file. If paths to input files
@@ -132,9 +131,7 @@ public class PTMapperImpl implements PTMapper {
 		int nStopFacilities = schedule.getFacilities().size();
 		int nTransitRoutes = 0;
 		for(TransitLine transitLine : this.schedule.getTransitLines().values()) {
-			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
-				nTransitRoutes++;
-			}
+				nTransitRoutes = transitLine.getRoutes().size();
 		}
 
 		/** [1]
@@ -143,7 +140,8 @@ public class PTMapperImpl implements PTMapper {
 		 */
 		log.info("==============================================");
 		log.info("Creating mode separated network and routers...");
-		scheduleRouters = new ScheduleRoutersTransportMode(config, schedule, network);
+		ScheduleRouters scheduleRouters = new ScheduleRoutersTransportMode(config, schedule, network);
+
 
 		/** [2]
 		 * Load the closest links and create LinkCandidates. StopFacilities
@@ -153,7 +151,8 @@ public class PTMapperImpl implements PTMapper {
 		 */
 		log.info("===========================");
 		log.info("Creating link candidates...");
-		LinkCandidateCreator linkCandidates = new LinkCandidateCreatorStandard(this.schedule, this.network, this.config, this.scheduleRouters);
+		LinkCandidateCreator linkCandidates = new LinkCandidateCreatorStandard(this.schedule, this.network, this.config);
+
 
 		/** [3]
 		 * PseudoRouting

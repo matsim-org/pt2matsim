@@ -35,7 +35,7 @@ public class PTMapperWithShapesTest {
 		gtfsConverter = new GtfsConverter(gtfsFolder, coordSys);
 		gtfsConverter.convert(serviceParam);
 
-		gtfsConverter.getShapedSchedule().getTransitRouteShapeReference().writeToFile(base +"output/shapeRef.csv");
+		gtfsConverter.getShapedTransitSchedule().getTransitRouteShapeReference().writeToFile(base +"output/shapeRef.csv");
 		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), base +"mts/unmapped_schedule.xml.gz");
 
 		// debug shapes

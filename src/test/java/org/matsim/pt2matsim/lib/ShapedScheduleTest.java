@@ -18,9 +18,12 @@
 
 package org.matsim.pt2matsim.lib;
 
-import org.junit.Before;
+import org.junit.Assert;
 import org.junit.Test;
+import org.matsim.pt.transitSchedule.api.TransitLine;
+import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
+import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
 /**
@@ -28,40 +31,34 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
  */
 public class ShapedScheduleTest {
 
-	private GtfsConverter gtfsConverter;
-
 	private String input = "test/analysis/";
-	String convertedScheduleFile = input + "shape/schedule_unmapped.xml.gz";
-	String shapeScheduleFile = input + "shape/schedule_gtfs_shapes.csv";
+	private String gtfsFolder = input + "addisoncounty-vt-us-gtfs/";
+	private String convertedScheduleFile = input + "shape/schedule_unmapped.xml.gz";
+	private String shapeRefFile = input + "shape/shapeRef.csv";
 
-
-	@Before
-	public void prepare() {
-		gtfsConverter = new GtfsConverter(input + "addisoncounty-vt-us-gtfs/", "EPSG:2032");
-		gtfsConverter.convert("all");
-
-		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), convertedScheduleFile);
-	}
 
 	@Test
-	public void checkFiles() {
-/*
-		ShapedSchedule shapedScheduleConv = gtfsConverter.getShapedSchedule();
-		shapedScheduleConv.writeShapeScheduleFile(shapeScheduleFile);
+	public void convertWriteRead() {
+		GtfsFeed gtfsConverter = new GtfsConverter(gtfsFolder, "EPSG:2032");
+		gtfsConverter.convert("all");
 
-		ShapedSchedule shapedScheduleRead = new ShapedSchedule(ScheduleTools.readTransitSchedule(convertedScheduleFile));
-		shapedScheduleRead.readShapeScheduleFile(shapeScheduleFile);
+		// write
+		ShapedTransitSchedule convertedShapedSchedule = gtfsConverter.getShapedTransitSchedule();
+		TransitRouteShapeReference convertedShapeRef = convertedShapedSchedule.getTransitRouteShapeReference();
+		convertedShapeRef.writeToFile(shapeRefFile);
+		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), convertedScheduleFile);
 
-		Assert.equals(shapedScheduleConv.getTransitLines().keySet(), shapedScheduleRead.getTransitLines().keySet());
-//		Assert.equals(shapedScheduleConv.getTransitLines().values(), shapedScheduleRead.getTransitLines().values());
+		// read
+		ShapedTransitSchedule rereadShapedSchedule = new ShapedSchedule(ScheduleTools.readTransitSchedule(convertedScheduleFile));
+		TransitRouteShapeReference rereadShapeRef = new TransitRouteShapeReferenceImpl(shapeRefFile);
 
-		for(TransitLine tl : shapedScheduleConv.getTransitLines().values()) {
+
+		for(TransitLine tl : convertedShapedSchedule.getTransitLines().values()) {
 			for(TransitRoute tr : tl.getRoutes().values()) {
-				Assert.equals(shapedScheduleConv.getShape(tl.getId(), tr.getId()).getPoints(), shapedScheduleRead.getShape(tl.getId(), tr.getId()).getPoints());
-				Assert.equals(shapedScheduleConv.getShape(tl.getId(), tr.getId()).getId(), shapedScheduleRead.getShape(tl.getId(), tr.getId()).getId());
-				Assert.equals(shapedScheduleConv.getShape(tl.getId(), tr.getId()).getTransitRoutes(), shapedScheduleRead.getShape(tl.getId(), tr.getId()).getTransitRoutes());
+				Assert.assertEquals(convertedShapedSchedule.getShape(tl.getId(), tr.getId()).getCoords(), (rereadShapedSchedule.getShape(tl.getId(), tr.getId())).getCoords());
+				Assert.assertEquals(convertedShapeRef.getShapeId(tl.getId(), tr.getId()), rereadShapeRef.getShapeId(tl.getId(), tr.getId()));
 			}
 		}
-		*/
 	}
+
 }

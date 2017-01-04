@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Creates a router for each transportMode of a schedule.
+ * Creates a Router for each transportMode of a schedule.
  *
  * @author polettif
  */
@@ -92,22 +92,6 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters {
 	public LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNodeId, Id<Node> toNodeId, TransitLine transitLine, TransitRoute transitRoute) {
 		return routers.get(transitLine).get(transitRoute).calcLeastCostPath(fromNodeId, toNodeId);
 	}
-
-	@Override
-	public Router getRouter(TransitLine transitLine, TransitRoute transitRoute) {
-		String scheduleTransportMode = transitRoute.getTransportMode();
-
-		return routersByMode.get(scheduleTransportMode);
-	}
-
-	@Override
-	public Router getRouter(String scheduleMode) {
-		return routersByMode.get(scheduleMode);
-	}
-
-	/*
-	 * TODO move methods from routers to schedulerouter
-	 */
 
 	@Override
 	public double getMinimalTravelCost(TransitRouteStop fromTransitRouteStop, TransitRouteStop toTransitRouteStop, TransitLine transitLine, TransitRoute transitRoute) {

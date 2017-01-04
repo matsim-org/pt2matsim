@@ -43,7 +43,7 @@ import java.util.Set;
 
 /**
  * A LeastCostPathCalculator using FastAStarEuclidian. One Router should be initialized
- * for each GTFS shape.
+ * for each GTFS shape. A link's travel cost is modified depending on its distance to the shape.
  *
  * @author polettif
  */
@@ -143,11 +143,6 @@ public class RouterShapes implements Router {
 		} else {
 			return maxAllowedTravelCost;
 		}
-	}
-
-	@Override
-	public double getLinkTravelCost(Link link) {
-		return this.calcLinkTravelCost(link);
 	}
 
 	// LeastCostPathCalculator methods
