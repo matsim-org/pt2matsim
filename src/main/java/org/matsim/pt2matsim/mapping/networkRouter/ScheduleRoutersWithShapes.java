@@ -62,7 +62,7 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 		Counter c = new Counter(" # ");
 
 		RouterShapes.setTravelCostType(config.getTravelCostType());
-		RouterShapes.setNetworkCutBuffer(200);
+		RouterShapes.setNetworkCutBuffer(300);
 		RouterShapes.setMaxWeightDistance(50);
 
 		for(TransitLine transitLine : this.shapedSchedule.getTransitLines().values()) {

@@ -36,6 +36,6 @@ public interface LinkCandidateCreator {
 	 * @return A set of link candidates for the given stop facility and schedule transport mode.
 	 * The set should be ordered descending by priority (based on distance, likelihood, etc.).
 	 */
-	SortedSet<LinkCandidate> getLinkCandidates(Id<TransitStopFacility> transitStopFacility, TransitLine transitLineId, TransitRoute transitRoute);
+	SortedSet<LinkCandidate> getLinkCandidates(Id<TransitStopFacility> transitStopFacility, TransitLine transitLine, TransitRoute transitRoute);
 
 }

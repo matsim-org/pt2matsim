@@ -21,12 +21,8 @@ package org.matsim.pt2matsim.lib;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Identifiable;
-import org.matsim.core.utils.collections.Tuple;
-import org.matsim.pt.transitSchedule.api.TransitLine;
-import org.matsim.pt.transitSchedule.api.TransitRoute;
 
 import java.util.List;
-import java.util.Set;
 import java.util.SortedMap;
 
 /**

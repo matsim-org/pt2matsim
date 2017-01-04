@@ -25,9 +25,7 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt2matsim.tools.CsvTools;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
