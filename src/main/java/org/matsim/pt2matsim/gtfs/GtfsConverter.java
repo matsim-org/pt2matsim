@@ -97,7 +97,6 @@ public class GtfsConverter implements GtfsFeed {
 	private Map<String, GtfsStop> gtfsStops = new HashMap<>();
 	private Map<String, GtfsRoute> gtfsRoutes = new TreeMap<>();
 	private Map<String, Service> services = new HashMap<>();
-	private Map<String, Trip> trips = new HashMap<>();
 	private Map<Id<RouteShape>, RouteShape> shapes = new HashMap<>();
 	private boolean warnStopTimes = true;
 
@@ -536,11 +535,9 @@ public class GtfsConverter implements GtfsFeed {
 					Id<RouteShape> shapeId = Id.create(line[col.get(GtfsDefinitions.SHAPE_ID)], RouteShape.class);
 					Trip newTrip = new Trip(line[col.get(GtfsDefinitions.TRIP_ID)], services.get(line[col.get(GtfsDefinitions.SERVICE_ID)]), shapes.get(shapeId), line[col.get(GtfsDefinitions.TRIP_ID)]);
 					gtfsRoute.putTrip(line[col.get(GtfsDefinitions.TRIP_ID)], newTrip);
-					trips.put(newTrip.getId(), newTrip);
 				} else {
 					Trip newTrip = new Trip(line[col.get(GtfsDefinitions.TRIP_ID)], services.get(line[col.get(GtfsDefinitions.SERVICE_ID)]), null, line[col.get(GtfsDefinitions.TRIP_ID)]);
 					gtfsRoute.putTrip(line[col.get(GtfsDefinitions.TRIP_ID)], newTrip);
-					trips.put(newTrip.getId(), newTrip);
 				}
 
 				// each trip uses one service id, increase statistics accordingly
@@ -767,7 +764,7 @@ public class GtfsConverter implements GtfsFeed {
 
 		private Map<Id<TransitRoute>, Integer> ids = new HashMap<>();
 
-		public String getNext(Id<TransitRoute> transitRouteId) {
+		String getNext(Id<TransitRoute> transitRouteId) {
 			if(!ids.containsKey(transitRouteId)) {
 				ids.put(transitRouteId, 1);
 				return transitRouteId + "_01";
@@ -782,7 +779,6 @@ public class GtfsConverter implements GtfsFeed {
 	public ShapedTransitSchedule getShapedTransitSchedule() {
 		return schedule;
 	}
-
 
 	public TransitSchedule getSchedule() {
 		return schedule;

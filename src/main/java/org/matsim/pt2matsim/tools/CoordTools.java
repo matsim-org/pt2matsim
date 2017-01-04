@@ -42,7 +42,8 @@ public class CoordTools {
 	private CoordTools() {}
 
 	/**
-	 * @return the azimuth in [rad] of a line defined by two points.
+	 * @return the azimuth in [rad] of a line defined by two points. A line going north has
+	 * azimuth 0, a line going east has az=pi/2, a line going west az=1.5*pi
 	 */
 	public static double getAzimuth(Coord from, Coord to) {
 		double deltaE = to.getX()-from.getX();
@@ -123,11 +124,7 @@ public class CoordTools {
 			return true;
 		} else if(diff > 0 && diff > Math.PI) {
 			return false;
-		} else if(diff < 0 && diff < -Math.PI){
-			return true;
-		} else {
-			return false;
-		}
+		} else return diff < 0 && diff < -Math.PI;
 	}
 
 
@@ -382,8 +379,8 @@ public class CoordTools {
 	 * Calculates a new Coordinate given the original point, azimuth and distance.
 	 */
 	public static Coord calcNewPoint(Coord fromPoint, double azimuth, double distance) {
-		double dE = Math.cos(azimuth);
-		double dN = Math.sin(azimuth);
+		double dE = Math.sin(azimuth)*distance;
+		double dN = Math.cos(azimuth)*distance;
 
 		return new Coord(fromPoint.getX()+dE, fromPoint.getY()+dN);
 	}

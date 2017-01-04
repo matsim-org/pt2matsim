@@ -50,7 +50,7 @@ import java.util.Map;
  */
 public class MappingAnalysis {
 
-	private final double measureInterval = 5;
+	private final double measureInterval = 1;
 
 	private static final Logger log = Logger.getLogger(MappingAnalysis.class);
 
@@ -110,9 +110,9 @@ public class MappingAnalysis {
 	 */
 	private void calcRouteShapeDistances(TransitLine transitLine, TransitRoute transitRoute, RouteShape shape) {
 		List<Link> links = NetworkTools.getLinksFromIds(network, ScheduleTools.getTransitRouteLinkIds(transitRoute));
-		double lengthCarryOver = 0;
+		// we need an equivalent number of measurements for the whole route
+		double lengthOnLink = 0;
 		for(Link link : links) {
-			double lengthOnLink = lengthCarryOver;
 			double azimuth = CoordTools.getAzimuth(link.getFromNode().getCoord(), link.getToNode().getCoord());
 			double linkLength = CoordUtils.calcEuclideanDistance(link.getFromNode().getCoord(), link.getToNode().getCoord());
 
@@ -124,7 +124,7 @@ public class MappingAnalysis {
 				MapUtils.getList(transitRoute.getId(), MapUtils.getMap(transitLine.getId(), routeDistances)).add(minDistanceToShape);
 				lengthOnLink += measureInterval;
 			}
-			lengthCarryOver = lengthOnLink - linkLength;
+			lengthOnLink = lengthOnLink - linkLength;
 		}
 	}
 
