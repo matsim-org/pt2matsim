@@ -29,7 +29,8 @@ import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.core.utils.gis.PolylineFeatureFactory;
 import org.matsim.core.utils.gis.ShapeFileWriter;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
-import org.matsim.pt2matsim.gtfs.lib.GTFSRoute;
+import org.matsim.pt2matsim.gtfs.GtfsFeed;
+import org.matsim.pt2matsim.gtfs.lib.GtfsRoute;
 import org.matsim.pt2matsim.gtfs.lib.Trip;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.opengis.feature.simple.SimpleFeature;
@@ -37,15 +38,14 @@ import org.opengis.feature.simple.SimpleFeature;
 import java.util.*;
 
 /**
- * Provides tools to convert GTFS data
- * to ESRI shapefiles. Is called within {@link GtfsConverter}
+ * Provides tools to calculate RouteShape attributes such as minimal distances and lengths.
  *
  * @author polettif
  */
 public class ShapeTools {
 
 	/**
-	 * Calculates the minimal distance from a point to a given shape (from gtfs)
+	 * Calculates the minimal distance from a point to a given routeShape
 	 */
 	public static double calcMinDistanceToShape(Coord point, RouteShape shape) {
 		List<Coord> shapePoints = new ArrayList<>(shape.getPoints().values());
@@ -60,6 +60,10 @@ public class ShapeTools {
 		return minDist;
 	}
 
+	/**
+	 * Calculates the minimal distance from a link to a given routeShape.
+	 * Distances are calcualted in intervals of 5 map units.
+	 */
 	public static double calcMinDistanceToShape(Link link, RouteShape shape) {
 		double measureInterval = 5;
 
@@ -94,6 +98,19 @@ public class ShapeTools {
 		return nodesWithinBuffer;
 	}
 
+
+	/**
+	 * @return the length of a shape (sum of all its segment lengths)
+	 */
+	public static double getShapeLength(RouteShape shape) {
+		double length = 0;
+		List<Coord> coords = shape.getCoords();
+		for(int i = 0; i < coords.size()-1; i++) {
+			length += CoordUtils.calcEuclideanDistance(coords.get(i), coords.get(i + 1));
+		}
+		return length;
+	}
+
 	/**
 	 * Converts a list of link ids to an array of coordinates for shp features
 	 */
@@ -111,7 +128,11 @@ public class ShapeTools {
 		return coordList.toArray(coordinates);
 	}
 
-	public static void writeGtfsTripsToFile(Map<String, GTFSRoute> gtfsRoutes, Set<String> serviceIds, String outputCoordinateSystem, String outFile) {
+	/**
+	 * Allows converting GTFS data to an ESRI shapefiles.
+	 */
+	@Deprecated
+	public static void writeGtfsTripsToFile(GtfsFeed gtfsFeed, Set<String> serviceIds, String outputCoordinateSystem, String outFile) {
 		Collection<SimpleFeature> features = new ArrayList<>();
 
 		PolylineFeatureFactory ff = new PolylineFeatureFactory.Builder()
@@ -125,7 +146,9 @@ public class ShapeTools {
 				.create();
 
 
-		for(GTFSRoute gtfsRoute : gtfsRoutes.values()) {
+		GtfsConverter gtfs = (GtfsConverter) gtfsFeed;
+
+		for(GtfsRoute gtfsRoute : gtfs.getGtfsRoutes().values()) {
 			for(Trip trip : gtfsRoute.getTrips().values()) {
 				boolean useTrip = false;
 				if(serviceIds != null) {
@@ -192,15 +215,4 @@ public class ShapeTools {
 
 	}
 
-	/**
-	 * @return the length of a shape (sum of all its segment lengths)
-	 */
-	public static double getShapeLength(RouteShape shape) {
-		double length = 0;
-		List<Coord> coords = shape.getCoords();
-		for(int i = 0; i < coords.size()-1; i++) {
-			length += CoordUtils.calcEuclideanDistance(coords.get(i), coords.get(i + 1));
-		}
-		return length;
-	}
 }

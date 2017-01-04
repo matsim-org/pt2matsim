@@ -38,7 +38,17 @@ public class TransitRouteShapeReferenceImpl implements TransitRouteShapeReferenc
 
 	private Map<Id<TransitLine>, Map<Id<TransitRoute>, Id<RouteShape>>> routeShapeRefMap = new HashMap<>();
 
+	public TransitRouteShapeReferenceImpl() {
+
+	}
+
+	public TransitRouteShapeReferenceImpl(String shapeRefFile) {
+		readFile(shapeRefFile);
+	}
+
+
 	@Override
+
 	public void setShapeId(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId, Id<RouteShape> shapeId) {
 		MapUtils.getMap(transitLineId, routeShapeRefMap).put(transitRouteId, shapeId);
 	}
@@ -79,7 +89,7 @@ public class TransitRouteShapeReferenceImpl implements TransitRouteShapeReferenc
 			throw new IllegalArgumentException("Could not read references from file.");
 		}
 
-		for(Map.Entry<String, Map<String, String>> e : stringMap.entrySet() ) {
+		for(Map.Entry<String, Map<String, String>> e : stringMap.entrySet()) {
 			for(Map.Entry<String, String> f : e.getValue().entrySet()) {
 				Id<TransitLine> transitLineId = Id.create(e.getKey(), TransitLine.class);
 				Id<TransitRoute> transitRouteId = Id.create(f.getKey(), TransitRoute.class);
@@ -88,7 +98,6 @@ public class TransitRouteShapeReferenceImpl implements TransitRouteShapeReferenc
 			}
 		}
 	}
-
 
 
 }
