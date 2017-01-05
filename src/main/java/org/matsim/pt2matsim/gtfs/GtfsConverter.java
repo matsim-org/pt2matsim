@@ -343,7 +343,7 @@ public class GtfsConverter implements GtfsFeed {
 		try {
 			reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.STOPS.fileName));
 			String[] header = reader.readNext(); // read header
-			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.STOPS.columns); // get column numbers for required fields
+			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.STOPS.columns, GtfsDefinitions.Files.STOPS.optionalColumns); // get column numbers for required fields
 
 			String[] line = reader.readNext();
 			while(line != null) {
@@ -376,7 +376,7 @@ public class GtfsConverter implements GtfsFeed {
 		try {
 			CSVReader reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.CALENDAR.fileName));
 			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.CALENDAR.columns);
+			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.CALENDAR.columns, GtfsDefinitions.Files.CALENDAR.optionalColumns);
 
 			// assuming all days really do follow monday in the file
 			int indexMonday = col.get("monday");
@@ -421,7 +421,7 @@ public class GtfsConverter implements GtfsFeed {
 		try {
 			reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.CALENDAR_DATES.fileName));
 			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.CALENDAR_DATES.columns);
+			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.CALENDAR_DATES.columns, GtfsDefinitions.Files.CALENDAR_DATES.optionalColumns);
 
 			String[] line = reader.readNext();
 			while(line != null) {
@@ -473,7 +473,7 @@ public class GtfsConverter implements GtfsFeed {
 			reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.SHAPES.fileName));
 
 			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.SHAPES.columns);
+			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.SHAPES.columns, GtfsDefinitions.Files.SHAPES.optionalColumns);
 
 			String[] line = reader.readNext();
 			while(line != null) {
@@ -513,7 +513,7 @@ public class GtfsConverter implements GtfsFeed {
 		try {
 			CSVReader reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.ROUTES.fileName));
 			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.ROUTES.columns);
+			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.ROUTES.columns, GtfsDefinitions.Files.ROUTES.optionalColumns);
 
 			String[] line = reader.readNext();
 			while(line != null) {
@@ -549,7 +549,7 @@ public class GtfsConverter implements GtfsFeed {
 		try {
 			CSVReader reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.TRIPS.fileName));
 			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.TRIPS.columns);
+			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.TRIPS.columns, GtfsDefinitions.Files.TRIPS.optionalColumns);
 
 			String[] line = reader.readNext();
 			while(line != null) {
@@ -591,7 +591,7 @@ public class GtfsConverter implements GtfsFeed {
 		try {
 			CSVReader reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.STOP_TIMES.fileName));
 			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.STOP_TIMES.columns);
+			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.STOP_TIMES.columns, GtfsDefinitions.Files.STOP_TIMES.optionalColumns);
 
 			String[] line = reader.readNext();
 			int i = 1, c = 1;
@@ -650,7 +650,7 @@ public class GtfsConverter implements GtfsFeed {
 		try {
 			reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.FREQUENCIES.fileName));
 			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.FREQUENCIES.columns);
+			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.FREQUENCIES.columns, GtfsDefinitions.Files.FREQUENCIES.optionalColumns);
 
 			String[] line = reader.readNext();
 			while(line != null) {
@@ -684,14 +684,14 @@ public class GtfsConverter implements GtfsFeed {
 	 * values directly via integer (i.e. where the column should be) does not work.
 	 *
 	 * @param header      the header (first line) of the csv file
-	 * @param columnNames array of attributes you need the indices of
+	 * @param requiredColumns array of attributes you need the indices of
 	 * @return the index for each attribute given in columnNames
 	 */
-	private static Map<String, Integer> getIndices(String[] header, String[] columnNames) {
+	private static Map<String, Integer> getIndices(String[] header, String[] requiredColumns, String[] optionalColumns) {
 		Map<String, Integer> indices = new HashMap<>();
-		Set<String> notfound = new HashSet<>();
+		Set<String> requiredNotFound = new HashSet<>();
 
-		for(String columnName : columnNames) {
+		for(String columnName : requiredColumns) {
 			boolean found = false;
 			for(int i = 0; i < header.length; i++) {
 				if(header[i].equals(columnName)) {
@@ -701,14 +701,22 @@ public class GtfsConverter implements GtfsFeed {
 				}
 			}
 			if(!found) {
-				notfound.add(columnName);
+				requiredNotFound.add(columnName);
 			}
 		}
 
-		if(notfound.size() > 0) {
-			log.warn("Column name(s) "+notfound+" not found in csv. Might be some additional characters in the header or the encoding not being UTF-8.");
+		if(requiredNotFound.size() > 0) {
+			throw new IllegalArgumentException("Required column(s) "+requiredNotFound+" not found in csv. Might be some additional characters in the header or the encoding not being UTF-8.");
 		}
 
+		for(String columnName : optionalColumns) {
+			for(int i = 0; i < header.length; i++) {
+				if(header[i].equals(columnName)) {
+					indices.put(columnName, i);
+					break;
+				}
+			}
+		}
 		return indices;
 	}
 

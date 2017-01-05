@@ -29,6 +29,15 @@ public final class GtfsDefinitions {
 	public static final String SHAPE_PT_SEQUENCE = "shape_pt_sequence";
 	public static final String STOP_LON = "stop_lon";
 	public static final String STOP_LAT = "stop_lat";
+	public static final String STOP_CODE = "stop_code";
+	public static final String STOP_DESC = "stop_desc";
+	public static final String ZONE_ID = "zone_id";
+	public static final String STOP_URL = "stop_url";
+	public static final String LOCATION_TYPE = "location_type";
+	public static final String PARENT_STATION = "parent_station";
+	public static final String STOP_TIMEZONE = "stop_timezone";
+	public static final String WHEELCHAIR_BOARDING = "wheelchair_boarding";
+
 	public static final String STOP_NAME = "stop_name";
 	public static final String STOP_ID = "stop_id";
 	public static final String SERVICE_ID = "service_id";
@@ -46,32 +55,88 @@ public final class GtfsDefinitions {
 	public static final String START_TIME = "start_time";
 	public static final String END_TIME = "end_time";
 	public static final String HEADWAY_SECS = "headway_secs";
+
 	public static final String MONDAY = "monday";
+	public static final String TUESDAY = "tuesday";
+	public static final String WEDNESDAY = "wednesday";
+	public static final String THURSDAY = "thursday";
+	public static final String FRIDAY = "friday";
+	public static final String SATURDAY = "saturday";
+	public static final String SUNDAY = "sunday";
+
+	public static final String EXACT_TIMES = "exact_times";
+
+	public static final String ROUTE_DESC = "route_desc";
+	public static final String ROUTE_URL = "route_url";
+	public static final String ROUTE_COLOR = "route_color";
+	public static final String ROUTE_TEXT_COLOR = "route_text_color";
+
+	public static final String SHAPE_DIST_TRAVELED = "shape_dist_traveled";
+
+	public static final String TRIP_HEADSIGN = "trip_headsign";
+	public static final String TRIP_SHORT_NAME = "trip_short_name";
+	public static final String DIRECTION_ID = "direction_id";
+	public static final String BLOCK_ID = "block_id";
+	public static final String WHEELCHAIR_ACCESSIBLE = "wheelchair_accessible";
+	public static final String BIKES_ALLOWED = "bikes_allowed";
+
 
 	//Constants
 	/**
 	 * Values
 	 */
 	public enum Files {
-		STOPS("Stop", "stops.txt", new String[]{STOP_ID, STOP_LON, STOP_LAT, STOP_NAME}),
-		CALENDAR("Calendar", "calendar.txt", new String[]{SERVICE_ID, MONDAY, START_DATE, END_DATE}),
-		CALENDAR_DATES("CalendarDates", "calendar_dates.txt", new String[]{SERVICE_ID, DATE, EXCEPTION_TYPE}),
-		SHAPES("ShapeGtfs", "shapes.txt", new String[]{SHAPE_ID, SHAPE_PT_LON, SHAPE_PT_LAT, SHAPE_PT_SEQUENCE}),
-		ROUTES("Route", "routes.txt", new String[]{ROUTE_ID, ROUTE_SHORT_NAME, ROUTE_TYPE}),
-		TRIPS("Trip", "trips.txt", new String[]{ROUTE_ID, TRIP_ID, SERVICE_ID, SHAPE_ID}),
-		STOP_TIMES("StopTime", "stop_times.txt", new String[]{TRIP_ID, STOP_SEQUENCE, ARRIVAL_TIME, DEPARTURE_TIME, STOP_ID}),
-		FREQUENCIES("Frequency", "frequencies.txt", new String[]{TRIP_ID, START_TIME, END_TIME, HEADWAY_SECS});
+		STOPS("Stop", "stops.txt",
+				new String[]{STOP_ID, STOP_LON, STOP_LAT, STOP_NAME},
+				new String[]{STOP_CODE, STOP_DESC, ZONE_ID, STOP_URL, LOCATION_TYPE, PARENT_STATION, STOP_TIMEZONE, WHEELCHAIR_BOARDING}),
+
+		CALENDAR("Calendar",
+				"calendar.txt",
+				new String[]{SERVICE_ID, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY, START_DATE, END_DATE},
+				new String[]{}),
+
+		CALENDAR_DATES("CalendarDates",
+				"calendar_dates.txt",
+				new String[]{SERVICE_ID, DATE, EXCEPTION_TYPE},
+				new String[]{}),
+
+		SHAPES("Shape",
+				"shapes.txt",
+				new String[]{SHAPE_ID, SHAPE_PT_LON, SHAPE_PT_LAT, SHAPE_PT_SEQUENCE},
+				new String[]{SHAPE_DIST_TRAVELED}),
+
+		ROUTES("Route",
+				"routes.txt",
+				new String[]{ROUTE_ID, ROUTE_SHORT_NAME, ROUTE_TYPE},
+				new String[]{ROUTE_DESC, ROUTE_URL, ROUTE_COLOR, ROUTE_TEXT_COLOR}),
+
+		TRIPS("Trip",
+				"trips.txt",
+				new String[]{ROUTE_ID, TRIP_ID, SERVICE_ID},
+				new String[]{TRIP_HEADSIGN, TRIP_SHORT_NAME, DIRECTION_ID, BLOCK_ID, SHAPE_ID, WHEELCHAIR_ACCESSIBLE, BIKES_ALLOWED}),
+
+		STOP_TIMES("StopTime",
+				"stop_times.txt",
+				new String[]{TRIP_ID, STOP_SEQUENCE, ARRIVAL_TIME, DEPARTURE_TIME, STOP_ID},
+				new String[]{TRIP_ID, STOP_SEQUENCE, ARRIVAL_TIME, DEPARTURE_TIME, STOP_ID}),
+
+		FREQUENCIES("Frequency",
+				"frequencies.txt",
+				new String[]{TRIP_ID, START_TIME, END_TIME, HEADWAY_SECS},
+				new String[]{EXACT_TIMES});
 
 		//Attributes
-		public String name;
-		public String fileName;
-		public String[] columns;
+		public final String name;
+		public final String fileName;
+		public final String[] columns;
+		public final String[] optionalColumns;
 
 		//Methods
-		Files(String name, String fileName, String[] columns) {
+		Files(String name, String fileName, String[] requiredColumns, String[] optionalColumns) {
 			this.name = name;
 			this.fileName = fileName;
-			this.columns = columns;
+			this.columns = requiredColumns;
+			this.optionalColumns = optionalColumns;
 		}
 	}
 
