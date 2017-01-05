@@ -65,6 +65,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private static final String NUM_OF_THREADS = "numOfThreads";
 	private static final String MANUAL_LINK_CANDIDATE_CSV_FILE = "manualLinkCandidateCsvFile";
 	private static final String REMOVE_NOT_USED_STOP_FACILITIES = "removeNotUsedStopFacilities";
+//	private static final String U_TURN_COST = "uTurnCost";
 
 	// default values
 	private Map<String, Set<String>> modeRoutingAssignment = null;

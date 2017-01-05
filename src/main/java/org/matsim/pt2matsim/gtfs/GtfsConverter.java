@@ -82,6 +82,7 @@ public class GtfsConverter implements GtfsFeed {
 	 */
 	private SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
 
+	private TransitScheduleFactory scheduleFactory;
 	/**
 	 * map for counting how many trips use each serviceId
 	 */
@@ -91,6 +92,17 @@ public class GtfsConverter implements GtfsFeed {
 	 * The types of dates that will be represented by the new file
 	 */
 	private Set<String> serviceIdsToConvert = new HashSet<>();
+
+	/**
+	 * Set of service ids not defined in calendar.txt (only in calendar_dates.txt)
+	 */
+	private Set<String> serviceIdsNotInCalendarTxt = new HashSet<>();
+
+	/**
+	 * map for counting how many trips use each serviceId
+	 */
+	private Map<String, Integer> serviceIdsCount = new HashMap<>();
+
 
 
 	// containers for storing gtfs data
@@ -415,21 +427,34 @@ public class GtfsConverter implements GtfsFeed {
 
 			String[] line = reader.readNext();
 			while(line != null) {
-				Service currentService = services.get(line[col.get(GtfsDefinitions.SERVICE_ID)]);
-				if(currentService != null) {
-					if(line[col.get(GtfsDefinitions.EXCEPTION_TYPE)].equals("2"))
-						currentService.addException(line[col.get(GtfsDefinitions.DATE)]);
-					else
-						currentService.addAddition(line[col.get(GtfsDefinitions.DATE)]);
-				} else {
-					throw new RuntimeException("Service id \"" + line[col.get(GtfsDefinitions.SERVICE_ID)] + "\" not defined in calendar.txt");
+				Service currentService = services.get(line[col.get(GTFSDefinitions.SERVICE_ID)]);
+
+				if(currentService == null) {
+					currentService = new Service(
+							line[col.get(GTFSDefinitions.SERVICE_ID)],
+							new boolean[] { false, false, false, false, false, false, false },
+							"19700101", "29991231"
+					);
+
+					services.put(currentService.getId(), currentService);
+
+					if(serviceIdsNotInCalendarTxt.add(currentService.getId())) {
+						log.warn("Service id \"" + currentService.getId() + "\" not defined in calendar.txt, only in calendar_dates.txt. Service id will still be used.");
+					}
 				}
+
+				if(line[col.get(GTFSDefinitions.EXCEPTION_TYPE)].equals("2")) {
+					currentService.addException(line[col.get(GTFSDefinitions.DATE)]);
+				} else {
+					currentService.addAddition(line[col.get(GTFSDefinitions.DATE)]);
+				}
+
 				line = reader.readNext();
 			}
 			reader.close();
 			log.info("...     calendar_dates.txt loaded");
 		} catch (IOException e) {
-		 	log.info("...     no calendar dates file found.");
+			log.info("...     no calendar dates file found.");
 		} catch (ArrayIndexOutOfBoundsException i) {
 			throw new RuntimeException("Emtpy line found in calendar_dates.txt");
 		}
@@ -654,6 +679,39 @@ public class GtfsConverter implements GtfsFeed {
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new RuntimeException("Emtpy line found in frequencies.txt");
 		}
+	}
+
+	/**
+	 * In case optional columns in a csv file are missing or are out of order, addressing array
+	 * values directly via integer (i.e. where the column should be) does not work.
+	 *
+	 * @param header      the header (first line) of the csv file
+	 * @param columnNames array of attributes you need the indices of
+	 * @return the index for each attribute given in columnNames
+	 */
+	private static Map<String, Integer> getIndices(String[] header, String[] columnNames) {
+		Map<String, Integer> indices = new HashMap<>();
+		Set<String> notfound = new HashSet<>();
+
+		for(String columnName : columnNames) {
+			boolean found = false;
+			for(int i = 0; i < header.length; i++) {
+				if(header[i].equals(columnName)) {
+					indices.put(columnName, i);
+					found = true;
+					break;
+				}
+			}
+			if(!found) {
+				notfound.add(columnName);
+			}
+		}
+
+		if(notfound.size() > 0) {
+			log.warn("Column name(s) "+notfound+" not found in csv. Might be some additional characters in the header or the encoding not being UTF-8.");
+		}
+
+		return indices;
 	}
 
 
