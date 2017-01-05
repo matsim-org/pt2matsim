@@ -32,13 +32,32 @@ public class StopTime {
 	private final Date arrivalTime;
 	private final Date departureTime;
 	private String stopId;
-	
-	public StopTime(Integer sequencePosition, Date arrivalTime, Date departureTime, String stopId) {
-		super();
+	private String tripId;
+
+	public StopTime(Integer sequencePosition, Date arrivalTime, Date departureTime, String stopId, String tripId) {
 		this.sequencePosition = sequencePosition;
 		this.arrivalTime = arrivalTime;
 		this.departureTime = departureTime;
 		this.stopId = stopId;
+		this.tripId = tripId;
+	}
+
+	// required fields
+	public String getStopId() {
+		return stopId;
+	}
+
+	public String getTripId() {
+		return tripId;
+	}
+
+
+	public Date getArrivalTime() {
+		return arrivalTime;
+	}
+
+	public Date getDepartureTime() {
+		return departureTime;
 	}
 
 	/**
@@ -46,27 +65,6 @@ public class StopTime {
 	 */
 	public Integer getSequencePosition() {
 		return sequencePosition;
-	}
-
-	/**
-	 * @return the arrivalTime
-	 */
-	public Date getArrivalTime() {
-		return arrivalTime;
-	}
-
-	/**
-	 * @return the departureTime
-	 */
-	public Date getDepartureTime() {
-		return departureTime;
-	}
-
-	/**
-	 * @return the stopId
-	 */
-	public String getStopId() {
-		return stopId;
 	}
 
 }

@@ -24,37 +24,27 @@ import java.util.Date;
 
 public class Frequency {
 	
-	//Attributes
 	private final Date startTime;
 	private final Date endTime;
-	private final int secondsPerDeparture;
+	private final int headwaySecs;
 	
-	//Methods
-	/**
-	 */
-	public Frequency(Date startTime, Date endTime, int secondsPerDeparture) {
-		super();
+	public Frequency(Date startTime, Date endTime, int headwaySecs) {
 		this.startTime = startTime;
 		this.endTime = endTime;
-		this.secondsPerDeparture = secondsPerDeparture;
+		this.headwaySecs = headwaySecs;
 	}
-	/**
-	 * @return the startTime
-	 */
+
+	// Required fields
 	public Date getStartTime() {
 		return startTime;
 	}
-	/**
-	 * @return the endTime
-	 */
+
 	public Date getEndTime() {
 		return endTime;
 	}
-	/**
-	 * @return the secondsPerDeparture
-	 */
-	public int getSecondsPerDeparture() {
-		return secondsPerDeparture;
+
+	public int getHeadWaySecs() {
+		return headwaySecs;
 	}
 	
 }

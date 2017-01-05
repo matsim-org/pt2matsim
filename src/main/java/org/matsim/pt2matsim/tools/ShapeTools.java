@@ -30,7 +30,7 @@ import org.matsim.core.utils.gis.PolylineFeatureFactory;
 import org.matsim.core.utils.gis.ShapeFileWriter;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
-import org.matsim.pt2matsim.gtfs.lib.GtfsRoute;
+import org.matsim.pt2matsim.gtfs.lib.Route;
 import org.matsim.pt2matsim.gtfs.lib.Trip;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.opengis.feature.simple.SimpleFeature;
@@ -48,7 +48,7 @@ public class ShapeTools {
 	 * Calculates the minimal distance from a point to a given routeShape
 	 */
 	public static double calcMinDistanceToShape(Coord point, RouteShape shape) {
-		List<Coord> shapePoints = new ArrayList<>(shape.getPoints().values());
+		List<Coord> shapePoints = new ArrayList<>(shape.getCoordsSorted().values());
 		double minDist = Double.MAX_VALUE;
 		// look for the minimal distance between the current point and all pairs of shape points
 		for(int i = 0; i < shapePoints.size() - 1; i++) {
@@ -148,7 +148,7 @@ public class ShapeTools {
 
 		GtfsFeedImpl gtfs = (GtfsFeedImpl) gtfsFeed;
 
-		for(GtfsRoute gtfsRoute : gtfs.getRoutes().values()) {
+		for(Route gtfsRoute : gtfs.getRoutes().values()) {
 			for(Trip trip : gtfsRoute.getTrips().values()) {
 				boolean useTrip = false;
 				if(serviceIds != null) {
@@ -166,7 +166,7 @@ public class ShapeTools {
 					RouteShape shape = trip.getShape();
 					if(shape != null) {
 
-						Collection<Coord> points = shape.getPoints().values();
+						Collection<Coord> points = shape.getCoordsSorted().values();
 						int i = 0;
 						Coordinate[] coordinates = new Coordinate[points.size()];
 						for(Coord coord : points) {
@@ -177,7 +177,7 @@ public class ShapeTools {
 						f.setAttribute("shape_id", shape.getId());
 						f.setAttribute("trip_id", trip.getId());
 						f.setAttribute("trip_name", trip.getName());
-						f.setAttribute("route_id", gtfsRoute.getRouteId());
+						f.setAttribute("route_id", gtfsRoute.getId());
 						f.setAttribute("route_name", gtfsRoute.getShortName());
 						features.add(f);
 					}
@@ -199,7 +199,7 @@ public class ShapeTools {
 		for(RouteShape shape : shapes) {
 			if(shape != null) {
 
-				Collection<Coord> points = shape.getPoints().values();
+				Collection<Coord> points = shape.getCoordsSorted().values();
 				int i = 0;
 				Coordinate[] coordinates = new Coordinate[points.size()];
 				for(Coord coord : points) {

@@ -45,6 +45,9 @@ import java.util.*;
  */
 public class GtfsConverter {
 
+	private final boolean defaultAwaitDepartureTime = true;
+	private final boolean defaultBlocks = false;
+
 	protected static Logger log = Logger.getLogger(GtfsConverter.class);
 
 	public static final String ALL_SERVICE_IDS = "all";
@@ -52,9 +55,6 @@ public class GtfsConverter {
 	public static final String DAY_WITH_MOST_SERVICES = "dayWithMostServices";
 
 	private final GtfsFeed feed;
-
-
-	private boolean defaultAwaitDepartureTime = true;
 
 	private LocalDate dateUsed = null;
 
@@ -96,13 +96,11 @@ public class GtfsConverter {
 		return schedule;
 	}
 
-
-
 	/**
 	 * Converts the loaded gtfs data to a matsim transit schedule
 	 * <ol>
 	 * <li>generate transitStopFacilities from gtfsStops</li>
-	 * <li>Create a transitLine for each GtfsRoute</li>
+	 * <li>Create a transitLine for each Route</li>
 	 * <li>Generate a transitRoute for each trip</li>
 	 * <li>Get the stop sequence of the trip</li>
 	 * <li>Calculate departures from stopTimes or frequencies</li>
@@ -120,7 +118,7 @@ public class GtfsConverter {
 		 */
 		Set<String> serviceIdsToConvert = getServiceIds(extractDate);
 
-		log.info("    Extracting schedule from date " + extractDate);
+		if(extractDate != null) log.info("    Extracting schedule from date " + extractDate);
 
 		this.schedule = new ShapedSchedule(transitSchedule);
 		this.vhcls = vehicles;
@@ -135,8 +133,8 @@ public class GtfsConverter {
 		 * Coordinates are transformed here.
 		 */
 		for(Map.Entry<String, Stop> stopEntry : feed.getStops().entrySet()) {
-			Coord stopFacilityCoord = transformation.transform(stopEntry.getValue().getPoint());
-			TransitStopFacility stopFacility = scheduleFactory.createTransitStopFacility(Id.create(stopEntry.getKey(), TransitStopFacility.class), stopFacilityCoord, stopEntry.getValue().isBlocks());
+			Coord stopFacilityCoord = transformation.transform(stopEntry.getValue().getCoord());
+			TransitStopFacility stopFacility = scheduleFactory.createTransitStopFacility(Id.create(stopEntry.getKey(), TransitStopFacility.class), stopFacilityCoord, defaultBlocks);
 			stopFacility.setName(stopEntry.getValue().getName());
 			schedule.addStopFacility(stopFacility);
 		}
@@ -149,11 +147,11 @@ public class GtfsConverter {
 
 		DepartureIds departureIds = new DepartureIds();
 
-		for(GtfsRoute gtfsRoute : feed.getRoutes().values()) {
+		for(Route gtfsRoute : feed.getRoutes().values()) {
 			/** [2]
-			 * Create a MTS transitLine for each GtfsRoute
+			 * Create a MTS transitLine for each Route
 			 */
-			TransitLine transitLine = scheduleFactory.createTransitLine(Id.create(gtfsRoute.getShortName() + "_" + gtfsRoute.getRouteId(), TransitLine.class));
+			TransitLine transitLine = scheduleFactory.createTransitLine(Id.create(gtfsRoute.getShortName() + "_" + gtfsRoute.getId(), TransitLine.class));
 			schedule.addTransitLine(transitLine);
 			counterLines++;
 
@@ -211,7 +209,7 @@ public class GtfsConverter {
 						transitRoute = scheduleFactory.createTransitRoute(Id.create(trip.getId(), TransitRoute.class), null, transitRouteStops, gtfsRoute.getRouteType().name);
 
 						for(Frequency frequency : trip.getFrequencies()) {
-							for(Date actualTime = (Date) frequency.getStartTime().clone(); actualTime.before(frequency.getEndTime()); actualTime.setTime(actualTime.getTime() + frequency.getSecondsPerDeparture() * 1000)) {
+							for(Date actualTime = (Date) frequency.getStartTime().clone(); actualTime.before(frequency.getEndTime()); actualTime.setTime(actualTime.getTime() + frequency.getHeadWaySecs() * 1000)) {
 								transitRoute.addDeparture(scheduleFactory.createDeparture(
 										Id.create(departureIds.getNext(transitRoute.getId()), Departure.class),
 										Time.parseTime(timeFormat.format(actualTime))));
@@ -266,7 +264,7 @@ public class GtfsConverter {
 		log.info("    Created " + counterRoutes + " routes on " + counterLines + " lines.");
 		if(dateUsed != null) log.info("    Day " + dateUsed);
 		log.info("... GTFS converted to an unmapped MATSIM Transit Schedule");
-		log.info("#############################################################");
+		log.info("#########################################################");
 	}
 
 	/**
@@ -328,6 +326,9 @@ public class GtfsConverter {
 		}
 	}
 
+	/**
+	 * @return All service ids that run on the given date
+	 */
 	private Set<String> getServiceIds(LocalDate checkDate) {
 		if(checkDate == null) {
 			return new HashSet<>(feed.getServices().keySet());

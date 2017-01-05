@@ -57,39 +57,7 @@ public class Service {
 		}
 	}
 
-	/**
-	 * @return the days
-	 */
-	public boolean[] getDays() {
-		return days;
-	}
-	/**
-	 * @return the startDate
-	 */
-	public LocalDate getStartDate() {
-		return startDate;
-	}
-	/**
-	 * @return the endDate
-	 */
-	public LocalDate getEndDate() {
-		return endDate;
-	}
-	/**
-	 * @return the additions
-	 */
-	public Collection<LocalDate> getAdditions() {
-		return additions;
-	}
-	/**
-	 * @return the exceptions
-	 */
-	public Collection<LocalDate> getExceptions() {
-		return exceptions;
-	}
-	/**
-	 * Adds a new addition date
-	 */
+
 	public void addAddition(String addition) {
 		LocalDate additionDate = parseDateFormat(addition);
 		additions.add(additionDate);
@@ -103,10 +71,6 @@ public class Service {
 		additions.add(exceptionDate);
 		MapUtils.getSet(exceptionDate, dateStats).remove(this.getId());
 	}
-	
-	public String getId() {
-		return id;
-	}
 
 	/**
 	 * parses the date format YYYYMMDD to LocalDate
@@ -114,4 +78,30 @@ public class Service {
 	private LocalDate parseDateFormat(String yyyymmdd) {
 		return LocalDate.of(Integer.parseInt(yyyymmdd.substring(0, 4)), Integer.parseInt(yyyymmdd.substring(4, 6)), Integer.parseInt(yyyymmdd.substring(6, 8)));
 	}
+
+	// required fields
+	public String getId() {
+		return id;
+	}
+
+	public boolean[] getDays() {
+		return days;
+	}
+
+	public LocalDate getStartDate() {
+		return startDate;
+	}
+
+	public LocalDate getEndDate() {
+		return endDate;
+	}
+
+	public Collection<LocalDate> getAdditions() {
+		return additions;
+	}
+
+	public Collection<LocalDate> getExceptions() {
+		return exceptions;
+	}
+
 }

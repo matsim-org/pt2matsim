@@ -38,12 +38,11 @@ public class Trip {
 	private final Service service;
 	private final RouteShape shape;
 	private final String name;
-	private final SortedMap<Integer,StopTime> stopTimes;
+	private final SortedMap<Integer, StopTime> stopTimes;
 	private final List<Frequency> frequencies;
 
 	//Methods
 	public Trip(String tripId, Service service, RouteShape shape, String name) {
-		super();
 		this.tripId = tripId;
 		this.service = service;
 		this.serviceId = service.getId();
@@ -90,20 +89,9 @@ public class Trip {
 
 	/**
 	 * Puts a new stopTime
-	 * @param stopSequencePosition which stop number in the stopSequence this stopTime is referencing
 	 */
-	public void putStopTime(Integer stopSequencePosition, StopTime stopTime) {
-		stopTimes.put(stopSequencePosition, stopTime);
-	}
-
-	/**
-	 * Puts a new stop without a time, uses the time of the preceding stop
-	 * @param stopSequencePosition which stop number in the stopSequence this stopTime is referencing
-	 */
-	public void putStop(Integer stopSequencePosition, String stopId) {
-		StopTime previousStopTime = stopTimes.get(stopSequencePosition - 1);
-		StopTime stopTime = new StopTime(stopSequencePosition, previousStopTime.getArrivalTime(), previousStopTime.getDepartureTime(), stopId);
-		stopTimes.put(stopSequencePosition, stopTime);
+	public void putStopTime(StopTime stopTime) {
+		stopTimes.put(stopTime.getSequencePosition(), stopTime);
 	}
 
 	/**

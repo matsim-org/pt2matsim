@@ -39,25 +39,13 @@ import java.util.TreeMap;
  */
 public class GtfsShape implements RouteShape {
 
-	/**
-	 * The id
-	 */
 	private Id<RouteShape> id;
 
-	/**
-	 * The points of the shape
-	 */
 	private SortedMap<Integer, Coord> points = new TreeMap<>();
 
-	/**
-	 * A shape can be referenced to multiple transit routes
-	 */
 	private Coord[] extent = new Coord[]{new Coord(Double.MAX_VALUE, Double.MAX_VALUE), new Coord(Double.MIN_VALUE, Double.MIN_VALUE)};
 
 
-	/**
-	 * Constructs
-	 */
 	public GtfsShape(String id) {
 		this.id = Id.create(id, RouteShape.class);
 	}
@@ -66,18 +54,12 @@ public class GtfsShape implements RouteShape {
 		this.id = shapeId;
 	}
 
-	/**
-	 * @return the id
-	 */
 	@Override
 	public Id<RouteShape> getId() {
 		return id;
 	}
 
-	/**
-	 * @return the points
-	 */
-	public SortedMap<Integer, Coord> getPoints() {
+	public SortedMap<Integer, Coord> getCoordsSorted() {
 		return points;
 	}
 

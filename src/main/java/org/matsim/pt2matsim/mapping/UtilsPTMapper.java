@@ -53,7 +53,7 @@ public class UtilsPTMapper {
 	public static List<Id<Link>> getLinkIdsFromPath(LeastCostPathCalculator.Path path) {
 //		List<Id<Link>> list = new ArrayList<>();
 //		for(Link link : path.links) {
-//			list.add(link.getId());
+//			list.add(link.getStopId());
 //		}
 		return path.links.stream().map(Link::getId).collect(Collectors.toList());
 	}

@@ -18,7 +18,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.gtfs.lib;
+package org.matsim.pt2matsim.gtfs;
 
 public final class GtfsDefinitions {
 
@@ -80,6 +80,9 @@ public final class GtfsDefinitions {
 	public static final String WHEELCHAIR_ACCESSIBLE = "wheelchair_accessible";
 	public static final String BIKES_ALLOWED = "bikes_allowed";
 
+	public static final String PICKUP_TYPE = "pickup_type";
+	public static final String DROP_OFF_TYPE = "drop_off_type";
+	public static final String TIMEPOINT = "timepoint";
 
 	//Constants
 	/**
@@ -118,7 +121,7 @@ public final class GtfsDefinitions {
 		STOP_TIMES("StopTime",
 				"stop_times.txt",
 				new String[]{TRIP_ID, STOP_SEQUENCE, ARRIVAL_TIME, DEPARTURE_TIME, STOP_ID},
-				new String[]{TRIP_ID, STOP_SEQUENCE, ARRIVAL_TIME, DEPARTURE_TIME, STOP_ID}),
+				new String[]{PICKUP_TYPE, DROP_OFF_TYPE, TIMEPOINT}),
 
 		FREQUENCIES("Frequency",
 				"frequencies.txt",
