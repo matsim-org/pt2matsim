@@ -28,7 +28,7 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.core.utils.gis.PolylineFeatureFactory;
 import org.matsim.core.utils.gis.ShapeFileWriter;
-import org.matsim.pt2matsim.gtfs.GtfsConverter;
+import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.gtfs.lib.GtfsRoute;
 import org.matsim.pt2matsim.gtfs.lib.Trip;
@@ -146,9 +146,9 @@ public class ShapeTools {
 				.create();
 
 
-		GtfsConverter gtfs = (GtfsConverter) gtfsFeed;
+		GtfsFeedImpl gtfs = (GtfsFeedImpl) gtfsFeed;
 
-		for(GtfsRoute gtfsRoute : gtfs.getGtfsRoutes().values()) {
+		for(GtfsRoute gtfsRoute : gtfs.getRoutes().values()) {
 			for(Trip trip : gtfsRoute.getTrips().values()) {
 				boolean useTrip = false;
 				if(serviceIds != null) {

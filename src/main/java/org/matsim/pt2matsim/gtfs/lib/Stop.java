@@ -22,14 +22,14 @@ package org.matsim.pt2matsim.gtfs.lib;
 
 import org.matsim.api.core.v01.Coord;
 
-public class GtfsStop {
+public class Stop {
 
 	private Coord point;
 	private String name;
 	private boolean blocks;
 
 	//Methods
-	public GtfsStop(Coord point, String name, boolean blocks) {
+	public Stop(Coord point, String name, boolean blocks) {
 		super();
 		this.point = point;
 		this.name = name;
