@@ -20,55 +20,26 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
-import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions.RouteTypes;
+import org.matsim.pt2matsim.gtfs.GtfsDefinitions.RouteTypes;
 
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.HashMap;
+import java.util.Map;
 
 
-public class GtfsRoute {
+public class Route {
 	                           
 	//Attributes
 	private String routeId;
 	private String shortName;
 	private RouteTypes routeType;
-	private SortedMap<String, Trip> trips;
+	private Map<String, Trip> trips;
 
 	//Methods
-	public GtfsRoute(String routeId, String shortName, RouteTypes routeType) {
-		super();
+	public Route(String routeId, String shortName, RouteTypes routeType) {
 		this.routeId = routeId;
 		this.shortName = shortName;
 		this.routeType = routeType;
-		trips = new TreeMap<>();
-	}
-
-	/**
-	 * @return the routeId
-	 */
-	public String getRouteId() {
-		return routeId;
-	}
-
-	/**
-	 * @return the shortName
-	 */
-	public String getShortName() {
-		return shortName;
-	}
-
-	/**
-	 * @return the routeType
-	 */
-	public RouteTypes getRouteType() {
-		return routeType;
-	}
-
-	/**
-	 * @return the trips
-	 */
-	public SortedMap<String, Trip> getTrips() {
-		return trips;
+		this.trips = new HashMap<>();
 	}
 
 	/**
@@ -79,6 +50,23 @@ public class GtfsRoute {
 	public void putTrip(String key, Trip trip) {
 		trips.put(key, trip);
 	}
-	
+
+	public Map<String, Trip> getTrips() {
+		return trips;
+	}
+
+
+	// Required fields
+	public String getId() {
+		return routeId;
+	}
+
+	public String getShortName() {
+		return shortName;
+	}
+
+	public RouteTypes getRouteType() {
+		return routeType;
+	}
 
 }

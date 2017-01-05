@@ -36,7 +36,7 @@ public interface RouteShape extends Identifiable {
 
 	void addPoint(Coord point, int pos);
 
-	SortedMap<Integer, Coord> getPoints();
+	SortedMap<Integer, Coord> getCoordsSorted();
 
 	List<Coord> getCoords();
 

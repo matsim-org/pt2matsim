@@ -24,34 +24,26 @@ import org.matsim.api.core.v01.Coord;
 
 public class Stop {
 
-	private Coord point;
-	private String name;
-	private boolean blocks;
+	private final String id;
+	private final Coord coord;
+	private final String name;
 
-	//Methods
-	public Stop(Coord point, String name, boolean blocks) {
-		super();
-		this.point = point;
+	public Stop(String id, String name, Coord coord) {
+		this.id = id;
+		this.coord = coord;
 		this.name = name;
-		this.blocks = blocks;
 	}
-	/**
-	 * @return the point
-	 */
-	public Coord getPoint() {
-		return point;
+
+	// required fields
+	public String getId() {
+		return id;
 	}
-	/**
-	 * @return the name
-	 */
+	public Coord getCoord() {
+		return coord;
+	}
+
 	public String getName() {
 		return name;
-	}
-	/**
-	 * @return the blocks
-	 */
-	public boolean isBlocks() {
-		return blocks;
 	}
 
 }

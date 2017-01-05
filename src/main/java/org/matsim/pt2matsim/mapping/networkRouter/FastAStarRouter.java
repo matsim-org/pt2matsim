@@ -123,7 +123,7 @@ public class FastAStarRouter implements Router {
 	public double getLinkMinimumTravelDisutility(Link link) {
 		return (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
 //		double travelCost = (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
-//		if(link.getToNode().getId().equals(uTurnFromNodeId) && link.getFromNode().getId().equals(uTurnToNodeId)) {
+//		if(link.getToNode().getStopId().equals(uTurnFromNodeId) && link.getFromNode().getStopId().equals(uTurnToNodeId)) {
 //			return uTurnCost + travelCost;
 //		} else {
 //			return travelCost;
