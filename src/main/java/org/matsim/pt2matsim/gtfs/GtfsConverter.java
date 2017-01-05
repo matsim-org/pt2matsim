@@ -83,11 +83,6 @@ public class GtfsConverter implements GtfsFeed {
 	private SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
 
 	/**
-	 * The types of dates that will be represented by the new file
-	 */
-	private Set<String> serviceIdsToConvert = new HashSet<>();
-
-	/**
 	 * Set of service ids not defined in calendar.txt (only in calendar_dates.txt)
 	 */
 	private Set<String> serviceIdsNotInCalendarTxt = new HashSet<>();
@@ -95,7 +90,7 @@ public class GtfsConverter implements GtfsFeed {
 	/**
 	 * map for counting how many trips use each serviceId
 	 */
-	private Map<String, Integer> serviceIdsCount = new HashMap<>();
+	private Map<String, Integer> nTripsPerServiceId = new HashMap<>();
 
 
 
@@ -143,14 +138,23 @@ public class GtfsConverter implements GtfsFeed {
 	 */
 	@Override
 	public void convert(String serviceIdsParam, TransitSchedule transitSchedule, Vehicles vehicles) {
-		getServiceIds(serviceIdsParam);
+		log.info("#####################################");
+		log.info("Converting to MATSim transit schedule");
+
+		LocalDate extractDate = getExtractDate(serviceIdsParam);
+
+		/**
+		 * The types of dates that will be represented by the new file
+		 */
+		Set<String> serviceIdsToConvert = getServiceIds(extractDate);
+
+		log.info("    Extracting schedule from date " + extractDate);
 
 		this.schedule = new ShapedSchedule(transitSchedule);
 		this.vhcls = vehicles;
 
 		TransitScheduleFactory scheduleFactory = schedule.getFactory();
 
-		log.info("Converting to MATSim transit schedule");
 
 		int counterLines = 0;
 		int counterRoutes = 0;
@@ -560,8 +564,8 @@ public class GtfsConverter implements GtfsFeed {
 				}
 
 				// each trip uses one service id, increase statistics accordingly
-				Integer count = MapUtils.getInteger(line[col.get(GtfsDefinitions.SERVICE_ID)], serviceIdsCount, 1);
-				serviceIdsCount.put(line[col.get(GtfsDefinitions.SERVICE_ID)], count + 1);
+				Integer count = MapUtils.getInteger(line[col.get(GtfsDefinitions.SERVICE_ID)], nTripsPerServiceId, 1);
+				nTripsPerServiceId.put(line[col.get(GtfsDefinitions.SERVICE_ID)], count + 1);
 
 				line = reader.readNext();
 			}
@@ -710,79 +714,82 @@ public class GtfsConverter implements GtfsFeed {
 
 
 	/**
-	 * sets the service id depending on the specified mode.
-	 *
-	 * @param param The date for which all service ids should be looked up.
-	 *              Or the algorithm with which you want to get the service ids.
+	 * @return The date from which services and thus trips should be extracted
 	 */
-	private void getServiceIds(String param) {
+	private LocalDate getExtractDate(String param) {
 		switch (param) {
-			case ALL_SERVICE_IDS:
+			case ALL_SERVICE_IDS: {
 				log.warn("    Using all trips is not recommended");
 				log.info("... Using all service IDs");
-				this.serviceIdsToConvert = services.keySet();
-				break;
+				return null;
+			}
 
 			case DAY_WITH_MOST_SERVICES: {
-				for(Entry<LocalDate, Set<String>> e : Service.dateStats.entrySet()) {
+				log.info("    Using service IDs of the day with the most services (" + DAY_WITH_MOST_SERVICES + ").");
+				LocalDate date = null;
+				int maxNServiceIds = 0;
+				for(Entry<LocalDate, Set<String>> idsOnDayEntry : Service.dateStats.entrySet()) {
 					try {
-						if(e.getValue().size() > serviceIdsToConvert.size()) {
-							this.serviceIdsToConvert = e.getValue();
-							dateUsed = e.getKey();
+						LocalDate currentDate = idsOnDayEntry.getKey();
+						Set<String> currentIds = idsOnDayEntry.getValue();
+						if(currentIds.size() > maxNServiceIds) {
+							maxNServiceIds = currentIds.size();
+							date = currentDate;
 						}
 					} catch (Exception e1) {
 						e1.printStackTrace();
 					}
 				}
-				log.info("... Using service IDs of the day with the most services (" + DAY_WITH_MOST_SERVICES + ").");
-				log.info("    " + serviceIdsToConvert.size() + " services on " + dateUsed);
-				break;
+				return date;
 			}
 
 			case DAY_WITH_MOST_TRIPS: {
+				log.info("    Using service IDs of the day with the most trips (" + DAY_WITH_MOST_TRIPS + ").");
+				LocalDate date = null;
 				int maxTrips = 0;
 				for(Entry<LocalDate, Set<String>> e : Service.dateStats.entrySet()) {
 					int nTrips = 0;
 					for(String s : e.getValue()) {
-						nTrips += serviceIdsCount.get(s);
+						nTrips += nTripsPerServiceId.get(s);
 					}
 					if(nTrips > maxTrips) {
 						maxTrips = nTrips;
-						this.serviceIdsToConvert = e.getValue();
-						dateUsed = e.getKey();
+						date = e.getKey();
 					}
 				}
-				log.info("... Using service IDs of the day with the most trips (" + DAY_WITH_MOST_TRIPS + ").");
-				log.info("    " + maxTrips + " trips and " + serviceIdsToConvert.size() + " services on " + dateUsed);
-				break;
+				return date;
 			}
 
-			default:
+			default: {
+				LocalDate date;
 				try {
-					dateUsed = LocalDate.of(Integer.parseInt(param.substring(0, 4)), Integer.parseInt(param.substring(4, 6)), Integer.parseInt(param.substring(6, 8)));
-					this.serviceIdsToConvert = getServiceIdsOnDate(dateUsed);
-					log.info("        Using service IDs on " + param + ": " + this.serviceIdsToConvert.size() + " services.");
+					date = LocalDate.of(Integer.parseInt(param.substring(0, 4)), Integer.parseInt(param.substring(4, 6)), Integer.parseInt(param.substring(6, 8)));
 				} catch (NumberFormatException e) {
-					throw new IllegalArgumentException("Service id param not recognized! Allowed: day in format \"yyyymmdd\", " + DAY_WITH_MOST_SERVICES + ", "+ DAY_WITH_MOST_TRIPS + ", " + ALL_SERVICE_IDS);
+					throw new IllegalArgumentException("Extract param not recognized");
 				}
-				break;
+				return date;
+			}
 		}
 	}
 
-	private Set<String> getServiceIdsOnDate(LocalDate checkDate) {
-		HashSet<String> idsOnCheckDate = new HashSet<>();
-		for(Service service : services.values()) {
-			if(dateIsOnService(checkDate, service)) {
-				idsOnCheckDate.add(service.getId());
+	private Set<String> getServiceIds(LocalDate checkDate) {
+		if(checkDate == null) {
+			return services.keySet();
+		} else {
+			HashSet<String> idsOnCheckDate = new HashSet<>();
+			for(Service service : services.values()) {
+				if(serviceCoversDate(service, checkDate)) {
+					idsOnCheckDate.add(service.getId());
+				}
 			}
+			return idsOnCheckDate;
 		}
-		return idsOnCheckDate;
 	}
 
 	/**
 	 * @return <code>true</code> if the given date is used by the given service.
 	 */
-	private boolean dateIsOnService(LocalDate checkDate, Service service) {
+	private boolean serviceCoversDate(Service service, LocalDate checkDate) {
 		// check if checkDate is an addition
 		if(service.getAdditions().contains(checkDate)) {
 			return true;
