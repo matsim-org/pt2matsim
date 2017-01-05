@@ -24,6 +24,7 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
+import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.mapping.PTMapperImpl;
 import org.matsim.vehicles.VehicleUtils;
@@ -40,7 +41,7 @@ public class MappingAnalysisTest {
 	private TransitSchedule schedule;
 	private Vehicles vehicles;
 	private Network network;
-	private GtfsFeed gtfsConverter;
+	private GtfsConverter gtfsConverter;
 	private String coordinateSystem;
 
 	private String input = "test/analysis/";
@@ -56,8 +57,10 @@ public class MappingAnalysisTest {
 		// convert schedule
 		schedule = ScheduleTools.createSchedule();
 		vehicles = VehicleUtils.createVehiclesContainer();
-		gtfsConverter = new GtfsConverter(input + "addisoncounty-vt-us-gtfs/", coordinateSystem);
-		gtfsConverter.convert("all", schedule, vehicles);
+		GtfsFeed gtfsFeed = new GtfsFeedImpl(input + "addisoncounty-vt-us-gtfs/");
+
+		gtfsConverter = new GtfsConverter(gtfsFeed);
+		gtfsConverter.convert("all", coordinateSystem, schedule, vehicles);
 
 //		ExtractDebugSchedule.run(schedule, "SBSB_1437", "59468A1158B4286");
 

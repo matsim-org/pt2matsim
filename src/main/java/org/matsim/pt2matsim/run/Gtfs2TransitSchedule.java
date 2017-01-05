@@ -23,15 +23,16 @@ import org.apache.log4j.Logger;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
+import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
 import java.time.LocalDate;
 
-import static org.matsim.pt2matsim.gtfs.GtfsFeed.ALL_SERVICE_IDS;
-import static org.matsim.pt2matsim.gtfs.GtfsFeed.DAY_WITH_MOST_SERVICES;
-import static org.matsim.pt2matsim.gtfs.GtfsFeed.DAY_WITH_MOST_TRIPS;
+import static org.matsim.pt2matsim.gtfs.GtfsConverter.ALL_SERVICE_IDS;
+import static org.matsim.pt2matsim.gtfs.GtfsConverter.DAY_WITH_MOST_SERVICES;
+import static org.matsim.pt2matsim.gtfs.GtfsConverter.DAY_WITH_MOST_TRIPS;
 
 /**
  * Contract class to read GTFS files and convert them to an unmapped MATSim Transit Schedule
@@ -101,21 +102,24 @@ public class Gtfs2TransitSchedule {
 	public static void run(String gtfsFolder, String sampleDayParam, String outputCoordinateSystem, String scheduleFile, String vehicleFile, String transitRouteShapeRefFile) {
 		Logger.getLogger(MGC.class).setLevel(Level.ERROR);
 
-		TransitSchedule schedule = ScheduleTools.createSchedule();
-		Vehicles vehicles = VehicleUtils.createVehiclesContainer();
-
+		// check sample day parameter
 		if(!isValidSampleDayParam(sampleDayParam)) {
 			throw new IllegalArgumentException("Sample day parameter not recognized! Allowed: date in format \"yyyymmdd\", " + DAY_WITH_MOST_SERVICES + ", " + DAY_WITH_MOST_TRIPS + ", " + ALL_SERVICE_IDS);
 		}
-
 		String param = sampleDayParam == null ? DAY_WITH_MOST_TRIPS : sampleDayParam;
-		GtfsConverter gtfsConverter = new GtfsConverter(gtfsFolder, outputCoordinateSystem);
-		gtfsConverter.convert(param, schedule, vehicles);
 
+		// load gtfs files
+		GtfsFeedImpl gtfsFeed = new GtfsFeedImpl(gtfsFolder);
+
+		// convert to transit schedule
+		GtfsConverter converter = new GtfsConverter(gtfsFeed);
+		converter.convert(param, outputCoordinateSystem);
+
+		// write Files
 		boolean authExists = true;
-		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), scheduleFile);
+		ScheduleTools.writeTransitSchedule(converter.getSchedule(), scheduleFile);
 		if(vehicleFile != null) {
-			ScheduleTools.writeVehicles(gtfsConverter.getVehicles(), vehicleFile);
+			ScheduleTools.writeVehicles(converter.getVehicles(), vehicleFile);
 		}
 		if(transitRouteShapeRefFile != null) {
 			try {
@@ -125,10 +129,13 @@ public class Gtfs2TransitSchedule {
 				log.warn("Code " + outputCoordinateSystem + " not recognized by geotools. Shapefile not written.");
 			}
 			if(authExists)
-				gtfsConverter.getShapedTransitSchedule().getTransitRouteShapeReference().writeToFile(transitRouteShapeRefFile);
+				converter.getShapedTransitSchedule().getTransitRouteShapeReference().writeToFile(transitRouteShapeRefFile);
 		}
 	}
 
+	/**
+	 * @return true if <tt>check</tt> is a valid sample day parameter value.
+	 */
 	private static boolean isValidSampleDayParam(String check) {
 		if(check.equals(ALL_SERVICE_IDS) || check.equals(DAY_WITH_MOST_TRIPS) || check.equals(DAY_WITH_MOST_SERVICES)) {
 			return true;

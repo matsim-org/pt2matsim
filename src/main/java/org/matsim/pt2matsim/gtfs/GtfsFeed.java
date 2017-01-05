@@ -19,10 +19,11 @@
 package org.matsim.pt2matsim.gtfs;
 
 import org.matsim.api.core.v01.Id;
-import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.pt2matsim.gtfs.lib.GtfsRoute;
+import org.matsim.pt2matsim.gtfs.lib.Stop;
+import org.matsim.pt2matsim.gtfs.lib.Service;
+import org.matsim.pt2matsim.gtfs.lib.Trip;
 import org.matsim.pt2matsim.lib.RouteShape;
-import org.matsim.pt2matsim.lib.ShapedTransitSchedule;
-import org.matsim.vehicles.Vehicles;
 
 import java.util.Map;
 
@@ -33,21 +34,17 @@ import java.util.Map;
  */
 public interface GtfsFeed {
 
-	String ALL_SERVICE_IDS = "all";
-	String DAY_WITH_MOST_TRIPS = "dayWithMostTrips";
-	String DAY_WITH_MOST_SERVICES = "dayWithMostServices";
+	Map<String, Stop> getStops();
 
-	void convert(String serviceIdsParam, TransitSchedule transitSchedule, Vehicles vehicles);
+	Map<String, GtfsRoute> getRoutes();
 
-	void convert(String serviceIdsParam);
-
-	void convert();
-
-	TransitSchedule getSchedule();
-
-	Vehicles getVehicles();
-
-	ShapedTransitSchedule getShapedTransitSchedule();
+	Map<String, Trip> getTrips();
 
 	Map<Id<RouteShape>, RouteShape> getShapes();
+
+	boolean usesFrequencies();
+
+	Map<String, Service> getServices();
+
+	Map<String, Integer> getNTripsPerServiceId();
 }

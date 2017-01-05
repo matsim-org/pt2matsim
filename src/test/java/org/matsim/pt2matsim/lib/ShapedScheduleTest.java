@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
+import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
@@ -39,8 +40,10 @@ public class ShapedScheduleTest {
 
 	@Test
 	public void convertWriteRead() {
-		GtfsFeed gtfsConverter = new GtfsConverter(gtfsFolder, "EPSG:2032");
-		gtfsConverter.convert("all");
+		GtfsFeed gtfsFeed = new GtfsFeedImpl(gtfsFolder);
+
+		GtfsConverter gtfsConverter = new GtfsConverter(gtfsFeed);
+		gtfsConverter.convert("all", "EPSG:2032");
 
 		// write
 		ShapedTransitSchedule convertedShapedSchedule = gtfsConverter.getShapedTransitSchedule();
