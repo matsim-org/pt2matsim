@@ -23,10 +23,15 @@ import org.apache.log4j.Logger;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
-import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 import org.matsim.pt2matsim.tools.ScheduleTools;
+
+import java.time.LocalDate;
+
+import static org.matsim.pt2matsim.gtfs.GtfsFeed.ALL_SERVICE_IDS;
+import static org.matsim.pt2matsim.gtfs.GtfsFeed.DAY_WITH_MOST_SERVICES;
+import static org.matsim.pt2matsim.gtfs.GtfsFeed.DAY_WITH_MOST_TRIPS;
 
 /**
  * Contract class to read GTFS files and convert them to an unmapped MATSim Transit Schedule
@@ -45,11 +50,11 @@ public class Gtfs2TransitSchedule {
 	 * <p/>
 	 *
 	 * @param args	[0] folder where the gtfs files are located (a single zip file is not supported)<br/>
-	 * 				[1]	which service ids should be used. One of the following:<br/>
+	 * 				[1]	Services from which sample day should be used. One of the following:<br/>
 	 *                  <ul>
-	 *                  <li>dayWithMostServices</li>
 	 *                  <li>date in the format yyyymmdd</li>
-	 *                  <li>dayWithMostTrips</li>
+	 *                  <li>dayWithMostTrips (default)</li>
+	 *                  <li>dayWithMostServices</li>
 	 *                  <li>all</li>
 	 *                  </ul>
 	 *              [2] the output coordinate system. Use WGS84 for no transformation.<br/>
@@ -79,11 +84,11 @@ public class Gtfs2TransitSchedule {
 	 * Creates a default vehicles file as well.
 	 * <p/>
 	 * @param gtfsFolder          		folder where the gtfs files are located (a single zip file is not supported)
-	 * @param serviceIdsParam        	which service ids should be used. One of the following:
+	 * @param sampleDayParam        	Services from which sample day should be used. One of the following:
 	 *     				             	<ul>
-	 *     				             	<li>dayWithMostServices (default)</li>
-	 *     				             	<li>dayWithMostTrips</li>
 	 *     				             	<li>date in the format yyyymmdd</li>
+	 *     				             	<li>dayWithMostTrips (default)</li>
+	 *     				             	<li>dayWithMostServices</li>
 	 *     				             	<li>all</li>
 	 *     				             	</ul>
 	 * @param outputCoordinateSystem 	the output coordinate system. Use WGS84 for no transformation.
@@ -93,13 +98,17 @@ public class Gtfs2TransitSchedule {
 	 *                                  that references transit routes and shapes (optional, output coordinate
 	 *                                  system needs to be in EPSG:* format or a name usable by geotools)
 	 */
-	public static void run(String gtfsFolder, String serviceIdsParam, String outputCoordinateSystem, String scheduleFile, String vehicleFile, String transitRouteShapeRefFile) {
+	public static void run(String gtfsFolder, String sampleDayParam, String outputCoordinateSystem, String scheduleFile, String vehicleFile, String transitRouteShapeRefFile) {
 		Logger.getLogger(MGC.class).setLevel(Level.ERROR);
 
 		TransitSchedule schedule = ScheduleTools.createSchedule();
 		Vehicles vehicles = VehicleUtils.createVehiclesContainer();
 
-		String param = serviceIdsParam == null ? GtfsFeed.DAY_WITH_MOST_SERVICES : serviceIdsParam;
+		if(!isValidSampleDayParam(sampleDayParam)) {
+			throw new IllegalArgumentException("Sample day parameter not recognized! Allowed: date in format \"yyyymmdd\", " + DAY_WITH_MOST_SERVICES + ", " + DAY_WITH_MOST_TRIPS + ", " + ALL_SERVICE_IDS);
+		}
+
+		String param = sampleDayParam == null ? DAY_WITH_MOST_TRIPS : sampleDayParam;
 		GtfsConverter gtfsConverter = new GtfsConverter(gtfsFolder, outputCoordinateSystem);
 		gtfsConverter.convert(param, schedule, vehicles);
 
@@ -117,6 +126,19 @@ public class Gtfs2TransitSchedule {
 			}
 			if(authExists)
 				gtfsConverter.getShapedTransitSchedule().getTransitRouteShapeReference().writeToFile(transitRouteShapeRefFile);
+		}
+	}
+
+	private static boolean isValidSampleDayParam(String check) {
+		if(check.equals(ALL_SERVICE_IDS) || check.equals(DAY_WITH_MOST_TRIPS) || check.equals(DAY_WITH_MOST_SERVICES)) {
+			return true;
+		} else {
+			try {
+				LocalDate.of(Integer.parseInt(check.substring(0, 4)), Integer.parseInt(check.substring(4, 6)), Integer.parseInt(check.substring(6, 8)));
+			} catch (NumberFormatException e) {
+				return false;
+			}
+			return true;
 		}
 	}
 
