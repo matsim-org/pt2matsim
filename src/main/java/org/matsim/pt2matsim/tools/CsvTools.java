@@ -84,6 +84,8 @@ public class CsvTools {
 	 * @param header      the header (first line) of the csv file
 	 * @param columnNames array of attributes you need the indices of
 	 * @return the index for each attribute given in columnNames
+	 *
+	 * TODO throw exception for required columns, info/nothing for optional
 	 */
 	public static Map<String, Integer> getIndices(String[] header, String[] columnNames) {
 		Map<String, Integer> indices = new HashMap<>();
