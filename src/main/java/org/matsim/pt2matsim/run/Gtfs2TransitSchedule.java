@@ -96,8 +96,7 @@ public class Gtfs2TransitSchedule {
 	 * @param scheduleFile              output transit schedule file
 	 * @param vehicleFile               output default vehicles file (optional)
 	 * @param transitRouteShapeRefFile  output route shape reference file. shape files. CSV file
-	 *                                  that references transit routes and shapes (optional, output coordinate
-	 *                                  system needs to be in EPSG:* format or a name usable by geotools)
+	 *                                  that references transit routes and shapes (optional)
 	 */
 	public static void run(String gtfsFolder, String sampleDayParam, String outputCoordinateSystem, String scheduleFile, String vehicleFile, String transitRouteShapeRefFile) {
 		Logger.getLogger(MGC.class).setLevel(Level.ERROR);
