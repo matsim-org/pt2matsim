@@ -38,8 +38,8 @@ public class ExtractDebugSchedule {
 	 * to a new file.
 	 *
 	 * @param args [0] schedule file
-	 *             [1] transit route id
-	 *             [2] transit line id
+	 *             [1] transit line id
+	 *             [2] transit route id (use * for all transit routes of line)
 	 *             [3] output debug schedule file
 	 */
 	public static void main(final String[] args) {
@@ -48,12 +48,10 @@ public class ExtractDebugSchedule {
 
 		for(TransitLine tl : schedule.getTransitLines().values()) {
 			if(tl.getId().toString().equals(args[1])) {
+				TransitLine line = debug.getFactory().createTransitLine(tl.getId());
 				for(TransitRoute tr : tl.getRoutes().values()) {
-					if(tr.getId().toString().equals(args[2])) {
-						TransitLine line = debug.getFactory().createTransitLine(tl.getId());
+					if(tr.getId().toString().equals(args[2]) || args[2].equals("*")) {
 						line.addRoute(tr);
-
-						debug.addTransitLine(line);
 
 						for(TransitRouteStop rs : tr.getStops()) {
 							if(!debug.getFacilities().containsKey(rs.getStopFacility().getId())) {
@@ -62,6 +60,7 @@ public class ExtractDebugSchedule {
 						}
 					}
 				}
+				debug.addTransitLine(line);
 			}
 		}
 		ScheduleTools.writeTransitSchedule(debug, args[3]);
