@@ -29,6 +29,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.network.NetworkImpl;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
@@ -46,7 +47,8 @@ import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleCleaner;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * References an unmapped transit schedule to a network. Combines
@@ -127,11 +129,21 @@ public class PTMapperImpl implements PTMapper {
 
 		/**
 		 * Some schedule statistics
+		 * Check link candidate params and mode routing assignment
 		 */
 		int nStopFacilities = schedule.getFacilities().size();
 		int nTransitRoutes = 0;
 		for(TransitLine transitLine : this.schedule.getTransitLines().values()) {
-				nTransitRoutes = transitLine.getRoutes().size();
+			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
+				nTransitRoutes++;
+				String scheduleMode = transitRoute.getTransportMode();
+				if(!config.getModeRoutingAssignment().containsKey(scheduleMode)) {
+					throw new IllegalArgumentException("No mode routing assignment for schedule mode " + scheduleMode);
+				}
+				if(!config.getLinkCandidateCreatorParams().containsKey(scheduleMode)) {
+					throw new IllegalArgumentException("No link candidate creator parameters assignment for schedule mode " + scheduleMode);
+				}
+			}
 		}
 
 		/** [1]
@@ -426,6 +438,7 @@ public class PTMapperImpl implements PTMapper {
 	private static void setLogLevels() {
 		Logger.getLogger(org.matsim.core.router.Dijkstra.class).setLevel(Level.ERROR); // suppress no route found warnings
 		Logger.getLogger(Network.class).setLevel(Level.WARN);
+		Logger.getLogger(NetworkImpl.class).setLevel(Level.WARN);
 		Logger.getLogger(org.matsim.core.network.filter.NetworkFilterManager.class).setLevel(Level.WARN);
 		Logger.getLogger(org.matsim.core.router.util.PreProcessDijkstra.class).setLevel(Level.WARN);
 		Logger.getLogger(org.matsim.core.router.util.PreProcessDijkstra.class).setLevel(Level.WARN);

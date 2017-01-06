@@ -190,7 +190,9 @@ public class PseudoRoutingImpl implements PseudoRouting {
 				List<PseudoRouteStop> pseudoPath = pseudoGraph.getLeastCostStopSequence();
 
 				if(pseudoPath == null) {
-					throw new RuntimeException("PseudoGraph has no path from SOURCE to DESTINATION for transit route " + transitRoute.getId() + " from \"" + routeStops.get(0).getStopFacility().getName() + "\" to \"" + routeStops.get(routeStops.size() - 1).getStopFacility().getName() + "\"");
+					throw new RuntimeException("PseudoGraph has no path from SOURCE to DESTINATION for transit route " + transitRoute.getId() + " " +
+							"on line " + transitLine.getId() + " from \"" + routeStops.get(0).getStopFacility().getName() + "\" " +
+							"to \"" + routeStops.get(routeStops.size() - 1).getStopFacility().getName() + "\"");
 				} else {
 					getNecessaryArtificialLinks(pseudoPath);
 					threadPseudoSchedule.addPseudoRoute(transitLine, transitRoute, pseudoPath);

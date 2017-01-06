@@ -35,7 +35,9 @@ import org.opengis.feature.simple.SimpleFeature;
 import java.util.*;
 
 /**
- * Converts a MATSim Transit Schedule to a ESRI shape file
+ * Converts a MATSim Transit Schedule to a ESRI shape file.
+ *
+ * Experimental!
  *
  * @author polettif
  */
@@ -48,25 +50,30 @@ public class ScheduleShapeFileWriter {
 	private final String crs;
 
 	private Map<TransitStopFacility, Set<Id<TransitRoute>>> routesOnStopFacility = new HashMap<>();
+	private boolean realLinks = true;
 
-	public ScheduleShapeFileWriter(final TransitSchedule schedule, final Network network, String crs) {
+	public ScheduleShapeFileWriter(final TransitSchedule schedule, final Network network, String crs, boolean realLinks) {
 		this.schedule = schedule;
 		this.network = network;
 		this.crs = crs;
+		this.realLinks = realLinks;
 	}
 
 	/**
 	 * Converts the given schedule based on the given network
 	 * to GIS shape files.
 	 *
-	 * @param args	[0] input schedule
-	 *              [1] input network
-	 *              [2] coordinate reference system (EPSG=*)
-	 *              [3] output folder
+	 * @param args [0] input schedule
+	 *             [1] input network
+	 *             [2] coordinate reference system (EPSG=*)
+	 *             [3] output folder
+	 *             [4] use network links (optional, default true)
 	 */
 	public static void main(final String[] args) {
 		if(args.length == 4) {
-			run(args[0], args[1], args[2], args[3]);
+			run(args[0], args[1], args[2], args[3], true);
+		} else if(args.length == 5) {
+			run(args[0], args[1], args[2], args[3], Boolean.parseBoolean(args[4]));
 		} else {
 			throw new RuntimeException("Incorrect number of arguments");
 		}
@@ -76,28 +83,28 @@ public class ScheduleShapeFileWriter {
 	 * Converts the given schedule based on the given network
 	 * to GIS shape files.
 	 *
-	 * @param scheduleFile	input schedule
-	 * @param networkFile   input network
-	 * @param outputFolder  output folder
+	 * @param scheduleFile input schedule
+	 * @param networkFile  input network
+	 * @param outputFolder output folder
 	 */
-	public static void run(String scheduleFile, String networkFile, String crs, String outputFolder) {
+	public static void run(String scheduleFile, String networkFile, String crs, String outputFolder, boolean writeLinks) {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(scheduleFile);
 		Network network = NetworkTools.readNetwork(networkFile);
 
-		ScheduleShapeFileWriter s2s = new ScheduleShapeFileWriter(schedule, network, crs);
+		ScheduleShapeFileWriter s2s = new ScheduleShapeFileWriter(schedule, network, crs, writeLinks);
 
-		s2s.routes2Polylines(outputFolder+"transitRoutes.shp");
-		s2s.stopFacilities2Shapes(outputFolder+"stopFacilities.shp", "refLinks.shp");
+		s2s.routes2Polylines(outputFolder + "transitRoutes.shp");
+		s2s.stopFacilities2Shapes(outputFolder + "stopFacilities.shp", "refLinks.shp");
 	}
 
 	public static void run(TransitSchedule schedule, Network network, String crs, String outputFolder) {
-		ScheduleShapeFileWriter s2s = new ScheduleShapeFileWriter(schedule, network, crs);
+		ScheduleShapeFileWriter s2s = new ScheduleShapeFileWriter(schedule, network, crs, true);
 
-		s2s.routes2Polylines(outputFolder+"transitRoutes.shp");
-		s2s.stopFacilities2Shapes(outputFolder+"stopFacilities.shp", outputFolder+"refLinks.shp");
+		s2s.routes2Polylines(outputFolder + "transitRoutes.shp");
+		s2s.stopFacilities2Shapes(outputFolder + "stopFacilities.shp", outputFolder + "refLinks.shp");
 	}
 
-		public void stopFacilities2Shapes(String pointOutputFile, String lineOutputFile) {
+	public void stopFacilities2Shapes(String pointOutputFile, String lineOutputFile) {
 		Collection<SimpleFeature> lineFeatures = new ArrayList<>();
 		Collection<SimpleFeature> pointFeatures = new ArrayList<>();
 
@@ -124,37 +131,48 @@ public class ScheduleShapeFileWriter {
 				.create();
 
 		for(TransitStopFacility stopFacility : schedule.getFacilities().values()) {
-			Link refLink = network.getLinks().get(stopFacility.getLinkId());
-
-			Coordinate[] coordinates = new Coordinate[2];
-			try {
-				coordinates[0] = MGC.coord2Coordinate(refLink.getFromNode().getCoord());
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			coordinates[1] = MGC.coord2Coordinate(refLink.getToNode().getCoord());
 
 			SimpleFeature pf = pointFeatureFactory.createPoint(MGC.coord2Coordinate(stopFacility.getCoord()));
 			pf.setAttribute("id", stopFacility.getId().toString());
 			pf.setAttribute("name", stopFacility.getName());
-			pf.setAttribute("linkId", stopFacility.getLinkId().toString());
 			pf.setAttribute("postAreaId", stopFacility.getStopPostAreaId());
 			pf.setAttribute("isBlocking", stopFacility.getIsBlockingLane());
-			if(routesOnStopFacility.get(stopFacility) != null) pf.setAttribute("routes", CollectionUtils.idSetToString(routesOnStopFacility.get(stopFacility)));
+
+			if(realLinks) pf.setAttribute("linkId", stopFacility.getLinkId().toString());
+
+			if(routesOnStopFacility.get(stopFacility) != null) {
+				pf.setAttribute("routes", CollectionUtils.idSetToString(routesOnStopFacility.get(stopFacility)));
+			}
 			pointFeatures.add(pf);
 
-			SimpleFeature lf = polylineFeatureFactory.createPolyline(coordinates);
-			lf.setAttribute("id", stopFacility.getId().toString());
-			lf.setAttribute("name", stopFacility.getName());
-			lf.setAttribute("linkId", stopFacility.getLinkId().toString());
-			lf.setAttribute("postAreaId", stopFacility.getStopPostAreaId());
-			lf.setAttribute("isBlocking", stopFacility.getIsBlockingLane());
-			if(routesOnStopFacility.get(stopFacility) != null) pf.setAttribute("routes", CollectionUtils.idSetToString(routesOnStopFacility.get(stopFacility)));
-			lineFeatures.add(lf);
+			if(realLinks) {
+				Link refLink = network.getLinks().get(stopFacility.getLinkId());
+
+				Coordinate[] coordinates = new Coordinate[2];
+				try {
+					coordinates[0] = MGC.coord2Coordinate(refLink.getFromNode().getCoord());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				coordinates[1] = MGC.coord2Coordinate(refLink.getToNode().getCoord());
+
+				SimpleFeature lf = polylineFeatureFactory.createPolyline(coordinates);
+				lf.setAttribute("id", stopFacility.getId().toString());
+				lf.setAttribute("name", stopFacility.getName());
+				lf.setAttribute("linkId", stopFacility.getLinkId().toString());
+				lf.setAttribute("postAreaId", stopFacility.getStopPostAreaId());
+				lf.setAttribute("isBlocking", stopFacility.getIsBlockingLane());
+				if(routesOnStopFacility.get(stopFacility) != null)
+					pf.setAttribute("routes", CollectionUtils.idSetToString(routesOnStopFacility.get(stopFacility)));
+				lineFeatures.add(lf);
+			}
 		}
 
 		ShapeFileWriter.writeGeometries(pointFeatures, pointOutputFile);
-		ShapeFileWriter.writeGeometries(lineFeatures, lineOutputFile);
+
+		if(realLinks) {
+			ShapeFileWriter.writeGeometries(lineFeatures, lineOutputFile);
+		}
 	}
 
 
@@ -181,6 +199,13 @@ public class ScheduleShapeFileWriter {
 
 				if(coordinates == null) {
 					log.warn("No links found for route " + transitRoute.getId() + " on line " + transitLine.getId());
+					Coordinate[] stopFacilitiesCoordinates = getCoordinatesFromStopFacilities(transitRoute);
+					SimpleFeature f = ff.createPolyline(stopFacilitiesCoordinates);
+					f.setAttribute("line", transitLine.getId().toString());
+					f.setAttribute("route", transitRoute.getId().toString());
+					f.setAttribute("mode", transitRoute.getTransportMode());
+					f.setAttribute("simLength", "0");
+					features.add(f);
 				} else {
 					SimpleFeature f = ff.createPolyline(coordinates);
 					f.setAttribute("line", transitLine.getId().toString());
@@ -207,10 +232,6 @@ public class ScheduleShapeFileWriter {
 		List<Coordinate> coordList = new ArrayList<>();
 		List<Id<Link>> linkIds = ScheduleTools.getTransitRouteLinkIds(transitRoute);
 
-		if(transitRoute.getId().toString().equals("80.T0.31-650-P-j16-1.6.H")) {
-			log.debug("break");
-		}
-
 		if(linkIds.size() > 0) {
 			for(Id<Link> linkId : linkIds) {
 				if(network.getLinks().containsKey(linkId)) {
@@ -224,6 +245,17 @@ public class ScheduleShapeFileWriter {
 			return coordList.toArray(coordinates);
 		}
 		return null;
+	}
+
+	private Coordinate[] getCoordinatesFromStopFacilities(TransitRoute transitRoute) {
+		List<Coordinate> coordList = new ArrayList<>();
+
+		for(TransitRouteStop trs : transitRoute.getStops()) {
+			coordList.add(MGC.coord2Coordinate(trs.getStopFacility().getCoord()));
+		}
+
+		Coordinate[] coordinates = new Coordinate[coordList.size()];
+		return coordList.toArray(coordinates);
 	}
 
 }
