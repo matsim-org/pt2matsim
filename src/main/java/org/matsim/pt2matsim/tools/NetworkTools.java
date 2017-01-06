@@ -546,7 +546,7 @@ public class NetworkTools {
 				do {
 					found.add(actual);
 					precedingLink = getSingleFilePrecedingLink(actual);
-					if(precedingLink != null) {
+					if(precedingLink != null && links.contains(precedingLink)) {
 						linkSequence.put(precedingLink, actual);
 						actual = precedingLink;
 					}
@@ -558,7 +558,7 @@ public class NetworkTools {
 				do {
 					found.add(actual);
 					succeedingLink = getSingleFileSucceedingLink(actual);
-					if(succeedingLink != null) {
+					if(succeedingLink != null && links.contains(succeedingLink)) {
 						linkSequence.put(actual, succeedingLink);
 						actual = succeedingLink;
 					}

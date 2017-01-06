@@ -107,7 +107,7 @@ public class CheckMappedSchedulePlausibility {
 		check.writeCsv(outputFolder + "allPlausibilityWarnings.csv");
 		check.writeResultShapeFiles(outputFolder+"shp/warnings/");
 
-		ScheduleShapeFileWriter schedule2shp = new ScheduleShapeFileWriter(schedule, network, coordinateSystem);
+		ScheduleShapeFileWriter schedule2shp = new ScheduleShapeFileWriter(schedule, network, coordinateSystem, true);
 		schedule2shp.routes2Polylines(outputFolder+"shp/schedule/TransitRoutes.shp");
 		schedule2shp.stopFacilities2Shapes(outputFolder+"shp/schedule/StopFacilities.shp", outputFolder+"shp/schedule/StopFacilities_refLinks.shp");
 
