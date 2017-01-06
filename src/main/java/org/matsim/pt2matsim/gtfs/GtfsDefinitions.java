@@ -171,4 +171,15 @@ public final class GtfsDefinitions {
 		}
 	}
 
+	public enum FareTransferType {
+		NO_TRANSFER_PERMITTED, TRANSFER_ONCE, TRANSFER_TWICE, UNLIMITED
+	}
+
+	public enum PaymentMethod {
+		ON_BOARD, BEFORE_BOARDING
+	}
+
+	public enum TransferType {
+		RECOMMENDED, TIMED_TRANSFER_POINT, MIN_TRANSFER_TIME, NOT_POSSIBLE
+	}
 }

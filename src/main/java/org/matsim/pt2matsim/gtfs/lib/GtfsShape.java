@@ -54,6 +54,7 @@ public class GtfsShape implements RouteShape {
 		this.id = shapeId;
 	}
 
+	// required attribute
 	@Override
 	public Id<RouteShape> getId() {
 		return id;

@@ -1,8 +1,10 @@
 /* *********************************************************************** *
  * project: org.matsim.*
+ * Frequency.java
+ *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2016 by the members listed in the COPYING,        *
+ * copyright       : (C) 2011 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -20,17 +22,40 @@ package org.matsim.pt2matsim.gtfs.lib;
 
 import java.util.Date;
 
-/**
- * @author polettif
- */
-public interface StopTime {
-	String getStopId();
+public class FrequencyImpl implements Frequency {
+	
+	private final Date startTime;
+	private final Date endTime;
+	private final int headwaySecs;
+	
+	public FrequencyImpl(Date startTime, Date endTime, int headwaySecs) {
+		this.startTime = startTime;
+		this.endTime = endTime;
+		this.headwaySecs = headwaySecs;
+	}
 
-	String getTripId();
+	/**
+	 * required attribute
+	 */
+	@Override
+	public Date getStartTime() {
+		return startTime;
+	}
 
-	Date getArrivalTime();
+	/**
+	 * required attribute
+	 */
+	@Override
+	public Date getEndTime() {
+		return endTime;
+	}
 
-	Date getDepartureTime();
-
-	Integer getSequencePosition();
+	/**
+	 * required attribute
+	 */
+	@Override
+	public int getHeadWaySecs() {
+		return headwaySecs;
+	}
+	
 }

@@ -299,14 +299,14 @@ public class GtfsConverter {
 				Map<LocalDate, Set<String>> dateStats = getDateStats();
 				LocalDate date = null;
 				int maxTrips = 0;
-				for(Map.Entry<LocalDate, Set<String>> e : dateStats.entrySet()) {
+				for(Map.Entry<LocalDate, Set<String>> idsOnDayEntry : dateStats.entrySet()) {
 					int nTrips = 0;
-					for(String s : e.getValue()) {
-						nTrips += feed.getNTripsPerServiceId().get(s);
+					for(String serviceId : idsOnDayEntry.getValue()) {
+						nTrips += feed.getServices().get(serviceId).getTrips().size();
 					}
 					if(nTrips > maxTrips) {
 						maxTrips = nTrips;
-						date = e.getKey();
+						date = idsOnDayEntry.getKey();
 					}
 				}
 				return date;

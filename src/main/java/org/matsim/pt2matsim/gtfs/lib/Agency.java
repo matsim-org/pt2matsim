@@ -18,19 +18,15 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
-import java.util.Date;
-
 /**
  * @author polettif
  */
-public interface StopTime {
-	String getStopId();
+public interface Agency {
 
-	String getTripId();
+	String getAgencyName();
 
-	Date getArrivalTime();
+	String getAgencyUrl();
 
-	Date getDepartureTime();
+	String getAgencyTimeZone();
 
-	Integer getSequencePosition();
 }

@@ -18,19 +18,20 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
-import java.util.Date;
+import org.matsim.pt2matsim.gtfs.GtfsDefinitions;
 
 /**
  * @author polettif
  */
-public interface StopTime {
-	String getStopId();
+public interface Fare {
 
-	String getTripId();
+	String getId();
 
-	Date getArrivalTime();
+	String getPrice();
 
-	Date getDepartureTime();
+	String getCurrencyType();
 
-	Integer getSequencePosition();
+	GtfsDefinitions.PaymentMethod getPaymentMethod();
+
+	GtfsDefinitions.FareTransferType getTransfers();
 }

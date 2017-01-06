@@ -18,19 +18,16 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
-import java.util.Date;
+import org.matsim.pt2matsim.gtfs.GtfsDefinitions;
 
 /**
  * @author polettif
  */
-public interface StopTime {
-	String getStopId();
+public interface Transfer {
 
-	String getTripId();
+	String getFromStopId();
 
-	Date getArrivalTime();
+	String getToStopId();
 
-	Date getDepartureTime();
-
-	Integer getSequencePosition();
+	GtfsDefinitions.TransferType getTransferType();
 }
