@@ -136,7 +136,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 			while(line != null) {
 				String stopId = line[col.get(GtfsDefinitions.STOP_ID)];
 				Coord coord = new Coord(Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LON)]), Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LAT)]));
-				Stop GtfsStop = new Stop(stopId, line[col.get(GtfsDefinitions.STOP_NAME)], coord);
+				Stop GtfsStop = new StopImpl(stopId, line[col.get(GtfsDefinitions.STOP_NAME)], coord);
 				gtfsStops.put(stopId, GtfsStop);
 
 				line = reader.readNext();
@@ -182,7 +182,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 				for(int d = 0; d < 7; d++) {
 					days[d] = line[indexMonday + d].equals("1");
 				}
-				services.put(line[col.get(GtfsDefinitions.SERVICE_ID)], new Service(line[col.get(GtfsDefinitions.SERVICE_ID)], days, line[col.get(GtfsDefinitions.START_DATE)], line[col.get(GtfsDefinitions.END_DATE)]));
+				services.put(line[col.get(GtfsDefinitions.SERVICE_ID)], new ServiceImpl(line[col.get(GtfsDefinitions.SERVICE_ID)], days, line[col.get(GtfsDefinitions.START_DATE)], line[col.get(GtfsDefinitions.END_DATE)]));
 
 				line = reader.readNext();
 			}
@@ -216,7 +216,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 				Service currentService = services.get(line[col.get(GtfsDefinitions.SERVICE_ID)]);
 
 				if(currentService == null) {
-					currentService = new Service(line[col.get(GtfsDefinitions.SERVICE_ID)]);
+					currentService = new ServiceImpl(line[col.get(GtfsDefinitions.SERVICE_ID)]);
 
 					services.put(currentService.getId(), currentService);
 
@@ -306,7 +306,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 					throw new RuntimeException("Invalid value for route type: " + routeTypeNr + " [https://developers.google.com/transit/gtfs/reference/routes-file]");
 				}
 
-				Route newGtfsRoute = new Route(line[col.get(GtfsDefinitions.ROUTE_ID)], line[col.get(GtfsDefinitions.ROUTE_SHORT_NAME)], GtfsDefinitions.RouteTypes.values()[routeTypeNr]);
+				Route newGtfsRoute = new RouteImpl(line[col.get(GtfsDefinitions.ROUTE_ID)], line[col.get(GtfsDefinitions.ROUTE_SHORT_NAME)], GtfsDefinitions.RouteTypes.values()[routeTypeNr]);
 				routes.put(line[col.get(GtfsDefinitions.ROUTE_ID)], newGtfsRoute);
 
 				line = reader.readNext();
@@ -337,21 +337,21 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 			String[] line = reader.readNext();
 			while(line != null) {
+				Trip newTrip;
 				Route gtfsRoute = routes.get(line[col.get("route_id")]);
+				Service service = services.get(line[col.get(GtfsDefinitions.SERVICE_ID)]);
+
 				if(usesShapes) {
-					Id<RouteShape> shapeId = Id.create(line[col.get(GtfsDefinitions.SHAPE_ID)], RouteShape.class);
-					Trip newTrip = new Trip(line[col.get(GtfsDefinitions.TRIP_ID)], services.get(line[col.get(GtfsDefinitions.SERVICE_ID)]), shapes.get(shapeId), line[col.get(GtfsDefinitions.TRIP_ID)]);
-					gtfsRoute.putTrip(line[col.get(GtfsDefinitions.TRIP_ID)], newTrip);
-					trips.put(newTrip.getId(), newTrip);
+					Id<RouteShape> shapeId = Id.create(line[col.get(GtfsDefinitions.SHAPE_ID)], RouteShape.class); // column might not be available
+					newTrip = new TripImpl(line[col.get(GtfsDefinitions.TRIP_ID)], service, shapes.get(shapeId), line[col.get(GtfsDefinitions.TRIP_ID)]);
 				} else {
-					Trip newTrip = new Trip(line[col.get(GtfsDefinitions.TRIP_ID)], services.get(line[col.get(GtfsDefinitions.SERVICE_ID)]), null, line[col.get(GtfsDefinitions.TRIP_ID)]);
-					gtfsRoute.putTrip(line[col.get(GtfsDefinitions.TRIP_ID)], newTrip);
-					trips.put(newTrip.getId(), newTrip);
+					newTrip = new TripImpl(line[col.get(GtfsDefinitions.TRIP_ID)], service, null, line[col.get(GtfsDefinitions.TRIP_ID)]);
 				}
 
-				// each trip uses one service id, increase statistics accordingly
-				Integer count = MapUtils.getInteger(line[col.get(GtfsDefinitions.SERVICE_ID)], nTripsPerServiceId, 1);
-				nTripsPerServiceId.put(line[col.get(GtfsDefinitions.SERVICE_ID)], count + 1);
+				// store Trip
+				gtfsRoute.addTrip(newTrip);
+				service.addTrip(newTrip);
+				trips.put(newTrip.getId(), newTrip);
 
 				line = reader.readNext();
 			}
@@ -389,12 +389,12 @@ public class GtfsFeedImpl implements GtfsFeed {
 					if(trip != null) {
 						try {
 							if(!line[col.get(GtfsDefinitions.ARRIVAL_TIME)].equals("")) {
-								StopTime newStopTime = new StopTime(Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]),
+								StopTime newStopTime = new StopTimeImpl(Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]),
 										timeFormat.parse(line[col.get(GtfsDefinitions.ARRIVAL_TIME)]),
 										timeFormat.parse(line[col.get(GtfsDefinitions.DEPARTURE_TIME)]),
 										line[col.get(GtfsDefinitions.STOP_ID)],
 										line[col.get(GtfsDefinitions.TRIP_ID)]);
-								trip.putStopTime(newStopTime);
+								trip.addStopTime(newStopTime);
 							}
 							/** GTFS Reference: If this stop isn't a time point, use an empty string value for the
 							 * arrival_time and departure_time fields.
@@ -403,13 +403,13 @@ public class GtfsFeedImpl implements GtfsFeed {
 								Integer currentStopSequencePosition = Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]);
 								StopTime previousStopTime = trip.getStopTimes().get(currentStopSequencePosition-1);
 
-								StopTime newStopTime = new StopTime(currentStopSequencePosition,
+								StopTime newStopTime = new StopTimeImpl(currentStopSequencePosition,
 										previousStopTime.getArrivalTime(),
 										previousStopTime.getDepartureTime(),
 										line[col.get(GtfsDefinitions.STOP_ID)],
 										line[col.get(GtfsDefinitions.TRIP_ID)]);
 
-								trip.putStopTime(newStopTime);
+								trip.addStopTime(newStopTime);
 								if(warnStopTimes) {
 									log.warn("No arrival time set! Stops without arrival times will be scheduled based on the " +
 											"nearest preceding timed stop. This message is only given once.");
@@ -455,7 +455,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 					Trip trip = actualGtfsRoute.getTrips().get(line[col.get(GtfsDefinitions.TRIP_ID)]);
 					if(trip != null) {
 						try {
-							trip.addFrequency(new Frequency(timeFormat.parse(line[col.get(GtfsDefinitions.START_TIME)]), timeFormat.parse(line[col.get(GtfsDefinitions.END_TIME)]), Integer.parseInt(line[col.get(GtfsDefinitions.HEADWAY_SECS)])));
+							trip.addFrequency(new FrequencyImpl(timeFormat.parse(line[col.get(GtfsDefinitions.START_TIME)]), timeFormat.parse(line[col.get(GtfsDefinitions.END_TIME)]), Integer.parseInt(line[col.get(GtfsDefinitions.HEADWAY_SECS)])));
 						} catch (NumberFormatException | ParseException e) {
 							e.printStackTrace();
 						}
@@ -527,11 +527,6 @@ public class GtfsFeedImpl implements GtfsFeed {
 	}
 
 	@Override
-	public Map<String, Trip> getTrips() {
-		return trips;
-	}
-
-	@Override
 	public Map<Id<RouteShape>, RouteShape> getShapes() {
 		return shapes;
 	}
@@ -546,9 +541,5 @@ public class GtfsFeedImpl implements GtfsFeed {
 		return services;
 	}
 
-	@Override
-	public Map<String, Integer> getNTripsPerServiceId() {
-		return nTripsPerServiceId;
-	}
 
 }

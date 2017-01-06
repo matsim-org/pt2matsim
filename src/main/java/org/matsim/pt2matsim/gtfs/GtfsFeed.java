@@ -20,8 +20,8 @@ package org.matsim.pt2matsim.gtfs;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.pt2matsim.gtfs.lib.Route;
-import org.matsim.pt2matsim.gtfs.lib.Stop;
 import org.matsim.pt2matsim.gtfs.lib.Service;
+import org.matsim.pt2matsim.gtfs.lib.Stop;
 import org.matsim.pt2matsim.gtfs.lib.Trip;
 import org.matsim.pt2matsim.lib.RouteShape;
 
@@ -38,13 +38,10 @@ public interface GtfsFeed {
 
 	Map<String, Route> getRoutes();
 
-	Map<String, Trip> getTrips();
-
 	Map<Id<RouteShape>, RouteShape> getShapes();
 
 	boolean usesFrequencies();
 
 	Map<String, Service> getServices();
 
-	Map<String, Integer> getNTripsPerServiceId();
 }

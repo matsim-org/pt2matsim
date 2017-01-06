@@ -153,7 +153,7 @@ public class ShapeTools {
 				boolean useTrip = false;
 				if(serviceIds != null) {
 					for(String serviceId : serviceIds) {
-						if(trip.getServiceId().equals(serviceId)) {
+						if(trip.getService().getId().equals(serviceId)) {
 							useTrip = true;
 							break;
 						}

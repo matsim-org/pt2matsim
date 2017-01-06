@@ -1,10 +1,8 @@
 /* *********************************************************************** *
  * project: org.matsim.*
- * Frequency.java
- *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2011 by the members listed in the COPYING,        *
+ * copyright       : (C) 2016 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -22,29 +20,15 @@ package org.matsim.pt2matsim.gtfs.lib;
 
 import java.util.Date;
 
-public class Frequency {
-	
-	private final Date startTime;
-	private final Date endTime;
-	private final int headwaySecs;
-	
-	public Frequency(Date startTime, Date endTime, int headwaySecs) {
-		this.startTime = startTime;
-		this.endTime = endTime;
-		this.headwaySecs = headwaySecs;
-	}
+/**
+ * @author polettif
+ */
+public interface Frequency {
 
-	// Required fields
-	public Date getStartTime() {
-		return startTime;
-	}
+	Date getStartTime();
 
-	public Date getEndTime() {
-		return endTime;
-	}
+	Date getEndTime();
 
-	public int getHeadWaySecs() {
-		return headwaySecs;
-	}
-	
+	int getHeadWaySecs();
+
 }

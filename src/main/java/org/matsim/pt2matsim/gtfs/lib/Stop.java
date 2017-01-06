@@ -1,10 +1,8 @@
 /* *********************************************************************** *
  * project: org.matsim.*
- * Stop.java
- *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2011 by the members listed in the COPYING,        *
+ * copyright       : (C) 2016 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -22,28 +20,13 @@ package org.matsim.pt2matsim.gtfs.lib;
 
 import org.matsim.api.core.v01.Coord;
 
-public class Stop {
+/**
+ * @author polettif
+ */
+public interface Stop {
+	String getId();
 
-	private final String id;
-	private final Coord coord;
-	private final String name;
+	Coord getCoord();
 
-	public Stop(String id, String name, Coord coord) {
-		this.id = id;
-		this.coord = coord;
-		this.name = name;
-	}
-
-	// required fields
-	public String getId() {
-		return id;
-	}
-	public Coord getCoord() {
-		return coord;
-	}
-
-	public String getName() {
-		return name;
-	}
-
+	String getName();
 }

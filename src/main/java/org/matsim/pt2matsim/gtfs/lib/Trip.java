@@ -1,10 +1,8 @@
 /* *********************************************************************** *
  * project: org.matsim.*
- * Trip.java
- *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2011 by the members listed in the COPYING,        *
+ * copyright       : (C) 2016 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -22,98 +20,29 @@ package org.matsim.pt2matsim.gtfs.lib;
 
 import org.matsim.pt2matsim.lib.RouteShape;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
-import java.util.TreeMap;
 
 /**
- * Container for a GTFS Trip
+ * @author polettif
  */
-public class Trip {
-	
-	//Attributes
-	private final String tripId;
-	private final String serviceId;
-	private final Service service;
-	private final RouteShape shape;
-	private final String name;
-	private final SortedMap<Integer, StopTime> stopTimes;
-	private final List<Frequency> frequencies;
+public interface Trip {
 
-	//Methods
-	public Trip(String tripId, Service service, RouteShape shape, String name) {
-		this.tripId = tripId;
-		this.service = service;
-		this.serviceId = service.getId();
-		this.shape = shape;
-		this.name = name;
-		stopTimes = new TreeMap<>();
-		frequencies = new ArrayList<>();
-	}
+	void addFrequency(Frequency frequency);
 
-	/**
-	 * @return the service
-	 */
-	public Service getService() {
-		return service;
-	}
+	boolean hasShape();
 
-	/**
-	 * @return the shape
-	 */
-	public RouteShape getShape() {
-		return shape;
-	}
+	String getId();
 
-	/**
-	 * @return the name
-	 */
-	public String getName() {
-		return name;
-	}
+	Service getService();
 
-	/**
-	 * @return the stopTimes
-	 */
-	public SortedMap<Integer, StopTime> getStopTimes() {
-		return stopTimes;
-	}
+	RouteShape getShape();
 
-	/**
-	 * @return the frequencies
-	 */
-	public List<Frequency> getFrequencies() {
-		return frequencies;
-	}
+	String getName();
 
-	/**
-	 * Puts a new stopTime
-	 */
-	public void putStopTime(StopTime stopTime) {
-		stopTimes.put(stopTime.getSequencePosition(), stopTime);
-	}
+	SortedMap<Integer, StopTime> getStopTimes();
 
-	/**
-	 * Adds a new frequency
-	 */
-	public void addFrequency(Frequency frequency) {
-		frequencies.add(frequency);
-	}
+	List<Frequency> getFrequencies();
 
-	/**
-	 * @return the tripId
-	 */
-	public String getId() {
-		return tripId;
-	}
-
-	public String getServiceId() {
-		return serviceId;
-	}
-
-
-	public boolean hasShape() {
-		return shape != null;
-	}
+	void addStopTime(StopTime newStopTime);
 }
