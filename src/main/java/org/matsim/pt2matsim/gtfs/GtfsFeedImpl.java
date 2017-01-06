@@ -216,11 +216,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 				Service currentService = services.get(line[col.get(GtfsDefinitions.SERVICE_ID)]);
 
 				if(currentService == null) {
-					currentService = new Service(
-							line[col.get(GtfsDefinitions.SERVICE_ID)],
-							new boolean[] { false, false, false, false, false, false, false },
-							"19700101", "29991231"
-					);
+					currentService = new Service(line[col.get(GtfsDefinitions.SERVICE_ID)]);
 
 					services.put(currentService.getId(), currentService);
 

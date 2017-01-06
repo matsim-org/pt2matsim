@@ -21,8 +21,8 @@ package org.matsim.pt2matsim.gtfs;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
+import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
-import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt.transitSchedule.api.*;
@@ -71,17 +71,12 @@ public class GtfsConverter {
 		this.feed = gtfsFeed;
 	}
 
-
 	public void convert(String serviceIdsParam, String outputCoordinateSystem) {
 		convert(serviceIdsParam, TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem), ScheduleTools.createSchedule(), VehicleUtils.createVehiclesContainer());
 	}
 
 	public void convert(String serviceIdsParam, String outputCoordinateSystem, TransitSchedule transitSchedule, Vehicles vehicles) {
 		convert(serviceIdsParam, TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem), transitSchedule, vehicles);
-	}
-
-	public void convert() {
-		convert(ALL_SERVICE_IDS, new IdentityTransformation(), ScheduleTools.createSchedule(), VehicleUtils.createVehiclesContainer());
 	}
 
 	public TransitSchedule getSchedule() {
@@ -267,6 +262,7 @@ public class GtfsConverter {
 		log.info("#########################################################");
 	}
 
+
 	/**
 	 * @return The date from which services and thus trips should be extracted
 	 */
@@ -280,9 +276,10 @@ public class GtfsConverter {
 
 			case DAY_WITH_MOST_SERVICES: {
 				log.info("    Using service IDs of the day with the most services (" + DAY_WITH_MOST_SERVICES + ").");
+				Map<LocalDate, Set<String>> dateStats = getDateStats();
 				LocalDate date = null;
 				int maxNServiceIds = 0;
-				for(Map.Entry<LocalDate, Set<String>> idsOnDayEntry : Service.dateStats.entrySet()) {
+				for(Map.Entry<LocalDate, Set<String>> idsOnDayEntry : dateStats.entrySet()) {
 					try {
 						LocalDate currentDate = idsOnDayEntry.getKey();
 						Set<String> currentIds = idsOnDayEntry.getValue();
@@ -299,9 +296,10 @@ public class GtfsConverter {
 
 			case DAY_WITH_MOST_TRIPS: {
 				log.info("    Using service IDs of the day with the most trips (" + DAY_WITH_MOST_TRIPS + ").");
+				Map<LocalDate, Set<String>> dateStats = getDateStats();
 				LocalDate date = null;
 				int maxTrips = 0;
-				for(Map.Entry<LocalDate, Set<String>> e : Service.dateStats.entrySet()) {
+				for(Map.Entry<LocalDate, Set<String>> e : dateStats.entrySet()) {
 					int nTrips = 0;
 					for(String s : e.getValue()) {
 						nTrips += feed.getNTripsPerServiceId().get(s);
@@ -324,6 +322,20 @@ public class GtfsConverter {
 				return date;
 			}
 		}
+	}
+
+	/**
+	 * @return a map which stores the services run on each day
+	 */
+	private Map<LocalDate, Set<String>> getDateStats() {
+		Map<LocalDate, Set<String>> dateStat = new HashMap<>();
+		for(Service service : feed.getServices().values()) {
+			Set<LocalDate> days = service.getCoveredDays();
+			for(LocalDate day : days) {
+				MapUtils.getSet(day, dateStat).add(service.getId());
+			}
+		}
+		return dateStat;
 	}
 
 	/**
