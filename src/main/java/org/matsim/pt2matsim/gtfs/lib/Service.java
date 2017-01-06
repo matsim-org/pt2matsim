@@ -26,50 +26,61 @@ import java.time.LocalDate;
 import java.util.*;
 
 public class Service {
-	
+
 	//Attributes
 	private final String id;
 	private final boolean[] days;
 	private final LocalDate startDate;
 	private final LocalDate endDate;
-	private final Collection<LocalDate> additions;
-	private final Collection<LocalDate> exceptions;
 
-	public static final Map<LocalDate, Set<String>> dateStats = new HashMap<>();
+	private final Collection<LocalDate> additions = new ArrayList<>();
+	private final Collection<LocalDate> exceptions = new ArrayList<>();
+	private final Set<LocalDate> coveredDays = new HashSet<>();
 
 	public Service(String serviceId, boolean[] days, String startDateStr, String endDateStr) {
-		super();
 		this.id = serviceId;
 		this.days = days;
 		this.startDate = parseDateFormat(startDateStr);
 		this.endDate = parseDateFormat(endDateStr);
-		this.additions = new ArrayList<>();
-		this.exceptions = new ArrayList<>();
 
-		LocalDate currentDate = parseDateFormat(startDateStr);
-
+		LocalDate currentDate = startDate;
 		while(currentDate.isBefore(endDate)) {
-			int weekday = currentDate.getDayOfWeek().getValue() - 1;
-			if(days[weekday]) {
-				MapUtils.getSet(currentDate, dateStats).add(serviceId);
+			int currentWeekday = currentDate.getDayOfWeek().getValue() - 1;
+			if(days[currentWeekday]) {
+				coveredDays.add(currentDate);
 			}
 			currentDate = currentDate.plusDays(1);
 		}
+	}
+
+	public Service(String serviceId) {
+		this.id = serviceId;
+		this.days = new boolean[]{false, false, false, false, false, false, false};
+		this.startDate = null;
+		this.endDate = null;
 	}
 
 
 	public void addAddition(String addition) {
 		LocalDate additionDate = parseDateFormat(addition);
 		additions.add(additionDate);
-		MapUtils.getSet(additionDate, dateStats).add(this.getId());
+		coveredDays.add(additionDate);
 	}
+
 	/**
 	 * Adds a new exception date
 	 */
 	public void addException(String exception) {
 		LocalDate exceptionDate = parseDateFormat(exception);
-		additions.add(exceptionDate);
-		MapUtils.getSet(exceptionDate, dateStats).remove(this.getId());
+		exceptions.add(exceptionDate);
+		coveredDays.remove(exceptionDate);
+	}
+
+	/**
+	 * @return a set of dates on which this service runs
+	 */
+	public Set<LocalDate> getCoveredDays() {
+		return coveredDays;
 	}
 
 	/**
