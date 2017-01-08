@@ -188,12 +188,17 @@ public class LinkCandidateImpl implements LinkCandidate {
 		if(getClass() != obj.getClass())
 			return false;
 
-		LinkCandidateImpl other = (LinkCandidateImpl) obj;
+		LinkCandidate other = (LinkCandidate) obj;
 		if(id == null) {
-			if(other.id != null)
+			if(other.getId() != null)
 				return false;
-		} else if(!id.equals(other.id))
+		} else if(!id.equals(other.getId()))
 			return false;
 		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		return id.hashCode();
 	}
 }
