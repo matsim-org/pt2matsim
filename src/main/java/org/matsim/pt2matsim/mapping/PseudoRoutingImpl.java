@@ -98,8 +98,8 @@ public class PseudoRoutingImpl implements PseudoRouting {
 				 */
 				List<TransitRouteStop> routeStops = transitRoute.getStops();
 				for(int i = 0; i < routeStops.size() - 1; i++) {
-					Set<LinkCandidate> linkCandidatesCurrent = linkCandidates.getLinkCandidates(routeStops.get(i).getStopFacility().getId(), transitLine, transitRoute);
-					Set<LinkCandidate> linkCandidatesNext = linkCandidates.getLinkCandidates(routeStops.get(i + 1).getStopFacility().getId(), transitLine, transitRoute);
+					Set<LinkCandidate> linkCandidatesCurrent = linkCandidates.getLinkCandidates(routeStops.get(i), transitLine, transitRoute);
+					Set<LinkCandidate> linkCandidatesNext = linkCandidates.getLinkCandidates(routeStops.get(i + 1), transitLine, transitRoute);
 
 					double minTravelCost = scheduleRouters.getMinimalTravelCost(routeStops.get(i), routeStops.get(i + 1), transitLine, transitRoute);
 					double maxAllowedTravelCost = minTravelCost * config.getMaxTravelCostFactor();
@@ -181,8 +181,8 @@ public class PseudoRoutingImpl implements PseudoRouting {
 				 * Finish the pseudoGraph by adding dummy nodes.
 				 */
 				pseudoGraph.addDummyEdges(routeStops,
-						linkCandidates.getLinkCandidates(routeStops.get(0).getStopFacility().getId(), transitLine, transitRoute),
-						linkCandidates.getLinkCandidates(routeStops.get(routeStops.size() - 1).getStopFacility().getId(), transitLine, transitRoute));
+						linkCandidates.getLinkCandidates(routeStops.get(0), transitLine, transitRoute),
+						linkCandidates.getLinkCandidates(routeStops.get(routeStops.size() - 1), transitLine, transitRoute));
 
 				/** [5]
 				 * Find the least cost path i.e. the PseudoRouteStop sequence

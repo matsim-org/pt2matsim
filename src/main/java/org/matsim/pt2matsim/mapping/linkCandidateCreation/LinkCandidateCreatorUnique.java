@@ -85,7 +85,7 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 					List<Link> possibleLinks = new ArrayList<>();
 
 					/**
-					 * if stop facilty already has a referenced link
+					 * if stop facility already has a referenced link
 					 */
 					if(currentStopFacility.getLinkId() != null) {
 						possibleLinks.add(network.getLinks().get(currentStopFacility.getLinkId()));
@@ -210,8 +210,8 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 	}
 
 	@Override
-	public SortedSet<LinkCandidate> getLinkCandidates(Id<TransitStopFacility> transitStopFacilityId, TransitLine transitLine, TransitRoute transitRoute) {
-		return linkCandidates.get(transitRoute.getTransportMode()).get(transitStopFacilityId);
+	public SortedSet<LinkCandidate> getLinkCandidates(TransitRouteStop transitRouteStop, TransitLine transitLine, TransitRoute transitRoute) {
+		return linkCandidates.get(transitRoute.getTransportMode()).get(transitRouteStop.getStopFacility().getId());
 	}
 
 	private double getLinkTravelCost(Link link) {
@@ -265,6 +265,46 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 		}
 
 		@Override
+		public int hashCode() {
+			return id.hashCode();
+		}
+	}
+
+	private class LinkCandidateMode extends LinkCandidateImpl {
+
+		private final String id;
+		private final String mode;
+
+		public LinkCandidateMode(Link link, TransitStopFacility parentStopFacility, double linkTravelCost, String mode) {
+			super(link, parentStopFacility, linkTravelCost);
+			this.id = parentStopFacility.getId().toString() + ".mode:" + mode + ".link:" + link.getId().toString();
+			this.mode = mode;
+		}
+
+		public LinkCandidateMode() {
+			super();
+			this.id = "dummy";
+			this.mode = null;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj)
+				return true;
+			if(obj == null)
+				return false;
+			if(getClass() != obj.getClass())
+				return false;
+
+			LinkCandidate other = (LinkCandidate) obj;
+			if(id == null) {
+				if(other.getId() != null)
+					return false;
+			} else if(!id.equals(other.getId()))
+				return false;
+			return true;
+		}
+
 		public int hashCode() {
 			return id.hashCode();
 		}
