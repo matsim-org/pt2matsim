@@ -104,4 +104,9 @@ public class ArtificialLinkImpl implements ArtificialLink {
 	public double getLength() {
 		return linkLength;
 	}
+
+	@Override
+	public int hashCode() {
+		return (fromNodeId.toString() + toNodeId.toString() + freespeed + linkLength).hashCode();
+	}
 }
