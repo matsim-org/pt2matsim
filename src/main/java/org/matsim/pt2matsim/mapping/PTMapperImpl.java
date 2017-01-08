@@ -38,6 +38,7 @@ import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorStandard;
+import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorUnique;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersTransportMode;
 import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoSchedule;
@@ -163,7 +164,7 @@ public class PTMapperImpl implements PTMapper {
 		 */
 		log.info("===========================");
 		log.info("Creating link candidates...");
-		LinkCandidateCreator linkCandidates = new LinkCandidateCreatorStandard(this.schedule, this.network, this.config);
+		LinkCandidateCreator linkCandidates = new LinkCandidateCreatorUnique(this.schedule, this.network, this.config);
 
 
 		/** [3]
