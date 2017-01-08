@@ -234,4 +234,9 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 		return stopFacilityDistance;
 	}
 
+	@Override
+	public int hashCode() {
+		return id.toString().hashCode();
+	}
+
 }

@@ -45,8 +45,6 @@ public interface ArtificialLink {
 
 	double getLength();
 
-	boolean equals(Object obj);
-
 	double getCapacity();
 
 	Set<String> getAllowedModes();
