@@ -18,10 +18,9 @@
 
 package org.matsim.pt2matsim.mapping.linkCandidateCreation;
 
-import org.matsim.api.core.v01.Id;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt.transitSchedule.api.TransitStopFacility;
+import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 
 import java.util.SortedSet;
 
@@ -36,6 +35,6 @@ public interface LinkCandidateCreator {
 	 * @return A set of link candidates for the given stop facility and schedule transport mode.
 	 * The set should be ordered descending by priority (based on distance, likelihood, etc.).
 	 */
-	SortedSet<LinkCandidate> getLinkCandidates(Id<TransitStopFacility> transitStopFacility, TransitLine transitLine, TransitRoute transitRoute);
+	SortedSet<LinkCandidate> getLinkCandidates(TransitRouteStop transitRouteStop, TransitLine transitLine, TransitRoute transitRoute);
 
 }
