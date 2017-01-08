@@ -27,7 +27,7 @@ import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 /**
  * A possible link for a TransitStopFacility. A LinkCandidate contains
  * theoretically a link and the parent StopFacility. However, all
- * values besides Coord are stored as primitive/Id since one might
+ * values besides Coord should be stored as primitive/Id since one might
  * be working with multiple separated networks.
  *
  * @author polettif
@@ -36,7 +36,7 @@ public interface LinkCandidate extends Comparable<LinkCandidate> {
 
 	String getId();
 
-	Id<TransitStopFacility> getParentStopFacilityId();
+	Id<TransitStopFacility> getStopFacilityId();
 
 	Id<Link> getLinkId();
 
@@ -52,6 +52,9 @@ public interface LinkCandidate extends Comparable<LinkCandidate> {
 
 	double getLinkTravelCost();
 
+	/**
+	 * @return true if the link candidate is an artificial loop link
+	 */
 	boolean isLoopLink();
 
 	/**
@@ -62,7 +65,7 @@ public interface LinkCandidate extends Comparable<LinkCandidate> {
 
 	/**
 	 * @return the link candidates priority compared to all other
-	 * link candidates for the same stop and transport mode. The priority
+	 * link candidates for the same stop and transit route. The priority
 	 * is scaled 0..1 (1 being high priority).
 	 */
 	double getPriority();

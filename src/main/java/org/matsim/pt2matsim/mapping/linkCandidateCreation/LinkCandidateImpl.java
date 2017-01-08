@@ -16,7 +16,6 @@
  *                                                                         *
  * *********************************************************************** */
 
-
 package org.matsim.pt2matsim.mapping.linkCandidateCreation;
 
 import org.matsim.api.core.v01.Coord;
@@ -94,7 +93,7 @@ public class LinkCandidateImpl implements LinkCandidate {
 	}
 
 	@Override
-	public Id<TransitStopFacility> getParentStopFacilityId() {
+	public Id<TransitStopFacility> getStopFacilityId() {
 		return parentStopFacilityId;
 	}
 
@@ -120,7 +119,7 @@ public class LinkCandidateImpl implements LinkCandidate {
 
 	/*
 	TODO remove link travel cost from fields
-	instead let the ptmapper calulculate the travel costs by using the router and the link (or perhaps link id).
+	instead let the ptmapper calculate the travel costs by using the router and the link (or perhaps link id).
 	This is necessary because link travel costs differ with the routers used and are normally not known during
 	link candidate creation.
 	 */
