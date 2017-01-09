@@ -19,12 +19,14 @@
 package org.matsim.pt2matsim.mapping;
 
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.utils.collections.MapUtils;
+import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
@@ -79,6 +81,30 @@ public class UtilsPTMapper {
 		}
 		removeFromCurrent.forEach(linkCandidatesCurrent::remove);
 		removeFromNext.forEach(linkCandidatesNext::remove);
+	}
+
+	/**
+	 * Assigns links that are present in both sets to the set belonging to the closer coordinate.
+	 */
+	public static void separateLinks(Coord coordA, Set<Link> linkSetA, Coord coordB, Set<Link> linkSetB) {
+		Set<Link> removeFromA = new HashSet<>();
+		Set<Link> removeFromB = new HashSet<>();
+
+		for(Link linkA : linkSetA) {
+			for(Link linkB : linkSetB) {
+				if(linkA.getId().equals(linkB.getId())) {
+					double distA = CoordUtils.distancePointLinesegment(linkA.getFromNode().getCoord(), linkA.getToNode().getCoord(), coordA);
+					double distB = CoordUtils.distancePointLinesegment(linkA.getFromNode().getCoord(), linkA.getToNode().getCoord(), coordB);
+					if(distA > distB) {
+						removeFromA.add(linkA);
+					} else {
+						removeFromB.add(linkB);
+					}
+				}
+			}
+		}
+		removeFromA.forEach(linkSetA::remove);
+		removeFromB.forEach(linkSetB::remove);
 	}
 
 

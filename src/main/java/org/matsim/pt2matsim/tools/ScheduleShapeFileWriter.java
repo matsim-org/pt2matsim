@@ -94,7 +94,7 @@ public class ScheduleShapeFileWriter {
 		ScheduleShapeFileWriter s2s = new ScheduleShapeFileWriter(schedule, network, crs, writeLinks);
 
 		s2s.routes2Polylines(outputFolder + "transitRoutes.shp");
-		s2s.stopFacilities2Shapes(outputFolder + "stopFacilities.shp", "refLinks.shp");
+		s2s.stopFacilities2Shapes(outputFolder + "stopFacilities.shp", outputFolder + "refLinks.shp");
 	}
 
 	public static void run(TransitSchedule schedule, Network network, String crs, String outputFolder) {
