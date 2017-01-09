@@ -850,7 +850,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		}
 
 		@StringGetter(REPLACE)
-		public boolean replaceCandidates() {
+		public boolean doesReplaceCandidates() {
 			return replace;
 		}
 		@StringSetter(REPLACE)

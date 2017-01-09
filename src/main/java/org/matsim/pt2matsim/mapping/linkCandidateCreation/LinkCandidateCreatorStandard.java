@@ -150,7 +150,7 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 					PublicTransitMappingConfigGroup.LinkCandidateCreatorParams lccParams = config.getLinkCandidateCreatorParams().get(scheduleMode);
 
-					SortedSet<LinkCandidate> lcSet = (manualCandidates.replaceCandidates() ? new TreeSet<>() : MiscUtils.getSortedSet(parentStopFacility.getId(), MapUtils.getMap(scheduleMode, linkCandidates)));
+					SortedSet<LinkCandidate> lcSet = (manualCandidates.doesReplaceCandidates() ? new TreeSet<>() : MiscUtils.getSortedSet(parentStopFacility.getId(), MapUtils.getMap(scheduleMode, linkCandidates)));
 					for(Id<Link> linkId : manualCandidates.getLinkIds()) {
 						Link link = network.getLinks().get(linkId);
 						if(link == null) {

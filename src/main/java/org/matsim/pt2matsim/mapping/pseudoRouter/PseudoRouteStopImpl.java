@@ -137,6 +137,7 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 	public void setClosestPrecedingRouteStop(PseudoRouteStop stop) {
 		this.previous = stop;
 	}
+
 	@Override
 	public Map<PseudoRouteStop, Double> getNeighbours() {
 		return neighbours;
