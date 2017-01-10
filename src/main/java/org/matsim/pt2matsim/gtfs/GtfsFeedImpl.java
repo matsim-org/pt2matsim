@@ -23,7 +23,6 @@ import com.opencsv.CSVReader;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
-import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.pt2matsim.gtfs.lib.*;
 import org.matsim.pt2matsim.lib.RouteShape;
 

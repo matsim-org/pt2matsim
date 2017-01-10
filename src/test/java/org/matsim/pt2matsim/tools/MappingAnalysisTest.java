@@ -60,7 +60,7 @@ public class MappingAnalysisTest {
 		GtfsFeed gtfsFeed = new GtfsFeedImpl(input + "addisoncounty-vt-us-gtfs/");
 
 		gtfsConverter = new GtfsConverter(gtfsFeed);
-		gtfsConverter.convert("all", coordinateSystem, schedule, vehicles);
+		gtfsConverter.convert(GtfsConverter.ALL_SERVICE_IDS, coordinateSystem, schedule, vehicles);
 
 //		ExtractDebugSchedule.run(schedule, "SBSB_1437", "59468A1158B4286");
 

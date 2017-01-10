@@ -46,8 +46,6 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 	private static final Set<String> loopLinkModes = CollectionUtils.stringToSet(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE+","+ PublicTransitMappingStrings.STOP_FACILITY_LOOP_LINK);
 
-	private Map<String, PublicTransitMappingConfigGroup.LinkCandidateCreatorParams> lccParams;
-
 	private final TransitSchedule schedule;
 	private final Network network;
 	private final PublicTransitMappingConfigGroup config;
@@ -67,7 +65,7 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 		log.info("   search radius: " + config.getNodeSearchRadius());
 		log.info("   Note: loop links for stop facilities are created if no link candidate can be found.");
 
-		lccParams = config.getLinkCandidateCreatorParams();
+		Map<String, PublicTransitMappingConfigGroup.LinkCandidateCreatorParams> lccParams = config.getLinkCandidateCreatorParams();
 
 		/**
 		 * get closest links for each stop facility (separated by mode)

@@ -39,7 +39,6 @@ import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.lib.ShapedSchedule;
 import org.matsim.pt2matsim.lib.ShapedTransitSchedule;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
-import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorStandard;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorUnique;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWithShapes;
@@ -65,7 +64,9 @@ import java.util.List;
  *
  * Additional stop facilities are created if a stop facility has more
  * than one plausible link. Artificial links are added to the network
- * if no path can be found.*
+ * if no path can be found.
+ *
+ * TODO create entry point in pt2matsim.run, adapt config
  *
  * @author polettif
  */
@@ -77,9 +78,6 @@ public class PTMapperWithShapes implements PTMapper {
 	private Network network;
 	private ShapedTransitSchedule schedule;
 
-	// todo make one implementation of ptmapper that uses different modules for link candidates and routing
-
-	private ScheduleRouters scheduleRouters;
 	private final PseudoSchedule pseudoSchedule = new PseudoScheduleImpl();
 
 	/**
@@ -152,7 +150,7 @@ public class PTMapperWithShapes implements PTMapper {
 		 */
 		log.info("==============================================");
 		log.info("Creating routers...");
-		scheduleRouters = new ScheduleRoutersWithShapes(config, schedule, network);
+		ScheduleRouters scheduleRouters = new ScheduleRoutersWithShapes(config, schedule, network);
 
 
 		/** [2]
