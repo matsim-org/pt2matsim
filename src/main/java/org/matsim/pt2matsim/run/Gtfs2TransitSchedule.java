@@ -21,11 +21,8 @@ package org.matsim.pt2matsim.run;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.matsim.core.utils.geometry.geotools.MGC;
-import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
-import org.matsim.vehicles.VehicleUtils;
-import org.matsim.vehicles.Vehicles;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
 import java.time.LocalDate;

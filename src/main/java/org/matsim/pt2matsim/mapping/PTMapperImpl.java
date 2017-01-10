@@ -37,7 +37,6 @@ import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
-import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorStandard;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorUnique;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersTransportMode;
@@ -153,7 +152,7 @@ public class PTMapperImpl implements PTMapper {
 		 */
 		log.info("==============================================");
 		log.info("Creating mode separated network and routers...");
-		ScheduleRouters scheduleRouters = new ScheduleRoutersTransportMode(config, schedule, network);
+		ScheduleRouters scheduleRouters = new ScheduleRoutersTransportMode(config, schedule, network, false);
 
 
 		/** [2]

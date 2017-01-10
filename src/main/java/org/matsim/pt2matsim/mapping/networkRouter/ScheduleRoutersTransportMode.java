@@ -35,20 +35,11 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters {
 	private final Map<TransitLine, Map<TransitRoute, Router>> routers = new HashMap<>();
 	private final Map<String, Router> routersByMode = new HashMap<>();
 
-	public ScheduleRoutersTransportMode(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network, boolean useArtificial) {
+	public ScheduleRoutersTransportMode(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network, boolean useArtificialNetworkLinks) {
 		this.config = config;
 		this.schedule = schedule;
 		this.network = network;
-		this.useArtificial = useArtificial;
-
-		init();
-	}
-
-	public ScheduleRoutersTransportMode(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network) {
-		this.config = config;
-		this.schedule = schedule;
-		this.network = network;
-		this.useArtificial = false;
+		this.useArtificial = useArtificialNetworkLinks;
 
 		init();
 	}
