@@ -49,7 +49,7 @@ public class PTMapperWithShapesTest {
 		config.getModesToKeepOnCleanUp().add("car");
 		PublicTransitMappingConfigGroup.LinkCandidateCreatorParams lccParamsBus = new PublicTransitMappingConfigGroup.LinkCandidateCreatorParams("bus");
 		lccParamsBus.setNetworkModesStr("car,bus");
-		lccParamsBus.setMaxNClosestLinks(12);
+		lccParamsBus.setMaxNClosestLinks(16);
 		lccParamsBus.setMaxLinkCandidateDistance(100);
 		lccParamsBus.setLinkDistanceTolerance(1.1);
 		config.addParameterSet(lccParamsBus);

@@ -219,16 +219,13 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 			return true;
 		if(obj == null)
 			return false;
-		if(getClass() != obj.getClass())
-			return false;
 
-		PseudoRouteStopImpl other = (PseudoRouteStopImpl) obj;
-		if(id == null) {
-			if(other.id != null)
-				return false;
-		} else if(!id.toString().equals(other.id.toString()))
+		if(obj instanceof PseudoRouteStop) {
+			PseudoRouteStop other = (PseudoRouteStop) obj;
+			return id.equals(other.getId());
+		} else {
 			return false;
-		return true;
+		}
 	}
 
 	public double getStopFacilityDistance() {

@@ -85,14 +85,20 @@ public class UtilsPTMapper {
 
 	/**
 	 * Assigns links that are present in both sets to the set belonging to the closer coordinate.
+	 * @return true if sets have been modified
 	 */
-	public static void separateLinks(Coord coordA, Set<Link> linkSetA, Coord coordB, Set<Link> linkSetB) {
+	public static boolean separateLinks(Coord coordA, Set<Link> linkSetA, Coord coordB, Set<Link> linkSetB) {
 		Set<Link> removeFromA = new HashSet<>();
 		Set<Link> removeFromB = new HashSet<>();
 
 		for(Link linkA : linkSetA) {
 			for(Link linkB : linkSetB) {
 				if(linkA.getId().equals(linkB.getId())) {
+
+					if(!linkA.getFromNode().equals(linkB.getFromNode())) {
+						throw new IllegalArgumentException("10000");
+					}
+
 					double distA = CoordUtils.distancePointLinesegment(linkA.getFromNode().getCoord(), linkA.getToNode().getCoord(), coordA);
 					double distB = CoordUtils.distancePointLinesegment(linkA.getFromNode().getCoord(), linkA.getToNode().getCoord(), coordB);
 					if(distA > distB) {
@@ -105,6 +111,8 @@ public class UtilsPTMapper {
 		}
 		removeFromA.forEach(linkSetA::remove);
 		removeFromB.forEach(linkSetB::remove);
+
+		return (removeFromA.size() > 0 && removeFromB.size() > 0);
 	}
 
 

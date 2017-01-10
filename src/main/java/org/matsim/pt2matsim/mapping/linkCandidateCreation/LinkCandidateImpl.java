@@ -155,6 +155,11 @@ public class LinkCandidateImpl implements LinkCandidate {
 	}
 
 	@Override
+	public boolean isLoopLink() {
+		return loopLink;
+	}
+
+	@Override
 	public int compareTo(LinkCandidate other) {
 		if(this.equals(other)) {
 			return 0;
@@ -174,10 +179,6 @@ public class LinkCandidateImpl implements LinkCandidate {
 		}
 	}
 
-	@Override
-	public boolean isLoopLink() {
-		return loopLink;
-	}
 
 	@Override
 	public boolean equals(Object obj) {
@@ -185,16 +186,11 @@ public class LinkCandidateImpl implements LinkCandidate {
 			return true;
 		if(obj == null)
 			return false;
-		if(getClass() != obj.getClass())
+		if(!(obj instanceof LinkCandidate))
 			return false;
 
 		LinkCandidate other = (LinkCandidate) obj;
-		if(id == null) {
-			if(other.getId() != null)
-				return false;
-		} else if(!id.equals(other.getId()))
-			return false;
-		return true;
+		return id.equals(other.getId());
 	}
 
 	@Override

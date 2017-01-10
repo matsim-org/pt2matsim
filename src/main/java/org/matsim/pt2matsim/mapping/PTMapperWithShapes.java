@@ -40,6 +40,7 @@ import org.matsim.pt2matsim.lib.ShapedSchedule;
 import org.matsim.pt2matsim.lib.ShapedTransitSchedule;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorStandard;
+import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorUnique;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWithShapes;
 import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoSchedule;
@@ -162,7 +163,7 @@ public class PTMapperWithShapes implements PTMapper {
 		 */
 		log.info("===========================");
 		log.info("Creating link candidates...");
-		LinkCandidateCreator linkCandidates = new LinkCandidateCreatorStandard(this.schedule, this.network, this.config);
+		LinkCandidateCreator linkCandidates = new LinkCandidateCreatorUnique(this.schedule, this.network, this.config);
 
 
 		/** [3]

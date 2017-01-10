@@ -88,12 +88,11 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 				Set<Link> previousLinks = new HashSet<>(tmpCloseLinks);
 
 				for(int i = 1; i < transitRoute.getStops().size(); i++) {
+					TransitStopFacility previousStopFacility = previousRouteStop.getStopFacility();
 					TransitRouteStop currentRouteStop = transitRoute.getStops().get(i);
+					TransitStopFacility currentStopFacility = currentRouteStop.getStopFacility();
 
 					Set<Link> currentLinks = new HashSet<>();
-
-					TransitStopFacility currentStopFacility = currentRouteStop.getStopFacility();
-					TransitStopFacility previousStopFacility = previousRouteStop.getStopFacility();
 
 					/**
 					 * if stop facility already has a referenced link
@@ -127,6 +126,7 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 					candidates.put(getKey(transitLine, transitRoute, currentRouteStop), currentLinks);
 
 					previousLinks = currentLinks;
+					previousRouteStop = currentRouteStop;
 				}
 			}
 		}
@@ -282,7 +282,6 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 			return key;
 		}
 
-
 		public TransitLine getTransitLine() {
 			return transitLine;
 		}
@@ -296,9 +295,12 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 		}
 
 		public boolean equals(Object obj) {
-			if(obj.getClass() != this.getClass()) {
+			if(this == obj)
+				return true;
+			if(obj == null)
 				return false;
-			}
+			if(obj.getClass() != this.getClass())
+				return false;
 
 			CandidateKey other = (CandidateKey) obj;
 			return this.getKey().equals(other.getKey());

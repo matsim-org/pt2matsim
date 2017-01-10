@@ -35,7 +35,11 @@ import java.util.*;
 
 /**
  * @author polettif
+ *
+ * @deprecated mostly works fine. However, if two subsequent stops are too close, too many
+ * link candidates belonging to both are selected. This might lead to problems during pseudorouting.
  */
+@Deprecated
 public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 	protected static Logger log = Logger.getLogger(LinkCandidateCreatorStandard.class);
