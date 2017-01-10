@@ -86,8 +86,4 @@ public interface PseudoRouteStop extends Identifiable<PseudoRouteStop>, Comparab
 	 */
 	void setClosestPrecedingRouteStop(PseudoRouteStop stop);
 
-	boolean equals(Object obj);
-
-	int hashCode();
-
 }
