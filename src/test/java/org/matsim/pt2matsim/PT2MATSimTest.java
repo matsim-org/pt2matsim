@@ -23,16 +23,9 @@ import org.junit.Test;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.ConfigWriter;
-import org.matsim.pt2matsim.config.CreateDefaultConfig;
-import org.matsim.pt2matsim.config.CreateDefaultOsmConfig;
+import org.matsim.pt2matsim.run.*;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
-import org.matsim.pt2matsim.gtfs.Gtfs2TransitSchedule;
-import org.matsim.pt2matsim.hafas.Hafas2TransitSchedule;
-import org.matsim.pt2matsim.mapping.RunPublicTransitMapper;
-import org.matsim.pt2matsim.osm.Osm2MultimodalNetwork;
-import org.matsim.pt2matsim.osm.Osm2TransitSchedule;
-import org.matsim.pt2matsim.plausibility.PlausibilityCheck;
 
 import java.io.File;
 import java.io.IOException;
@@ -165,7 +158,7 @@ public class PT2MATSimTest {
 	@Test
 	public void mapScheduleToNetwork() {
 		// Create a mapping config:
-		CreateDefaultConfig.main(new String[]{output + "MapperConfig.xml"});
+		CreateDefaultPTMapperConfig.main(new String[]{output + "MapperConfig.xml"});
 		// Open the mapping config and set the parameters to the required values
 		// (usually done manually by opening the config with a simple editor)
 		Config mapperConfig = ConfigUtils.loadConfig(
@@ -177,13 +170,12 @@ public class PT2MATSimTest {
 		mapperConfig.getModule("PublicTransitMapping").addParam("outputStreetNetworkFile", output + "MultiModalNetwork_StreetOnly.xml.gz");
 		mapperConfig.getModule("PublicTransitMapping").addParam("scheduleFile", input + "UnmappedTransitSchedule.xml.gz");
 		mapperConfig.getModule("PublicTransitMapping").addParam("scheduleFreespeedModes", "rail, light_rail");
-
 		// Save the mapping config
 		// (usually done manually)
 		new ConfigWriter(mapperConfig).write(output + "MapperConfigAdjusted.xml");
 
 		// Map the schedule to the network using the config
-		RunPublicTransitMapper.main(new String[]{output + "MapperConfigAdjusted.xml"});
+		PublicTransitMapper.main(new String[]{output + "MapperConfigAdjusted.xml"});
 	}
 
 	/**
@@ -194,7 +186,7 @@ public class PT2MATSimTest {
 	 */
 	@Test
 	public void checkPlausibility() {
-		PlausibilityCheck.run(
+		CheckMappedSchedulePlausibility.run(
 				input + "MappedTransitSchedule.xml.gz",
 				input + "MultiModalNetwork.xml.gz",
 				"EPSG:4326", // EPSG identifier for WGS84

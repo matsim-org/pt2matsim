@@ -34,9 +34,10 @@ import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.vehicles.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
-import org.matsim.pt2matsim.mapping.PTMapperUtils;
+import org.matsim.pt2matsim.mapping.UtilsPTMapper;
 import org.matsim.pt2matsim.mapping.networkRouter.Router;
 
 import java.util.*;
@@ -81,11 +82,10 @@ public class ScheduleTools {
 
 	/**
 	 * Creates vehicles with default vehicle types depending on the schedule
-	 * transport mode.
+	 * transport mode. Adds the vehicles to the given vehicle container.
 	 */
-	public static Vehicles createVehicles(TransitSchedule schedule) {
+	public static void createVehicles(TransitSchedule schedule, Vehicles vehicles) {
 		log.info("Creating vehicles from schedule...");
-		Vehicles vehicles = VehicleUtils.createVehiclesContainer();
 		VehiclesFactory vf = vehicles.getFactory();
 		Map<String, VehicleType> vehicleTypes = new HashMap<>();
 
@@ -113,7 +113,6 @@ public class ScheduleTools {
 				}
 			}
 		}
-		return vehicles;
 	}
 
 	/**
@@ -164,7 +163,9 @@ public class ScheduleTools {
 	 * @param network  the network where the routes should be routed
 	 * @param routers  A map defining the Router for each scheduleTransportMode (the mode
 	 *                 defined in the transitRoute).
+	 * @deprecated Use {@link org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters} instead
 	 */
+	@Deprecated
 	public static void routeSchedule(TransitSchedule schedule, Network network, Map<String, Router> routers) {
 		Counter counterRoute = new Counter("route # ");
 
@@ -206,11 +207,82 @@ public class ScheduleTools {
 						Link currentLink = network.getLinks().get(currentLinkId);
 						Link nextLink = network.getLinks().get(routeStops.get(i + 1).getStopFacility().getLinkId());
 
-						LeastCostPathCalculator.Path leastCostPath = modeDependentRouter.calcLeastCostPath(currentLink.getToNode(), nextLink.getFromNode());
+						LeastCostPathCalculator.Path leastCostPath = modeDependentRouter.calcLeastCostPath(currentLink.getToNode().getId(), nextLink.getFromNode().getId());
 
 						List<Id<Link>> path = null;
 						if(leastCostPath != null) {
-							path = PTMapperUtils.getLinkIdsFromPath(leastCostPath);
+							path = UtilsPTMapper.getLinkIdsFromPath(leastCostPath);
+						}
+
+						if(path != null)
+							linkIdSequence.addAll(path);
+
+						linkIdSequence.add(nextLink.getId());
+					} // -for stops
+
+					// add link sequence to schedule
+					if(linkIdSequence != null) {
+						transitRoute.setRoute(RouteUtils.createNetworkRoute(linkIdSequence, network));
+					}
+				} else {
+					log.warn("Route " + transitRoute.getId() + " on line " + transitLine.getId() + " has no stop sequence");
+				}
+			} // -route
+		} // -line
+		log.info("Routing all routes with referenced links... done");
+	}
+
+	/**
+	 * Generates link sequences (network route) for all transit routes in
+	 * the schedule, modifies the schedule. All stopFacilities used by a
+	 * route must have a link referenced.
+	 *
+	 * @param schedule where transitRoutes should be routed
+	 * @param network  the network where the routes should be routed
+	 * @param routers  schedule routers class defining the Router for each transit route.
+	 */
+	public static void routeSchedule(TransitSchedule schedule, Network network, ScheduleRouters routers) {
+		Counter counterRoute = new Counter("route # ");
+
+		log.info("Routing all routes with referenced links...");
+
+		if(routers == null) {
+			log.error("No routers given, routing cannot be completed!");
+			return;
+		}
+
+		for(TransitLine transitLine : schedule.getTransitLines().values()) {
+			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
+				if(transitRoute.getStops().size() > 0) {
+					counterRoute.incCounter();
+
+					List<TransitRouteStop> routeStops = transitRoute.getStops();
+					List<Id<Link>> linkIdSequence = new LinkedList<>();
+					linkIdSequence.add(routeStops.get(0).getStopFacility().getLinkId());
+
+					// route
+					for(int i = 0; i < routeStops.size() - 1; i++) {
+						if(routeStops.get(i).getStopFacility().getLinkId() == null) {
+							log.warn("stop facility " + routeStops.get(i).getStopFacility().getName() + " (" + routeStops.get(i).getStopFacility().getId() + ") not referenced!");
+							linkIdSequence = null;
+							break;
+						}
+						if(routeStops.get(i + 1).getStopFacility().getLinkId() == null) {
+							log.warn("stop facility " + routeStops.get(i - 1).getStopFacility().getName() + " (" + routeStops.get(i + 1).getStopFacility().getId() + " not referenced!");
+							linkIdSequence = null;
+							break;
+						}
+
+						Id<Link> currentLinkId = Id.createLinkId(routeStops.get(i).getStopFacility().getLinkId().toString());
+						Link currentLink = network.getLinks().get(currentLinkId);
+						Link nextLink = network.getLinks().get(routeStops.get(i + 1).getStopFacility().getLinkId());
+
+						LeastCostPathCalculator.Path leastCostPath = routers.calcLeastCostPath(currentLink.getToNode().getId(), nextLink.getFromNode().getId(), transitLine, transitRoute);
+
+
+						List<Id<Link>> path = null;
+						if(leastCostPath != null) {
+							path = UtilsPTMapper.getLinkIdsFromPath(leastCostPath);
 						}
 
 						if(path != null)

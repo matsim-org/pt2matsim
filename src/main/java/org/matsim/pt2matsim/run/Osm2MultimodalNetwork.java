@@ -16,26 +16,17 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.osm;
+package org.matsim.pt2matsim.run;
 
-import org.matsim.api.core.v01.network.Network;
-import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.utils.geometry.CoordinateTransformation;
-import org.matsim.pt2matsim.config.CreateDefaultOsmConfig;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
-import org.matsim.pt2matsim.tools.NetworkTools;
+import org.matsim.pt2matsim.osm.OsmMultimodalNetworkConverter;
 
 /**
- * Abstract class to create a multimodal MATSim network from OSM.
+ * Run this class to create a multimodal MATSim network from OSM.
  *
  * @author polettif
  */
 public abstract class Osm2MultimodalNetwork {
-
-	protected final OsmConverterConfigGroup config;
-	protected Network network;
-	protected final CoordinateTransformation transformation;
 
 	/**
 	 * Converts an osm file to a MATSim network. The input and output file as well
@@ -75,42 +66,5 @@ public abstract class Osm2MultimodalNetwork {
 		configGroup.setOutputNetworkFile(outputNetworkFile);
 		configGroup.setOutputCoordinateSystem(outputCoordinateSystem);
 		new OsmMultimodalNetworkConverter(configGroup).run();
-	}
-
-	/**
-	 * Constructor reading config from file.
-	 */
-	public Osm2MultimodalNetwork(final String osmConverterConfigFile) {
-		Config configAll = ConfigUtils.loadConfig(osmConverterConfigFile, new OsmConverterConfigGroup() ) ;
-		this.config = ConfigUtils.addOrGetModule(configAll, OsmConverterConfigGroup.GROUP_NAME, OsmConverterConfigGroup.class);
-		this.network = NetworkTools.createNetwork();
-		this.transformation = config.getCoordinateTransformation();
-	}
-
-	/**
-	 * Constructor using the a OsmCOnverterConfigGroup config.
-	 */
-	public Osm2MultimodalNetwork(final OsmConverterConfigGroup config) {
-		this.config = config;
-		this.network = NetworkTools.createNetwork();
-		this.transformation = config.getCoordinateTransformation();
-	}
-
-	/**
-	 * Converts the osm file specified in the config and writes
-	 * the network to a file (also defined in config).
-	 */
-	public abstract void run();
-
-	/**
-	 * Parses the osm file and converts it to a MATSim network.
-	 */
-	public abstract void convert();
-
-	/**
-	 * @return the network
-	 */
-	public Network getNetwork() {
-		return this.network;
 	}
 }

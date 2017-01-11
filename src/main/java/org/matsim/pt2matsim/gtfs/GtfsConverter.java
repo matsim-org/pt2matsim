@@ -16,119 +16,109 @@
  *                                                                         *
  * *********************************************************************** */
 
-
 package org.matsim.pt2matsim.gtfs;
 
-import com.opencsv.CSVReader;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
+import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt.transitSchedule.api.*;
-import org.matsim.vehicles.Vehicles;
 import org.matsim.pt2matsim.gtfs.lib.*;
+import org.matsim.pt2matsim.lib.ShapedSchedule;
+import org.matsim.pt2matsim.lib.ShapedTransitSchedule;
 import org.matsim.pt2matsim.tools.ScheduleTools;
+import org.matsim.vehicles.VehicleUtils;
+import org.matsim.vehicles.Vehicles;
 
-import javax.management.RuntimeErrorException;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.Map.Entry;
-
 
 /**
- * Reads GTFS files and converts them to an unmapped MATSim Transit Schedule
- * <p/>
- * Based on GTFS2MATSimTransitSchedule by Sergio Ordonez
+ * Converts a GTFS feed to a MATSim transit schedule
  *
  * @author polettif
  */
-public class GtfsConverter extends Gtfs2TransitSchedule {
+public class GtfsConverter {
 
-	private static final Logger log = Logger.getLogger(GtfsConverter.class);
+	private final boolean defaultAwaitDepartureTime = true;
+	private final boolean defaultBlocks = false;
 
-	private boolean defaultAwaitDepartureTime = true;
+	protected static Logger log = Logger.getLogger(GtfsConverter.class);
+
+	public static final String ALL_SERVICE_IDS = "all";
+	public static final String DAY_WITH_MOST_TRIPS = "dayWithMostTrips";
+	public static final String DAY_WITH_MOST_SERVICES = "dayWithMostServices";
+
+	private final GtfsFeed feed;
 
 	private LocalDate dateUsed = null;
 
-	/**
-	 * Path to the folder where the gtfs files are located
-	 */
-	private String root;
-
-	/**
-	 * whether the gtfs feed uses frequencies.txt or not
-	 */
-	private boolean usesFrequencies = false;
-
-	/**
-	 * whether the gtfs feed uses shapes or not
-	 */
-	private boolean usesShapes = false;
+	private ShapedSchedule schedule;
+	private Vehicles vhcls;
 
 	/**
 	 * The time format used in the output MATSim transit schedule
 	 */
 	private SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
 
-	private TransitScheduleFactory scheduleFactory;
 
-	/**
-	 * The types of dates that will be represented by the new file
-	 */
-	private Set<String> serviceIds = new HashSet<>();
-
-	/**
-	 * Set of service ids not defined in calendar.txt (only in calendar_dates.txt)
-	 */
-	private Set<String> serviceIdsNotInCalendarTxt = new HashSet<>();
-
-	/**
-	 * map for counting how many trips use each serviceId
-	 */
-	private Map<String, Integer> serviceIdsCount = new HashMap<>();
-
-
-
-	// containers for storing gtfs data
-	private Map<String, GTFSStop> gtfsStops = new HashMap<>();
-	private Map<String, GTFSRoute> gtfsRoutes = new TreeMap<>();
-	private Map<String, Service> services = new HashMap<>();
-	private Map<String, Shape> shapes = new HashMap<>();
-	private Map<Id<TransitLine>, Map<Id<TransitRoute>, Shape>> scheduleShapes = new HashMap<>();
-	private boolean warnStopTimes = true;
-
-	public GtfsConverter(TransitSchedule schedule, Vehicles vehicles, CoordinateTransformation transformation) {
-		super(schedule, vehicles, transformation);
+	public GtfsConverter(GtfsFeed gtfsFeed) {
+		this.feed = gtfsFeed;
 	}
 
-	public void run(String inputPath, String serviceIdsParam) {
-		loadFiles(inputPath);
-		getServiceIds(serviceIdsParam);
-		convert();
+	public void convert(String serviceIdsParam, String outputCoordinateSystem) {
+		convert(serviceIdsParam, TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem), ScheduleTools.createSchedule(), VehicleUtils.createVehiclesContainer());
 	}
+
+	public void convert(String serviceIdsParam, String outputCoordinateSystem, TransitSchedule transitSchedule, Vehicles vehicles) {
+		convert(serviceIdsParam, TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem), transitSchedule, vehicles);
+	}
+
+	public TransitSchedule getSchedule() {
+		return schedule;
+	}
+
+	public Vehicles getVehicles() {
+		return vhcls;
+	}
+
+	public ShapedTransitSchedule getShapedTransitSchedule() {
+		return schedule;
+	}
+
 	/**
 	 * Converts the loaded gtfs data to a matsim transit schedule
 	 * <ol>
 	 * <li>generate transitStopFacilities from gtfsStops</li>
-	 * <li>Create a transitLine for each GTFSRoute</li>
+	 * <li>Create a transitLine for each Route</li>
 	 * <li>Generate a transitRoute for each trip</li>
 	 * <li>Get the stop sequence of the trip</li>
 	 * <li>Calculate departures from stopTimes or frequencies</li>
 	 * <li>add transitRoute to the transitLine and thus to the schedule</li>
 	 * </ol>
 	 */
-	private void convert() {
-
-		scheduleFactory = schedule.getFactory();
-
+	public void convert(String serviceIdsParam, CoordinateTransformation transformation, TransitSchedule transitSchedule, Vehicles vehicles) {
+		log.info("#####################################");
 		log.info("Converting to MATSim transit schedule");
+
+		LocalDate extractDate = getExtractDate(serviceIdsParam);
+
+		/**
+		 * The types of dates that will be represented by the new file
+		 */
+		Set<String> serviceIdsToConvert = getServiceIds(extractDate);
+
+		if(extractDate != null) log.info("    Extracting schedule from date " + extractDate);
+
+		this.schedule = new ShapedSchedule(transitSchedule);
+		this.vhcls = vehicles;
+
+		TransitScheduleFactory scheduleFactory = schedule.getFactory();
 
 		int counterLines = 0;
 		int counterRoutes = 0;
@@ -137,14 +127,14 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 		 * generating transitStopFacilities (mts) from gtfsStops and add them to the schedule.
 		 * Coordinates are transformed here.
 		 */
-		for(Entry<String, GTFSStop> stopEntry : gtfsStops.entrySet()) {
-			Coord result = transformation.transform(stopEntry.getValue().getPoint());
-			TransitStopFacility stopFacility = scheduleFactory.createTransitStopFacility(Id.create(stopEntry.getKey(), TransitStopFacility.class), result, stopEntry.getValue().isBlocks());
+		for(Map.Entry<String, Stop> stopEntry : feed.getStops().entrySet()) {
+			Coord stopFacilityCoord = transformation.transform(stopEntry.getValue().getCoord());
+			TransitStopFacility stopFacility = scheduleFactory.createTransitStopFacility(Id.create(stopEntry.getKey(), TransitStopFacility.class), stopFacilityCoord, defaultBlocks);
 			stopFacility.setName(stopEntry.getValue().getName());
 			schedule.addStopFacility(stopFacility);
 		}
 
-		if(usesFrequencies) {
+		if(feed.usesFrequencies()) {
 			log.info("    Using frequencies.txt to generate departures");
 		} else {
 			log.info("    Using stop_times.txt to generate departures");
@@ -152,11 +142,11 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 
 		DepartureIds departureIds = new DepartureIds();
 
-		for(GTFSRoute gtfsRoute : gtfsRoutes.values()) {
+		for(Route gtfsRoute : feed.getRoutes().values()) {
 			/** [2]
-			 * Create a MTS transitLine for each GTFSRoute
+			 * Create a MTS transitLine for each Route
 			 */
-			TransitLine transitLine = scheduleFactory.createTransitLine(Id.create(gtfsRoute.getShortName() + "_" + gtfsRoute.getRouteId(), TransitLine.class));
+			TransitLine transitLine = scheduleFactory.createTransitLine(Id.create(gtfsRoute.getShortName() + "_" + gtfsRoute.getId(), TransitLine.class));
 			schedule.addTransitLine(transitLine);
 			counterLines++;
 
@@ -167,8 +157,8 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 				boolean isService = false;
 
 				// if trip is part of used serviceId
-				for(String serviceId : serviceIds) {
-					if(trip.getService().equals(services.get(serviceId))) {
+				for(String serviceId : serviceIdsToConvert) {
+					if(trip.getService().equals(feed.getServices().get(serviceId))) {
 						isService = true;
 					}
 				}
@@ -210,11 +200,11 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 					 * Calculate departures from frequencies (if available)
 					 */
 					TransitRoute transitRoute = null;
-					if(usesFrequencies) {
+					if(feed.usesFrequencies()) {
 						transitRoute = scheduleFactory.createTransitRoute(Id.create(trip.getId(), TransitRoute.class), null, transitRouteStops, gtfsRoute.getRouteType().name);
 
 						for(Frequency frequency : trip.getFrequencies()) {
-							for(Date actualTime = (Date) frequency.getStartTime().clone(); actualTime.before(frequency.getEndTime()); actualTime.setTime(actualTime.getTime() + frequency.getSecondsPerDeparture() * 1000)) {
+							for(Date actualTime = (Date) frequency.getStartTime().clone(); actualTime.before(frequency.getEndTime()); actualTime.setTime(actualTime.getTime() + frequency.getHeadWaySecs() * 1000)) {
 								transitRoute.addDeparture(scheduleFactory.createDeparture(
 										Id.create(departureIds.getNext(transitRoute.getId()), Departure.class),
 										Time.parseTime(timeFormat.format(actualTime))));
@@ -253,518 +243,122 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 						}
 					}
 
-					/* Save shape id for transit route */
-					MapUtils.getMap(transitLine.getId(), scheduleShapes).put(transitRoute.getId(), trip.getShape());
+					/* Save transit route (and line) for current shape */
+					if(trip.hasShape()) {
+						schedule.addShape(transitLine.getId(), transitRoute.getId(), trip.getShape());
+					}
 				}
 			} // foreach trip
 		} // foreach route
 
 		/**
-		 * Removes stops that are not accessed by any route
-		 */
-//		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
-
-		/**
 		 * Create default vehicles.
 		 */
-		vehicles = ScheduleTools.createVehicles(schedule);
+		ScheduleTools.createVehicles(schedule, vhcls);
 
 		log.info("    Created " + counterRoutes + " routes on " + counterLines + " lines.");
-		log.info("    Day " + dateUsed);
+		if(dateUsed != null) log.info("    Day " + dateUsed);
 		log.info("... GTFS converted to an unmapped MATSIM Transit Schedule");
-		log.info("#############################################################");
-	}
-
-	/**
-	 * Calls all methods to load the gtfs files. Order is critical
-	 */
-	private void loadFiles(String inputPath) {
-		if(!inputPath.endsWith("/")) inputPath += "/";
-		this.root = inputPath;
-
-		log.info("Loading GTFS files from " + root);
-		try { loadStops(); } catch (IOException e) {
-			throw new RuntimeException("File stops.txt not found!");
-		}
-		try { loadCalendar(); } catch (IOException e) {
-			throw new RuntimeException("File calendar.txt not found! ");
-		}
-		loadCalendarDates();
-		loadShapes();
-		try { loadRoutes(); } catch (IOException e) {
-			throw new RuntimeException("File routes.txt not found!");
-		}
-		try { loadTrips(); } catch (IOException e) {
-			throw new RuntimeException("File trips.txt not found!");
-		}
-		try { loadStopTimes(); } catch (IOException e) {
-			throw new RuntimeException("File stop_times.txt not found!");
-		}
-		loadFrequencies();
-		log.info("All files loaded");
-	}
-
-	/**
-	 * Reads all stops and puts them in {@link #gtfsStops}
-	 * <p/>
-	 * <br/><br/>
-	 * stops.txt <i>[https://developers.google.com/transit/gtfs/reference]</i><br/>
-	 * Individual locations where vehicles pick up or drop off passengers.
-	 *
-	 * @throws IOException
-	 */
-	private void loadStops() throws IOException {
-		log.info("Loading stops.txt");
-		CSVReader reader;
-
-		try {
-			reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.STOPS.fileName));
-			String[] header = reader.readNext(); // read header
-			Map<String, Integer> col = getIndices(header, GTFSDefinitions.Files.STOPS.columns); // get column numbers for required fields
-
-			String[] line = reader.readNext();
-			while(line != null) {
-				Coord coord = new Coord(Double.parseDouble(line[col.get(GTFSDefinitions.STOP_LON)]), Double.parseDouble(line[col.get(GTFSDefinitions.STOP_LAT)]));
-				GTFSStop GTFSStop = new GTFSStop(coord, line[col.get(GTFSDefinitions.STOP_NAME)], false);
-				gtfsStops.put(line[col.get(GTFSDefinitions.STOP_ID)], GTFSStop);
-
-				line = reader.readNext();
-			}
-
-			reader.close();
-		} catch (ArrayIndexOutOfBoundsException i) {
-			throw new RuntimeException("Emtpy line found in stops.txt");
-		}
-		log.info("...     stops.txt loaded");
-	}
-
-	/**
-	 * Reads all services and puts them in {@link #services}
-	 * <p/>
-	 * <br/><br/>
-	 * calendar.txt <i>[https://developers.google.com/transit/gtfs/reference]</i><br/>
-	 * Dates for service IDs using a weekly schedule. Specify when service starts and ends,
-	 * as well as days of the week where service is available.
-	 *
-	 * @throws IOException
-	 */
-	private void loadCalendar() throws IOException {
-		log.info("Loading calendar.txt");
-		try {
-			CSVReader reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.CALENDAR.fileName));
-			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GTFSDefinitions.Files.CALENDAR.columns);
-
-			// assuming all days really do follow monday in the file
-			int indexMonday = col.get("monday");
-
-			String[] line = reader.readNext();
-			int i = 1, c = 1;
-			while(line != null) {
-				if(i == Math.pow(2, c)) {
-					log.info("        # " + i);
-					c++;
-				}
-				i++;
-
-				boolean[] days = new boolean[7];
-				for(int d = 0; d < 7; d++) {
-					days[d] = line[indexMonday + d].equals("1");
-				}
-				services.put(line[col.get(GTFSDefinitions.SERVICE_ID)], new Service(line[col.get(GTFSDefinitions.SERVICE_ID)], days, line[col.get(GTFSDefinitions.START_DATE)], line[col.get(GTFSDefinitions.END_DATE)]));
-
-				line = reader.readNext();
-			}
-
-			reader.close();
-		} catch (ArrayIndexOutOfBoundsException i) {
-			throw new RuntimeException("Emtpy line found in calendar.txt");
-		}
-		log.info("...     calendar.txt loaded");
-	}
-
-	/**
-	 * Adds service exceptions to {@link #services} (if available)
-	 * <p/>
-	 * <br/><br/>
-	 * calendar_dates.txt <i>[https://developers.google.com/transit/gtfs/reference]</i><br/>
-	 * Exceptions for the service IDs defined in the calendar.txt file. If calendar_dates.txt includes ALL
-	 * dates of service, this file may be specified instead of calendar.txt.
-	 */
-	private void loadCalendarDates() {
-		// calendar dates are optional
-		log.info("Looking for calendar_dates.txt");
-		CSVReader reader;
-		try {
-			reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.CALENDAR_DATES.fileName));
-			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GTFSDefinitions.Files.CALENDAR_DATES.columns);
-
-			String[] line = reader.readNext();
-			while(line != null) {
-				Service currentService = services.get(line[col.get(GTFSDefinitions.SERVICE_ID)]);
-
-				if(currentService == null) {
-					currentService = new Service(
-							line[col.get(GTFSDefinitions.SERVICE_ID)],
-							new boolean[] { false, false, false, false, false, false, false },
-							"19700101", "29991231"
-					);
-
-					services.put(currentService.getId(), currentService);
-
-					if(serviceIdsNotInCalendarTxt.add(currentService.getId())) {
-						log.warn("Service id \"" + currentService.getId() + "\" not defined in calendar.txt, only in calendar_dates.txt. Service id will still be used.");
-					}
-				}
-
-				if(line[col.get(GTFSDefinitions.EXCEPTION_TYPE)].equals("2")) {
-					currentService.addException(line[col.get(GTFSDefinitions.DATE)]);
-				} else {
-					currentService.addAddition(line[col.get(GTFSDefinitions.DATE)]);
-				}
-
-				line = reader.readNext();
-			}
-			reader.close();
-			log.info("...     calendar_dates.txt loaded");
-		} catch (IOException e) {
-			log.info("...     no calendar dates file found.");
-		} catch (ArrayIndexOutOfBoundsException i) {
-			throw new RuntimeException("Emtpy line found in calendar_dates.txt");
-		}
-	}
-
-	/**
-	 * Loads shapes (if available) and puts them in {@link #shapes}. A shape is a sequence of points, i.e. a line.
-	 * <p/>
-	 * <br/><br/>
-	 * shapes.txt <i>[https://developers.google.com/transit/gtfs/reference]</i><br/>
-	 * Rules for drawing lines on a map to represent a transit organization's routes.
-	 */
-	private void loadShapes() {
-		// shapes are optional
-		log.info("Looking for shapes.txt");
-		CSVReader reader;
-		try {
-			reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.SHAPES.fileName));
-
-			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GTFSDefinitions.Files.SHAPES.columns);
-
-			String[] line = reader.readNext();
-			while(line != null) {
-				usesShapes = true; // shape file might exists but could be empty
-
-				Shape currentShape = shapes.get(line[col.get(GTFSDefinitions.SHAPE_ID)]);
-				if(currentShape == null) {
-					currentShape = new Shape(line[col.get(GTFSDefinitions.SHAPE_ID)]);
-					shapes.put(line[col.get(GTFSDefinitions.SHAPE_ID)], currentShape);
-				}
-				Coord point = new Coord(Double.parseDouble(line[col.get(GTFSDefinitions.SHAPE_PT_LON)]), Double.parseDouble(line[col.get(GTFSDefinitions.SHAPE_PT_LAT)]));
-				currentShape.addPoint(transformation.transform(point), Integer.parseInt(line[col.get(GTFSDefinitions.SHAPE_PT_SEQUENCE)]));
-				line = reader.readNext();
-			}
-			reader.close();
-			log.info("...     shapes.txt loaded");
-		} catch (IOException e) {
-			log.info("...     no shapes file found.");
-		} catch (ArrayIndexOutOfBoundsException i) {
-			throw new RuntimeException("Emtpy line found in shapes.txt");
-		}
-	}
-
-	/**
-	 * Basically just reads all routeIds and their corresponding names and types and puts them in {@link #gtfsRoutes}.
-	 * <p/>
-	 * <br/><br/>
-	 * routes.txt <i>[https://developers.google.com/transit/gtfs/reference]</i><br/>
-	 * Transit routes. A route is a group of trips that are displayed to riders as a single service.
-	 *
-	 * @throws IOException
-	 */
-	private void loadRoutes() throws IOException {
-		log.info("Loading routes.txt");
-		try {
-			CSVReader reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.ROUTES.fileName));
-			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GTFSDefinitions.Files.ROUTES.columns);
-
-			String[] line = reader.readNext();
-			while(line != null) {
-				int routeTypeNr = Integer.parseInt(line[col.get(GTFSDefinitions.ROUTE_TYPE)]);
-				if(routeTypeNr < 0 || routeTypeNr > 7) {
-					throw new RuntimeException("Invalid value for route type: " + routeTypeNr + " [https://developers.google.com/transit/gtfs/reference/routes-file]");
-				}
-
-				GTFSRoute newGtfsRoute = new GTFSRoute(line[col.get(GTFSDefinitions.ROUTE_ID)], line[col.get(GTFSDefinitions.ROUTE_SHORT_NAME)], GTFSDefinitions.RouteTypes.values()[routeTypeNr]);
-				gtfsRoutes.put(line[col.get(GTFSDefinitions.ROUTE_ID)], newGtfsRoute);
-
-				line = reader.readNext();
-			}
-			reader.close();
-		} catch (ArrayIndexOutOfBoundsException i) {
-			throw new RuntimeException("Emtpy line found in routes.txt");
-		}
-		log.info("...     routes.txt loaded");
-	}
-
-	/**
-	 * Generates a trip with trip_id and adds it to the corresponding route (referenced by route_id) in {@link #gtfsRoutes}.
-	 * Adds the shape_id as well (if shapes are used). Each trip uses one service_id, the serviceIds statistics are increased accordingly
-	 * <p/>
-	 * <br/><br/>
-	 * trips.txt <i>[https://developers.google.com/transit/gtfs/reference]</i><br/>
-	 * Trips for each route. A trip is a sequence of two or more gtfsStops that occurs at specific time.
-	 *
-	 * @throws IOException
-	 */
-	private void loadTrips() throws IOException {
-		log.info("Loading trips.txt");
-		try {
-			CSVReader reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.TRIPS.fileName));
-			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GTFSDefinitions.Files.TRIPS.columns);
-
-			String[] line = reader.readNext();
-			while(line != null) {
-				GTFSRoute gtfsRoute = gtfsRoutes.get(line[col.get("route_id")]);
-				if(usesShapes) {
-					Trip newTrip = new Trip(line[col.get(GTFSDefinitions.TRIP_ID)], services.get(line[col.get(GTFSDefinitions.SERVICE_ID)]), shapes.get(line[col.get(GTFSDefinitions.SHAPE_ID)]), line[col.get(GTFSDefinitions.TRIP_ID)]);
-					gtfsRoute.putTrip(line[col.get(GTFSDefinitions.TRIP_ID)], newTrip);
-				} else {
-					Trip newTrip = new Trip(line[col.get(GTFSDefinitions.TRIP_ID)], services.get(line[col.get(GTFSDefinitions.SERVICE_ID)]), null, line[col.get(GTFSDefinitions.TRIP_ID)]);
-					gtfsRoute.putTrip(line[col.get(GTFSDefinitions.TRIP_ID)], newTrip);
-				}
-
-				// each trip uses one service id, increase statistics accordingly
-				Integer count = MapUtils.getInteger(line[col.get(GTFSDefinitions.SERVICE_ID)], serviceIdsCount, 1);
-				serviceIdsCount.put(line[col.get(GTFSDefinitions.SERVICE_ID)], count + 1);
-
-				line = reader.readNext();
-			}
-
-			reader.close();
-		} catch (ArrayIndexOutOfBoundsException i) {
-			throw new RuntimeException("Emtpy line found in trips.txt");
-		}
-		log.info("...     trips.txt loaded");
-	}
-
-	/**
-	 * Stop times are added to their respective trip (which are stored in {@link #gtfsRoutes}).
-	 * <p/>
-	 * <br/><br/>
-	 * stop_times.txt <i>[https://developers.google.com/transit/gtfs/reference]</i><br/>
-	 * Times that a vehicle arrives at and departs from individual gtfsStops for each trip.
-	 *
-	 * @throws IOException
-	 */
-	private void loadStopTimes() throws IOException {
-		log.info("Loading stop_times.txt");
-		try {
-			CSVReader reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.STOP_TIMES.fileName));
-			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GTFSDefinitions.Files.STOP_TIMES.columns);
-
-			String[] line = reader.readNext();
-			int i = 1, c = 1;
-			while(line != null) {
-				if(i == Math.pow(2, c)) { log.info("        # " + i); c++; } i++; // just for logging so something happens in the console
-
-				for(GTFSRoute currentGTFSRoute : gtfsRoutes.values()) {
-					Trip trip = currentGTFSRoute.getTrips().get(line[col.get(GTFSDefinitions.TRIP_ID)]);
-					if(trip != null) {
-						try {
-							if(!line[col.get(GTFSDefinitions.ARRIVAL_TIME)].equals("")) {
-								trip.putStopTime(
-									Integer.parseInt(line[col.get(GTFSDefinitions.STOP_SEQUENCE)]),
-									new StopTime(Integer.parseInt(line[col.get(GTFSDefinitions.STOP_SEQUENCE)]),
-											timeFormat.parse(line[col.get(GTFSDefinitions.ARRIVAL_TIME)]),
-											timeFormat.parse(line[col.get(GTFSDefinitions.DEPARTURE_TIME)]),
-											line[col.get(GTFSDefinitions.STOP_ID)]));
-							}
-							/** GTFS Reference: If this stop isn't a time point, use an empty string value for the
-							 * arrival_time and departure_time fields.
-							 */
-							else {
-								trip.putStop(Integer.parseInt(line[col.get(GTFSDefinitions.STOP_SEQUENCE)]), line[col.get(GTFSDefinitions.STOP_ID)]);
-								if(warnStopTimes) {
-									log.warn("No arrival time set! Stops without arrival times will be scheduled based on the " +
-											"nearest preceding timed stop. This message is only given once.");
-									warnStopTimes = false;
-								}
-							}
-						} catch (NumberFormatException | ParseException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-				line = reader.readNext();
-			}
-
-			reader.close();
-		} catch (ArrayIndexOutOfBoundsException i) {
-			throw new RuntimeException("Emtpy line found in stop_times.txt");
-		}
-		log.info("...     stop_times.txt loaded");
-	}
-
-	/**
-	 * Loads the frequencies (if available) and adds them to their respective trips in {@link #gtfsRoutes}.
-	 * <p/>
-	 * <br/><br/>
-	 * frequencies.txt <i>[https://developers.google.com/transit/gtfs/reference]</i><br/>
-	 * Headway (time between trips) for gtfsRoutes with variable frequency of service.
-	 */
-	private void loadFrequencies() {
-		log.info("Looking for frequencies.txt");
-		// frequencies are optional
-		CSVReader reader;
-		try {
-			reader = new CSVReader(new FileReader(root + GTFSDefinitions.Files.FREQUENCIES.fileName));
-			String[] header = reader.readNext();
-			Map<String, Integer> col = getIndices(header, GTFSDefinitions.Files.FREQUENCIES.columns);
-
-			String[] line = reader.readNext();
-			while(line != null) {
-				usesFrequencies = true;    // frequencies file might exists but could be empty
-
-				for(GTFSRoute actualGTFSRoute : gtfsRoutes.values()) {
-					Trip trip = actualGTFSRoute.getTrips().get(line[col.get(GTFSDefinitions.TRIP_ID)]);
-					if(trip != null) {
-						try {
-							trip.addFrequency(new Frequency(timeFormat.parse(line[col.get(GTFSDefinitions.START_TIME)]), timeFormat.parse(line[col.get(GTFSDefinitions.END_TIME)]), Integer.parseInt(line[col.get(GTFSDefinitions.HEADWAY_SECS)])));
-						} catch (NumberFormatException | ParseException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-				line = reader.readNext();
-			}
-			reader.close();
-			log.info("...     frequencies.txt loaded");
-		} catch (FileNotFoundException e) {
-			log.info("...     no frequencies file found.");
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ArrayIndexOutOfBoundsException e) {
-			throw new RuntimeException("Emtpy line found in frequencies.txt");
-		}
-	}
-
-	/**
-	 * In case optional columns in a csv file are missing or are out of order, addressing array
-	 * values directly via integer (i.e. where the column should be) does not work.
-	 *
-	 * @param header      the header (first line) of the csv file
-	 * @param columnNames array of attributes you need the indices of
-	 * @return the index for each attribute given in columnNames
-	 */
-	private static Map<String, Integer> getIndices(String[] header, String[] columnNames) {
-		Map<String, Integer> indices = new HashMap<>();
-		Set<String> notfound = new HashSet<>();
-
-		for(String columnName : columnNames) {
-			boolean found = false;
-			for(int i = 0; i < header.length; i++) {
-				if(header[i].equals(columnName)) {
-					indices.put(columnName, i);
-					found = true;
-					break;
-				}
-			}
-			if(!found) {
-				notfound.add(columnName);
-			}
-		}
-
-		if(notfound.size() > 0) {
-			log.warn("Column name(s) "+notfound+" not found in csv. Might be some additional characters in the header or the encoding not being UTF-8.");
-		}
-
-		return indices;
+		log.info("#########################################################");
 	}
 
 
 	/**
-	 * sets the service id depending on the specified mode.
-	 *
-	 * @param param The date for which all service ids should be looked up.
-	 *              Or the algorithm with which you want to get the service ids.
+	 * @return The date from which services and thus trips should be extracted
 	 */
-	private void getServiceIds(String param) {
+	private LocalDate getExtractDate(String param) {
 		switch (param) {
-			case ALL_SERVICE_IDS:
+			case ALL_SERVICE_IDS: {
 				log.warn("    Using all trips is not recommended");
 				log.info("... Using all service IDs");
-				this.serviceIds = services.keySet();
-				break;
+				return null;
+			}
 
 			case DAY_WITH_MOST_SERVICES: {
-				for(Entry<LocalDate, Set<String>> e : Service.dateStats.entrySet()) {
+				log.info("    Using service IDs of the day with the most services (" + DAY_WITH_MOST_SERVICES + ").");
+				Map<LocalDate, Set<String>> dateStats = getDateStats();
+				LocalDate date = null;
+				int maxNServiceIds = 0;
+				for(Map.Entry<LocalDate, Set<String>> idsOnDayEntry : dateStats.entrySet()) {
 					try {
-						if(e.getValue().size() > serviceIds.size()) {
-							this.serviceIds = e.getValue();
-							dateUsed = e.getKey();
+						LocalDate currentDate = idsOnDayEntry.getKey();
+						Set<String> currentIds = idsOnDayEntry.getValue();
+						if(currentIds.size() > maxNServiceIds) {
+							maxNServiceIds = currentIds.size();
+							date = currentDate;
 						}
 					} catch (Exception e1) {
 						e1.printStackTrace();
 					}
 				}
-				log.info("... Using service IDs of the day with the most services (" + DAY_WITH_MOST_SERVICES + ").");
-				log.info("    " + serviceIds.size() + " services on " + dateUsed);
-				break;
+				return date;
 			}
 
 			case DAY_WITH_MOST_TRIPS: {
+				log.info("    Using service IDs of the day with the most trips (" + DAY_WITH_MOST_TRIPS + ").");
+				Map<LocalDate, Set<String>> dateStats = getDateStats();
+				LocalDate date = null;
 				int maxTrips = 0;
-				for(Entry<LocalDate, Set<String>> e : Service.dateStats.entrySet()) {
+				for(Map.Entry<LocalDate, Set<String>> idsOnDayEntry : dateStats.entrySet()) {
 					int nTrips = 0;
-					for(String s : e.getValue()) {
-						nTrips += serviceIdsCount.get(s);
+					for(String serviceId : idsOnDayEntry.getValue()) {
+						nTrips += feed.getServices().get(serviceId).getTrips().size();
 					}
 					if(nTrips > maxTrips) {
 						maxTrips = nTrips;
-						this.serviceIds = e.getValue();
-						dateUsed = e.getKey();
+						date = idsOnDayEntry.getKey();
 					}
 				}
-				log.info("... Using service IDs of the day with the most trips (" + DAY_WITH_MOST_TRIPS + ").");
-				log.info("    " + maxTrips + " trips and " + serviceIds.size() + " services on " + dateUsed);
-				break;
+				return date;
 			}
 
-			default:
+			default: {
+				LocalDate date;
 				try {
-					dateUsed = LocalDate.of(Integer.parseInt(param.substring(0, 4)), Integer.parseInt(param.substring(4, 6)), Integer.parseInt(param.substring(6, 8)));
-					this.serviceIds = getServiceIdsOnDate(dateUsed);
-					log.info("        Using service IDs on " + param + ": " + this.serviceIds.size() + " services.");
+					date = LocalDate.of(Integer.parseInt(param.substring(0, 4)), Integer.parseInt(param.substring(4, 6)), Integer.parseInt(param.substring(6, 8)));
 				} catch (NumberFormatException e) {
-					throw new IllegalArgumentException("Service id param not recognized! Allowed: day in format \"yyyymmdd\", " + DAY_WITH_MOST_SERVICES + ", "+ DAY_WITH_MOST_TRIPS + ", " + ALL_SERVICE_IDS);
+					throw new IllegalArgumentException("Extract param not recognized");
 				}
-				break;
-		}
-	}
-
-	public void setTransformation(CoordinateTransformation transformation) {
-		super.transformation = transformation;
-	}
-
-	public Set<String> getServiceIdsOnDate(LocalDate checkDate) {
-		HashSet<String> idsOnCheckDate = new HashSet<>();
-		for(Service service : services.values()) {
-			if(dateIsOnService(checkDate, service)) {
-				idsOnCheckDate.add(service.getId());
+				return date;
 			}
 		}
-		return idsOnCheckDate;
+	}
+
+	/**
+	 * @return a map which stores the services run on each day
+	 */
+	private Map<LocalDate, Set<String>> getDateStats() {
+		Map<LocalDate, Set<String>> dateStat = new HashMap<>();
+		for(Service service : feed.getServices().values()) {
+			Set<LocalDate> days = service.getCoveredDays();
+			for(LocalDate day : days) {
+				MapUtils.getSet(day, dateStat).add(service.getId());
+			}
+		}
+		return dateStat;
+	}
+
+	/**
+	 * @return All service ids that run on the given date
+	 */
+	private Set<String> getServiceIds(LocalDate checkDate) {
+		if(checkDate == null) {
+			return new HashSet<>(feed.getServices().keySet());
+		} else {
+			HashSet<String> idsOnCheckDate = new HashSet<>();
+			for(Service service : feed.getServices().values()) {
+				if(serviceCoversDate(service, checkDate)) {
+					idsOnCheckDate.add(service.getId());
+				}
+			}
+			return idsOnCheckDate;
+		}
 	}
 
 	/**
 	 * @return <code>true</code> if the given date is used by the given service.
 	 */
-	private boolean dateIsOnService(LocalDate checkDate, Service service) {
+	private boolean serviceCoversDate(Service service, LocalDate checkDate) {
 		// check if checkDate is an addition
 		if(service.getAdditions().contains(checkDate)) {
 			return true;
@@ -781,10 +375,6 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 		return false;
 	}
 
-	public Map<Id<TransitLine>, Map<Id<TransitRoute>, Shape>> getReferencedShapes() {
-		return scheduleShapes;
-	}
-
 	/**
 	 * helper class for meaningful departureIds
 	 */
@@ -792,7 +382,7 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 
 		private Map<Id<TransitRoute>, Integer> ids = new HashMap<>();
 
-		public String getNext(Id<TransitRoute> transitRouteId) {
+		String getNext(Id<TransitRoute> transitRouteId) {
 			if(!ids.containsKey(transitRouteId)) {
 				ids.put(transitRouteId, 1);
 				return transitRouteId + "_01";
@@ -803,13 +393,4 @@ public class GtfsConverter extends Gtfs2TransitSchedule {
 
 		}
 	}
-
-	public Map<String, GTFSRoute> getGtfsRoutes() {
-		return gtfsRoutes;
 	}
-
-	public Set<String> getServiceIds() {
-		return serviceIds;
-	}
-
-}

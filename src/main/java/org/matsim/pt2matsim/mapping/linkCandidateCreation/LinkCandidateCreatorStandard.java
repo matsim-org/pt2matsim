@@ -24,12 +24,10 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.collections.MapUtils;
-import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
-import org.matsim.pt2matsim.mapping.networkRouter.Router;
 import org.matsim.pt2matsim.tools.MiscUtils;
 import org.matsim.pt2matsim.tools.NetworkTools;
 
@@ -37,36 +35,37 @@ import java.util.*;
 
 /**
  * @author polettif
+ *
+ * @deprecated mostly works fine. However, if two subsequent stops are too close, too many
+ * link candidates belonging to both are selected. This might lead to problems during pseudorouting.
  */
+@Deprecated
 public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 	protected static Logger log = Logger.getLogger(LinkCandidateCreatorStandard.class);
 
 	private static final Set<String> loopLinkModes = CollectionUtils.stringToSet(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE+","+ PublicTransitMappingStrings.STOP_FACILITY_LOOP_LINK);
-	private final Map<String, Router> modeSeparatedRouters;
-
-	private Map<String, PublicTransitMappingConfigGroup.LinkCandidateCreatorParams> lccParams;
 
 	private final TransitSchedule schedule;
 	private final Network network;
 	private final PublicTransitMappingConfigGroup config;
 
 	private final Map<String, Map<Id<TransitStopFacility>, SortedSet<LinkCandidate>>> linkCandidates = new HashMap<>();
-	private final Set<Tuple<TransitStopFacility, String>> loopLinks = new HashSet<>();
 
-	public LinkCandidateCreatorStandard(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config, Map<String, Router> modeSeparatedRouters) {
+	public LinkCandidateCreatorStandard(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
 		this.schedule = schedule;
 		this.network = network;
 		this.config = config;
-		this.modeSeparatedRouters = modeSeparatedRouters;
+
+		createLinkCandidates();
 	}
 
-	@Override
-	public void createLinkCandidates() {
+
+	private void createLinkCandidates() {
 		log.info("   search radius: " + config.getNodeSearchRadius());
 		log.info("   Note: loop links for stop facilities are created if no link candidate can be found.");
 
-		lccParams = config.getLinkCandidateCreatorParams();
+		Map<String, PublicTransitMappingConfigGroup.LinkCandidateCreatorParams> lccParams = config.getLinkCandidateCreatorParams();
 
 		/**
 		 * get closest links for each stop facility (separated by mode)
@@ -82,7 +81,6 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 					PublicTransitMappingConfigGroup.LinkCandidateCreatorParams param = lccParams.get(scheduleTransportMode);
 
-					Router modeRouter = modeSeparatedRouters.get(scheduleTransportMode);
 					TransitStopFacility stopFacility = transitRouteStop.getStopFacility();
 
 					SortedSet<LinkCandidate> modeLinkCandidates = MiscUtils.getSortedSet(stopFacility.getId(), MapUtils.getMap(scheduleTransportMode, linkCandidates));
@@ -92,7 +90,7 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 						// if stop facilty already has a referenced link
 						if(stopFacility.getLinkId() != null) {
 							Link link = network.getLinks().get(stopFacility.getLinkId());
-							modeLinkCandidates.add(new LinkCandidateImpl(link, stopFacility, modeRouter.getLinkTravelCost(link)));
+							modeLinkCandidates.add(new LinkCandidateImpl(link, stopFacility, getLinkTravelCost(link)));
 						// search for close links
 						} else {
 							List<Link> closestLinks;
@@ -109,14 +107,19 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 							if(closestLinks.size() == 0) {
 								Link loopLink = NetworkTools.createArtificialStopFacilityLink(stopFacility, network, config.getPrefixArtificial(), 20, loopLinkModes);
 								closestLinks.add(loopLink);
-								loopLinks.add(new Tuple<>(stopFacility, scheduleTransportMode));
 							}
+
+							/**
+							 * Links in sequence (single file links) are reduced to the link closest to the stop facility.
+							 * This removes a lot of redundant routing.
+							 */
+							NetworkTools.reduceSequencedLinks(closestLinks, stopFacility.getCoord());
 
 							/**
 							 * generate a LinkCandidate for each close link
 							 */
 							for(Link link : closestLinks) {
-								modeLinkCandidates.add(new LinkCandidateImpl(link, stopFacility, modeRouter.getLinkTravelCost(link)));
+								modeLinkCandidates.add(new LinkCandidateImpl(link, stopFacility, getLinkTravelCost(link)));
 							}
 						}
 					}
@@ -128,7 +131,6 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 		 * Add manually set link candidates from config
 		 */
 		addManualLinkCandidates(config.getManualLinkCandidates());
-
 	}
 
 	private void addManualLinkCandidates(Set<PublicTransitMappingConfigGroup.ManualLinkCandidates> manualLinkCandidatesSet) {
@@ -146,11 +148,11 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 			if(parentStopFacility != null) {
 				for(String scheduleMode : scheduleModes) {
-					Router modeRouter = modeSeparatedRouters.get(scheduleMode);
+					// todo change link travel cost handling for link candidates
 
 					PublicTransitMappingConfigGroup.LinkCandidateCreatorParams lccParams = config.getLinkCandidateCreatorParams().get(scheduleMode);
 
-					SortedSet<LinkCandidate> lcSet = (manualCandidates.replaceCandidates() ? new TreeSet<>() : MiscUtils.getSortedSet(parentStopFacility.getId(), MapUtils.getMap(scheduleMode, linkCandidates)));
+					SortedSet<LinkCandidate> lcSet = (manualCandidates.doesReplaceCandidates() ? new TreeSet<>() : MiscUtils.getSortedSet(parentStopFacility.getId(), MapUtils.getMap(scheduleMode, linkCandidates)));
 					for(Id<Link> linkId : manualCandidates.getLinkIds()) {
 						Link link = network.getLinks().get(linkId);
 						if(link == null) {
@@ -162,7 +164,8 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 										"("+CoordUtils.calcEuclideanDistance(link.getCoord(), parentStopFacility.getCoord())+")");
 								log.info("Manual link candidate will still be used");
 							}
-							lcSet.add(new LinkCandidateImpl(link, parentStopFacility, modeRouter.getLinkTravelCost(link)));
+
+							lcSet.add(new LinkCandidateImpl(link, parentStopFacility, getLinkTravelCost(link)));
 						}
 					}
 					MapUtils.getMap(scheduleMode, linkCandidates).put(parentStopFacility.getId(), lcSet);
@@ -173,8 +176,13 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 	}
 
 	@Override
-	public SortedSet<LinkCandidate> getLinkCandidates(Id<TransitStopFacility> transitStopFacility, String scheduleTransportMode) {
-		return linkCandidates.get(scheduleTransportMode).get(transitStopFacility);
+	public SortedSet<LinkCandidate> getLinkCandidates(TransitRouteStop transitRouteStop, TransitLine transitLine, TransitRoute transitRoute) {
+		return linkCandidates.get(transitRoute.getTransportMode()).get(transitRouteStop.getStopFacility().getId());
+	}
+
+	private double getLinkTravelCost(Link link) {
+		return (config.getTravelCostType().equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ?
+				link.getLength() / link.getFreespeed() : link.getLength());
 	}
 
 }

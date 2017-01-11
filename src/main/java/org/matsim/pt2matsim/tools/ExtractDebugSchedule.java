@@ -22,7 +22,9 @@ import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
-import org.matsim.pt2matsim.tools.ScheduleTools;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Extract one route from a schedule
@@ -34,9 +36,10 @@ public class ExtractDebugSchedule {
 	/**
 	 * Extracts one route from a schedule and writes it
 	 * to a new file.
+	 *
 	 * @param args [0] schedule file
-	 *             [1] transit route id
-	 *             [2] transit line id
+	 *             [1] transit line id
+	 *             [2] transit route id (use * for all transit routes of line)
 	 *             [3] output debug schedule file
 	 */
 	public static void main(final String[] args) {
@@ -45,12 +48,10 @@ public class ExtractDebugSchedule {
 
 		for(TransitLine tl : schedule.getTransitLines().values()) {
 			if(tl.getId().toString().equals(args[1])) {
+				TransitLine line = debug.getFactory().createTransitLine(tl.getId());
 				for(TransitRoute tr : tl.getRoutes().values()) {
-					if(tr.getId().toString().equals(args[2])) {
-						TransitLine line = debug.getFactory().createTransitLine(tl.getId());
+					if(tr.getId().toString().equals(args[2]) || args[2].equals("*")) {
 						line.addRoute(tr);
-
-						debug.addTransitLine(line);
 
 						for(TransitRouteStop rs : tr.getStops()) {
 							if(!debug.getFacilities().containsKey(rs.getStopFacility().getId())) {
@@ -59,9 +60,57 @@ public class ExtractDebugSchedule {
 						}
 					}
 				}
+				debug.addTransitLine(line);
 			}
 		}
 		ScheduleTools.writeTransitSchedule(debug, args[3]);
+	}
+
+	public static void run(TransitSchedule schedule, String transitLineId, String transitRouteId) {
+		Set<TransitLine> toRemove = new HashSet<>();
+		for(TransitLine tl : new HashSet<>(schedule.getTransitLines().values())) {
+			if(tl.getId().toString().equals(transitLineId)) {
+				for(TransitRoute tr : new HashSet<>(tl.getRoutes().values())) {
+					if(!tr.getId().toString().equals(transitRouteId)) {
+						tl.removeRoute(tr);
+					}
+				}
+			} else {
+				toRemove.add(tl);
+			}
+		}
+
+		for(TransitLine tl : toRemove) {
+			schedule.removeTransitLine(tl);
+		}
+	}
+
+	/**
+	 * Extracts n transit routes randomly. Removes all other transit routes
+	 * from the schedule
+	 */
+	public static void removeRand(TransitSchedule schedule, int n) {
+		int nRoutes = 0;
+		for(TransitLine tl : schedule.getTransitLines().values()) {
+			nRoutes += tl.getRoutes().size();
+		}
+
+		double p = n / (double) nRoutes;
+
+		for(TransitLine tl : schedule.getTransitLines().values()) {
+			for(TransitRoute tr : new HashSet<>(tl.getRoutes().values())) {
+				double t = Math.random();
+				if(t > p) {
+					tl.removeRoute(tr);
+				}
+			}
+		}
+
+		for(TransitLine tl : new HashSet<>(schedule.getTransitLines().values())) {
+			if(tl.getRoutes().size() == 0) {
+				schedule.removeTransitLine(tl);
+			}
+		}
 	}
 
 }

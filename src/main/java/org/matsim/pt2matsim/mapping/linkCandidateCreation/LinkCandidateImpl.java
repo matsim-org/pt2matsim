@@ -16,7 +16,6 @@
  *                                                                         *
  * *********************************************************************** */
 
-
 package org.matsim.pt2matsim.mapping.linkCandidateCreation;
 
 import org.matsim.api.core.v01.Coord;
@@ -94,7 +93,7 @@ public class LinkCandidateImpl implements LinkCandidate {
 	}
 
 	@Override
-	public Id<TransitStopFacility> getParentStopFacilityId() {
+	public Id<TransitStopFacility> getStopFacilityId() {
 		return parentStopFacilityId;
 	}
 
@@ -117,6 +116,13 @@ public class LinkCandidateImpl implements LinkCandidate {
 	public double getStopFacilityDistance() {
 		return stopFacilityDistance;
 	}
+
+	/*
+	TODO remove link travel cost from fields
+	instead let the ptmapper calculate the travel costs by using the router and the link (or perhaps link id).
+	This is necessary because link travel costs differ with the routers used and are normally not known during
+	link candidate creation.
+	 */
 
 	@Override
 	public double getLinkTravelCost() {
@@ -149,6 +155,11 @@ public class LinkCandidateImpl implements LinkCandidate {
 	}
 
 	@Override
+	public boolean isLoopLink() {
+		return loopLink;
+	}
+
+	@Override
 	public int compareTo(LinkCandidate other) {
 		if(this.equals(other)) {
 			return 0;
@@ -168,10 +179,6 @@ public class LinkCandidateImpl implements LinkCandidate {
 		}
 	}
 
-	@Override
-	public boolean isLoopLink() {
-		return loopLink;
-	}
 
 	@Override
 	public boolean equals(Object obj) {
@@ -179,15 +186,15 @@ public class LinkCandidateImpl implements LinkCandidate {
 			return true;
 		if(obj == null)
 			return false;
-		if(getClass() != obj.getClass())
+		if(!(obj instanceof LinkCandidate))
 			return false;
 
-		LinkCandidateImpl other = (LinkCandidateImpl) obj;
-		if(id == null) {
-			if(other.id != null)
-				return false;
-		} else if(!id.equals(other.id))
-			return false;
-		return true;
+		LinkCandidate other = (LinkCandidate) obj;
+		return id.equals(other.getId());
+	}
+
+	@Override
+	public int hashCode() {
+		return id.hashCode();
 	}
 }

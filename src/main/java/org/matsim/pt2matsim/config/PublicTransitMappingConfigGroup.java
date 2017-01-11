@@ -28,7 +28,7 @@ import org.matsim.core.config.ReflectiveConfigGroup;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
-import org.matsim.pt2matsim.mapping.RunPublicTransitMapper;
+import org.matsim.pt2matsim.run.PublicTransitMapper;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -39,7 +39,7 @@ import java.util.Set;
 
 
 /**
- * Config Group usedd by {@link RunPublicTransitMapper}. Defines parameters for
+ * Config Group usedd by {@link PublicTransitMapper}. Defines parameters for
  * mapping public transit to a network.
  *
  * @author polettif
@@ -65,7 +65,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private static final String NUM_OF_THREADS = "numOfThreads";
 	private static final String MANUAL_LINK_CANDIDATE_CSV_FILE = "manualLinkCandidateCsvFile";
 	private static final String REMOVE_NOT_USED_STOP_FACILITIES = "removeNotUsedStopFacilities";
-//	private static final String U_TURN_COST = "uTurnCost";
 
 	// default values
 	private Map<String, Set<String>> modeRoutingAssignment = null;
@@ -73,11 +72,13 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private Set<ManualLinkCandidates> manualLinkCandidates = null;
 
 	private Set<String> scheduleFreespeedModes = new HashSet<>(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE_AS_SET);
-	private double maxTravelCostFactor = 5.0;	private Set<String> modesToKeepOnCleanUp = new HashSet<>();
+	private Set<String> modesToKeepOnCleanUp = new HashSet<>();
+	private double maxTravelCostFactor = 5.0;
 	private String manualLinkCandidateCsvFile = null;
 	private String prefixArtificial = "pt_";
 	private int numOfThreads = 2;
 	private double nodeSearchRadius = 500;
+	private boolean removeNotUsedStopFacilities = true;
 	private boolean combinePtModes = false;
 	private boolean addPtMode = true;
 	private String networkFile = null;
@@ -85,11 +86,9 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private String outputNetworkFile = null;
 	private String outputStreetNetworkFile = null;
 	private String outputScheduleFile = null;
-//	private double uTurnCost = 0;
 
-	private boolean removeNotUsedStopFacilities = true;
 	public enum TravelCostType {
-		travelTime, linkLength;
+		travelTime, linkLength
 	}
 	private TravelCostType travelCostType = TravelCostType.linkLength;
 
@@ -147,8 +146,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 						"\t\thave any significant impact on performance.");
 		map.put(PREFIX_ARTIFICIAL,
 				"ID prefix used for all artificial links and nodes created during mapping.");
-//		map.put(U_TURN_COST,
-//				"Travel costs for u-turns. Is added to the travel costs starting link.'s opposite link. Unit depends on " + TRAVEL_COST_TYPE + "- Experimental! Default: 0");
 		map.put(SCHEDULE_FREESPEED_MODES,
 				"After the schedule has been mapped, the free speed of links can be set according to the necessary travel \n" +
 						"\t\ttimes given by the transit schedule. The freespeed of a link is set to the minimal value needed by all \n" +
@@ -433,23 +430,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		this.maxTravelCostFactor = maxTravelCostFactor;
 	}
 
-	/**
-	 *
-	 */
-	/*
-	@StringGetter(U_TURN_COST)
-	public double getUTurnCost() {
-		return uTurnCost;
-	}
-
-	@StringSetter(U_TURN_COST)
-	public void setUTurnCost(double uTurnCost) {
-		if(uTurnCost < 0) {
-			throw new RuntimeException("uTurnCost cannot be less than 0!");
-		}
-		this.uTurnCost = uTurnCost;
-	}
-*/
 
 	/**
 	 *
@@ -870,7 +850,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		}
 
 		@StringGetter(REPLACE)
-		public boolean replaceCandidates() {
+		public boolean doesReplaceCandidates() {
 			return replace;
 		}
 		@StringSetter(REPLACE)

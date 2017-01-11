@@ -16,34 +16,31 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.config;
+package org.matsim.pt2matsim.gtfs;
 
-import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.ConfigWriter;
+import org.matsim.api.core.v01.Id;
+import org.matsim.pt2matsim.gtfs.lib.Route;
+import org.matsim.pt2matsim.gtfs.lib.Service;
+import org.matsim.pt2matsim.gtfs.lib.Stop;
+import org.matsim.pt2matsim.lib.RouteShape;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 /**
- * Creates a default osmConverter config file.
+ * An interface to load and convert GTFS feeds
  *
  * @author polettif
  */
-public class CreateDefaultOsmConfig {
+public interface GtfsFeed {
 
-	/**
-	 * Creates a default publicTransitMapping config file.
-	 * @param args [0] default config filename
-	 */
-	public static void main(final String[] args) {
-		Config config = ConfigUtils.createConfig();
+	Map<String, Stop> getStops();
 
-		config.addModule(OsmConverterConfigGroup.createDefaultConfig());
+	Map<String, Route> getRoutes();
 
-		Set<String> toRemove = config.getModules().keySet().stream().filter(module -> !module.equals(OsmConverterConfigGroup.GROUP_NAME)).collect(Collectors.toSet());
-		toRemove.forEach(config::removeModule);
+	Map<Id<RouteShape>, RouteShape> getShapes();
 
-		new ConfigWriter(config).write(args[0]);
-	}
+	boolean usesFrequencies();
+
+	Map<String, Service> getServices();
+
 }

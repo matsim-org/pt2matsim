@@ -63,6 +63,10 @@ public class PseudoGraphImpl implements PseudoGraph {
 		while(!queue.isEmpty()) {
 			currentStop = queue.pollFirst(); // vertex with shortest distance (first iteration will return source)
 
+			if(currentStop.getNeighbours().size() == 0) {
+//				throw new RuntimeException("PseudoRouteStop " + currentStop.getStopId() + " has no neighbours in the PseudoGraph!");
+			}
+
 			//look at distances to each neighbour
 			for(Map.Entry<PseudoRouteStop, Double> n : currentStop.getNeighbours().entrySet()) {
 				neighbour = n.getKey(); //the neighbour in this iteration
@@ -71,7 +75,7 @@ public class PseudoGraphImpl implements PseudoGraph {
 				if(alternateDist < neighbour.getTravelCostToSource()) { // shorter path to neighbour found
 					queue.remove(neighbour);
 					neighbour.setTravelCostToSource(alternateDist);
-					neighbour.setClosestPrecedingRouteSTop(currentStop);
+					neighbour.setClosestPrecedingRouteStop(currentStop);
 					queue.add(neighbour);
 				}
 			}

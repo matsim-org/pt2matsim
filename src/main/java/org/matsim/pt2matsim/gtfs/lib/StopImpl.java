@@ -1,8 +1,10 @@
 /* *********************************************************************** *
  * project: org.matsim.*
+ * Stop.java
+ *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2016 by the members listed in the COPYING,        *
+ * copyright       : (C) 2011 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -16,34 +18,44 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.config;
+package org.matsim.pt2matsim.gtfs.lib;
 
-import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.ConfigWriter;
+import org.matsim.api.core.v01.Coord;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+public class StopImpl implements Stop {
 
-/**
- * Creates a default publicTransitMapping config file.
- *
- * @author polettif
- */
-public class CreateDefaultConfig {
+	private final String id;
+	private final Coord coord;
+	private final String name;
+
+	public StopImpl(String id, String name, Coord coord) {
+		this.id = id;
+		this.coord = coord;
+		this.name = name;
+	}
 
 	/**
-	 * Creates a default publicTransitMapping config file.
-	 * @param args [0] default config filename
+	 * required attribute
 	 */
-	public static void main(final String[] args) {
-		Config config = ConfigUtils.createConfig();
-
-		config.addModule(PublicTransitMappingConfigGroup.createDefaultConfig());
-
-		Set<String> toRemove = config.getModules().keySet().stream().filter(module -> !module.equals(PublicTransitMappingConfigGroup.GROUP_NAME)).collect(Collectors.toSet());
-		toRemove.forEach(config::removeModule);
-
-		new ConfigWriter(config).write(args[0]);
+	@Override
+	public String getId() {
+		return id;
 	}
+
+	/**
+	 * required attribute
+	 */
+	@Override
+	public Coord getCoord() {
+		return coord;
+	}
+
+	/**
+	 * required attribute
+	 */
+	@Override
+	public String getName() {
+		return name;
+	}
+
 }

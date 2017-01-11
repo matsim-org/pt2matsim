@@ -21,8 +21,7 @@
 
 package org.matsim.pt2matsim.mapping.networkRouter;
 
-import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
@@ -35,27 +34,16 @@ import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
  * A Router that calculates the least cost path on a network.
  *
  * @author polettif
+ *
  */
 public interface Router extends TravelDisutility, TravelTime {
 
-    /**
-     * @param fromLinkCandidate  Node to route from...
-     * @param toLinkCandidate    Node to route to...
-     * @return  Least cost path.
-     */
-    LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate);
-
-    Network getNetwork();
+	LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> toNode, Id<Node> fromNode);
 
 	/**
 	 * @return The minimal travel cost between two TransitRouteStops
 	 */
 	double getMinimalTravelCost(TransitRouteStop fromStop, TransitRouteStop toStop);
-
-	/**
-	 * @return The travel cost for the given link
-	 */
-	double getLinkTravelCost(Link link);
 
 	/**
 	 * If {@link PseudoRouting} needs to add an artificial link to the network, this method returns
@@ -68,6 +56,4 @@ public interface Router extends TravelDisutility, TravelTime {
 	 * the link length.
 	 */
 	double getArtificialLinkLength(double maxAllowedTravelCost, LinkCandidate linkCandidateCurrent, LinkCandidate linkCandidateNext);
-
-	LeastCostPathCalculator.Path calcLeastCostPath(Node toNode, Node fromNode);
 }

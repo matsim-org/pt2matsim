@@ -1,10 +1,8 @@
 /* *********************************************************************** *
  * project: org.matsim.*
- * Stop.java
- *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2011 by the members listed in the COPYING,        *
+ * copyright       : (C) 2016 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -18,40 +16,35 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.gtfs.lib;
+package org.matsim.pt2matsim.run;
 
-import org.matsim.api.core.v01.Coord;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.ConfigWriter;
+import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 
-public class GTFSStop {
+import java.util.Set;
+import java.util.stream.Collectors;
 
-	private Coord point;
-	private String name;
-	private boolean blocks;
+/**
+ * Creates a default osmConverter config file.
+ *
+ * @author polettif
+ */
+public class CreateDefaultOsmConfig {
 
-	//Methods
-	public GTFSStop(Coord point, String name, boolean blocks) {
-		super();
-		this.point = point;
-		this.name = name;
-		this.blocks = blocks;
-	}
 	/**
-	 * @return the point
+	 * Creates a default publicTransitMapping config file.
+	 * @param args [0] default config filename
 	 */
-	public Coord getPoint() {
-		return point;
-	}
-	/**
-	 * @return the name
-	 */
-	public String getName() {
-		return name;
-	}
-	/**
-	 * @return the blocks
-	 */
-	public boolean isBlocks() {
-		return blocks;
-	}
+	public static void main(final String[] args) {
+		Config config = ConfigUtils.createConfig();
 
+		config.addModule(OsmConverterConfigGroup.createDefaultConfig());
+
+		Set<String> toRemove = config.getModules().keySet().stream().filter(module -> !module.equals(OsmConverterConfigGroup.GROUP_NAME)).collect(Collectors.toSet());
+		toRemove.forEach(config::removeModule);
+
+		new ConfigWriter(config).write(args[0]);
+	}
 }

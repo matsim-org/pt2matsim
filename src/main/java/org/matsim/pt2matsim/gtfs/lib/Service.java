@@ -1,10 +1,8 @@
 /* *********************************************************************** *
  * project: org.matsim.*
- * Service.java
- *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2011 by the members listed in the COPYING,        *
+ * copyright       : (C) 2016 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -20,98 +18,34 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
-import org.matsim.core.utils.collections.MapUtils;
-
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
-public class Service {
-	
-	//Attributes
-	private final String id;
-	private final boolean[] days;
-	private final LocalDate startDate;
-	private final LocalDate endDate;
-	private final Collection<LocalDate> additions;
-	private final Collection<LocalDate> exceptions;
+/**
+ * @author polettif
+ */
+public interface Service {
+	void addAddition(String addition);
 
-	public static final Map<LocalDate, Set<String>> dateStats = new HashMap<>();
+	void addException(String exception);
 
-	public Service(String serviceId, boolean[] days, String startDateStr, String endDateStr) {
-		super();
-		this.id = serviceId;
-		this.days = days;
-		this.startDate = parseDateFormat(startDateStr);
-		this.endDate = parseDateFormat(endDateStr);
-		this.additions = new ArrayList<>();
-		this.exceptions = new ArrayList<>();
+	Set<LocalDate> getCoveredDays();
 
-		LocalDate currentDate = parseDateFormat(startDateStr);
+	String getId();
 
-		while(currentDate.isBefore(endDate)) {
-			int weekday = currentDate.getDayOfWeek().getValue() - 1;
-			if(days[weekday]) {
-				MapUtils.getSet(currentDate, dateStats).add(serviceId);
-			}
-			currentDate = currentDate.plusDays(1);
-		}
-	}
+	boolean[] getDays();
 
-	/**
-	 * @return the days
-	 */
-	public boolean[] getDays() {
-		return days;
-	}
-	/**
-	 * @return the startDate
-	 */
-	public LocalDate getStartDate() {
-		return startDate;
-	}
-	/**
-	 * @return the endDate
-	 */
-	public LocalDate getEndDate() {
-		return endDate;
-	}
-	/**
-	 * @return the additions
-	 */
-	public Collection<LocalDate> getAdditions() {
-		return additions;
-	}
-	/**
-	 * @return the exceptions
-	 */
-	public Collection<LocalDate> getExceptions() {
-		return exceptions;
-	}
-	/**
-	 * Adds a new addition date
-	 */
-	public void addAddition(String addition) {
-		LocalDate additionDate = parseDateFormat(addition);
-		additions.add(additionDate);
-		MapUtils.getSet(additionDate, dateStats).add(this.getId());
-	}
-	/**
-	 * Adds a new exception date
-	 */
-	public void addException(String exception) {
-		LocalDate exceptionDate = parseDateFormat(exception);
-		additions.add(exceptionDate);
-		MapUtils.getSet(exceptionDate, dateStats).remove(this.getId());
-	}
-	
-	public String getId() {
-		return id;
-	}
+	LocalDate getStartDate();
 
-	/**
-	 * parses the date format YYYYMMDD to LocalDate
-	 */
-	private LocalDate parseDateFormat(String yyyymmdd) {
-		return LocalDate.of(Integer.parseInt(yyyymmdd.substring(0, 4)), Integer.parseInt(yyyymmdd.substring(4, 6)), Integer.parseInt(yyyymmdd.substring(6, 8)));
-	}
+	LocalDate getEndDate();
+
+	Collection<LocalDate> getAdditions();
+
+	Collection<LocalDate> getExceptions();
+
+	Map<String, Trip> getTrips();
+
+	void addTrip(Trip newTrip);
 }

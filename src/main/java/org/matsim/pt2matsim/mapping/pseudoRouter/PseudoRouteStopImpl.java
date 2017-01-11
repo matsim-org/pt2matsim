@@ -134,9 +134,10 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 		return previous;
 	}
 	@Override
-	public void setClosestPrecedingRouteSTop(PseudoRouteStop stop) {
+	public void setClosestPrecedingRouteStop(PseudoRouteStop stop) {
 		this.previous = stop;
 	}
+
 	@Override
 	public Map<PseudoRouteStop, Double> getNeighbours() {
 		return neighbours;
@@ -151,7 +152,7 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 	@Override
 	public int compareTo(PseudoRouteStop other) {
 		if(this.equals(other)) {
-			return 0;
+			return 1;
 		}
 		int dCompare = Double.compare(travelCostToSource, other.getTravelCostToSource());
 		return (dCompare == 0 ? 1 : dCompare);
@@ -218,20 +219,22 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 			return true;
 		if(obj == null)
 			return false;
-		if(getClass() != obj.getClass())
-			return false;
 
-		PseudoRouteStopImpl other = (PseudoRouteStopImpl) obj;
-		if(id == null) {
-			if(other.id != null)
-				return false;
-		} else if(!id.toString().equals(other.id.toString()))
+		if(obj instanceof PseudoRouteStop) {
+			PseudoRouteStop other = (PseudoRouteStop) obj;
+			return id.equals(other.getId());
+		} else {
 			return false;
-		return true;
+		}
 	}
 
 	public double getStopFacilityDistance() {
 		return stopFacilityDistance;
+	}
+
+	@Override
+	public int hashCode() {
+		return id.toString().hashCode();
 	}
 
 }

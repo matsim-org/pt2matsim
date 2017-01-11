@@ -22,52 +22,75 @@ package org.matsim.pt2matsim.gtfs.lib;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.geotools.MGC;
+import org.matsim.pt2matsim.lib.RouteShape;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class Shape {
-	
-	//Attributes
-	/**
-	 * The id
-	 */
-	private String id;
+/**
+ * Implementation of RouteShape, represents a GTFS shape (i.e. a sequence
+ * of point coordinates.
+ *
+ * @author polettif
+ */
+public class GtfsShape implements RouteShape {
 
-	/**
-	 * The points of the shape
-	 */
-	private SortedMap<Integer,Coord> points;
+	private Id<RouteShape> id;
 
-	//Methods
-	/**
-	 * Constructs 
-	 */
-	public Shape(String id) {
-		this.id = id;
-		points = new TreeMap<>();
+	private SortedMap<Integer, Coord> points = new TreeMap<>();
+
+	private Coord[] extent = new Coord[]{new Coord(Double.MAX_VALUE, Double.MAX_VALUE), new Coord(Double.MIN_VALUE, Double.MIN_VALUE)};
+
+
+	public GtfsShape(String id) {
+		this.id = Id.create(id, RouteShape.class);
 	}
 
-	/**
-	 * @return the id
-	 */
-	public String getId() {
+	public GtfsShape(Id<RouteShape> shapeId) {
+		this.id = shapeId;
+	}
+
+	// required attribute
+	@Override
+	public Id<RouteShape> getId() {
 		return id;
 	}
 
-	/**
-	 * @return the points
-	 */
-	public SortedMap<Integer,Coord> getPoints() {
+	public SortedMap<Integer, Coord> getCoordsSorted() {
 		return points;
+	}
+
+	public List<Coord> getCoords() {
+		return new ArrayList<>(points.values());
 	}
 
 	/**
 	 * Adds a new point
 	 */
+	@Override
 	public void addPoint(Coord point, int pos) {
-		points.put(pos,point);
+		Coord check = points.put(pos, point);
+
+		if(check != null && (check.getX() != point.getX() || check.getY() != point.getY())) {
+			throw new IllegalArgumentException("Sequence position " + pos + " already defined in shape " + id);
+		}
+
+		if(point.getX() < extent[0].getX()) {
+			extent[0].setX(point.getX());
+		}
+		if(point.getY() < extent[0].getY()) {
+			extent[0].setY(point.getY());
+		}
+		if(point.getX() > extent[1].getX()) {
+			extent[1].setX(point.getX());
+		}
+		if(point.getY() > extent[1].getY()) {
+			extent[1].setY(point.getY());
+		}
 	}
 
 	public Coordinate[] getCoordinates() {
@@ -82,4 +105,9 @@ public class Shape {
 			return coordinates;
 		}
 	}
+
+	public Coord[] getExtent() {
+		return extent;
+	}
+
 }

@@ -29,6 +29,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.network.NetworkImpl;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
@@ -36,9 +37,9 @@ import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
-import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorStandard;
-import org.matsim.pt2matsim.mapping.networkRouter.FastAStarRouter;
-import org.matsim.pt2matsim.mapping.networkRouter.Router;
+import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorUnique;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersTransportMode;
 import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoSchedule;
 import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoScheduleImpl;
 import org.matsim.pt2matsim.plausibility.StopFacilityHistogram;
@@ -46,7 +47,8 @@ import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleCleaner;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * References an unmapped transit schedule to a network. Combines
@@ -69,8 +71,6 @@ public class PTMapperImpl implements PTMapper {
 	private Network network;
 	private TransitSchedule schedule;
 
-
-	private final Map<String, Router> modeSeparatedRouters = new HashMap<>();
 	private final PseudoSchedule pseudoSchedule = new PseudoScheduleImpl();
 
 	/**
@@ -129,17 +129,22 @@ public class PTMapperImpl implements PTMapper {
 
 		/**
 		 * Some schedule statistics
- 		 */
-		Set<String> scheduleTransportModes = new HashSet<>();
+		 * Check link candidate params and mode routing assignment
+		 */
 		int nStopFacilities = schedule.getFacilities().size();
 		int nTransitRoutes = 0;
 		for(TransitLine transitLine : this.schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
-				scheduleTransportModes.add(transitRoute.getTransportMode());
 				nTransitRoutes++;
+				String scheduleMode = transitRoute.getTransportMode();
+				if(!config.getModeRoutingAssignment().containsKey(scheduleMode)) {
+					throw new IllegalArgumentException("No mode routing assignment for schedule mode " + scheduleMode);
+				}
+				if(!config.getLinkCandidateCreatorParams().containsKey(scheduleMode)) {
+					throw new IllegalArgumentException("No link candidate creator parameters assignment for schedule mode " + scheduleMode);
+				}
 			}
 		}
-
 
 		/** [1]
 		 * Create a separate network for all schedule modes and
@@ -147,13 +152,8 @@ public class PTMapperImpl implements PTMapper {
 		 */
 		log.info("==============================================");
 		log.info("Creating mode separated network and routers...");
-		Map<String, Set<String>> modeRoutingAssignment = config.getModeRoutingAssignment();
-		FastAStarRouter.setTravelCostType(config.getTravelCostType());
-//		FastAStarRouter.setUTurnCost(config.getUTurnCost());
-		for(String scheduleMode : scheduleTransportModes) {
-			log.info("Initiating network and router for schedule mode \"" +scheduleMode+"\", network modes " + modeRoutingAssignment.get(scheduleMode));
-			modeSeparatedRouters.put(scheduleMode, FastAStarRouter.createModeSeparatedRouter(network, modeRoutingAssignment.get(scheduleMode)));
-		}
+		ScheduleRouters scheduleRouters = new ScheduleRoutersTransportMode(config, schedule, network, false);
+
 
 		/** [2]
 		 * Load the closest links and create LinkCandidates. StopFacilities
@@ -163,8 +163,8 @@ public class PTMapperImpl implements PTMapper {
 		 */
 		log.info("===========================");
 		log.info("Creating link candidates...");
-		LinkCandidateCreator linkCandidates = new LinkCandidateCreatorStandard(this.schedule, this.network, this.config, this.modeSeparatedRouters);
-		linkCandidates.createLinkCandidates();
+		LinkCandidateCreator linkCandidates = new LinkCandidateCreatorUnique(this.schedule, this.network, this.config);
+
 
 		/** [3]
 		 * PseudoRouting
@@ -178,7 +178,7 @@ public class PTMapperImpl implements PTMapper {
 		int numThreads = config.getNumOfThreads() > 0 ? config.getNumOfThreads() : 1;
 		PseudoRouting[] pseudoRoutingRunnables = new PseudoRouting[numThreads];
 		for(int i = 0; i < numThreads; i++) {
-			pseudoRoutingRunnables[i] = new PseudoRoutingImpl(config, modeSeparatedRouters, linkCandidates);
+			pseudoRoutingRunnables[i] = new PseudoRoutingImpl(config, scheduleRouters, linkCandidates);
 		}
 		// spread transit lines on runnables
 		int thr = 0;
@@ -227,14 +227,7 @@ public class PTMapperImpl implements PTMapper {
 		 */
 		log.info("===========================================================================================");
 		log.info("Initiating final routers to map transit routes with referenced facilities to the network...");
-		Map<String, Router> finalRouters = new HashMap<>();
-		for(String scheduleMode : scheduleTransportModes) {
-			Set<String> routingTransportModes = new HashSet<>(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE_AS_SET);
-			if(modeRoutingAssignment.get(scheduleMode) != null) routingTransportModes.addAll(modeRoutingAssignment.get(scheduleMode));
-			log.info("Initiating network and router for schedule mode \"" +scheduleMode+"\", network modes " + routingTransportModes);
-
-			finalRouters.put(scheduleMode, FastAStarRouter.createModeSeparatedRouter(network, routingTransportModes));
-		}
+		ScheduleRouters finalRouters = new ScheduleRoutersTransportMode(config, schedule, network, true);
 
 
 		/** [7]
@@ -253,7 +246,7 @@ public class PTMapperImpl implements PTMapper {
 		log.info("Pulling child stop facilities...");
 		int nPulled = 1;
 		while(nPulled != 0) {
-			nPulled = PTMapperUtils.pullChildStopFacilitiesTogether(this.schedule, this.network);
+			nPulled = UtilsPTMapper.pullChildStopFacilitiesTogether(this.schedule, this.network);
 		}
 
 		/** [9]
@@ -294,7 +287,7 @@ public class PTMapperImpl implements PTMapper {
 		NetworkTools.resetLinkLength(network, PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE);
 
 		// changing the freespeed of the artificial links (value is used in simulations)
-		PTMapperUtils.setFreeSpeedBasedOnSchedule(network, schedule, config.getScheduleFreespeedModes());
+		UtilsPTMapper.setFreeSpeedBasedOnSchedule(network, schedule, config.getScheduleFreespeedModes());
 
 		// Remove unnecessary parts of schedule
 		ScheduleCleaner.removeNotUsedTransitLinks(schedule, network, config.getModesToKeepOnCleanUp(), true);
@@ -328,7 +321,7 @@ public class PTMapperImpl implements PTMapper {
 				}
 			}
 			if(config.getOutputStreetNetworkFile() != null) {
-				NetworkTools.writeNetwork(NetworkTools.filterNetworkByLinkMode(network, Collections.singleton(TransportMode.car)), config.getOutputStreetNetworkFile());
+				NetworkTools.writeNetwork(NetworkTools.createFilteredNetworkByLinkMode(network, Collections.singleton(TransportMode.car)), config.getOutputStreetNetworkFile());
 			}
 		} else {
 			log.info("");
@@ -445,6 +438,7 @@ public class PTMapperImpl implements PTMapper {
 	private static void setLogLevels() {
 		Logger.getLogger(org.matsim.core.router.Dijkstra.class).setLevel(Level.ERROR); // suppress no route found warnings
 		Logger.getLogger(Network.class).setLevel(Level.WARN);
+		Logger.getLogger(NetworkImpl.class).setLevel(Level.WARN);
 		Logger.getLogger(org.matsim.core.network.filter.NetworkFilterManager.class).setLevel(Level.WARN);
 		Logger.getLogger(org.matsim.core.router.util.PreProcessDijkstra.class).setLevel(Level.WARN);
 		Logger.getLogger(org.matsim.core.router.util.PreProcessDijkstra.class).setLevel(Level.WARN);

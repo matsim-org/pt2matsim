@@ -32,7 +32,7 @@ import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
-import org.matsim.pt2matsim.mapping.PTMapperUtils;
+import org.matsim.pt2matsim.mapping.UtilsPTMapper;
 import org.matsim.pt2matsim.mapping.networkRouter.Router;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
@@ -68,7 +68,6 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	// commands
 	public static final String RR_VIA_LINK = "rerouteViaLink";
 	public static final String RR_FROM_STOP = "rerouteFromStop";
-	public static final String REPLACE_STOP_FACILITY = "replaceStopFacility";
 	public static final String REFRESH_TRANSIT_ROUTE = "refreshTransitRoute";
 	public static final String ALL_TRANSIT_ROUTES_ON_LINK = "allTransitRoutesOnLink";
 	public static final String CHANGE_REF_LINK = "changeRefLink";
@@ -107,8 +106,6 @@ public class BasicScheduleEditor implements ScheduleEditor {
 
 	/**
 	 * Parses a command file (csv) and runs the commands specified
-	 *
-	 * @throws IOException
 	 */
 	public void parseCommandCsv(String filePath) throws IOException {
 		CSVReader reader = new CSVReader(new FileReader(filePath), ';');
@@ -150,7 +147,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			}
 		}
 		/**
-		 * Changes the referenced link of a stopfacility. Effectively creates a new child stop facility.
+		 * Change the referenced link of a stopfacility. Effectively creates a new child stop facility.
 		 * ["changeRefLink"] [StopFacilityId] [newlinkId]
 		 * ["changeRefLink"] [TransitLineId] [TransitRouteId] [ParentId] [newlinkId]
 		 * ["changeRefLink"] ["allTransitRoutesOnLink"] [linkId] [ParentId] [newlinkId]
@@ -284,17 +281,17 @@ public class BasicScheduleEditor implements ScheduleEditor {
 		NetworkRoute routeBeforeCut = transitRoute.getRoute().getSubRoute(transitRoute.getRoute().getStartLinkId(), cutFromLinkId);
 		NetworkRoute routeAfterCut = transitRoute.getRoute().getSubRoute(cutToLinkId, transitRoute.getRoute().getEndLinkId());
 
-		LeastCostPathCalculator.Path path1 = router.calcLeastCostPath(cutFromLink.getToNode(), viaLink.getFromNode());
-		LeastCostPathCalculator.Path path2 = router.calcLeastCostPath(viaLink.getToNode(), cutToLink.getFromNode());
+		LeastCostPathCalculator.Path path1 = router.calcLeastCostPath(cutFromLink.getToNode().getId(), viaLink.getFromNode().getId());
+		LeastCostPathCalculator.Path path2 = router.calcLeastCostPath(viaLink.getToNode().getId(), cutToLink.getFromNode().getId());
 
 		List<Id<Link>> newLinkSequence = new ArrayList<>();
 		if(path1 != null && path2 != null) {
 			newLinkSequence.add(routeBeforeCut.getStartLinkId());
 			newLinkSequence.addAll(routeBeforeCut.getLinkIds());
 			newLinkSequence.add(routeBeforeCut.getEndLinkId());
-			newLinkSequence.addAll(PTMapperUtils.getLinkIdsFromPath(path1));
+			newLinkSequence.addAll(UtilsPTMapper.getLinkIdsFromPath(path1));
 			newLinkSequence.add(viaLinkId);
-			newLinkSequence.addAll(PTMapperUtils.getLinkIdsFromPath(path2));
+			newLinkSequence.addAll(UtilsPTMapper.getLinkIdsFromPath(path2));
 			newLinkSequence.add(routeAfterCut.getStartLinkId());
 			newLinkSequence.addAll(routeAfterCut.getLinkIds());
 			newLinkSequence.add(routeAfterCut.getEndLinkId());
@@ -494,7 +491,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			Link currentLink = network.getLinks().get(currentLinkId);
 			Link nextLink = network.getLinks().get(routeStops.get(i + 1).getStopFacility().getLinkId());
 
-			List<Id<Link>> path = PTMapperUtils.getLinkIdsFromPath(router.calcLeastCostPath(currentLink.getToNode(), nextLink.getFromNode()));
+			List<Id<Link>> path = UtilsPTMapper.getLinkIdsFromPath(router.calcLeastCostPath(currentLink.getToNode().getId(), nextLink.getFromNode().getId()));
 
 			if(path != null)
 				linkSequence.addAll(path);

@@ -138,12 +138,7 @@ public class MiscUtils {
 		List<Map.Entry<K, V>> list = new LinkedList<>(unsortMap.entrySet());
 
 		// Sort list with comparator, to compare the Map values
-		Collections.sort(list, new Comparator<Map.Entry<K, V>>() {
-			public int compare(Map.Entry<K, V> o1,
-							   Map.Entry<K, V> o2) {
-				return (o1.getValue()).compareTo(o2.getValue());
-			}
-		});
+		Collections.sort(list, (o1, o2) -> (o1.getValue()).compareTo(o2.getValue()));
 
 		// Convert sorted map back to a Map
 		Map<K, V> sortedMap = new LinkedHashMap<>();
@@ -239,12 +234,7 @@ public class MiscUtils {
 	public static <K, V> SortedSet<V> getSortedSet(
 			final K key,
 			final Map<K, SortedSet<V>> map) {
-		SortedSet<V> coll = map.get(key);
-
-		if(coll == null) {
-			coll = new TreeSet<>();
-			map.put(key, coll);
-		}
+		SortedSet<V> coll = map.computeIfAbsent(key, k -> new TreeSet<>());
 
 		return coll;
 	}

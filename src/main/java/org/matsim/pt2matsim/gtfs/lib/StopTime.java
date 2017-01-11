@@ -1,10 +1,8 @@
 /* *********************************************************************** *
  * project: org.matsim.*
- * StopTime.java
- *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2011 by the members listed in the COPYING,        *
+ * copyright       : (C) 2016 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -23,50 +21,16 @@ package org.matsim.pt2matsim.gtfs.lib;
 import java.util.Date;
 
 /**
- * Container for GTFS StopTime. Contains stopId, arrivalTime and departureTime
+ * @author polettif
  */
-public class StopTime {
-	
-	//Attributes
-	private final Integer sequencePosition;
-	private final Date arrivalTime;
-	private final Date departureTime;
-	private String stopId;
-	
-	public StopTime(Integer sequencePosition, Date arrivalTime, Date departureTime, String stopId) {
-		super();
-		this.sequencePosition = sequencePosition;
-		this.arrivalTime = arrivalTime;
-		this.departureTime = departureTime;
-		this.stopId = stopId;
-	}
+public interface StopTime {
+	String getStopId();
 
-	/**
-	 * @return the position of the stopTime within the stopSequence
-	 */
-	public Integer getSequencePosition() {
-		return sequencePosition;
-	}
+	String getTripId();
 
-	/**
-	 * @return the arrivalTime
-	 */
-	public Date getArrivalTime() {
-		return arrivalTime;
-	}
+	Date getArrivalTime();
 
-	/**
-	 * @return the departureTime
-	 */
-	public Date getDepartureTime() {
-		return departureTime;
-	}
+	Date getDepartureTime();
 
-	/**
-	 * @return the stopId
-	 */
-	public String getStopId() {
-		return stopId;
-	}
-
+	Integer getSequencePosition();
 }

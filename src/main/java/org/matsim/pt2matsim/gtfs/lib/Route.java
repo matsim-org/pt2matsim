@@ -1,10 +1,8 @@
 /* *********************************************************************** *
  * project: org.matsim.*
- * Route.java
- *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2011 by the members listed in the COPYING,        *
+ * copyright       : (C) 2016 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -20,65 +18,22 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
-import org.matsim.pt2matsim.gtfs.lib.GTFSDefinitions.RouteTypes;
+import org.matsim.pt2matsim.gtfs.GtfsDefinitions;
 
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.Map;
 
+/**
+ * @author polettif
+ */
+public interface Route {
 
-public class GTFSRoute {
-	                           
-	//Attributes
-	private String routeId;
-	private String shortName;
-	private RouteTypes routeType;
-	private SortedMap<String, Trip> trips;
+	void addTrip(Trip trip);
 
-	//Methods
-	public GTFSRoute(String routeId, String shortName, RouteTypes routeType) {
-		super();
-		this.routeId = routeId;
-		this.shortName = shortName;
-		this.routeType = routeType;
-		trips = new TreeMap<>();
-	}
+	Map<String, Trip> getTrips();
 
-	/**
-	 * @return the routeId
-	 */
-	public String getRouteId() {
-		return routeId;
-	}
+	String getId();
 
-	/**
-	 * @return the shortName
-	 */
-	public String getShortName() {
-		return shortName;
-	}
+	String getShortName();
 
-	/**
-	 * @return the routeType
-	 */
-	public RouteTypes getRouteType() {
-		return routeType;
-	}
-
-	/**
-	 * @return the trips
-	 */
-	public SortedMap<String, Trip> getTrips() {
-		return trips;
-	}
-
-	/**
-	 * Puts a new trip
-	 * @param key id
-	 * @param trip trip
-	 */
-	public void putTrip(String key, Trip trip) {
-		trips.put(key, trip);
-	}
-	
-
+	GtfsDefinitions.RouteTypes getRouteType();
 }

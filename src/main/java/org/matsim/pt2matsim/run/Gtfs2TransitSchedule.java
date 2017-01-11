@@ -16,21 +16,20 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.gtfs;
+package org.matsim.pt2matsim.run;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.geotools.MGC;
-import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
-import org.matsim.core.utils.geometry.transformations.TransformationFactory;
-import org.matsim.pt.transitSchedule.api.TransitSchedule;
-import org.matsim.vehicles.VehicleUtils;
-import org.matsim.vehicles.Vehicles;
-import org.matsim.pt2matsim.tools.GtfsShapeFileTools;
+import org.matsim.pt2matsim.gtfs.GtfsConverter;
+import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
-import java.io.IOException;
+import java.time.LocalDate;
+
+import static org.matsim.pt2matsim.gtfs.GtfsConverter.ALL_SERVICE_IDS;
+import static org.matsim.pt2matsim.gtfs.GtfsConverter.DAY_WITH_MOST_SERVICES;
+import static org.matsim.pt2matsim.gtfs.GtfsConverter.DAY_WITH_MOST_TRIPS;
 
 /**
  * Contract class to read GTFS files and convert them to an unmapped MATSim Transit Schedule
@@ -41,17 +40,6 @@ public class Gtfs2TransitSchedule {
 
 	protected static Logger log = Logger.getLogger(Gtfs2TransitSchedule.class);
 
-	public static final String ALL_SERVICE_IDS = "all";
-	public static final String DAY_WITH_MOST_TRIPS = "dayWithMostTrips";
-	public static final String DAY_WITH_MOST_SERVICES = "dayWithMostServices";
-
-	public enum ServiceParam{dayWithMostTrips, dayWithMostServices, all}
-
-	protected TransitSchedule schedule;
-	protected Vehicles vehicles;
-	protected CoordinateTransformation transformation;
-
-
 	/**
 	 * Reads gtfs files in and converts them to an unmapped
 	 * MATSim Transit Schedule (mts). "Unmapped" means stopFacilities are not
@@ -60,18 +48,18 @@ public class Gtfs2TransitSchedule {
 	 * <p/>
 	 *
 	 * @param args	[0] folder where the gtfs files are located (a single zip file is not supported)<br/>
-	 * 				[1]	which service ids should be used. One of the following:<br/>
+	 * 				[1]	Services from which sample day should be used. One of the following:<br/>
 	 *                  <ul>
-	 *                  <li>dayWithMostServices</li>
 	 *                  <li>date in the format yyyymmdd</li>
-	 *                  <li>dayWithMostTrips</li>
+	 *                  <li>dayWithMostTrips (default)</li>
+	 *                  <li>dayWithMostServices</li>
 	 *                  <li>all</li>
 	 *                  </ul>
 	 *              [2] the output coordinate system. Use WGS84 for no transformation.<br/>
 	 *              [3] output transit schedule file
 	 *              [4] output default vehicles file (optional)
-	 *              [5] output converted shape files. Is created based on shapes.txt and
-	 *                  shows all trips contained in the schedule. (optional)
+	 *              [5] output shape reference file, CSV file that references transit routes and shapes. Can
+	 *              	be used by certain PTMapper implementations and MappingAnalysis (optional)
 	 *
 	 * Calls {@link #run}.
 	 */
@@ -94,37 +82,42 @@ public class Gtfs2TransitSchedule {
 	 * Creates a default vehicles file as well.
 	 * <p/>
 	 * @param gtfsFolder          		folder where the gtfs files are located (a single zip file is not supported)
-	 * @param serviceIdsParam        	which service ids should be used. One of the following:
+	 * @param sampleDayParam        	Services from which sample day should be used. One of the following:
 	 *     				             	<ul>
-	 *     				             	<li>dayWithMostServices (default)</li>
-	 *     				             	<li>dayWithMostTrips</li>
 	 *     				             	<li>date in the format yyyymmdd</li>
+	 *     				             	<li>dayWithMostTrips (default)</li>
+	 *     				             	<li>dayWithMostServices</li>
 	 *     				             	<li>all</li>
 	 *     				             	</ul>
 	 * @param outputCoordinateSystem 	the output coordinate system. Use WGS84 for no transformation.
 	 * @param scheduleFile              output transit schedule file
 	 * @param vehicleFile               output default vehicles file (optional)
-	 * @param shapeFile                 output converted shape files. Is created based on shapes.txt and
-	 *                                  shows all trips contained in the schedule. (optional, output coordinate
-	 *                                  system needs to be in EPSG:* format or a name usable by geotools)
+	 * @param transitRouteShapeRefFile  output route shape reference file. shape files. CSV file
+	 *                                  that references transit routes and shapes (optional)
 	 */
-	public static void run(String gtfsFolder, String serviceIdsParam, String outputCoordinateSystem, String scheduleFile, String vehicleFile, String shapeFile) {
+	public static void run(String gtfsFolder, String sampleDayParam, String outputCoordinateSystem, String scheduleFile, String vehicleFile, String transitRouteShapeRefFile) {
 		Logger.getLogger(MGC.class).setLevel(Level.ERROR);
 
-		TransitSchedule schedule = ScheduleTools.createSchedule();
-		Vehicles vehicles = VehicleUtils.createVehiclesContainer();
-		CoordinateTransformation transformation = outputCoordinateSystem != null ? TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem) : new IdentityTransformation();
-
-		GtfsConverter gtfsConverter = new GtfsConverter(schedule, vehicles, transformation);
-		String param = serviceIdsParam == null ? DAY_WITH_MOST_SERVICES : serviceIdsParam;
-		gtfsConverter.run(gtfsFolder, param);
-
-		boolean authExists = true;
-		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), scheduleFile);
-		if(vehicleFile != null) {
-			ScheduleTools.writeVehicles(gtfsConverter.getVehicles(), vehicleFile);
+		// check sample day parameter
+		if(!isValidSampleDayParam(sampleDayParam)) {
+			throw new IllegalArgumentException("Sample day parameter not recognized! Allowed: date in format \"yyyymmdd\", " + DAY_WITH_MOST_SERVICES + ", " + DAY_WITH_MOST_TRIPS + ", " + ALL_SERVICE_IDS);
 		}
-		if(shapeFile != null) {
+		String param = sampleDayParam == null ? DAY_WITH_MOST_TRIPS : sampleDayParam;
+
+		// load gtfs files
+		GtfsFeedImpl gtfsFeed = new GtfsFeedImpl(gtfsFolder);
+
+		// convert to transit schedule
+		GtfsConverter converter = new GtfsConverter(gtfsFeed);
+		converter.convert(param, outputCoordinateSystem);
+
+		// write Files
+		boolean authExists = true;
+		ScheduleTools.writeTransitSchedule(converter.getSchedule(), scheduleFile);
+		if(vehicleFile != null) {
+			ScheduleTools.writeVehicles(converter.getVehicles(), vehicleFile);
+		}
+		if(transitRouteShapeRefFile != null) {
 			try {
 				MGC.getCRS(outputCoordinateSystem);
 			} catch (Exception e) {
@@ -132,21 +125,24 @@ public class Gtfs2TransitSchedule {
 				log.warn("Code " + outputCoordinateSystem + " not recognized by geotools. Shapefile not written.");
 			}
 			if(authExists)
-				GtfsShapeFileTools.writeGtfsTripsToFile(gtfsConverter.getGtfsRoutes(), gtfsConverter.getServiceIds(), outputCoordinateSystem, shapeFile);
+				converter.getShapedTransitSchedule().getTransitRouteShapeReference().writeToFile(transitRouteShapeRefFile);
 		}
 	}
 
-	public Gtfs2TransitSchedule(TransitSchedule schedule, Vehicles vehicles, CoordinateTransformation transformation) {
-		this.schedule = schedule;
-		this.vehicles = vehicles;
-		this.transformation = transformation;
-	}
-
-	public TransitSchedule getSchedule() {
-		return schedule;
-	}
-	public Vehicles getVehicles() {
-		return vehicles;
+	/**
+	 * @return true if <tt>check</tt> is a valid sample day parameter value.
+	 */
+	private static boolean isValidSampleDayParam(String check) {
+		if(check.equals(ALL_SERVICE_IDS) || check.equals(DAY_WITH_MOST_TRIPS) || check.equals(DAY_WITH_MOST_SERVICES)) {
+			return true;
+		} else {
+			try {
+				LocalDate.of(Integer.parseInt(check.substring(0, 4)), Integer.parseInt(check.substring(4, 6)), Integer.parseInt(check.substring(6, 8)));
+			} catch (NumberFormatException e) {
+				return false;
+			}
+			return true;
+		}
 	}
 
 }

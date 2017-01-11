@@ -19,12 +19,14 @@
 package org.matsim.pt2matsim.mapping;
 
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.utils.collections.MapUtils;
+import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
@@ -41,9 +43,9 @@ import java.util.stream.Collectors;
  *
  * @author polettif
  */
-public class PTMapperUtils {
+public class UtilsPTMapper {
 
-	protected static Logger log = Logger.getLogger(PTMapperUtils.class);
+	protected static Logger log = Logger.getLogger(UtilsPTMapper.class);
 	private static final String suffixChildStopFacilities = PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES;
 	private static final String suffixChildStopFacilitiesRegex = PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES_REGEX;
 
@@ -53,7 +55,7 @@ public class PTMapperUtils {
 	public static List<Id<Link>> getLinkIdsFromPath(LeastCostPathCalculator.Path path) {
 //		List<Id<Link>> list = new ArrayList<>();
 //		for(Link link : path.links) {
-//			list.add(link.getId());
+//			list.add(link.getStopId());
 //		}
 		return path.links.stream().map(Link::getId).collect(Collectors.toList());
 	}
@@ -79,6 +81,38 @@ public class PTMapperUtils {
 		}
 		removeFromCurrent.forEach(linkCandidatesCurrent::remove);
 		removeFromNext.forEach(linkCandidatesNext::remove);
+	}
+
+	/**
+	 * Assigns links that are present in both sets to the set belonging to the closer coordinate.
+	 * @return true if sets have been modified
+	 */
+	public static boolean separateLinks(Coord coordA, Set<Link> linkSetA, Coord coordB, Set<Link> linkSetB) {
+		Set<Link> removeFromA = new HashSet<>();
+		Set<Link> removeFromB = new HashSet<>();
+
+		for(Link linkA : linkSetA) {
+			for(Link linkB : linkSetB) {
+				if(linkA.getId().equals(linkB.getId())) {
+
+					if(!linkA.getFromNode().equals(linkB.getFromNode())) {
+						throw new IllegalArgumentException("10000");
+					}
+
+					double distA = CoordUtils.distancePointLinesegment(linkA.getFromNode().getCoord(), linkA.getToNode().getCoord(), coordA);
+					double distB = CoordUtils.distancePointLinesegment(linkA.getFromNode().getCoord(), linkA.getToNode().getCoord(), coordB);
+					if(distA > distB) {
+						removeFromA.add(linkA);
+					} else {
+						removeFromB.add(linkB);
+					}
+				}
+			}
+		}
+		removeFromA.forEach(linkSetA::remove);
+		removeFromB.forEach(linkSetB::remove);
+
+		return (removeFromA.size() > 0 && removeFromB.size() > 0);
 	}
 
 

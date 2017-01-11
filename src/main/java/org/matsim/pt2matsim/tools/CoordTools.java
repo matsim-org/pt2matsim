@@ -23,6 +23,8 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.utils.geometry.CoordUtils;
+import org.matsim.pt.transitSchedule.api.TransitRoute;
+import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 
@@ -40,7 +42,8 @@ public class CoordTools {
 	private CoordTools() {}
 
 	/**
-	 * @return the azimuth in [rad] of a line defined by two points.
+	 * @return the azimuth in [rad] of a line defined by two points. A line going north has
+	 * azimuth 0, a line going east has az=pi/2, a line going west az=1.5*pi
 	 */
 	public static double getAzimuth(Coord from, Coord to) {
 		double deltaE = to.getX()-from.getX();
@@ -121,11 +124,7 @@ public class CoordTools {
 			return true;
 		} else if(diff > 0 && diff > Math.PI) {
 			return false;
-		} else if(diff < 0 && diff < -Math.PI){
-			return true;
-		} else {
-			return false;
-		}
+		} else return diff < 0 && diff < -Math.PI;
 	}
 
 
@@ -155,6 +154,35 @@ public class CoordTools {
 			}
 		}
 
+		return new Coord[]{new Coord(minW, minS), new Coord(maxE, maxN)};
+	}
+
+	/**
+	 * Calculates the maximum x and y values of the stop coordinates.
+	 * @return Array of Coords with the minimal South-West and the
+	 * 		   maximal North-East Coordinates
+	 */
+	public static Coord[] getExtent(TransitRoute transitRoute) {
+		double maxE = 0;
+		double maxN = 0;
+		double minS = Double.MAX_VALUE;
+		double minW = Double.MAX_VALUE;
+
+		for(TransitRouteStop trs : transitRoute.getStops()) {
+			Coord c = trs.getStopFacility().getCoord();
+			if(c.getX() > maxE) {
+				maxE = c.getX();
+			}
+			if(c.getY() > maxN) {
+				maxN = c.getY();
+			}
+			if(c.getX() < minW) {
+				minW = c.getX();
+			}
+			if(c.getY() < minS) {
+				minS = c.getY();
+			}
+		}
 		return new Coord[]{new Coord(minW, minS), new Coord(maxE, maxN)};
 	}
 
@@ -351,8 +379,8 @@ public class CoordTools {
 	 * Calculates a new Coordinate given the original point, azimuth and distance.
 	 */
 	public static Coord calcNewPoint(Coord fromPoint, double azimuth, double distance) {
-		double dE = Math.cos(azimuth);
-		double dN = Math.sin(azimuth);
+		double dE = Math.sin(azimuth)*distance;
+		double dN = Math.cos(azimuth)*distance;
 
 		return new Coord(fromPoint.getX()+dE, fromPoint.getY()+dN);
 	}
