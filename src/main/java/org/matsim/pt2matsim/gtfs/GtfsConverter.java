@@ -363,16 +363,16 @@ public class GtfsConverter {
 		if(service.getAdditions().contains(checkDate)) {
 			return true;
 		}
-		if(checkDate.isBefore(service.getEndDate()) && checkDate.isAfter(service.getStartDate())) {
-			// check if the checkDate is not an exception of the service
-			if(service.getExceptions().contains(checkDate)) {
-				return false;
-			}
-			// get weekday (0 = monday)
-			int weekday = checkDate.getDayOfWeek().getValue() - 1;
-			return service.getDays()[weekday];
+		if(service.getEndDate() == null || service.getStartDate() == null || checkDate.isAfter(service.getEndDate()) || checkDate.isBefore(service.getStartDate())) {
+			return false;
 		}
-		return false;
+		// check if the checkDate is not an exception of the service
+		if(service.getExceptions().contains(checkDate)) {
+			return false;
+		}
+		// test if checkdate's weekday is covered (0 = monday)
+		int weekday = checkDate.getDayOfWeek().getValue() - 1;
+		return service.getDays()[weekday];
 	}
 
 	/**
