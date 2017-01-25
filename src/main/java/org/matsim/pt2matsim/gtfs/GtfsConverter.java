@@ -151,7 +151,7 @@ public class GtfsConverter {
 			counterLines++;
 
 			/** [3]
-			 * loop through each trip for the GTFSroute and generate transitRoute (if the serviceId is correct)
+			 * loop through each trip for the gtfsRoute and generate transitRoute (if the serviceId is correct)
 			 */
 			for(Trip trip : gtfsRoute.getTrips().values()) {
 				boolean isService = false;

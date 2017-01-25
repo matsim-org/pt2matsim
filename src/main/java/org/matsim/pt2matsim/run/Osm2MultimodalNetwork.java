@@ -26,7 +26,7 @@ import org.matsim.pt2matsim.osm.OsmMultimodalNetworkConverter;
  *
  * @author polettif
  */
-public abstract class Osm2MultimodalNetwork {
+public class Osm2MultimodalNetwork {
 
 	/**
 	 * Converts an osm file to a MATSim network. The input and output file as well

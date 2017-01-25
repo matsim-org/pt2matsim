@@ -83,7 +83,7 @@ public class PseudoGraphImpl implements PseudoGraph {
 	}
 
 	/**
-	 * returns a path from the source to the destionation
+	 * returns a path from the source to the destination
 	 */
 	public List<PseudoRouteStop> getShortestPseudoPath() {
 		if(!graph.containsKey(DESTINATION_ID)) {

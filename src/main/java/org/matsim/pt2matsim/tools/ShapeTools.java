@@ -28,8 +28,8 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.core.utils.gis.PolylineFeatureFactory;
 import org.matsim.core.utils.gis.ShapeFileWriter;
-import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
+import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.gtfs.lib.Route;
 import org.matsim.pt2matsim.gtfs.lib.Trip;
 import org.matsim.pt2matsim.lib.RouteShape;
@@ -62,7 +62,7 @@ public class ShapeTools {
 
 	/**
 	 * Calculates the minimal distance from a link to a given routeShape.
-	 * Distances are calcualted in intervals of 5 map units.
+	 * Distances are calculated in intervals of 5 map units.
 	 */
 	public static double calcMinDistanceToShape(Link link, RouteShape shape) {
 		double measureInterval = 5;

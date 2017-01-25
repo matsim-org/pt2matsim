@@ -39,7 +39,7 @@ import java.util.Set;
 
 
 /**
- * Config Group usedd by {@link PublicTransitMapper}. Defines parameters for
+ * Config Group used by {@link PublicTransitMapper}. Defines parameters for
  * mapping public transit to a network.
  *
  * @author polettif
@@ -71,7 +71,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private Map<String, LinkCandidateCreatorParams> linkCandidateParams = null;
 	private Set<ManualLinkCandidates> manualLinkCandidates = null;
 
-	private Set<String> scheduleFreespeedModes = new HashSet<>(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE_AS_SET);
+	private Set<String> scheduleFreespeedModes = PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE_AS_SET;
 	private Set<String> modesToKeepOnCleanUp = new HashSet<>();
 	private double maxTravelCostFactor = 5.0;
 	private String manualLinkCandidateCsvFile = null;
@@ -188,7 +188,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	}
 
 	/**
-	 * Loads the parametersets for ModeRoutingAssignment, LinkCandidateCreator and ManualLinkCandidates for
+	 * Loads the parameter sets for ModeRoutingAssignment, LinkCandidateCreator and ManualLinkCandidates for
 	 * easier access
 	 */
 	public void loadParameterSets() {
@@ -470,7 +470,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 
 
 	/**
-	 * Params for filepahts
+	 * Params for filepaths
 	 */
 	@StringGetter(NETWORK_FILE)
 	public String getNetworkFileStr() {

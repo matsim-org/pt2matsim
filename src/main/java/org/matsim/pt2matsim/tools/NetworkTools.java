@@ -27,12 +27,13 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.NetworkFactory;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.core.network.MatsimNetworkReader;
+import org.matsim.core.network.NetworkImpl;
 import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.network.NetworkWriter;
 import org.matsim.core.network.algorithms.NetworkTransform;
 import org.matsim.core.network.filter.NetworkFilterManager;
 import org.matsim.core.network.filter.NetworkLinkFilter;
-import org.matsim.core.network.MatsimNetworkReader;
-import org.matsim.core.network.NetworkWriter;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
@@ -42,7 +43,6 @@ import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.pt2matsim.mapping.networkRouter.FastAStarRouter;
 import org.matsim.pt2matsim.mapping.networkRouter.Router;
-import org.matsim.core.network.NetworkImpl;
 
 import java.util.*;
 
@@ -139,7 +139,7 @@ public class NetworkTools {
 	/**
 	 * Looks for nodes within search radius of <tt>coord</tt> (using {@link NetworkImpl#getNearestNodes},
 	 * fetches all in- and outlinks and sorts them ascending by their
-	 * distance to the coordiantes given.
+	 * distance to the coordinates given.
 	 * <p/>
 	 * The method then returns <tt>maxNLinks</tt> or all links within <tt>maxLinkDistance</tt>
 	 * (whichever is reached earlier). Note: This method returns more than N links if two links have the same

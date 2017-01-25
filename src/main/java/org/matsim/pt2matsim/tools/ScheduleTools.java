@@ -34,11 +34,11 @@ import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.*;
-import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
-import org.matsim.vehicles.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.UtilsPTMapper;
 import org.matsim.pt2matsim.mapping.networkRouter.Router;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
+import org.matsim.vehicles.*;
 
 import java.util.*;
 
@@ -475,7 +475,7 @@ public class ScheduleTools {
 
 
 	/**
-	 * @return the parent id of a stop facility id. This is the part befor the
+	 * @return the parent id of a stop facility id. This is the part left to the
 	 * child stop facility suffix ".link:"
 	 */
 	public static String getParentId(String stopFacilityId) {

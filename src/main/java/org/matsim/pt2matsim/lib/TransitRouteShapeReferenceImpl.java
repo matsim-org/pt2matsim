@@ -52,7 +52,7 @@ public class TransitRouteShapeReferenceImpl implements TransitRouteShapeReferenc
 	}
 
 	/**
-	 * @return null if no shpae id is defined
+	 * @return null if no shape id is defined
 	 */
 	@Override
 	public Id<RouteShape> getShapeId(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId) {

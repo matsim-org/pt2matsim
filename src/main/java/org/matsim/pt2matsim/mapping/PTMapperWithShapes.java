@@ -45,7 +45,9 @@ import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWithShapes;
 import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoSchedule;
 import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoScheduleImpl;
 import org.matsim.pt2matsim.plausibility.StopFacilityHistogram;
-import org.matsim.pt2matsim.tools.*;
+import org.matsim.pt2matsim.tools.NetworkTools;
+import org.matsim.pt2matsim.tools.ScheduleCleaner;
+import org.matsim.pt2matsim.tools.ScheduleTools;
 
 import java.util.Collections;
 import java.util.List;
@@ -200,7 +202,7 @@ public class PTMapperWithShapes implements PTMapper {
 
 
 		/** [4]
-		 * Collect artificial links from threas and add them to network.
+		 * Collect artificial links from threads and add them to network.
 		 * Collect pseudoSchedules from threads.
 		 */
 		log.info("=====================================");

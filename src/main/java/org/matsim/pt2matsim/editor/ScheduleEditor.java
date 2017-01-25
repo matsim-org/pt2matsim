@@ -83,7 +83,7 @@ public interface ScheduleEditor {
 	 * @param newLinkId 		id of the new link
 	 * @param fromNodeId 		from node id
 	 * @param toNodeId			to node id
-	 * @param attributeLinkId	the attributs of this link are copied, default values are used if <tt>null</tt>.
+	 * @param attributeLinkId	the attributes of this link are copied, default values are used if <tt>null</tt>.
 	 */
 	void addLink(Id<Link> newLinkId, Id<Node> fromNodeId, Id<Node> toNodeId, Id<Link> attributeLinkId);
 

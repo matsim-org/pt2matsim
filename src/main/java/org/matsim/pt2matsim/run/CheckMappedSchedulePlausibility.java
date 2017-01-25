@@ -58,7 +58,7 @@ public class CheckMappedSchedulePlausibility {
 	/**
 	 * Performs a plausibility check on the given schedule and network files
 	 * and writes the results to the output folder. The following files are
-	 * created in the ouput folder:
+	 * created in the output folder:
 	 * <ul>
 	 * 	<li>allPlausibilityWarnings.csv: shows all plausibility warnings in a csv file</li>
 	 * 	<li>stopfacilities.csv: the number of child stop facilities for all stop facilities as csv</li>

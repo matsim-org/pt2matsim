@@ -31,8 +31,8 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.LinkImpl;
-import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.network.NetworkWriter;
+import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
@@ -46,7 +46,7 @@ import java.io.File;
 import java.util.*;
 
 /**
- * Implemenation of a network converter. Modified version from {@link org.matsim.core.utils.io.OsmNetworkReader}
+ * Implementation of a network converter. Modified version from {@link org.matsim.core.utils.io.OsmNetworkReader}
  * Uses a config file ({@link OsmConverterConfigGroup}) to store conversion parameters and default
  * values.
  *
@@ -95,7 +95,7 @@ public class OsmMultimodalNetworkConverter {
 	}
 
 	/**
-	 * Constructor using the a OsmCOnverterConfigGroup config.
+	 * Constructor using the a OsmConverterConfigGroup config.
 	 */
 	public OsmMultimodalNetworkConverter(final OsmConverterConfigGroup config) {
 		this.config = config;
@@ -412,7 +412,7 @@ public class OsmMultimodalNetworkConverter {
 				}
 			}
 		}
-		// - ckeck tag "maxspeed"
+		// - check tag "maxspeed"
 		String maxspeedTag = way.tags.get(OsmTag.MAXSPEED);
 		if(maxspeedTag != null) {
 			try {

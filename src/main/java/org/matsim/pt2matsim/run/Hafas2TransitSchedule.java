@@ -38,7 +38,7 @@ import java.io.IOException;
  *
  * @author polettif
  */
-public abstract class Hafas2TransitSchedule {
+public class Hafas2TransitSchedule {
 
 	/**
 	 * Converts all files in <tt>hafasFolder</tt> and writes the output schedule and vehicles to the respective

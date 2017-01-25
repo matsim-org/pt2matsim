@@ -130,12 +130,12 @@ public class MiscUtils {
 	/**
 	 * Sorts a map by its values.
 	 *
-	 * @param unsortMap the unsortedMap
+	 * @param unsortedMap the unsortedMap
 	 * @return the sorted map
 	 */
-	public static <K, V extends Comparable<V>> Map<K, V> sortMapAscendingByValue(Map<K, V> unsortMap) {
+	public static <K, V extends Comparable<V>> Map<K, V> sortMapAscendingByValue(Map<K, V> unsortedMap) {
 		// Convert Map to List
-		List<Map.Entry<K, V>> list = new LinkedList<>(unsortMap.entrySet());
+		List<Map.Entry<K, V>> list = new LinkedList<>(unsortedMap.entrySet());
 
 		// Sort list with comparator, to compare the Map values
 		Collections.sort(list, (o1, o2) -> (o1.getValue()).compareTo(o2.getValue()));
@@ -151,12 +151,12 @@ public class MiscUtils {
 	/**
 	 * Sorts a map by its values.
 	 *
-	 * @param unsortMap the unsortedMap
+	 * @param unsortedMap the unsortedMap
 	 * @return the sorted map
 	 */
-	public static <K, V extends Comparable<V>> Map<K, V> sortMapDescendingByValue(Map<K, V> unsortMap) {
+	public static <K, V extends Comparable<V>> Map<K, V> sortMapDescendingByValue(Map<K, V> unsortedMap) {
 		// Convert Map to List
-		List<Map.Entry<K, V>> list = new LinkedList<>(unsortMap.entrySet());
+		List<Map.Entry<K, V>> list = new LinkedList<>(unsortedMap.entrySet());
 
 		// Sort list with comparator, to compare the Map values
 		Collections.sort(list, (o1, o2) -> -(o1.getValue()).compareTo(o2.getValue()));

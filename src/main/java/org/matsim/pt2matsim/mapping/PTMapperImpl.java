@@ -202,7 +202,7 @@ public class PTMapperImpl implements PTMapper {
 
 
 		/** [4]
-		 * Collect artificial links from threas and add them to network.
+		 * Collect artificial links from threads and add them to network.
 		 * Collect pseudoSchedules from threads.
 		 */
 		log.info("=====================================");

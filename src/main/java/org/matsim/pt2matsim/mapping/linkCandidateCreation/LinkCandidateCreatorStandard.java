@@ -87,7 +87,7 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 					// if no link candidates for the current stop and mode have been generated
 					if(modeLinkCandidates.size() == 0) {
-						// if stop facilty already has a referenced link
+						// if stop facility already has a referenced link
 						if(stopFacility.getLinkId() != null) {
 							Link link = network.getLinks().get(stopFacility.getLinkId());
 							modeLinkCandidates.add(new LinkCandidateImpl(link, stopFacility, getLinkTravelCost(link)));
