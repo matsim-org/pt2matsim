@@ -17,6 +17,9 @@ for every stop. The result is a mapped transit schedule and a modified network.
 
 Tools to validate and rudimentarily edit the mapped schedule are also part of the package.
 
+### Package Workflow
+
+![pt2matsim workflow](doc/pt2matsim_workflow.jpg)
 
 ### Standalone Usage
 
