@@ -189,15 +189,15 @@ every stop. For each transit route, the algorithm consists of the following step
 5. Create the link sequence. Each stop is referenced to a link (given by the best link candidate that is part of the pseudo least cost path). The least cost path on the real network between the referenced links is used to create the network path for the transit route.
 
 #### Step 1 & 2
-![Finding link candidates and creating a pseudo graph](doc/01-02-link-candidates.jpg)
+![Finding link candidates and creating a pseudo graph](doc/01-02-link-candidates.png)
 _Steps 1 & 2: Finding link candidates and creating a pseudo graph_
 
 #### Step 3
-![Calculate least cost path between each link candidate on the network](doc/03-pseudo-paths.jpg)
+![Calculate least cost path between each link candidate on the network](doc/03-pseudo-paths.png)
 _Step 3: Calculate least cost path between each link candidate on the network_
 
 #### Step 4 & 5
-![Calculate least cost path on the pseudo graph. Use this path to create link sequence on network.](doc/04-05-mapping-result.jpg)
+![Calculate least cost path on the pseudo graph. Use this path to create link sequence on network.](doc/04-05-mapping-result.png)
 _Steps 4 & 5: Calculate least cost path on the pseudo graph. Use this path to create link sequence on network_
 
 
