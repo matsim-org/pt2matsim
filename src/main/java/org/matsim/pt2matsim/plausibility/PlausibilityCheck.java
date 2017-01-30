@@ -37,9 +37,9 @@ import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
-import org.opengis.feature.simple.SimpleFeature;
 import org.matsim.pt2matsim.plausibility.log.*;
 import org.matsim.pt2matsim.tools.*;
+import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
@@ -174,6 +174,9 @@ public class PlausibilityCheck {
 		}
 	}
 
+	/**
+	 * Writes all warnings to a csv file
+	 */
 	public void writeCsv(String outputFile) {
 		List<String> csvLines = new ArrayList<>();
 		csvLines.add(AbstractPlausibilityWarning.CSV_HEADER);
@@ -188,6 +191,9 @@ public class PlausibilityCheck {
 		}
 	}
 
+	/**
+	 * Writes all warnings to several shape files in the given folder
+	 */
 	public void writeResultShapeFiles(String outputPath) {
 		log.info("Writing warnings shapefiles in folder " + outputPath + " ...");
 
@@ -300,9 +306,9 @@ public class PlausibilityCheck {
 			}
 		}
 
-		ShapeFileWriter.writeGeometries(traveltTimeWarningsFeatures, outputPath + "WarningsTravelTime.shp");
-		ShapeFileWriter.writeGeometries(directionChangeWarningsFeatures, outputPath + "WarningsDirectionChange.shp");
-		ShapeFileWriter.writeGeometries(loopWarningsFeatures, outputPath + "WarningsLoop.shp");
+		ShapeFileWriter.writeGeometries(traveltTimeWarningsFeatures, outputPath + TRAVEL_TIME_WARNING + "s.shp");
+		ShapeFileWriter.writeGeometries(directionChangeWarningsFeatures, outputPath + DIRECTION_CHANGE_WARNING + "s.shp");
+		ShapeFileWriter.writeGeometries(loopWarningsFeatures, outputPath + LOOP_WARNING + "s.shp");
 	}
 
 	/**

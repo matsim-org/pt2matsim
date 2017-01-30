@@ -1,13 +1,14 @@
 # PT2MATSim
 
-A package to convert input schedule data such as GTFS, HAFAS or OSM to a completely mapped MATSim schedule.
+PT2MATSim is a package to convert input schedule data such as GTFS, HAFAS or OSM to a completely mapped MATSim schedule.
 
-There are mulitiple public transit schedule data formats, widely used formats are GTFS and HAFAS. Numerous GTFS feeds are
-publicly available (see transit.land), otherwise these files have to be obtained from the public transit agency. The Swiss
-public transit schedule is available in HAFAS format via fahrplanfelder.ch. Public transit data feeds can be converted to
-unmapped MATSim transit schedules using _Gtfs2Transitschedule_ or _Hafas2TransitSchedule_. It is possible to convert public
-transit information from OpenStreetMap files (_Osm2TransitSchedule_). However, OSM currently does not contain any temporal
-information, the accuracy of the schedule data varies and is usually not sufficient to be used for simulations.
+There are multiple public transit schedule data formats, widely used formats are GTFS and HAFAS. Numerous GTFS feeds are
+publicly available (see [transit.land](http://www.transit.land)), otherwise these files have to be obtained from the public transit agency. The Swiss
+public transit schedule is available in HAFAS format via [fahrplanfelder.ch](http://fahrplanfelder.ch). Public transit data feeds can be converted to
+unmapped MATSim transit schedules using the classes _Gtfs2Transitschedule_ or _Hafas2TransitSchedule_.
+It is possible to convert public transit information from OpenStreetMap files (_Osm2TransitSchedule_). However,
+OSM currently does not contain any temporal information, the accuracy of the schedule data varies and is
+usually not sufficient to be used for simulations.
 
 Unmapped MATSim transit schedule lack information on the links used by vehicles and only contain the stop sequence
 for transit routes. Generating these links (i.e. the path a vehicle takes on a network) is called "mapping", a process
@@ -38,7 +39,7 @@ The tools can then be run in the following way:
 
     java -cp pt2matsim-VERSION.jar:libs org.matsim.pt2matsim.run.Gtfs2TransitSchedule
 
-## 1) Creating a multimodal network
+## Creating a multimodal network
 
 The converter is based on the OSM network by M. Rieser (_org.matsim.core.utils.io.OsmNetworkReader_). However, some changes
 have been made: The default values for links as well as parameters are stored in a _config.xml_ file. This file allows to
@@ -61,7 +62,7 @@ The converter can be run via
     
 with the config file path as argument.   
 
-## 2) Creating an unmapped MATSim transit schedule
+## Creating an unmapped MATSim transit schedule
 
 ### From GTFS
 
@@ -149,7 +150,7 @@ with the following arguments
 	[1] output schedule file
 	[2] output coordinate system (optional)
     
-## 3) Mapping a transit schedule to a network
+## Mapping a transit schedule to a network
 
 ### Public Transit Mapper
 
@@ -165,6 +166,42 @@ The Public Transit Mapper is run via
     org.matsim.pt2matsim.run.PublicTransitMapper
 
 with a config file as input argument.
+
+### Algorithm Overview
+A reference link for each stop and the path between those referenced links have to be defined. To generate the paths,
+the following input data is usually available for each transit route: stop sequence, stops with coordinates and a
+network as a directed graph.
+
+The algorithm works without using any additional GPS data. It is assumed that a public transit vehicle can access a
+stop by passing a link which is referenced to the stop. Depending on the input data, stop locations are not available, i.e.
+multiple stop locations on different roads are combined to one parent stop with the same name in the schedule. When two
+lines use a stop at an intersection there might be one to four actual stop locations.
+
+The implemented algorithm (called pseudo routing algorithm) looks at the whole route to define the best link for each
+stop. It is also possible that more than one optimal link can be found for a stop. The algorithm calculates the least
+cost path from the transit route's first to its last stop with the constraint that the path must contain a link candidate of
+every stop. For each transit route, the algorithm consists of the following steps:
+
+1. Find link candidates for each stop.
+2. Create a pseudo graph using the link candidates as nodes. Add a dummy source and destination node to the pseudo graph.
+3. Calculate the least cost path between each link candidate pair. This path is represented by an edge in the pseudo graph, connecting two link candidate nodes. The edge weight is the path's travel cost plus half the travel cost of the two link candidates it connects.
+4. Calculate the pseudo least cost path from the source node to the destination node in the pseudo graph. The resulting least cost path contains the best link candidate for each stop.
+5. Create the link sequence. Each stop is referenced to a link (given by the best link candidate that is part of the pseudo least cost path). The least cost path on the real network between the referenced links is used to create the network path for the transit route.
+
+#### Step 1 & 2
+![Finding link candidates and creating a pseudo graph](doc/01-02-link-candidates.jpg)
+_Steps 1 & 2: Finding link candidates and creating a pseudo graph_
+
+#### Step 3
+![Calculate least cost path between each link candidate on the network](doc/03-pseudo-paths.jpg)
+_Step 3: Calculate least cost path between each link candidate on the network_
+
+#### Step 4 & 5
+![Calculate least cost path on the pseudo graph. Use this path to create link sequence on network.](doc/04-05-mapping-result.jpg)
+_Steps 4 & 5: Calculate least cost path on the pseudo graph. Use this path to create link sequence on network_
+
+
+### Algorithm implementation and parameters
 
 #### Link candidates
 First, a set of link candidates is created for each stop facility and schedule transport mode. For all nodes within 
@@ -196,7 +233,7 @@ mode separated networks are generated. Then an A\* router for each of these netw
 according to the _modeRoutingAssignment_. The router uses one of two link travel costs: either _linkLength_ or _travelTime_, 
 defined in parameter _travelCostType_.
 
-#### Pseudo routing
+#### Pseudo graph and routing
 During this step the best sequence of link candidates for each transit route is calculated. While routing on the network uses 
 an A\* router, least cost path search on the pseudo graph is done with a separate Dijkstra implementation.
 
@@ -219,7 +256,7 @@ After this step, all artificial links are added to the network. These links have
 This prevents transit routes from using these links unless they have to.  At this point, the link sequences for the transit 
 routes have not yet been created. 
 
-#### Child stop facilities and route profiles_
+#### Child stop facilities and route profiles
 After all pseudoRoutes have been created, most likely there are multiple best links for a stop facility because different routes 
 use different links. For each of these links a "child stop facility" is created. It has the same name and coordinate as its parent 
 stop facility but it has a link referenced. The id of the child stop facility is generated by combining the parent stop id and the 
@@ -230,7 +267,7 @@ stop id based on the given stop facility id.
 Since it is now known which link candidates and thus child stop facility each transit route uses, route profiles (stop sequences) 
 for all transit routes can be created.
 
-#### Cleaning schedule and network_
+#### Cleaning schedule and network
 Pseudo routing is finished after the previous steps. However, some artifacts remain in the schedule and the network. By default, 
 stop facilities that are not used by any transit route are removed (_removeNotUsedStopFacilities_). The length of artificial 
 links is reset to the Euclidian distance. During pseudo routing, the freespeed of artificial links has been set very low and 
