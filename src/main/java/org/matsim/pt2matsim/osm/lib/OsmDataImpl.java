@@ -27,9 +27,9 @@ import java.util.Map;
  */
 public class OsmDataImpl implements OsmData{
 
-	private final Map<Long, OsmParser.OsmNode> nodes;
-	private final Map<Long, OsmParser.OsmRelation> relations;
-	private final Map<Long, OsmParser.OsmWay> ways;
+	private final Map<Long, Osm.Node> nodes;
+	private final Map<Long, Osm.Relation> relations;
+	private final Map<Long, Osm.Way> ways;
 
 
 	public OsmDataImpl(String osmFile) {
@@ -46,17 +46,17 @@ public class OsmDataImpl implements OsmData{
 	}
 
 	@Override
-	public Map<Long, OsmParser.OsmNode> getNodes() {
+	public Map<Long, Osm.Node> getNodes() {
 		return nodes;
 	}
 
 	@Override
-	public Map<Long, OsmParser.OsmRelation> getRelations() {
+	public Map<Long, Osm.Relation> getRelations() {
 		return relations;
 	}
 
 	@Override
-	public Map<Long, OsmParser.OsmWay> getWays() {
+	public Map<Long, Osm.Way> getWays() {
 		return ways;
 	}
 }

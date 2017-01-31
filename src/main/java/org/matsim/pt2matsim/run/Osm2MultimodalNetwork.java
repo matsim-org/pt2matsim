@@ -59,12 +59,7 @@ public class Osm2MultimodalNetwork {
 		Config configAll = ConfigUtils.loadConfig(configFile, new OsmConverterConfigGroup());
 		OsmConverterConfigGroup config = ConfigUtils.addOrGetModule(configAll, OsmConverterConfigGroup.GROUP_NAME, OsmConverterConfigGroup.class );
 
-		OsmData osmData = new OsmDataImpl(configFile);
-
-		OsmMultimodalNetworkConverter converter = new OsmMultimodalNetworkConverter(osmData);
-		converter.convert(config);
-
-		NetworkTools.writeNetwork(converter.getNetwork(), config.getOutputNetworkFile());
+		run(config);
 	}
 
 	/**
@@ -78,6 +73,15 @@ public class Osm2MultimodalNetwork {
 		configGroup.setOsmFile(osmFile);
 		configGroup.setOutputNetworkFile(outputNetworkFile);
 		configGroup.setOutputCoordinateSystem(outputCoordinateSystem);
-		new OsmMultimodalNetworkConverter(configGroup).run();
+
+		run(configGroup);
+	}
+
+	public static void run(OsmConverterConfigGroup config) {
+		OsmData osmData = new OsmDataImpl(config.getOsmFile());
+		OsmMultimodalNetworkConverter converter = new OsmMultimodalNetworkConverter(osmData);
+		converter.convert(config);
+
+		NetworkTools.writeNetwork(converter.getNetwork(), config.getOutputNetworkFile());
 	}
 }

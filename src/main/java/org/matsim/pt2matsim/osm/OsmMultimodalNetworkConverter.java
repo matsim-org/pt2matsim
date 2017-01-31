@@ -26,7 +26,6 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
@@ -36,13 +35,10 @@ import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
-import org.matsim.core.utils.io.UncheckedIOException;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.osm.lib.Osm;
 import org.matsim.pt2matsim.osm.lib.OsmData;
-import org.matsim.pt2matsim.osm.lib.OsmParserHandler;
 import org.matsim.pt2matsim.osm.lib.TagFilter;
-import org.matsim.pt2matsim.osm.parser.OsmParser;
 import org.matsim.pt2matsim.tools.NetworkTools;
 
 import java.io.File;
@@ -66,14 +62,10 @@ public class OsmMultimodalNetworkConverter {
 	private OsmData osmData;
 
 	private Network network;
-	private CoordinateTransformation transformation;
 
 	/**
 	 *  Maps for nodes, ways and relations
 	 */
-	private Map<Long, OsmParser.OsmNode> nodesD;
-	private Map<Long, OsmParser.OsmWay> waysD;
-	private Map<Long, OsmParser.OsmRelation> relationsD;
 	private final Map<Long, Long> wayIds = new HashMap<>();
 	private Map<Long, Set<Long>> relationMembers = new HashMap<>();
 
@@ -91,57 +83,18 @@ public class OsmMultimodalNetworkConverter {
 	private long id = 0;
 
 
-	/**
-	 * Constructor reading config from file.
-	 */
-	@Deprecated
-	public OsmMultimodalNetworkConverter(final String osmConverterConfigFile) {
-//		Config configAll = ConfigUtils.loadConfig(osmConverterConfigFile, new OsmConverterConfigGroup() ) ;
-//		this.config = ConfigUtils.addOrGetModule(configAll, OsmConverterConfigGroup.GROUP_NAME, OsmConverterConfigGroup.class);
-//		this.network = NetworkTools.createNetwork();
-//		this.transformation = config.getCoordinateTransformation();
-	}
-
-	/**
-	 * Constructor using the a OsmConverterConfigGroup config.
-	 */
-	@Deprecated
-	public OsmMultimodalNetworkConverter(final OsmConverterConfigGroup config) {
-//		this.config = config;
-//		this.network = NetworkTools.createNetwork();
-//		this.transformation = config.getCoordinateTransformation();
-	}
-
 	public OsmMultimodalNetworkConverter(OsmData osmData) {
 		this.osmData = osmData;
 	}
 
 	/**
-	 * Converts the osm file specified in the config and writes
-	 * the network to a file (also defined in config).
+	 * Converts the osm data according to the parameters defined in config.
 	 */
-	public void run() {
-		convert();
-		writeNetwork();
-	}
-
-	/**
-	 * Only converts the osm file, does not write the network to a file.
-	 */
-	@Deprecated
-	public void convert() {
-//		readWayParams();
-//		parse();
-//		convertToNetwork();
-//		cleanRoadNetwork();
-	}
-
-
 	public void convert(OsmConverterConfigGroup config) {
 		this.config = config;
-		this.transformation = TransformationFactory.getCoordinateTransformation("WGS84", config.getOutputCoordinateSystem());
+		CoordinateTransformation transformation = TransformationFactory.getCoordinateTransformation("WGS84", config.getOutputCoordinateSystem());
 		readWayParams();
-		convertToNetwork();
+		convertToNetwork(transformation);
 		cleanRoadNetwork();
 	}
 
@@ -160,50 +113,24 @@ public class OsmMultimodalNetworkConverter {
 	}
 
 	/**
-	 * Parses the osm file and creates a MATSim network from the data.
-	 * @throws UncheckedIOException
-	 */
-	@Deprecated
-	private void parse() throws UncheckedIOException {
-		TagFilter parserWayFilter = new TagFilter(Osm.Tag.WAY);
-		parserWayFilter.add(Osm.Key.HIGHWAY);
-		parserWayFilter.add(Osm.Key.RAILWAY);
-		parserWayFilter.addException(Osm.Key.SERVICE);
-
-		TagFilter parserRelationFilter = new TagFilter(Osm.Tag.RELATION);
-		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.BUS);
-		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.TROLLEYBUS);
-		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.RAIL);
-		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.TRAM);
-		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.LIGHT_RAIL);
-		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.FUNICULAR);
-		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.MONORAIL);
-		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.SUBWAY);
-
-		OsmParser parser = new OsmParser(transformation);
-		OsmParserHandler handler = new OsmParserHandler(parserWayFilter, parserRelationFilter);
-		parser.addHandler(handler);
-		parser.run(this.config.getOsmFile());
-
-		this.waysD = handler.getWays();
-		this.nodesD = handler.getNodes();
-		this.relationsD = handler.getRelations();
-	}
-
-	/**
 	 * Converts the parsed osm data to MATSim nodes and links.
+	 * @param transformation
 	 */
-	private void convertToNetwork() {
+	private void convertToNetwork(CoordinateTransformation transformation) {
+
+		if(transformation == null) {
+			transformation = TransformationFactory.getCoordinateTransformation("WGS84", "WGS84");
+		}
 
 		this.network = NetworkTools.createNetwork();
 
-		Map<Long, OsmParser.OsmNode> nodes = osmData.getNodes();
-		Map<Long, OsmParser.OsmWay> ways = osmData.getWays();
-		Map<Long, OsmParser.OsmRelation> relations = osmData.getRelations();
+		Map<Long, Osm.Node> nodes = osmData.getNodes();
+		Map<Long, Osm.Way> ways = osmData.getWays();
+		Map<Long, Osm.Relation> relations = osmData.getRelations();
 
 		// store of which relation a way is part of
-		for(OsmParser.OsmRelation relation : osmData.getRelations().values()) {
-			for(OsmParser.OsmRelationMember member : relation.members) {
+		for(Osm.Relation relation : osmData.getRelations().values()) {
+			for(Osm.RelationMember member : relation.members) {
 				MapUtils.getSet(member.refId, relationMembers).add(relation.id);
 			}
 		}
@@ -212,7 +139,7 @@ public class OsmMultimodalNetworkConverter {
 		serviceRailTracksFilter.add(Osm.Key.SERVICE);
 
 		// remove unusable ways
-		for(OsmParser.OsmWay way : ways.values()) {
+		for(Osm.Way way : ways.values()) {
 			if(!highwayParams.containsKey(way.tags.get(Osm.Key.HIGHWAY)) && !railwayParams.containsKey(way.tags.get(Osm.Key.RAILWAY)) && !relationMembers.containsKey(way.id)) {
 				way.used = false;
 			} else if(!nodes.containsKey(way.nodes.get(0)) || !nodes.containsKey(way.nodes.get(way.nodes.size() - 1))) {
@@ -221,16 +148,16 @@ public class OsmMultimodalNetworkConverter {
 		}
 
 		// remove unused ways
-		Iterator<Map.Entry<Long, OsmParser.OsmWay>> it = ways.entrySet().iterator();
+		Iterator<Map.Entry<Long, Osm.Way>> it = ways.entrySet().iterator();
 		while(it.hasNext()) {
-			Map.Entry<Long, OsmParser.OsmWay> entry = it.next();
+			Map.Entry<Long, Osm.Way> entry = it.next();
 			if(!entry.getValue().used) {
 				it.remove();
 			}
 		}
 
 		// check which nodes are used
-		for(OsmParser.OsmWay way : ways.values()) {
+		for(Osm.Way way : ways.values()) {
 			if(nodes.containsKey(way.nodes.get(0)) && nodes.containsKey(way.nodes.get(way.nodes.size() - 1))) {
 				// first and last are counted twice, so they are kept in all cases
 				nodes.get(way.nodes.get(0)).ways++;
@@ -238,7 +165,7 @@ public class OsmMultimodalNetworkConverter {
 			}
 
 			for(Long nodeId : way.nodes) {
-				OsmParser.OsmNode node = nodes.get(nodeId);
+				Osm.Node node = nodes.get(nodeId);
 				node.used = true;
 				node.ways++;
 			}
@@ -248,12 +175,12 @@ public class OsmMultimodalNetworkConverter {
 		if(!config.getKeepPaths()) {
 			// marked nodes as unused where only one way leads through
 			// but only if this doesn't lead to links longer than MAX_LINKLENGTH
-			for(OsmParser.OsmWay way : ways.values()) {
+			for(Osm.Way way : ways.values()) {
 
 				double length = 0.0;
-				OsmParser.OsmNode lastNode = nodes.get(way.nodes.get(0));
+				Osm.Node lastNode = nodes.get(way.nodes.get(0));
 				for(int i = 1; i < way.nodes.size(); i++) {
-					OsmParser.OsmNode node = nodes.get(way.nodes.get(i));
+					Osm.Node node = nodes.get(way.nodes.get(i));
 					if(node.ways > 1) {
 						length = 0.0;
 						lastNode = node;
@@ -272,12 +199,12 @@ public class OsmMultimodalNetworkConverter {
 				}
 			}
 			// verify we did not mark nodes as unused that build a loop
-			for(OsmParser.OsmWay way : ways.values()) {
+			for(Osm.Way way : ways.values()) {
 				int prevRealNodeIndex = 0;
-				OsmParser.OsmNode prevRealNode = nodes.get(way.nodes.get(prevRealNodeIndex));
+				Osm.Node prevRealNode = nodes.get(way.nodes.get(prevRealNodeIndex));
 
 				for(int i = 1; i < way.nodes.size(); i++) {
-					OsmParser.OsmNode node = nodes.get(way.nodes.get(i));
+					Osm.Node node = nodes.get(way.nodes.get(i));
 					if(node.used) {
 						if(prevRealNode == node) {
 						/* We detected a loop between two "real" nodes.
@@ -289,7 +216,7 @@ public class OsmMultimodalNetworkConverter {
 							double nextNodeToKeep = prevRealNodeIndex + increment;
 							for(double j = nextNodeToKeep; j < i; j += increment) {
 								int index = (int) Math.floor(j);
-								OsmParser.OsmNode intermediaryNode = nodes.get(way.nodes.get(index));
+								Osm.Node intermediaryNode = nodes.get(way.nodes.get(index));
 								intermediaryNode.used = true;
 							}
 						}
@@ -301,22 +228,22 @@ public class OsmMultimodalNetworkConverter {
 		}
 
 		// create the required nodes
-		for(OsmParser.OsmNode node : nodes.values()) {
+		for(Osm.Node node : nodes.values()) {
 			if(node.used) {
-				Node nn = this.network.getFactory().createNode(Id.create(node.id, Node.class), node.coord);
+				org.matsim.api.core.v01.network.Node nn = this.network.getFactory().createNode(Id.create(node.id, org.matsim.api.core.v01.network.Node.class), transformation.transform(node.coord));
 				this.network.addNode(nn);
 			}
 		}
 
 		// create the links
 		this.id = 1;
-		for(OsmParser.OsmWay way : ways.values()) {
-			OsmParser.OsmNode fromNode = nodes.get(way.nodes.get(0));
+		for(Osm.Way way : ways.values()) {
+			Osm.Node fromNode = nodes.get(way.nodes.get(0));
 			double length = 0.0;
-			OsmParser.OsmNode lastToNode = fromNode;
+			Osm.Node lastToNode = fromNode;
 			if(fromNode.used) {
 				for(int i = 1, n = way.nodes.size(); i < n; i++) {
-					OsmParser.OsmNode toNode = nodes.get(way.nodes.get(i));
+					Osm.Node toNode = nodes.get(way.nodes.get(i));
 					if(toNode != lastToNode) {
 						length += CoordUtils.calcEuclideanDistance(lastToNode.coord, toNode.coord);
 						if(toNode.used) {
@@ -369,7 +296,7 @@ public class OsmMultimodalNetworkConverter {
 	/**
 	 * Creates a MATSim link from osm data
 	 */
-	private void createLink(final Network network, final OsmParser.OsmWay way, final OsmParser.OsmNode fromNode, final OsmParser.OsmNode toNode, final double length) {
+	private void createLink(final Network network, final Osm.Way way, final Osm.Node fromNode, final Osm.Node toNode, final double length) {
 		double nofLanes;
 		double laneCapacity;
 		double freespeed;
@@ -507,7 +434,7 @@ public class OsmMultimodalNetworkConverter {
 		Set<Long> containingRelations = relationMembers.get(way.id);
 		if(containingRelations != null) {
 			for(Long containingRelationId : containingRelations) {
-				OsmParser.OsmRelation rel = osmData.getRelations().get(containingRelationId);
+				Osm.Relation rel = osmData.getRelations().get(containingRelationId);
 				String mode = rel.tags.get(Osm.Key.ROUTE);
 				if(mode != null) {
 					if(mode.equals(Osm.OsmValue.TROLLEYBUS)) {
@@ -519,8 +446,8 @@ public class OsmMultimodalNetworkConverter {
 		}
 
 		// only create link, if both nodes were found, node could be null, since nodes outside a layer were dropped
-		Id<Node> fromId = Id.create(fromNode.id, Node.class);
-		Id<Node> toId = Id.create(toNode.id, Node.class);
+		Id<org.matsim.api.core.v01.network.Node> fromId = Id.create(fromNode.id, org.matsim.api.core.v01.network.Node.class);
+		Id<org.matsim.api.core.v01.network.Node> toId = Id.create(toNode.id, org.matsim.api.core.v01.network.Node.class);
 		if(network.getNodes().get(fromId) != null && network.getNodes().get(toId) != null) {
 			String origId = Long.toString(way.id);
 
@@ -555,7 +482,7 @@ public class OsmMultimodalNetworkConverter {
 	 * Runs the network cleaner on the street network.
 	 */
 	private void cleanRoadNetwork() {
-		String tmpFilename = "tmpNetwork.xml.gz";
+		String tmpFilename = "tmpNetwork"+osmData+".xml.gz";
 		Set<String> roadModes = CollectionUtils.stringToSet("car,bus");
 		Network roadNetwork = NetworkTools.createFilteredNetworkByLinkMode(network, roadModes);
 		Network restNetwork = NetworkTools.createFilteredNetworkExceptLinkMode(network, roadModes);
@@ -567,10 +494,6 @@ public class OsmMultimodalNetworkConverter {
 		new NetworkCleaner().run(roadNetworkReadAgain);
 		NetworkTools.integrateNetwork(roadNetworkReadAgain, restNetwork);
 		this.network = roadNetworkReadAgain;
-	}
-
-	private void writeNetwork() {
-		NetworkTools.writeNetwork(this.network, this.config.getOutputNetworkFile());
 	}
 
 
