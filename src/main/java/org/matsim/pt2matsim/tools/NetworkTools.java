@@ -27,7 +27,6 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.NetworkFactory;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.core.network.NetworkImpl;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkTransform;
 import org.matsim.core.network.filter.NetworkFilterManager;
@@ -87,27 +86,28 @@ public class NetworkTools {
 
 	/**
 	 * Returns the nearest link for the given coordinate.
-	 * Looks for nodes within search radius of coord (using {@link NetworkImpl#getNearestNodes},
+	 * Looks for nodes within search radius of coord (using {@link NetworkUtils#getNearestNodes},
 	 * fetches all in- and outlinks returns the link with the smallest distance
 	 * to the given coordinate. If there are two opposite links, the link with
 	 * the coordinate on its right side is returned.<p/>
 	 *
+	 * NOTE: In contrast to {@link NetworkUtils#getNearestLink}, this method looks for the
+	 * nearest link passing the coordinate from a reasonable set of nearby nodes instead
+	 * of the closest link originating from or ending in the closest node.
+	 *
 	 * @param network (instance of NetworkImpl)
 	 * @param coord   the coordinate
+	 * @param nodeSearchRadius links from/to nodes within this radius are considered
 	 */
-	public static Link getNearestLink(Network network, Coord coord) {
-		double nodeSearchRadius = 1000.0;
-
+	public static Link getNearestLink(Network network, Coord coord, double nodeSearchRadius) {
 		Link closestLink = null;
 		double minDistance = Double.MAX_VALUE;
 
-		Collection<Node> nearestNodes = ((NetworkImpl) network).getNearestNodes(coord, nodeSearchRadius);
-		//Collection<Node> nearestNodes = NetworkUtils.getNearestNodes(network, coord, nodeSearchRadius);
+		Collection<Node> nearestNodes = NetworkUtils.getNearestNodes(network, coord, nodeSearchRadius);
 
 		while(nearestNodes.size() == 0) {
 			nodeSearchRadius *= 2;
-			nearestNodes = ((NetworkImpl) network).getNearestNodes(coord, nodeSearchRadius);
-			//nearestNodes = NetworkUtils.getNearestNodes(network, coord, nodeSearchRadius);
+			nearestNodes = NetworkUtils.getNearestNodes(network, coord, nodeSearchRadius);
 		}
 		// check every in- and outlink of each node
 		for(Node node : nearestNodes) {
@@ -137,7 +137,7 @@ public class NetworkTools {
 	}
 
 	/**
-	 * Looks for nodes within search radius of <tt>coord</tt> (using {@link NetworkImpl#getNearestNodes},
+	 * Looks for nodes within search radius of <tt>coord</tt> (using {@link NetworkUtils#getNearestNodes},
 	 * fetches all in- and outlinks and sorts them ascending by their
 	 * distance to the coordinates given.
 	 * <p/>
@@ -163,8 +163,7 @@ public class NetworkTools {
 	 */
 	public static List<Link> findClosestLinks(Network network, Coord coord, double nodeSearchRadius, int maxNLinks, double toleranceFactor, Set<String> networkTransportModes, double maxLinkDistance) {
 		List<Link> closestLinks = new ArrayList<>();
-		Collection<Node> nearestNodes = ((NetworkImpl) network).getNearestNodes(coord, nodeSearchRadius);
-		//Collection<Node> nearestNodes = NetworkUtils.getNearestNodes(network, coord, nodeSearchRadius);
+		Collection<Node> nearestNodes = NetworkUtils.getNearestNodes(network, coord, nodeSearchRadius);
 
 		if(nearestNodes.size() != 0) {
 			// fetch every in- and outlink of each node
