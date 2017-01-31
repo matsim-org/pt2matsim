@@ -24,7 +24,6 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.core.network.MatsimNetworkReader;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.collections.Tuple;
@@ -327,7 +326,6 @@ public class PlausibilityCheck {
 	public static void setLogLevels() {
 		Logger.getLogger(MGC.class).setLevel(Level.ERROR);
 		Logger.getLogger(MatsimFileTypeGuesser.class).setLevel(Level.ERROR);
-		Logger.getLogger(MatsimNetworkReader.class).setLevel(Level.ERROR);
 		Logger.getLogger(Network.class).setLevel(Level.ERROR);
 		Logger.getLogger(Node.class).setLevel(Level.ERROR);
 		Logger.getLogger(Link.class).setLevel(Level.ERROR);
