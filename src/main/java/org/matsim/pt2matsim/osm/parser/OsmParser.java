@@ -24,7 +24,6 @@ import org.matsim.api.core.v01.Coord;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.io.UncheckedIOException;
-import org.matsim.pt2matsim.osm.lib.OsmData;
 import org.matsim.pt2matsim.osm.parser.handler.OsmHandler;
 import org.matsim.pt2matsim.osm.parser.handler.OsmNodeHandler;
 import org.matsim.pt2matsim.osm.parser.handler.OsmRelationHandler;
@@ -35,7 +34,7 @@ import java.util.*;
 /**
  * Based on OsmParser by mrieser / Senozon AG
  */
-public class OsmParser implements OsmData {
+public class OsmParser {
 
 	private static final Logger log = Logger.getLogger(OsmParser.class);
 

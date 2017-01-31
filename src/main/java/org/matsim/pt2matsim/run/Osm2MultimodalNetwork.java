@@ -18,8 +18,13 @@
 
 package org.matsim.pt2matsim.run;
 
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.osm.OsmMultimodalNetworkConverter;
+import org.matsim.pt2matsim.osm.lib.OsmData;
+import org.matsim.pt2matsim.osm.lib.OsmDataImpl;
+import org.matsim.pt2matsim.tools.NetworkTools;
 
 /**
  * Run this class to create a multimodal MATSim network from OSM.
@@ -51,7 +56,15 @@ public class Osm2MultimodalNetwork {
 	 * @param configFile the config.xml file
 	 */
 	public static void run(String configFile) {
-		new OsmMultimodalNetworkConverter(configFile).run();
+		Config configAll = ConfigUtils.loadConfig(configFile, new OsmConverterConfigGroup());
+		OsmConverterConfigGroup config = ConfigUtils.addOrGetModule(configAll, OsmConverterConfigGroup.GROUP_NAME, OsmConverterConfigGroup.class );
+
+		OsmData osmData = new OsmDataImpl(configFile);
+
+		OsmMultimodalNetworkConverter converter = new OsmMultimodalNetworkConverter(osmData);
+		converter.convert(config);
+
+		NetworkTools.writeNetwork(converter.getNetwork(), config.getOutputNetworkFile());
 	}
 
 	/**

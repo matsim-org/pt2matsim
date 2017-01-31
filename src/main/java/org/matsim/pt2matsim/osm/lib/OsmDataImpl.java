@@ -18,13 +18,45 @@
 
 package org.matsim.pt2matsim.osm.lib;
 
+import org.matsim.pt2matsim.osm.parser.OsmParser;
+
+import java.util.Map;
+
 /**
  * @author polettif
  */
-public class OsmDataImpl {
+public class OsmDataImpl implements OsmData{
 
-	public OsmDataImpl() {
+	private final Map<Long, OsmParser.OsmNode> nodes;
+	private final Map<Long, OsmParser.OsmRelation> relations;
+	private final Map<Long, OsmParser.OsmWay> ways;
 
+
+	public OsmDataImpl(String osmFile) {
+		TagFilter[] filters = TagFilter.getDefaultPTFilter();
+
+		OsmParser parser = new OsmParser();
+		OsmParserHandler handler = new OsmParserHandler(filters);
+		parser.addHandler(handler);
+		parser.run(osmFile);
+
+		this.ways = handler.getWays();
+		this.nodes = handler.getNodes();
+		this.relations = handler.getRelations();
 	}
 
+	@Override
+	public Map<Long, OsmParser.OsmNode> getNodes() {
+		return nodes;
+	}
+
+	@Override
+	public Map<Long, OsmParser.OsmRelation> getRelations() {
+		return relations;
+	}
+
+	@Override
+	public Map<Long, OsmParser.OsmWay> getWays() {
+		return ways;
+	}
 }
