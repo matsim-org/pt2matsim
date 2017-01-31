@@ -39,7 +39,11 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.io.UncheckedIOException;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
-import org.matsim.pt2matsim.osm.lib.*;
+import org.matsim.pt2matsim.osm.lib.Osm;
+import org.matsim.pt2matsim.osm.lib.OsmData;
+import org.matsim.pt2matsim.osm.lib.OsmParserHandler;
+import org.matsim.pt2matsim.osm.lib.TagFilter;
+import org.matsim.pt2matsim.osm.parser.OsmParser;
 import org.matsim.pt2matsim.tools.NetworkTools;
 
 import java.io.File;
@@ -59,6 +63,8 @@ public class OsmMultimodalNetworkConverter {
 	protected final OsmConverterConfigGroup config;
 	protected Network network;
 	protected final CoordinateTransformation transformation;
+
+	protected OsmData osmData;
 
 	/**
 	 *  Maps for nodes, ways and relations
@@ -87,6 +93,7 @@ public class OsmMultimodalNetworkConverter {
 	/**
 	 * Constructor reading config from file.
 	 */
+	@Deprecated
 	public OsmMultimodalNetworkConverter(final String osmConverterConfigFile) {
 		Config configAll = ConfigUtils.loadConfig(osmConverterConfigFile, new OsmConverterConfigGroup() ) ;
 		this.config = ConfigUtils.addOrGetModule(configAll, OsmConverterConfigGroup.GROUP_NAME, OsmConverterConfigGroup.class);
@@ -97,6 +104,7 @@ public class OsmMultimodalNetworkConverter {
 	/**
 	 * Constructor using the a OsmConverterConfigGroup config.
 	 */
+	@Deprecated
 	public OsmMultimodalNetworkConverter(final OsmConverterConfigGroup config) {
 		this.config = config;
 		this.network = NetworkTools.createNetwork();
@@ -128,9 +136,9 @@ public class OsmMultimodalNetworkConverter {
 	private void readWayParams() {
 		for(ConfigGroup e : config.getParameterSets(OsmConverterConfigGroup.OsmWayParams.SET_NAME)) {
 			OsmConverterConfigGroup.OsmWayParams w = (OsmConverterConfigGroup.OsmWayParams) e;
-			if(w.getOsmKey().equals(OsmTag.HIGHWAY)) {
+			if(w.getOsmKey().equals(Osm.Key.HIGHWAY)) {
 				highwayParams.put(w.getOsmValue(), w);
-			} else if(w.getOsmKey().equals(OsmTag.RAILWAY)) {
+			} else if(w.getOsmKey().equals(Osm.Key.RAILWAY)) {
 				railwayParams.put(w.getOsmValue(), w);
 			}
 		}
@@ -141,26 +149,25 @@ public class OsmMultimodalNetworkConverter {
 	 * @throws UncheckedIOException
 	 */
 	private void parse() throws UncheckedIOException {
-		TagFilter parserWayFilter = new TagFilter();
-		parserWayFilter.add(OsmTag.HIGHWAY);
-		parserWayFilter.add(OsmTag.RAILWAY);
-		parserWayFilter.addException(OsmTag.SERVICE);
+		TagFilter parserWayFilter = new TagFilter(Osm.Tag.WAY);
+		parserWayFilter.add(Osm.Key.HIGHWAY);
+		parserWayFilter.add(Osm.Key.RAILWAY);
+		parserWayFilter.addException(Osm.Key.SERVICE);
 
-		TagFilter parserRelationFilter = new TagFilter();
-		parserRelationFilter.add(OsmTag.ROUTE, OsmValue.BUS);
-		parserRelationFilter.add(OsmTag.ROUTE, OsmValue.TROLLEYBUS);
-		parserRelationFilter.add(OsmTag.ROUTE, OsmValue.RAIL);
-		parserRelationFilter.add(OsmTag.ROUTE, OsmValue.TRAM);
-		parserRelationFilter.add(OsmTag.ROUTE, OsmValue.LIGHT_RAIL);
-		parserRelationFilter.add(OsmTag.ROUTE, OsmValue.FUNICULAR);
-		parserRelationFilter.add(OsmTag.ROUTE, OsmValue.MONORAIL);
-		parserRelationFilter.add(OsmTag.ROUTE, OsmValue.SUBWAY);
+		TagFilter parserRelationFilter = new TagFilter(Osm.Tag.RELATION);
+		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.BUS);
+		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.TROLLEYBUS);
+		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.RAIL);
+		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.TRAM);
+		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.LIGHT_RAIL);
+		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.FUNICULAR);
+		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.MONORAIL);
+		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.SUBWAY);
 
 		OsmParser parser = new OsmParser(transformation);
-		OsmParserHandler handler = new OsmParserHandler();
-		handler.addFilter(null, parserWayFilter, parserRelationFilter);
+		OsmParserHandler handler = new OsmParserHandler(parserWayFilter, parserRelationFilter);
 		parser.addHandler(handler);
-		parser.readFile(this.config.getOsmFile());
+		parser.run(this.config.getOsmFile());
 
 		this.ways = handler.getWays();
 		this.nodes = handler.getNodes();
@@ -179,12 +186,12 @@ public class OsmMultimodalNetworkConverter {
 			}
 		}
 
-		TagFilter serviceRailTracksFilter = new TagFilter();
-		serviceRailTracksFilter.add(OsmTag.SERVICE);
+		TagFilter serviceRailTracksFilter = new TagFilter(Osm.Tag.WAY);
+		serviceRailTracksFilter.add(Osm.Key.SERVICE);
 
 		// remove unusable ways
 		for(OsmParser.OsmWay way : ways.values()) {
-			if(!highwayParams.containsKey(way.tags.get(OsmTag.HIGHWAY)) && !railwayParams.containsKey(way.tags.get(OsmTag.RAILWAY)) && !relationMembers.containsKey(way.id)) {
+			if(!highwayParams.containsKey(way.tags.get(Osm.Key.HIGHWAY)) && !railwayParams.containsKey(way.tags.get(Osm.Key.RAILWAY)) && !relationMembers.containsKey(way.id)) {
 				way.used = false;
 			} else if(!this.nodes.containsKey(way.nodes.get(0)) || !this.nodes.containsKey(way.nodes.get(way.nodes.size() - 1))) {
 				way.used = false;
@@ -350,16 +357,16 @@ public class OsmMultimodalNetworkConverter {
 		boolean busOnlyLink = false;
 
 		// load defaults
-		String highway = way.tags.get(OsmTag.HIGHWAY);
-		String railway = way.tags.get(OsmTag.RAILWAY);
+		String highway = way.tags.get(Osm.Key.HIGHWAY);
+		String railway = way.tags.get(Osm.Key.RAILWAY);
 		OsmConverterConfigGroup.OsmWayParams wayValues;
 		if(highway != null) {
 			wayValues = this.highwayParams.get(highway);
 			if(wayValues == null) {
 				// check if bus route is on link
-				if(way.tags.containsKey(OsmTag.PSV)) {
+				if(way.tags.containsKey(Osm.Key.PSV)) {
 					busOnlyLink = true;
-					wayValues = highwayParams.get(OsmValue.UNCLASSIFIED);
+					wayValues = highwayParams.get(Osm.OsmValue.UNCLASSIFIED);
 				} else {
 					this.unknownHighways.add(highway);
 					return;
@@ -383,12 +390,12 @@ public class OsmMultimodalNetworkConverter {
 
 		// check if there are tags that overwrite defaults
 		// - check tag "junction"
-		if("roundabout".equals(way.tags.get(OsmTag.JUNCTION))) {
+		if("roundabout".equals(way.tags.get(Osm.Key.JUNCTION))) {
 			// if "junction" is not set in tags, get() returns null and equals() evaluates to false
 			oneway = true;
 		}
 		// - check tag "oneway"
-		String onewayTag = way.tags.get(OsmTag.ONEWAY);
+		String onewayTag = way.tags.get(Osm.Key.ONEWAY);
 		if(onewayTag != null) {
 			if("yes".equals(onewayTag)) {
 				oneway = true;
@@ -413,7 +420,7 @@ public class OsmMultimodalNetworkConverter {
 			}
 		}
 		// - check tag "maxspeed"
-		String maxspeedTag = way.tags.get(OsmTag.MAXSPEED);
+		String maxspeedTag = way.tags.get(Osm.Key.MAXSPEED);
 		if(maxspeedTag != null) {
 			try {
 				freespeed = Double.parseDouble(maxspeedTag) / 3.6; // convert km/h to m/s
@@ -434,7 +441,7 @@ public class OsmMultimodalNetworkConverter {
 			}
 		}
 		// - check tag "lanes"
-		String lanesTag = way.tags.get(OsmTag.LANES);
+		String lanesTag = way.tags.get(Osm.Key.LANES);
 		if(lanesTag != null) {
 			try {
 				double tmp = Double.parseDouble(lanesTag);
@@ -479,10 +486,10 @@ public class OsmMultimodalNetworkConverter {
 		if(containingRelations != null) {
 			for(Long containingRelationId : containingRelations) {
 				OsmParser.OsmRelation rel = relations.get(containingRelationId);
-				String mode = rel.tags.get(OsmTag.ROUTE);
+				String mode = rel.tags.get(Osm.Key.ROUTE);
 				if(mode != null) {
-					if(mode.equals(OsmValue.TROLLEYBUS)) {
-						mode = OsmValue.BUS;
+					if(mode.equals(Osm.OsmValue.TROLLEYBUS)) {
+						mode = Osm.OsmValue.BUS;
 					}
 					modes.add(mode);
 				}

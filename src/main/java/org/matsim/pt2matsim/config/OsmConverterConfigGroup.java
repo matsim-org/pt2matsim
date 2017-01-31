@@ -27,8 +27,7 @@ import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt2matsim.osm.OsmMultimodalNetworkConverter;
-import org.matsim.pt2matsim.osm.lib.OsmTag;
-import org.matsim.pt2matsim.osm.lib.OsmValue;
+import org.matsim.pt2matsim.osm.lib.Osm;
 
 import java.util.Collections;
 import java.util.Map;
@@ -165,24 +164,24 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		Set<String> railSingleton = Collections.singleton("rail");
 
 		OsmConverterConfigGroup defaultConfig = new OsmConverterConfigGroup();
-		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.MOTORWAY, 		OsmTag.HIGHWAY, 2, 120.0 / 3.6, 1.0, 2000, 	true, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.MOTORWAY,		OsmTag.HIGHWAY, 2, 120.0 / 3.6, 1.0, 2000, 	true, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.MOTORWAY_LINK,	OsmTag.HIGHWAY, 1, 80.0 / 3.6, 1.0, 1500, 	true, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.TRUNK,			OsmTag.HIGHWAY, 1, 80.0 / 3.6, 1.0, 2000, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.TRUNK_LINK,		OsmTag.HIGHWAY, 1, 50.0 / 3.6, 1.0, 1500, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.PRIMARY,		OsmTag.HIGHWAY, 1, 80.0 / 3.6, 1.0, 1500, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.PRIMARY_LINK,	OsmTag.HIGHWAY, 1, 60.0 / 3.6, 1.0, 1500, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.SECONDARY,		OsmTag.HIGHWAY, 1, 60.0 / 3.6, 1.0, 1000, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.TERTIARY,		OsmTag.HIGHWAY, 1, 50.0 / 3.6, 1.0, 600, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.MINOR,			OsmTag.HIGHWAY, 1, 40.0 / 3.6, 1.0, 600, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.UNCLASSIFIED,	OsmTag.HIGHWAY, 1, 50.0 / 3.6, 1.0, 600, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.RESIDENTIAL,	OsmTag.HIGHWAY, 1, 30.0 / 3.6, 1.0, 600, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.LIVING_STREET,	OsmTag.HIGHWAY, 1, 15.0 / 3.6, 1.0, 300, 	false, carSingleton));
-//		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.SERVICE,		OsmTag.HIGHWAY, 1, 15.0 / 3.6, 1.0, 200, 	false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.OsmValue.MOTORWAY, 		Osm.Key.HIGHWAY, 2, 120.0 / 3.6, 1.0, 2000, 	true, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.OsmValue.MOTORWAY,		Osm.Key.HIGHWAY, 2, 120.0 / 3.6, 1.0, 2000, 	true, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.OsmValue.MOTORWAY_LINK,	Osm.Key.HIGHWAY, 1, 80.0 / 3.6, 1.0, 1500, 	true, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.OsmValue.TRUNK,			Osm.Key.HIGHWAY, 1, 80.0 / 3.6, 1.0, 2000, 	false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.OsmValue.TRUNK_LINK,		Osm.Key.HIGHWAY, 1, 50.0 / 3.6, 1.0, 1500, 	false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.OsmValue.PRIMARY,		Osm.Key.HIGHWAY, 1, 80.0 / 3.6, 1.0, 1500, 	false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.OsmValue.PRIMARY_LINK,	Osm.Key.HIGHWAY, 1, 60.0 / 3.6, 1.0, 1500, 	false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.OsmValue.SECONDARY,		Osm.Key.HIGHWAY, 1, 60.0 / 3.6, 1.0, 1000, 	false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.OsmValue.TERTIARY,		Osm.Key.HIGHWAY, 1, 50.0 / 3.6, 1.0, 600, 	false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.OsmValue.MINOR,			Osm.Key.HIGHWAY, 1, 40.0 / 3.6, 1.0, 600, 	false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.OsmValue.UNCLASSIFIED,	Osm.Key.HIGHWAY, 1, 50.0 / 3.6, 1.0, 600, 	false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.OsmValue.RESIDENTIAL,	Osm.Key.HIGHWAY, 1, 30.0 / 3.6, 1.0, 600, 	false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.OsmValue.LIVING_STREET,	Osm.Key.HIGHWAY, 1, 15.0 / 3.6, 1.0, 300, 	false, carSingleton));
+//		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.SERVICE,		Key.HIGHWAY, 1, 15.0 / 3.6, 1.0, 200, 	false, carSingleton));
 
-		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.RAIL,			OsmTag.RAILWAY,	1, 160.0 / 3.6, 1.0, 9999, false, railSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.TRAM,			OsmTag.RAILWAY,	1, 40.0 / 3.6, 1.0, 9999, true, railSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.LIGHT_RAIL,		OsmTag.RAILWAY,	1, 80.0 / 3.6, 1.0, 9999, false, railSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.OsmValue.RAIL,			Osm.Key.RAILWAY,	1, 160.0 / 3.6, 1.0, 9999, false, railSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.OsmValue.TRAM,			Osm.Key.RAILWAY,	1, 40.0 / 3.6, 1.0, 9999, true, railSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.OsmValue.LIGHT_RAIL,		Osm.Key.RAILWAY,	1, 80.0 / 3.6, 1.0, 9999, false, railSingleton));
 
 		return defaultConfig;
 	}

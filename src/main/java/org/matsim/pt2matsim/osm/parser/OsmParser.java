@@ -17,24 +17,25 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.osm.lib;
+package org.matsim.pt2matsim.osm.parser;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.io.UncheckedIOException;
-import org.matsim.pt2matsim.osm.lib.handler.OsmHandler;
-import org.matsim.pt2matsim.osm.lib.handler.OsmNodeHandler;
-import org.matsim.pt2matsim.osm.lib.handler.OsmRelationHandler;
-import org.matsim.pt2matsim.osm.lib.handler.OsmWayHandler;
+import org.matsim.pt2matsim.osm.lib.OsmData;
+import org.matsim.pt2matsim.osm.parser.handler.OsmHandler;
+import org.matsim.pt2matsim.osm.parser.handler.OsmNodeHandler;
+import org.matsim.pt2matsim.osm.parser.handler.OsmRelationHandler;
+import org.matsim.pt2matsim.osm.parser.handler.OsmWayHandler;
 
 import java.util.*;
 
 /**
- * @author mrieser / Senozon AG
+ * Based on OsmParser by mrieser / Senozon AG
  */
-public class OsmParser {
+public class OsmParser implements OsmData {
 
 	private static final Logger log = Logger.getLogger(OsmParser.class);
 
@@ -53,7 +54,7 @@ public class OsmParser {
 		this.handlers.add(handler);
 	}
 
-	public void readFile(final String filename) throws UncheckedIOException {
+	public void run(final String filename) throws UncheckedIOException {
 		OsmHandler distributor = new DataDistributor(this.handlers);
 		if (filename.toLowerCase(Locale.ROOT).endsWith(".osm.pbf")) {
 			log.error("*.osm.pbf are not supported. Use *.osm (xml format) instead.");

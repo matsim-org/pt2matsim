@@ -40,7 +40,13 @@ public class TagFilter {
 	private final Map<String, Set<String>> keyValuePairs = new HashMap<>();
 	private final Map<String, Set<String>> keyValueExceptions = new HashMap<>();
 
-	public TagFilter() {
+	/**
+	 * Defines for which tag (node, way, relation) this filter applies.
+	 */
+	private final Osm.Tag tagType;
+
+	public TagFilter(Osm.Tag tag) {
+		this.tagType = tag;
 	}
 
 	/**
@@ -106,5 +112,21 @@ public class TagFilter {
 
 	public void addException(final String key) {
 		addException(key, null);
+	}
+
+	public Osm.Tag getTag() {
+		return tagType;
+	}
+
+	/**
+	 * Merges the other filter into this filter
+	 *
+	 */
+	public void mergeFilter(TagFilter otherFilter) {
+		if(!otherFilter.getTag().equals(tagType)) {
+			throw new IllegalArgumentException("Filter types not compatible!");
+		}
+		this.keyValuePairs.putAll(otherFilter.keyValuePairs);
+		this.keyValueExceptions.putAll(otherFilter.keyValueExceptions);
 	}
 }

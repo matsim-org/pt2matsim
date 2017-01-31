@@ -1,9 +1,8 @@
 /* *********************************************************************** *
  * project: org.matsim.*
- *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2013 by the members listed in the COPYING,        *
+ * copyright       : (C) 2016 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -17,15 +16,15 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.osm.lib.handler;
-
-import org.matsim.pt2matsim.osm.lib.OsmParser.OsmRelation;
+package org.matsim.pt2matsim.osm.lib;
 
 /**
- * @author mrieser / Senozon AG
+ * @author polettif
  */
-public interface OsmRelationHandler extends OsmHandler {
+public class OsmDataImpl {
 
-	void handleRelation(final OsmRelation relation);
+	public OsmDataImpl() {
+
+	}
 
 }
