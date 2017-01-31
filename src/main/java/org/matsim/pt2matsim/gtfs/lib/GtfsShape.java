@@ -45,8 +45,8 @@ public class GtfsShape implements RouteShape {
 
 	private double extentSWx = Double.MAX_VALUE;
 	private double extentSWy = Double.MAX_VALUE;
-	private double extentNEx = Double.MAX_VALUE;
-	private double extentNEy = Double.MAX_VALUE;
+	private double extentNEx = Double.MIN_VALUE;
+	private double extentNEy = Double.MIN_VALUE;
 
 	public GtfsShape(String id) {
 		this.id = Id.create(id, RouteShape.class);
@@ -112,7 +112,7 @@ public class GtfsShape implements RouteShape {
 	 * @return the maximal SW and NE corners of the shape
 	 */
 	public Coord[] getExtent() {
-		return new Coord[]{new Coord(Double.MAX_VALUE, Double.MAX_VALUE), new Coord(Double.MIN_VALUE, Double.MIN_VALUE)};
+		return new Coord[]{new Coord(extentSWx, extentSWy), new Coord(extentNEx, extentNEy)};
 	}
 
 }
