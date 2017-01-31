@@ -18,21 +18,23 @@
 
 package org.matsim.pt2matsim.osm.lib;
 
-import org.apache.log4j.Logger;
-import org.matsim.pt2matsim.osm.lib.handler.OsmNodeHandler;
-import org.matsim.pt2matsim.osm.lib.handler.OsmRelationHandler;
-import org.matsim.pt2matsim.osm.lib.handler.OsmWayHandler;
+import org.matsim.pt2matsim.osm.parser.OsmParser;
+import org.matsim.pt2matsim.osm.parser.handler.OsmNodeHandler;
+import org.matsim.pt2matsim.osm.parser.handler.OsmRelationHandler;
+import org.matsim.pt2matsim.osm.parser.handler.OsmWayHandler;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Handler to read out osm data (nodes, ways and relations). Just stores the data.
+ *
+ * It is possible to add filters to reduce overhead.
+ *
+ * @author polettif
  */
 public class OsmParserHandler implements OsmNodeHandler, OsmRelationHandler, OsmWayHandler {
 	
-	private static final Logger log = Logger.getLogger(OsmParserHandler.class);
-
 	private TagFilter nodeFilter;
 	private TagFilter wayFilter;
 	private TagFilter relationFilter;
@@ -44,10 +46,32 @@ public class OsmParserHandler implements OsmNodeHandler, OsmRelationHandler, Osm
 	public OsmParserHandler() {
 	}
 
-	public void addFilter(TagFilter nodeFilter, TagFilter wayFilter, TagFilter relationFilter) {
-		this.nodeFilter = nodeFilter;
-		this.wayFilter = wayFilter;
-		this.relationFilter = relationFilter;
+	public OsmParserHandler(TagFilter... filters) {
+		for(TagFilter filter : filters) {
+			switch(filter.getTag()) {
+				case NODE:
+					if(this.nodeFilter == null) {
+						this.nodeFilter = filter;
+					} else {
+						this.nodeFilter.mergeFilter(filter);
+					}
+					break;
+				case WAY:
+					if(wayFilter == null) {
+						wayFilter = filter;
+					} else {
+						wayFilter.mergeFilter(filter);
+					}
+					break;
+				case RELATION:
+					if(relationFilter == null) {
+						relationFilter = filter;
+					} else {
+						relationFilter.mergeFilter(filter);
+					}
+					break;
+			}
+		}
 	}
 
 	public Map<Long, OsmParser.OsmWay> getWays() {

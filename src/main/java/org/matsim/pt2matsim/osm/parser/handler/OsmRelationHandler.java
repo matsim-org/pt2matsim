@@ -1,8 +1,9 @@
 /* *********************************************************************** *
  * project: org.matsim.*
+ *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2016 by the members listed in the COPYING,        *
+ * copyright       : (C) 2013 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -16,27 +17,15 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.osm.lib;
+package org.matsim.pt2matsim.osm.parser.handler;
+
+import org.matsim.pt2matsim.osm.parser.OsmParser.OsmRelation;
 
 /**
- * OSM tags used by the converters
+ * @author mrieser / Senozon AG
  */
-public class OsmTag {
+public interface OsmRelationHandler extends OsmHandler {
 
-	public static final String NAME = "name";
-	public static final String ROUTE = "route";
-	public static final String ROUTE_MASTER = "route_master";
+	void handleRelation(final OsmRelation relation);
 
-	public static final String PUBLIC_TRANSPORT = "public_transport";
-
-	public static final String RAILWAY = "railway";
-	public static final String HIGHWAY = "highway";
-	public static final String SERVICE = "service";
-
-	public final static String LANES = "lanes";
-	public final static String MAXSPEED = "maxspeed";
-	public final static String JUNCTION = "junction";
-	public final static String ONEWAY = "oneway";
-	public final static String ACCESS = "access";
-	public static final String PSV = "psv";
 }

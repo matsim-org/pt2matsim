@@ -17,15 +17,15 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.osm.lib.handler;
+package org.matsim.pt2matsim.osm.parser.handler;
 
-import org.matsim.pt2matsim.osm.lib.OsmParser.OsmWay;
+import org.matsim.pt2matsim.osm.parser.OsmParser.OsmNode;
 
 /**
  * @author mrieser / Senozon AG
  */
-public interface OsmWayHandler extends OsmHandler {
-	
-	void handleWay(final OsmWay way);
+public interface OsmNodeHandler extends OsmHandler {
 
+	void handleNode(final OsmNode node);
+	
 }

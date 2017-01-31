@@ -1,9 +1,8 @@
 /* *********************************************************************** *
  * project: org.matsim.*
- *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2013 by the members listed in the COPYING,        *
+ * copyright       : (C) 2016 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -17,13 +16,14 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.osm.lib.handler;
+package org.matsim.pt2matsim.osm.lib;
 
 /**
- * Base interface of more specialized handlers for osm data entities.
- * 
- * @author mrieser / Senozon AG
+ * Interface to load an osm-xml file. Is used by the osm
+ * network converter (similar to GtfsFeed and GtfsConverter)
+ *
+ * @author polettif
  */
-public interface OsmHandler {
+public interface OsmData {
 
 }

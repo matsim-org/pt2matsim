@@ -17,17 +17,17 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.osm.lib;
+package org.matsim.pt2matsim.osm.parser;
 
 import org.matsim.api.core.v01.Coord;
 import org.matsim.core.utils.io.MatsimXmlParser;
 import org.matsim.core.utils.misc.Counter;
+import org.matsim.pt2matsim.osm.parser.OsmParser.*;
+import org.matsim.pt2matsim.osm.parser.handler.OsmHandler;
+import org.matsim.pt2matsim.osm.parser.handler.OsmNodeHandler;
+import org.matsim.pt2matsim.osm.parser.handler.OsmRelationHandler;
+import org.matsim.pt2matsim.osm.parser.handler.OsmWayHandler;
 import org.xml.sax.Attributes;
-import org.matsim.pt2matsim.osm.lib.OsmParser.*;
-import org.matsim.pt2matsim.osm.lib.handler.OsmHandler;
-import org.matsim.pt2matsim.osm.lib.handler.OsmNodeHandler;
-import org.matsim.pt2matsim.osm.lib.handler.OsmRelationHandler;
-import org.matsim.pt2matsim.osm.lib.handler.OsmWayHandler;
 
 import java.util.Locale;
 import java.util.Stack;
