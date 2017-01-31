@@ -32,8 +32,8 @@
         <dependency>
             <groupId>org.matsim</groupId>
             <artifactId>matsim</artifactId>
-            <version>0.8.0</version>
-            <!--	<version>0.9.0-SNAPSHOT</version> -->
+            <!--<version>0.8.0</version>-->
+            <version>0.9.0-SNAPSHOT</version>
             <!-- use the snapshot if you want to program against the development version
                  (the "SNAPSHOT" means that it will be automatically updated) -->
         </dependency>
@@ -48,7 +48,6 @@
             <artifactId>opencsv</artifactId>
             <version>3.7</version>
         </dependency>
-
         <!-- 		Example of how to add a contrib.  Note that the version numbers need to be consistent with the matsim version above!
         <dependency>
             <groupId>org.matsim.contrib</groupId>
