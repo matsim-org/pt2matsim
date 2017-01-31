@@ -18,6 +18,10 @@
 
 package org.matsim.pt2matsim.osm.lib;
 
+import org.matsim.pt2matsim.osm.parser.OsmParser;
+
+import java.util.Map;
+
 /**
  * Interface to load an osm-xml file. Is used by the osm
  * network converter (similar to GtfsFeed and GtfsConverter)
@@ -26,4 +30,9 @@ package org.matsim.pt2matsim.osm.lib;
  */
 public interface OsmData {
 
+	Map<Long, OsmParser.OsmNode> getNodes();
+
+	Map<Long, OsmParser.OsmRelation> getRelations();
+
+	Map<Long, OsmParser.OsmWay> getWays();
 }

@@ -129,4 +129,27 @@ public class TagFilter {
 		this.keyValuePairs.putAll(otherFilter.keyValuePairs);
 		this.keyValueExceptions.putAll(otherFilter.keyValueExceptions);
 	}
+
+	/**
+	 * @return an array with filters that contain the usual pt filters
+	 */
+	public static TagFilter[] getDefaultPTFilter() {
+		// read osm data
+		TagFilter parserWayFilter = new TagFilter(Osm.Tag.WAY);
+		parserWayFilter.add(Osm.Key.HIGHWAY);
+		parserWayFilter.add(Osm.Key.RAILWAY);
+		parserWayFilter.addException(Osm.Key.SERVICE);
+
+		TagFilter parserRelationFilter = new TagFilter(Osm.Tag.RELATION);
+		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.BUS);
+		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.TROLLEYBUS);
+		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.RAIL);
+		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.TRAM);
+		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.LIGHT_RAIL);
+		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.FUNICULAR);
+		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.MONORAIL);
+		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.SUBWAY);
+
+		return new TagFilter[]{parserWayFilter, parserRelationFilter};
+	}
 }
