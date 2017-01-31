@@ -18,8 +18,6 @@
 
 package org.matsim.pt2matsim.osm.lib;
 
-import org.matsim.pt2matsim.osm.parser.OsmParser;
-
 import java.util.Map;
 
 /**
@@ -30,9 +28,9 @@ import java.util.Map;
  */
 public interface OsmData {
 
-	Map<Long, OsmParser.OsmNode> getNodes();
+	Map<Long, Osm.Node> getNodes();
 
-	Map<Long, OsmParser.OsmRelation> getRelations();
+	Map<Long, Osm.Relation> getRelations();
 
-	Map<Long, OsmParser.OsmWay> getWays();
+	Map<Long, Osm.Way> getWays();
 }

@@ -49,9 +49,9 @@ public class OsmTransitScheduleConverter {
 	private OsmParserHandler handler;
 
 	// parser
-	private Map<Long, OsmParser.OsmNode> nodes;
-	private Map<Long, OsmParser.OsmRelation> relations;
-	private Map<Long, OsmParser.OsmWay> ways;
+	private Map<Long, Osm.Node> nodes;
+	private Map<Long, Osm.Relation> relations;
+	private Map<Long, Osm.Way> ways;
 
 	// filters
 	private final TagFilter stop_area;
@@ -156,14 +156,14 @@ public class OsmTransitScheduleConverter {
 		/**
 		 * Create transitLines via route_masters
 		 */
-		for(OsmParser.OsmRelation relation : relations.values()) {
+		for(Osm.Relation relation : relations.values()) {
 			if(route_master.matches(relation.tags)) {
 				Id<TransitLine> lineId = createLineId(relation);
 				TransitLine newTransitLine = factory.createTransitLine(lineId);
 				newTransitLine.setName(relation.tags.get(Osm.Key.NAME));
 
-				for(OsmParser.OsmRelationMember member : relation.members) {
-					OsmParser.OsmRelation route = relations.get(member.refId);
+				for(Osm.RelationMember member : relation.members) {
+					Osm.Relation route = relations.get(member.refId);
 					// maybe member route does not exist in area
 					if(route != null) {
 						TransitRoute newTransitRoute = createTransitRoute(route);
@@ -180,7 +180,7 @@ public class OsmTransitScheduleConverter {
 		/**
 		 * Create transitRoutes without route_masters
 		 */
-		for(OsmParser.OsmRelation relation : relations.values()) {
+		for(Osm.Relation relation : relations.values()) {
 			if(ptRoute.matches(relation.tags) && !routesWithMaster.contains(relation.id)) {
 				Id<TransitLine> lineId = createLineId(relation);
 
@@ -212,12 +212,12 @@ public class OsmTransitScheduleConverter {
 		Map<Id<TransitStopFacility>, TransitStopFacility> stopFacilities = this.transitSchedule.getFacilities();
 
 		// create facilities from stop_area first
-		for(OsmParser.OsmRelation relation : relations.values()) {
+		for(Osm.Relation relation : relations.values()) {
 			if(stop_area.matches(relation.tags)) {
 				String stopPostAreaId = relation.tags.get(Osm.Key.NAME);
 
 				// create a facility for each member
-				for(OsmParser.OsmRelationMember member : relation.members) {
+				for(Osm.RelationMember member : relation.members) {
 					if(member.role.equals(Osm.OsmValue.STOP)) {
 						TransitStopFacility newStopFacility = createStopFacilityFromOsmNode(nodes.get(member.refId), stopPostAreaId);
 
@@ -230,7 +230,7 @@ public class OsmTransitScheduleConverter {
 		}
 
 		// create other facilities
-		for(OsmParser.OsmNode node : nodes.values()) {
+		for(Osm.Node node : nodes.values()) {
 			if(stop_position.matches(node.tags)) {
 				if(!stopFacilities.containsKey(Id.create(node.id, TransitStopFacility.class))) {
 					this.transitSchedule.addStopFacility(createStopFacilityFromOsmNode(node));
@@ -243,7 +243,7 @@ public class OsmTransitScheduleConverter {
 	 * creates a TransitStopFacility from an OsmNode
 	 * @return the created facility
 	 */
-	private TransitStopFacility createStopFacilityFromOsmNode(OsmParser.OsmNode node, String stopPostAreaId) {
+	private TransitStopFacility createStopFacilityFromOsmNode(Osm.Node node, String stopPostAreaId) {
 		Id<TransitStopFacility> id = Id.create(node.id, TransitStopFacility.class);
 		Coord coord = transformation.transform(node.coord);
 		TransitStopFacility newStopFacility = factory.createTransitStopFacility(id, coord, false);
@@ -252,7 +252,7 @@ public class OsmTransitScheduleConverter {
 		return newStopFacility;
 	}
 
-	private TransitStopFacility createStopFacilityFromOsmNode(OsmParser.OsmNode node) {
+	private TransitStopFacility createStopFacilityFromOsmNode(Osm.Node node) {
 		return createStopFacilityFromOsmNode(node, null);
 	}
 
@@ -260,15 +260,15 @@ public class OsmTransitScheduleConverter {
 	 * Creates a TransitRoute from a relation.
 	 * @return <code>null</code> if the route has stops outside of the area
 	 */
-	private TransitRoute createTransitRoute(OsmParser.OsmRelation relation) {
+	private TransitRoute createTransitRoute(Osm.Relation relation) {
 		List<TransitRouteStop> stopSequenceForward = new ArrayList<>();
 
 		// create different RouteStops and stopFacilities for forward and backward
 		for(int i = 0; i < relation.members.size() - 1; i++) {
-			OsmParser.OsmRelationMember member = relation.members.get(i);
+			Osm.RelationMember member = relation.members.get(i);
 
 			// route Stops
-			if(member.type.equals(OsmParser.OsmRelationMemberType.NODE) && (Osm.OsmValue.STOP.equals(member.role) || Osm.OsmValue.STOP_FORWARD.equals(member.role))) {
+			if(member.type.equals(Osm.Tag.NODE) && (Osm.OsmValue.STOP.equals(member.role) || Osm.OsmValue.STOP_FORWARD.equals(member.role))) {
 				Id<TransitStopFacility> id = Id.create(member.refId, TransitStopFacility.class);
 				TransitStopFacility transitStopFacility = transitSchedule.getFacilities().get(id);
 				if(transitStopFacility == null) {
@@ -298,11 +298,11 @@ public class OsmTransitScheduleConverter {
 		return newTransitRoute;
 	}
 
-	private Id<TransitLine> createLineId(OsmParser.OsmRelation relation) {
+	private Id<TransitLine> createLineId(Osm.Relation relation) {
 		return Id.create(createStringId(relation), TransitLine.class);
 	}
 
-	private String createStringId(OsmParser.OsmRelation relation) {
+	private String createStringId(Osm.Relation relation) {
 		String id;
 		boolean ref = false, operator=false, name=false;
 
@@ -329,7 +329,7 @@ public class OsmTransitScheduleConverter {
 		return id;
 	}
 
-	private Id<TransitLine> createLineId2(OsmParser.OsmRelation relation) {
+	private Id<TransitLine> createLineId2(Osm.Relation relation) {
 		String id;
 		boolean ref = false, operator=false, name=false;
 

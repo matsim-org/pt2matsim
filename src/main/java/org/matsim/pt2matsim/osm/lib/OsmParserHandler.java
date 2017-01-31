@@ -18,7 +18,6 @@
 
 package org.matsim.pt2matsim.osm.lib;
 
-import org.matsim.pt2matsim.osm.parser.OsmParser;
 import org.matsim.pt2matsim.osm.parser.handler.OsmNodeHandler;
 import org.matsim.pt2matsim.osm.parser.handler.OsmRelationHandler;
 import org.matsim.pt2matsim.osm.parser.handler.OsmWayHandler;
@@ -39,9 +38,9 @@ public class OsmParserHandler implements OsmNodeHandler, OsmRelationHandler, Osm
 	private TagFilter wayFilter;
 	private TagFilter relationFilter;
 
-	private final Map<Long, OsmParser.OsmNode> nodes = new HashMap<>();
-	private final Map<Long, OsmParser.OsmRelation> relations = new HashMap<>();
-	private final Map<Long, OsmParser.OsmWay> ways = new HashMap<>();
+	private final Map<Long, Osm.Node> nodes = new HashMap<>();
+	private final Map<Long, Osm.Relation> relations = new HashMap<>();
+	private final Map<Long, Osm.Way> ways = new HashMap<>();
 
 	public OsmParserHandler() {
 	}
@@ -74,34 +73,34 @@ public class OsmParserHandler implements OsmNodeHandler, OsmRelationHandler, Osm
 		}
 	}
 
-	public Map<Long, OsmParser.OsmWay> getWays() {
+	public Map<Long, Osm.Way> getWays() {
 		return ways;
 	}
 
-	public Map<Long, OsmParser.OsmNode> getNodes() {
+	public Map<Long, Osm.Node> getNodes() {
 		return nodes;
 	}
 
-	public Map<Long, OsmParser.OsmRelation> getRelations() {
+	public Map<Long, Osm.Relation> getRelations() {
 		return relations;
 	}
 
 	@Override
-	public void handleNode(OsmParser.OsmNode node) {
+	public void handleNode(Osm.Node node) {
 		if(nodeFilter == null || nodeFilter.matches(node.tags)) {
 			nodes.put(node.id, node);
 		}
 	}
 
 	@Override
-	public void handleRelation(OsmParser.OsmRelation relation) {
+	public void handleRelation(Osm.Relation relation) {
 		if(relationFilter == null || relationFilter.matches(relation.tags)) {
 			relations.put(relation.id, relation);
 		}
 	}
 
 	@Override
-	public void handleWay(OsmParser.OsmWay way) {
+	public void handleWay(Osm.Way way) {
 		if(wayFilter == null || wayFilter.matches(way.tags)) {
 			ways.put(way.id, way);
 		}

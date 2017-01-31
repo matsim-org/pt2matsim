@@ -20,16 +20,18 @@
 package org.matsim.pt2matsim.osm.parser;
 
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Coord;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.io.UncheckedIOException;
+import org.matsim.pt2matsim.osm.lib.Osm;
 import org.matsim.pt2matsim.osm.parser.handler.OsmHandler;
 import org.matsim.pt2matsim.osm.parser.handler.OsmNodeHandler;
 import org.matsim.pt2matsim.osm.parser.handler.OsmRelationHandler;
 import org.matsim.pt2matsim.osm.parser.handler.OsmWayHandler;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Based on OsmParser by mrieser / Senozon AG
@@ -62,62 +64,13 @@ public class OsmParser {
 		}
 	}
 
-	public static class OsmWay {
-		public final long id;
-		public final List<Long> nodes = new ArrayList<>(6);
-		public final Map<String, String> tags = new HashMap<>(5, 0.9f);
-
-		public boolean used = true;
-
-		public OsmWay(final long id) {
-			this.id = id;
-		}
-	}
-
-	public static class OsmNode {
-		public final long id;
-		public final Coord coord;
-		public final Map<String, String> tags = new HashMap<>(5, 0.9f);
-
-		public boolean used = false;
-		public int ways = 0;
-
-		public OsmNode(final long id, final Coord coord) {
-			this.id = id;
-			this.coord = transformation.transform(coord);
-		}
-	}
-
-	public static class OsmRelation {
-		public final long id;
-		public final List<OsmRelationMember> members = new ArrayList<>(8);
-		public final Map<String, String> tags = new HashMap<>(5, 0.9f);
-
-		public OsmRelation(final long id) {
-			this.id = id;
-		}
-	}
-
-	public static class OsmRelationMember {
-		public final OsmRelationMemberType type;
-		public final long refId;
-		public final String role;
-		public OsmRelationMember(final OsmRelationMemberType type, final long refId, final String role) {
-			this.type = type;
-			this.refId = refId;
-			this.role = role;
-		}
-	}
-
-	public enum OsmRelationMemberType { NODE, WAY, RELATION }
-
 	private static class DataDistributor implements OsmNodeHandler, OsmWayHandler, OsmRelationHandler {
 
 		private final List<OsmNodeHandler> nodeHandlers = new ArrayList<>();
 		private final List<OsmWayHandler> wayHandlers = new ArrayList<>();
 		private final List<OsmRelationHandler> relHandlers = new ArrayList<>();
 
-		public DataDistributor(final List<OsmHandler> handlers) {
+		DataDistributor(final List<OsmHandler> handlers) {
 			for (OsmHandler h : handlers) {
 				if (h instanceof OsmNodeHandler) {
 					this.nodeHandlers.add((OsmNodeHandler) h);
@@ -132,21 +85,21 @@ public class OsmParser {
 		}
 
 		@Override
-		public void handleNode(final OsmNode node) {
+		public void handleNode(final Osm.Node node) {
 			for (OsmNodeHandler handler : this.nodeHandlers) {
 				handler.handleNode(node);
 			}
 		}
 
 		@Override
-		public void handleWay(final OsmWay way) {
+		public void handleWay(final Osm.Way way) {
 			for (OsmWayHandler handler : this.wayHandlers) {
 				handler.handleWay(way);
 			}
 		}
 
 		@Override
-		public void handleRelation(final OsmRelation relation) {
+		public void handleRelation(final Osm.Relation relation) {
 			for (OsmRelationHandler handler : this.relHandlers) {
 				handler.handleRelation(relation);
 			}

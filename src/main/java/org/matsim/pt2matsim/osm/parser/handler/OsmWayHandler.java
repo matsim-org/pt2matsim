@@ -19,13 +19,13 @@
 
 package org.matsim.pt2matsim.osm.parser.handler;
 
-import org.matsim.pt2matsim.osm.parser.OsmParser.OsmWay;
+import org.matsim.pt2matsim.osm.lib.Osm.Way;
 
 /**
  * @author mrieser / Senozon AG
  */
 public interface OsmWayHandler extends OsmHandler {
 	
-	void handleWay(final OsmWay way);
+	void handleWay(final Way way);
 
 }

@@ -18,6 +18,13 @@
 
 package org.matsim.pt2matsim.osm.lib;
 
+import org.matsim.api.core.v01.Coord;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author polettif
  */
@@ -41,7 +48,6 @@ public final class Osm {
 			return name;
 		}
 	}
-
 
 	/**
 	 * OSM tags used by the converters
@@ -106,5 +112,53 @@ public final class Osm {
 		public static final String FUNICULAR = "funicular";
 		public static final String MONORAIL = "monorail";
 		public static final String SUBWAY = "subway";
+	}
+
+	public static class Way {
+		public final long id;
+		public final List<Long> nodes = new ArrayList<>(6);
+		public final Map<String, String> tags = new HashMap<>(5, 0.9f);
+
+		public boolean used = true;
+
+		public Way(final long id) {
+			this.id = id;
+		}
+	}
+
+	public static class Node {
+		public final long id;
+		public final Coord coord;
+		public final Map<String, String> tags = new HashMap<>(5, 0.9f);
+
+		public boolean used = false;
+		public int ways = 0;
+
+		public Node(final long id, final Coord coord) {
+			this.id = id;
+			this.coord = coord;
+		}
+	}
+
+	public static class Relation {
+		public final long id;
+		public final List<RelationMember> members = new ArrayList<>(8);
+		public final Map<String, String> tags = new HashMap<>(5, 0.9f);
+
+		public Relation(final long id) {
+			this.id = id;
+		}
+	}
+
+	public static class RelationMember {
+		public final Tag type;
+		public final long refId;
+		public final String role;
+
+		public RelationMember(final Tag type, final long refId, final String role) {
+			this.type = type;
+			this.refId = refId;
+			this.role = role;
+		}
 	}
 }
