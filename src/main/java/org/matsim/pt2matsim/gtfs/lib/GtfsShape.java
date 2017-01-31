@@ -43,8 +43,10 @@ public class GtfsShape implements RouteShape {
 
 	private SortedMap<Integer, Coord> points = new TreeMap<>();
 
-	private Coord[] extent = new Coord[]{new Coord(Double.MAX_VALUE, Double.MAX_VALUE), new Coord(Double.MIN_VALUE, Double.MIN_VALUE)};
-
+	private double extentSWx = Double.MAX_VALUE;
+	private double extentSWy = Double.MAX_VALUE;
+	private double extentNEx = Double.MAX_VALUE;
+	private double extentNEy = Double.MAX_VALUE;
 
 	public GtfsShape(String id) {
 		this.id = Id.create(id, RouteShape.class);
@@ -79,17 +81,17 @@ public class GtfsShape implements RouteShape {
 			throw new IllegalArgumentException("Sequence position " + pos + " already defined in shape " + id);
 		}
 
-		if(point.getX() < extent[0].getX()) {
-			extent[0].setX(point.getX());
+		if(point.getX() < extentSWx) {
+			extentSWx = point.getX();
 		}
-		if(point.getY() < extent[0].getY()) {
-			extent[0].setY(point.getY());
+		if(point.getY() < extentSWy) {
+			extentSWy = point.getY();
 		}
-		if(point.getX() > extent[1].getX()) {
-			extent[1].setX(point.getX());
+		if(point.getX() > extentNEx) {
+			extentNEx = point.getX();
 		}
-		if(point.getY() > extent[1].getY()) {
-			extent[1].setY(point.getY());
+		if(point.getY() > extentNEy) {
+			extentNEy = point.getY();
 		}
 	}
 
@@ -106,8 +108,11 @@ public class GtfsShape implements RouteShape {
 		}
 	}
 
+	/**
+	 * @return the maximal SW and NE corners of the shape
+	 */
 	public Coord[] getExtent() {
-		return extent;
+		return new Coord[]{new Coord(Double.MAX_VALUE, Double.MAX_VALUE), new Coord(Double.MIN_VALUE, Double.MIN_VALUE)};
 	}
 
 }
