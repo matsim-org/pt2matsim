@@ -17,7 +17,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.osm.parser;
+package org.matsim.pt2matsim.osm.lib;
 
 import java.util.concurrent.ConcurrentHashMap;
 

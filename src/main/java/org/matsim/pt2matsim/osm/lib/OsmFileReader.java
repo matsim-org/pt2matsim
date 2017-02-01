@@ -17,18 +17,14 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.osm.parser;
+package org.matsim.pt2matsim.osm.lib;
 
 import org.matsim.api.core.v01.Coord;
 import org.matsim.core.utils.io.MatsimXmlParser;
 import org.matsim.core.utils.misc.Counter;
-import org.matsim.pt2matsim.osm.lib.Osm;
-import org.matsim.pt2matsim.osm.lib.OsmData;
-import org.matsim.pt2matsim.osm.lib.OsmImpl;
 import org.xml.sax.Attributes;
 
-import java.util.Locale;
-import java.util.Stack;
+import java.util.*;
 
 /**
  * @author mrieser / Senozon AG
@@ -37,9 +33,9 @@ public class OsmFileReader extends MatsimXmlParser {
 
 	private OsmData osmData;
 
-	private OsmImpl.ParsedNode currentNode = null;
-	private OsmImpl.ParsedWay currentWay = null;
-	private OsmImpl.ParsedRelation currentRelation = null;
+	private ParsedNode currentNode = null;
+	private ParsedWay currentWay = null;
+	private ParsedRelation currentRelation = null;
 	private final Counter nodeCounter = new Counter("node ");
 	private final Counter wayCounter = new Counter("way ");
 	private final Counter relationCounter = new Counter("relation ");
@@ -56,12 +52,12 @@ public class OsmFileReader extends MatsimXmlParser {
 			long id = Long.parseLong(atts.getValue("id"));
 			double lat = Double.parseDouble(atts.getValue("lat"));
 			double lon = Double.parseDouble(atts.getValue("lon"));
-			this.currentNode = new OsmImpl.ParsedNode(id, new Coord(lon, lat));
+			this.currentNode = new ParsedNode(id, new Coord(lon, lat));
 		} else if ("way".equals(name)) {
-			this.currentWay = new OsmImpl.ParsedWay(Long.parseLong(atts.getValue("id")));
+			this.currentWay = new ParsedWay(Long.parseLong(atts.getValue("id")));
 		} else if ("relation".equals(name)) {
 			String id = StringCache.get(atts.getValue("id"));
-			this.currentRelation = new OsmImpl.ParsedRelation(Long.parseLong(id));
+			this.currentRelation = new ParsedRelation(Long.parseLong(id));
 		} else if ("nd".equals(name)) {
 			if (this.currentWay != null) {
 				this.currentWay.nodes.add(Long.valueOf(atts.getValue("ref")));
@@ -85,7 +81,7 @@ public class OsmFileReader extends MatsimXmlParser {
 				} else if ("relation".equals(lcType)) {
 					type = Osm.ElementType.RELATION;
 				}
-				this.currentRelation.members.add(new OsmImpl.ParsedRelationMember(type, Long.parseLong(atts.getValue("ref")), StringCache.get(atts.getValue("role"))));
+				this.currentRelation.members.add(new ParsedRelationMember(type, Long.parseLong(atts.getValue("ref")), StringCache.get(atts.getValue("role"))));
 			}
 		}
 	}
@@ -112,4 +108,106 @@ public class OsmFileReader extends MatsimXmlParser {
 		}
 	}
 
+	/*pckg*/ static class ParsedNode implements Osm.Element {
+		public final long id;
+		public final Coord coord;
+		public final Map<String, String> tags = new HashMap<>(5, 0.9f);
+
+		public ParsedNode(final long id, final Coord coord) {
+			this.id = id;
+			this.coord = coord;
+		}
+
+		@Override
+		public Map<String, String> getTags() {
+			return tags;
+		}
+
+		@Override
+		public String getValue(String key) {
+			return tags.get(key);
+		}
+
+		@Override
+		public long getOsmId() {
+			return id;
+		}
+
+		@Override
+		public Osm.ElementType getType() {
+			return Osm.ElementType.NODE;
+		}
+	}
+
+	/*pckg*/ static class ParsedWay implements Osm.Element {
+		public final long id;
+		public final List<Long> nodes = new ArrayList<>(6);
+		public final Map<String, String> tags = new HashMap<>(5, 0.9f);
+
+		public ParsedWay(final long id) {
+			this.id = id;
+		}
+
+		@Override
+		public Map<String, String> getTags() {
+			return tags;
+		}
+
+		@Override
+		public String getValue(String key) {
+			return tags.get(key);
+		}
+
+		@Override
+		public long getOsmId() {
+			return id;
+		}
+
+		@Override
+		public Osm.ElementType getType() {
+			return Osm.ElementType.WAY;
+		}
+	}
+
+	/*pckg*/ static class ParsedRelation implements Osm.Element {
+		public final long id;
+		public final List<ParsedRelationMember> members = new ArrayList<>(8);
+		public final Map<String, String> tags = new HashMap<>(5, 0.9f);
+
+		public ParsedRelation(final long id) {
+			this.id = id;
+		}
+
+		@Override
+		public Map<String, String> getTags() {
+			return tags;
+		}
+
+		@Override
+		public String getValue(String key) {
+			return tags.get(key);
+		}
+
+		@Override
+		public long getOsmId() {
+			return id;
+		}
+
+		@Override
+		public Osm.ElementType getType() {
+			return Osm.ElementType.RELATION;
+		}
+	}
+
+	/*pckg*/ static class ParsedRelationMember {
+		public final Osm.ElementType type;
+		public final long refId;
+		public final String role;
+
+		public ParsedRelationMember(final Osm.ElementType type, final long refId, final String role) {
+			this.type = type;
+			this.refId = refId;
+			this.role = role;
+		}
+	}
 }

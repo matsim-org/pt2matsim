@@ -128,12 +128,17 @@ public class OsmMultimodalNetworkConverter {
 		PositiveFilter serviceRailTracksFilter = new PositiveFilter();
 		serviceRailTracksFilter.add(Osm.ElementType.WAY, Osm.Key.SERVICE, null);
 
+
+		// transform nodes
+		for(Osm.Node node : nodes.values()) {
+			transformation.transform(node.getCoord());
+		}
+
+
 		// remove unusable ways
 		log.info("remove unusable ways...");
 		for(Osm.Way way : new HashSet<>(ways.values())) {
 			if(!highwayParams.containsKey(way.getTags().get(Osm.Key.HIGHWAY)) && !railwayParams.containsKey(way.getTags().get(Osm.Key.RAILWAY)) && way.getRelations().size() == 0) {
-				osmData.removeWay(way.getId());
-			} else if(!nodes.containsValue(way.getNodes().get(0)) || !nodes.containsValue(way.getNodes().get(way.getNodes().size() - 1))) {
 				osmData.removeWay(way.getId());
 			}
 		}
@@ -173,7 +178,7 @@ public class OsmMultimodalNetworkConverter {
 							lastNode = node;
 						}
 					} else {
-						log.warn("OsmWay node with less than 1 way found.");
+						log.warn("Way node with less than 1 way found.");
 					}
 				}
 			}
@@ -210,7 +215,7 @@ public class OsmMultimodalNetworkConverter {
 		log.info("Creating nodes...");
 		for(Osm.Node node : nodes.values()) {
 			if(!nodesToIgnore.contains(node)) {
-				org.matsim.api.core.v01.network.Node nn = this.network.getFactory().createNode(Id.create(node.getId(), org.matsim.api.core.v01.network.Node.class), transformation.transform(node.getCoord()));
+				org.matsim.api.core.v01.network.Node nn = this.network.getFactory().createNode(Id.create(node.getId(), org.matsim.api.core.v01.network.Node.class), node.getCoord());
 				this.network.addNode(nn);
 			}
 		}

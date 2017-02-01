@@ -24,7 +24,7 @@ import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.osm.OsmMultimodalNetworkConverter;
 import org.matsim.pt2matsim.osm.lib.OsmData;
 import org.matsim.pt2matsim.osm.lib.OsmDataImpl;
-import org.matsim.pt2matsim.osm.parser.OsmFileReader;
+import org.matsim.pt2matsim.osm.lib.OsmFileReader;
 import org.matsim.pt2matsim.tools.NetworkTools;
 
 /**
@@ -79,7 +79,7 @@ public class Osm2MultimodalNetwork {
 	}
 
 	public static void run(OsmConverterConfigGroup config) {
-		OsmData osmData = new OsmDataImpl();
+		OsmData osmData = new OsmDataImpl(config.getBasicWayFilter());
 		new OsmFileReader(osmData).readFile(config.getOsmFile());
 
 		OsmMultimodalNetworkConverter converter = new OsmMultimodalNetworkConverter(osmData);
