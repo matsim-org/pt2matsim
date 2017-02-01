@@ -37,9 +37,9 @@ public class OsmDataImpl implements OsmData {
 	private final Map<Id<Osm.Way>, Osm.Way> ways = new HashMap<>();
 	private final Map<Id<Osm.Relation>, Osm.Relation> relations = new HashMap<>();
 
-	private final Map<Long, Osm.ParsedNode> parsedNodes = new HashMap<>();
-	private final Map<Long, Osm.ParsedRelation> parsedRelations = new HashMap<>();
-	private final Map<Long, Osm.ParsedWay> parsedWays = new HashMap<>();
+	private final Map<Long, OsmImpl.ParsedNode> parsedNodes = new HashMap<>();
+	private final Map<Long, OsmImpl.ParsedRelation> parsedRelations = new HashMap<>();
+	private final Map<Long, OsmImpl.ParsedWay> parsedWays = new HashMap<>();
 
 	// node extent
 	private double minX = Double.MAX_VALUE;
@@ -53,7 +53,7 @@ public class OsmDataImpl implements OsmData {
 	private TagFilter nodeFilter;
 	private TagFilter relationFilter;
 	private TagFilter wayFilter;
-	private TagFilter filter = new TagFilter(Osm.Element.NODE);
+	private TagFilter filter = new TagFilter(Osm.ElementType.NODE);
 
 	public OsmDataImpl(TagFilter... filter) {
 		for(TagFilter f : filter) {
@@ -65,49 +65,49 @@ public class OsmDataImpl implements OsmData {
 		quadTree = new QuadTree<>(minX, minY, maxX, maxY);
 
 		// create nodes
-		for(Osm.ParsedNode pn : parsedNodes.values()) {
-			Osm.Node newNode = new Osm.Node(pn.id, pn.coord, pn.tags);
+		for(OsmImpl.ParsedNode pn : parsedNodes.values()) {
+			Osm.Node newNode = new OsmImpl.OsmNode(pn.id, pn.coord, pn.tags);
 			quadTree.put(newNode.getCoord().getX(), newNode.getCoord().getY(), newNode);
 			if(nodes.put(newNode.getId(), newNode) != null) {
-				throw new RuntimeException("Node id " + newNode.getId() + "already exists on map");
+				throw new RuntimeException("OsmNode id " + newNode.getId() + "already exists on map");
 			}
 		}
 
 		// create ways
-		for(Osm.ParsedWay pw : parsedWays.values()) {
+		for(OsmImpl.ParsedWay pw : parsedWays.values()) {
 			List<Osm.Node> nodeList = new ArrayList<>();
 			for(Long id : pw.nodes) {
 				nodeList.add(nodes.get(Id.create(id, Osm.Node.class)));
 			}
 
-			Osm.Way newWay = new Osm.Way(pw.id, nodeList, pw.tags);
+			Osm.Way newWay = new OsmImpl.OsmWay(pw.id, nodeList, pw.tags);
 			if(ways.put(newWay.getId(), newWay) != null) {
-				throw new RuntimeException("Way id " + newWay.getId() + "already exists on map");
+				throw new RuntimeException("OsmWay id " + newWay.getId() + "already exists on map");
 			}
 
 			// add way to nodes
 			for(Osm.Node n : nodeList) {
-				n.addWay(newWay);
+				((OsmImpl.OsmNode) n).addWay(newWay);
 			}
 		}
 
 		// create relations
-		for(Osm.ParsedRelation pr : parsedRelations.values()) {
-			Osm.Relation newRel = new Osm.Relation(pr.id, pr.tags);
+		for(OsmImpl.ParsedRelation pr : parsedRelations.values()) {
+			Osm.Relation newRel = new OsmImpl.OsmRelation(pr.id, pr.tags);
 			if(relations.put(newRel.getId(), newRel) != null) {
-				throw new RuntimeException("Relation id " + newRel.getId() + "already exists on map");
+				throw new RuntimeException("OsmRelation id " + newRel.getId() + "already exists on map");
 			}
 		}
 
 		// add relation members
-		for(Osm.ParsedRelation pr : parsedRelations.values()) {
+		for(OsmImpl.ParsedRelation pr : parsedRelations.values()) {
 
 			Osm.Relation currentRel = relations.get(Id.create(pr.id, Osm.Relation.class));
 
-			Map<Osm.OsmElement, String> memberRoles = new HashMap<>();
-			List<Osm.OsmElement> memberList = new ArrayList<>();
-			for(Osm.ParsedRelationMember pMember : pr.members) {
-				Osm.OsmElement member = null;
+			Map<Osm.Element, String> memberRoles = new HashMap<>();
+			List<Osm.Element> memberList = new ArrayList<>();
+			for(OsmImpl.ParsedRelationMember pMember : pr.members) {
+				Osm.Element member = null;
 				switch(pMember.type) {
 					case NODE:
 						member = nodes.get(Id.create(pMember.refId, Osm.Node.class));
@@ -126,11 +126,19 @@ public class OsmDataImpl implements OsmData {
 				}
 
 				// add relations to nodes/ways/relations
-				for(Osm.OsmElement e : memberList) {
-					e.addRelation(currentRel);
+				for(Osm.Element e : memberList) {
+					if(e instanceof OsmImpl.OsmNode) {
+						((OsmImpl.OsmNode) e).addRelation(currentRel);
+					}
+					if(e instanceof OsmImpl.OsmWay) {
+						((OsmImpl.OsmWay) e).addRelation(currentRel);
+					}
+					if(e instanceof OsmImpl.OsmRelation) {
+						((OsmImpl.OsmRelation) e).addRelation(currentRel);
+					}
 				}
 			}
-			currentRel.setMembers(memberList, memberRoles);
+			((OsmImpl.OsmRelation) currentRel).setMembers(memberList, memberRoles);
 		}
 
 		// clear memory
@@ -178,14 +186,14 @@ public class OsmDataImpl implements OsmData {
 	public void removeRelation(Id<Osm.Relation> id) {
 		Osm.Relation rel = relations.get(id);
 
-		for(Osm.OsmElement e : rel.getMembers()) {
+		for(Osm.Element e : rel.getMembers()) {
 			e.getRelations().remove(rel.getId());
 		}
 
 		removeMemberFromRelations(rel);
 	}
 
-	private void removeMemberFromRelations(Osm.OsmElement e) {
+	private void removeMemberFromRelations(Osm.Element e) {
 		for(Osm.Relation r : new HashSet<>(relations.values())) {
 			if(r.getMembers().contains(e)) {
 				r.getMembers().remove(e);
@@ -194,7 +202,7 @@ public class OsmDataImpl implements OsmData {
 	}
 
 	@Override
-	public void handleNode(Osm.ParsedNode node) {
+	public void handleNode(OsmImpl.ParsedNode node) {
 		if(nodeFilter == null || nodeFilter.matches(node.tags)) {
 			parsedNodes.put(node.id, node);
 
@@ -212,14 +220,14 @@ public class OsmDataImpl implements OsmData {
 	// todo combine filters
 
 	@Override
-	public void handleRelation(Osm.ParsedRelation relation) {
+	public void handleRelation(OsmImpl.ParsedRelation relation) {
 		if(relationFilter == null || relationFilter.matches(relation.tags)) {
 			parsedRelations.put(relation.id, relation);
 		}
 	}
 
 	@Override
-	public void handleWay(Osm.ParsedWay way) {
+	public void handleWay(OsmImpl.ParsedWay way) {
 		if(wayFilter == null || wayFilter.matches(way.tags)) {
 			parsedWays.put(way.id, way);
 		}

@@ -22,8 +22,6 @@ import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Identifiable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,14 +33,14 @@ public final class Osm {
 	/**
 	 * OSM tags used by the converters
 	 */
-	public enum Element {
+	public enum ElementType {
 		NODE("node"),
 		WAY("way"),
 		RELATION("relation");
 
 		public final String name;
 
-		Element(String name) {
+		ElementType(String name) {
 			this.name = name;
 		}
 
@@ -77,7 +75,7 @@ public final class Osm {
 	/**
 	 * OSM values used by the converters
 	 */
-	public static final class OsmValue {
+	public static final class Value {
 
 		public static final String STOP = "stop";
 		public static final String STOP_FORWARD = "stop_forward";
@@ -116,270 +114,30 @@ public final class Osm {
 		public static final String SUBWAY = "subway";
 	}
 
-	public static class ParsedNode {
-		public final long id;
-		public final Coord coord;
-		public final Map<String, String> tags = new HashMap<>(5, 0.9f);
-
-		public boolean used = false;
-		public int ways = 0;
-
-		public ParsedNode(final long id, final Coord coord) {
-			this.id = id;
-			this.coord = coord;
-		}
-	}
-
-	public static class ParsedWay {
-		public final long id;
-		public final List<Long> nodes = new ArrayList<>(6);
-		public final Map<String, String> tags = new HashMap<>(5, 0.9f);
-
-		public boolean used = true;
-
-		public ParsedWay(final long id) {
-			this.id = id;
-		}
-	}
-
-	public static class ParsedRelation {
-		public final long id;
-		public final List<ParsedRelationMember> members = new ArrayList<>(8);
-		public final Map<String, String> tags = new HashMap<>(5, 0.9f);
-
-		public ParsedRelation(final long id) {
-			this.id = id;
-		}
-	}
-
-	public static class ParsedRelationMember {
-		public final Element type;
-		public final long refId;
-		public final String role;
-
-		public ParsedRelationMember(final Element type, final long refId, final String role) {
-			this.type = type;
-			this.refId = refId;
-			this.role = role;
-		}
-	}
-
-	public interface OsmElement{
-
+	public interface Element {
 		Map<String, String> getTags();
 
-		void addRelation(Relation rel);
+		String getValue(String key);
 
 		Map<Id<Relation>, Relation> getRelations();
 	}
 
-	/**
-	 * OSM node
-	 */
-	public static class Node implements Identifiable<Node>, OsmElement {
+	public interface Node extends Element, Identifiable<Node> {
 
-		private final Id<Node> id;
-		private final Coord coord;
-		private final Map<String, String> tags;
+		Map<Id<Way>, Way> getWays();
 
-		private Map<Id<Way>, Way> ways = new HashMap<>();
-		private Map<Id<Relation>, Relation> relations = new HashMap<>();
-
-		public Node(final long id, final Coord coord, Map<String, String> tags) {
-			this.id = Id.create(id, Node.class);
-			this.coord = coord;
-			this.tags = tags;
-		}
-
-		@Override
-		public Id<Node> getId() {
-			return id;
-		}
-
-		public Coord getCoord() {
-			return coord;
-		}
-
-		@Override
-		public Map<String, String> getTags() {
-			return tags;
-		}
-
-		@Override
-		public void addRelation(Relation rel) {
-			relations.put(rel.getId(), rel);
-		}
-
-		@Override
-		public Map<Id<Relation>, Relation> getRelations() {
-			return relations;
-		}
-
-		public Map<Id<Way>, Way> getWays() {
-			return ways;
-		}
-
-		/*pckg*/ void addWay(Osm.Way way) {
-			ways.put(way.getId(), way);
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if(this == obj)
-				return true;
-			if(obj == null)
-				return false;
-			if(!(obj instanceof Osm.Node))
-				return false;
-
-			Osm.Node other = (Osm.Node) obj;
-			return getId().equals(other.getId());
-		}
-
-		@Override
-		public int hashCode() {
-			return getId().hashCode();
-		}
+		Coord getCoord();
 	}
 
-	/**
-	 * OSM way
-	 */
-	public static class Way implements Identifiable<Way>, OsmElement {
+	public interface Way extends Element, Identifiable<Way> {
 
-		private final Id<Way> id;
-		private final List<Node> nodes;
-		private final Map<String, String> tags;
-
-		private boolean isUsed = true;
-
-		private Map<Id<Relation>, Relation> relations = new HashMap<>();
-
-		public Way(long id, List<Node> nodes, Map<String, String> tags) {
-			this.id = Id.create(id, Way.class);
-			this.nodes =  nodes;
-			this.tags = tags;
-		}
-
-		@Override
-		public Id<Way> getId() {
-			return id;
-		}
-
-		public List<Node> getNodes() {
-			return nodes;
-		}
-
-		@Override
-		public Map<String, String> getTags() {
-			return tags;
-		}
-
-		@Override
-		public void addRelation(Relation rel) {
-			relations.put(rel.getId(), rel);
-		}
-
-		public void setIsUsed(boolean isUsed) {
-			this.isUsed = isUsed;
-		}
-		public boolean isUsed() {
-			return isUsed;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if(this == obj)
-				return true;
-			if(obj == null)
-				return false;
-			if(!(obj instanceof Osm.Way))
-				return false;
-
-			Osm.Way other = (Osm.Way) obj;
-			return getId().equals(other.getId());
-		}
-
-		@Override
-		public int hashCode() {
-			return getId().hashCode();
-		}
-
-		public Map<Id<Relation>, Relation> getRelations() {
-			return relations;
-		}
+		List<Node> getNodes();
 	}
 
-	/**
-	 * OSM relation
-	 */
-	public static class Relation implements Identifiable<Relation>, OsmElement {
+	public interface Relation extends Element, Identifiable<Relation> {
 
-		private final Id<Relation> id;
-		private List<OsmElement> members;
-		private final Map<String, String> tags;
-		private Map<OsmElement, String> memberRoles;
-
-		private Map<Id<Relation>, Relation> relations = new HashMap<>();
-
-		public Relation(long id, Map<String, String> tags) {
-			this.id = Id.create(id, Relation.class);
-			this.tags = tags;
-		}
-
-		@Override
-		public Id<Relation> getId() {
-			return id;
-		}
-
-		public List<OsmElement> getMembers() {
-			return members;
-		}
-
-		@Override
-		public Map<String, String> getTags() {
-			return tags;
-		}
-
-		@Override
-		public void addRelation(Relation currentRel) {
-			relations.put(currentRel.getId(), currentRel);
-		}
-
-		@Override
-		public Map<Id<Relation>, Relation> getRelations() {
-			return relations;
-		}
-
-		public String getMemberRole(OsmElement member) {
-			return memberRoles.get(member);
-		}
-
-		/*package*/ void setMembers(List<OsmElement> memberList, Map<OsmElement, String> memberRoles) {
-			if(members != null) {
-				throw new IllegalArgumentException("Relation members have already been set");
-			}
-			this.members = memberList;
-			this.memberRoles = memberRoles;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if(this == obj)
-				return true;
-			if(obj == null)
-				return false;
-			if(!(obj instanceof Osm.Relation))
-				return false;
-
-			Osm.Relation other = (Osm.Relation) obj;
-			return getId().equals(other.getId());
-		}
-
-		@Override
-		public int hashCode() {
-			return getId().hashCode();
-		}
+		List<Element> getMembers();
 	}
+
 
 }

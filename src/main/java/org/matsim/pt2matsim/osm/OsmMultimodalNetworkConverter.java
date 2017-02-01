@@ -125,7 +125,7 @@ public class OsmMultimodalNetworkConverter {
 		Map<Id<Osm.Way>, Osm.Way> ways = osmData.getWays();
 		Map<Id<Osm.Relation>, Osm.Relation> relations = osmData.getRelations();
 
-		TagFilter serviceRailTracksFilter = new TagFilter(Osm.Element.WAY);
+		TagFilter serviceRailTracksFilter = new TagFilter(Osm.ElementType.WAY);
 		serviceRailTracksFilter.add(Osm.Key.SERVICE);
 
 		// remove unusable ways
@@ -173,7 +173,7 @@ public class OsmMultimodalNetworkConverter {
 							lastNode = node;
 						}
 					} else {
-						log.warn("Way node with less than 1 way found.");
+						log.warn("OsmWay node with less than 1 way found.");
 					}
 				}
 			}
@@ -296,7 +296,7 @@ public class OsmMultimodalNetworkConverter {
 				// check if bus route is on link
 				if(way.getTags().containsKey(Osm.Key.PSV)) {
 					busOnlyLink = true;
-					wayValues = highwayParams.get(Osm.OsmValue.UNCLASSIFIED);
+					wayValues = highwayParams.get(Osm.Value.UNCLASSIFIED);
 				} else {
 					this.unknownHighways.add(highway);
 					return;
@@ -415,8 +415,8 @@ public class OsmMultimodalNetworkConverter {
 		for(Osm.Relation rel : way.getRelations().values()) {
 			String mode = rel.getTags().get(Osm.Key.ROUTE);
 			if(mode != null) {
-				if(mode.equals(Osm.OsmValue.TROLLEYBUS)) {
-					mode = Osm.OsmValue.BUS;
+				if(mode.equals(Osm.Value.TROLLEYBUS)) {
+					mode = Osm.Value.BUS;
 				}
 				modes.add(mode);
 			}

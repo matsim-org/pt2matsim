@@ -24,6 +24,7 @@ import org.matsim.core.utils.io.MatsimXmlParser;
 import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt2matsim.osm.lib.Osm;
 import org.matsim.pt2matsim.osm.lib.OsmData;
+import org.matsim.pt2matsim.osm.lib.OsmImpl;
 import org.xml.sax.Attributes;
 
 import java.util.Locale;
@@ -41,9 +42,9 @@ public class OsmFileReader extends MatsimXmlParser {
 
 	private OsmData osmData;
 
-	private Osm.ParsedNode currentNode = null;
-	private Osm.ParsedWay currentWay = null;
-	private Osm.ParsedRelation currentRelation = null;
+	private OsmImpl.ParsedNode currentNode = null;
+	private OsmImpl.ParsedWay currentWay = null;
+	private OsmImpl.ParsedRelation currentRelation = null;
 	private final Counter nodeCounter = new Counter("node ");
 	private final Counter wayCounter = new Counter("way ");
 	private final Counter relationCounter = new Counter("relation ");
@@ -61,14 +62,14 @@ public class OsmFileReader extends MatsimXmlParser {
 			long id = Long.parseLong(atts.getValue("id"));
 			double lat = Double.parseDouble(atts.getValue("lat"));
 			double lon = Double.parseDouble(atts.getValue("lon"));
-			this.currentNode = new Osm.ParsedNode(id, new Coord(lon, lat));
+			this.currentNode = new OsmImpl.ParsedNode(id, new Coord(lon, lat));
 //		} else if ("way".equals(name) & this.wayHandler != null) {
 		} else if ("way".equals(name)) {
-			this.currentWay = new Osm.ParsedWay(Long.parseLong(atts.getValue("id")));
+			this.currentWay = new OsmImpl.ParsedWay(Long.parseLong(atts.getValue("id")));
 //		} else if ("relation".equals(name) & this.relHandler != null) {
 		} else if ("relation".equals(name)) {
 			String id = StringCache.get(atts.getValue("id"));
-			this.currentRelation = new Osm.ParsedRelation(Long.parseLong(id));
+			this.currentRelation = new OsmImpl.ParsedRelation(Long.parseLong(id));
 		} else if ("nd".equals(name)) {
 			if (this.currentWay != null) {
 				this.currentWay.nodes.add(Long.valueOf(atts.getValue("ref")));
@@ -83,16 +84,16 @@ public class OsmFileReader extends MatsimXmlParser {
 			}
 		} else if ("member".equals(name)) {
 			if (this.currentRelation != null) {
-				Osm.Element type = null;
+				Osm.ElementType type = null;
 				String lcType = atts.getValue("type").toLowerCase(Locale.ROOT);
 				if ("node".equals(lcType)) {
-					type = Osm.Element.NODE;
+					type = Osm.ElementType.NODE;
 				} else if ("way".equals(lcType)) {
-					type = Osm.Element.WAY;
+					type = Osm.ElementType.WAY;
 				} else if ("relation".equals(lcType)) {
-					type = Osm.Element.RELATION;
+					type = Osm.ElementType.RELATION;
 				}
-				this.currentRelation.members.add(new Osm.ParsedRelationMember(type, Long.parseLong(atts.getValue("ref")), StringCache.get(atts.getValue("role"))));
+				this.currentRelation.members.add(new OsmImpl.ParsedRelationMember(type, Long.parseLong(atts.getValue("ref")), StringCache.get(atts.getValue("role"))));
 			}
 		}
 	}
