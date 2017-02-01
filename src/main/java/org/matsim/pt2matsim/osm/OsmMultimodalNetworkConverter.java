@@ -37,7 +37,7 @@ import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.osm.lib.Osm;
 import org.matsim.pt2matsim.osm.lib.OsmData;
-import org.matsim.pt2matsim.osm.parser.TagFilter;
+import org.matsim.pt2matsim.osm.lib.PositiveFilter;
 import org.matsim.pt2matsim.tools.NetworkTools;
 
 import java.io.File;
@@ -125,8 +125,8 @@ public class OsmMultimodalNetworkConverter {
 		Map<Id<Osm.Way>, Osm.Way> ways = osmData.getWays();
 		Map<Id<Osm.Relation>, Osm.Relation> relations = osmData.getRelations();
 
-		TagFilter serviceRailTracksFilter = new TagFilter(Osm.ElementType.WAY);
-		serviceRailTracksFilter.add(Osm.Key.SERVICE);
+		PositiveFilter serviceRailTracksFilter = new PositiveFilter();
+		serviceRailTracksFilter.add(Osm.ElementType.WAY, Osm.Key.SERVICE, null);
 
 		// remove unusable ways
 		log.info("remove unusable ways...");

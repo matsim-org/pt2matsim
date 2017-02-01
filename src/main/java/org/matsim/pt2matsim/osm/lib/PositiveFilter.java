@@ -19,7 +19,6 @@
 package org.matsim.pt2matsim.osm.lib;
 
 import org.matsim.core.utils.collections.MapUtils;
-import org.matsim.pt2matsim.osm.parser.TagFilter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,93 +30,101 @@ import java.util.Set;
 public class PositiveFilter {
 
 	public final static String MATCH_ALL = "*";
-	private final Map<String, Set<String>> keyValuePairs = new HashMap<>();
-	private final Map<String, Set<String>> keyValueExceptions = new HashMap<>();
+	private final Map<Osm.ElementType, Map<String, Set<String>>> keyValuePairs = new HashMap<>();
+	private final Map<Osm.ElementType, Map<String, Set<String>>> keyValueExceptions = new HashMap<>();
 
 	/**
-	 * @param element osm element (node/way/relation)
-	 * @param key tag name
-	 * @param value <code>null</code> if all values should be taken
+	 * @return <code>true</code> if at least one of the given tags matches any one of the specified filter-tags.
 	 */
-	public void add(Osm.Element element, final String key, final String value) {
-		if(value == null) {
-			keyValuePairs.put(key, null);
-		} else {
-			Set<String> values = MapUtils.getSet(key, keyValuePairs);
-			values.add(value);
+	public boolean matches(Osm.Element element) {
+		Map<String, Set<String>> checkPairs = keyValuePairs.get(element.getType());
+		Map<String, Set<String>> checkExceptions = keyValueExceptions.get(element.getType());
+		Map<String, String> tags = element.getTags();
+
+		if(checkExceptions != null) {
+			// check for exceptions
+			for(Map.Entry<String, Set<String>> e : checkExceptions.entrySet()) {
+				if(tags.containsKey(e.getKey()) && e.getValue() == null) {
+					return false;
+				}
+				String value = tags.get(e.getKey());
+				if(value != null && (e.getValue().contains(value) || e.getValue().contains(MATCH_ALL))) {
+					return false;
+				}
+			}
 		}
+		if(checkPairs != null) {
+			// check for positive list
+			for(Map.Entry<String, Set<String>> e : checkPairs.entrySet()) {
+				if(tags.containsKey(e.getKey()) && e.getValue() == null) {
+					return true;
+				}
+				String value = tags.get(e.getKey());
+				if(value != null && (e.getValue().contains(value) || e.getValue().contains(MATCH_ALL))) {
+					return true;
+				}
+			}
+		}
+
+		return (checkPairs == null && checkExceptions == null);
 	}
 
 
 	/**
-	 * @param tags key,value pairs
-	 * @return <code>true</code> if at least one of the given tags matches any one of the specified filter-tags.
+	 * @param elementType osm element type (node/way/relation)
+	 * @param key tag name
+	 * @param value <code>null</code> if all values should be taken
 	 */
-	public boolean matches(final Map<String, String> tags) {
-		// check for exceptions
-		for (Map.Entry<String, Set<String>> e : keyValueExceptions.entrySet()) {
-			if(tags.containsKey(e.getKey()) && e.getValue() == null) {
-				return false;
-			}
-			String value = tags.get(e.getKey());
-			if (value != null && (e.getValue().contains(value) || e.getValue().contains(MATCH_ALL))) {
-				return false;
-			}
+	public void add(Osm.ElementType elementType, final String key, final String value) {
+		Map<String, Set<String>> map = MapUtils.getMap(elementType, keyValuePairs);
+		if(value == null) {
+			map.put(key, null);
+		} else {
+			Set<String> values = MapUtils.getSet(key, map);
+			values.add(value);
 		}
-
-		// check for positive list
-		for (Map.Entry<String, Set<String>> e : keyValuePairs.entrySet()) {
-			if(tags.containsKey(e.getKey()) && e.getValue() == null) {
-				return true;
-			}
-			String value = tags.get(e.getKey());
-			if (value != null && (e.getValue().contains(value) || e.getValue().contains(MATCH_ALL))) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	/**
 	 * Adds an exception to the filter, that is if this key and value appears,
 	 * the filter will return false
 	 */
-	public void addException(final String key, final String value) {
+	public void addException(Osm.ElementType elementType, final String key, final String value) {
+		Map<String, Set<String>> map = MapUtils.getMap(elementType, keyValueExceptions);
 		if(value == null) {
-			keyValueExceptions.put(key, null);
+			map.put(key, null);
 		} else {
-			Set<String> values = MapUtils.getSet(key, keyValueExceptions);
+			Set<String> values = MapUtils.getSet(key, map);
 			values.add(value);
 		}
 	}
 
-	public void addException(final String key) {
-		addException(key, null);
-	}
-
-
 	/**
 	 * @return an array with filters that contain the usual pt filters
 	 */
-	public static TagFilter[] getDefaultPTFilter() {
-		// read osm data
-		TagFilter parserWayFilter = new TagFilter(Osm.ElementType.WAY);
-		parserWayFilter.add(Osm.Key.HIGHWAY);
-		parserWayFilter.add(Osm.Key.RAILWAY);
-		parserWayFilter.addException(Osm.Key.SERVICE);
+	public static PositiveFilter getDefaultPTFilter() {
+		PositiveFilter filter = new PositiveFilter();
+		filter.add(Osm.ElementType.WAY, Osm.Key.HIGHWAY, null);
+		filter.add(Osm.ElementType.WAY, Osm.Key.RAILWAY, null);
+		filter.addException(Osm.ElementType.WAY, Osm.Key.SERVICE, null);
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.BUS);
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TROLLEYBUS);
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.RAIL);
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TRAM);
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.LIGHT_RAIL);
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.FUNICULAR);
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.MONORAIL);
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.SUBWAY);
 
-		TagFilter parserRelationFilter = new TagFilter(Osm.ElementType.RELATION);
-		parserRelationFilter.add(Osm.Key.ROUTE, Osm.Value.BUS);
-		parserRelationFilter.add(Osm.Key.ROUTE, Osm.Value.TROLLEYBUS);
-		parserRelationFilter.add(Osm.Key.ROUTE, Osm.Value.RAIL);
-		parserRelationFilter.add(Osm.Key.ROUTE, Osm.Value.TRAM);
-		parserRelationFilter.add(Osm.Key.ROUTE, Osm.Value.LIGHT_RAIL);
-		parserRelationFilter.add(Osm.Key.ROUTE, Osm.Value.FUNICULAR);
-		parserRelationFilter.add(Osm.Key.ROUTE, Osm.Value.MONORAIL);
-		parserRelationFilter.add(Osm.Key.ROUTE, Osm.Value.SUBWAY);
-
-		return new TagFilter[]{parserWayFilter, parserRelationFilter};
+		return filter;
 	}
 
+	/*pckg*/ void mergeFilter(PositiveFilter f) {
+		for(Osm.ElementType t : f.keyValuePairs.keySet()) {
+			keyValuePairs.get(t).putAll(f.keyValuePairs.get(t));
+		}
+		for(Osm.ElementType t : f.keyValueExceptions.keySet()) {
+			keyValuePairs.get(t).putAll(f.keyValueExceptions.get(t));
+		}
+	}
 }

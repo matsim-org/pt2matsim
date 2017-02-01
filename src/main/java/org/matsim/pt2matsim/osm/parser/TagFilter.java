@@ -35,6 +35,7 @@ import java.util.Set;
  *
  * Slightly adapted, exceptions are possible.
  */
+@Deprecated
 public class TagFilter {
 
 	public final static String MATCH_ALL = "*";
