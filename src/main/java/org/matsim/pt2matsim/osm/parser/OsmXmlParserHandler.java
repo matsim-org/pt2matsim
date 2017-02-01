@@ -18,6 +18,7 @@
 
 package org.matsim.pt2matsim.osm.parser;
 
+import org.matsim.api.core.v01.Coord;
 import org.matsim.pt2matsim.osm.lib.Osm;
 import org.matsim.pt2matsim.osm.parser.handler.OsmNodeHandler;
 import org.matsim.pt2matsim.osm.parser.handler.OsmRelationHandler;
@@ -27,7 +28,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Handler to read out osm data (nodes, ways and relations). Just stores the data.
+ * Handler to read out osm data (nodes, ways and relations).
+ *
+ * NOTE: Just stores the primitive data. Nodes/ways/relations are not
+ * referenced to each other.
  *
  * It is possible to add filters to reduce overhead.
  *
@@ -39,9 +43,15 @@ public class OsmXmlParserHandler implements OsmNodeHandler, OsmRelationHandler, 
 	private TagFilter wayFilter;
 	private TagFilter relationFilter;
 
-	private final Map<Long, Osm.Node> nodes = new HashMap<>();
-	private final Map<Long, Osm.Relation> relations = new HashMap<>();
-	private final Map<Long, Osm.Way> ways = new HashMap<>();
+	private final Map<Long, Osm.ParsedNode> nodes = new HashMap<>();
+	private final Map<Long, Osm.ParsedRelation> relations = new HashMap<>();
+	private final Map<Long, Osm.ParsedWay> ways = new HashMap<>();
+
+	// node extent
+	public double minX = Double.MAX_VALUE;
+	public double minY = Double.MAX_VALUE;
+	public double maxX = Double.MIN_VALUE;
+	public double maxY = Double.MIN_VALUE;
 
 	public OsmXmlParserHandler() {
 	}
@@ -74,34 +84,43 @@ public class OsmXmlParserHandler implements OsmNodeHandler, OsmRelationHandler, 
 		}
 	}
 
-	public Map<Long, Osm.Way> getWays() {
+	public Map<Long, Osm.ParsedWay> getWays() {
 		return ways;
 	}
 
-	public Map<Long, Osm.Node> getNodes() {
+	public Map<Long, Osm.ParsedNode> getNodes() {
 		return nodes;
 	}
 
-	public Map<Long, Osm.Relation> getRelations() {
+	public Map<Long, Osm.ParsedRelation> getRelations() {
 		return relations;
 	}
 
 	@Override
-	public void handleNode(Osm.Node node) {
+	public void handleNode(Osm.ParsedNode node) {
 		if(nodeFilter == null || nodeFilter.matches(node.tags)) {
 			nodes.put(node.id, node);
+
+			updateExtent(node.coord);
 		}
 	}
 
+	private void updateExtent(Coord c) {
+		if(c.getX() < minX) minX = c.getX();
+		if(c.getY() < minY) minY = c.getY();
+		if(c.getX() > maxX) maxX = c.getX();
+		if(c.getY() > maxY) maxY = c.getY();
+	}
+
 	@Override
-	public void handleRelation(Osm.Relation relation) {
+	public void handleRelation(Osm.ParsedRelation relation) {
 		if(relationFilter == null || relationFilter.matches(relation.tags)) {
 			relations.put(relation.id, relation);
 		}
 	}
 
 	@Override
-	public void handleWay(Osm.Way way) {
+	public void handleWay(Osm.ParsedWay way) {
 		if(wayFilter == null || wayFilter.matches(way.tags)) {
 			ways.put(way.id, way);
 		}
