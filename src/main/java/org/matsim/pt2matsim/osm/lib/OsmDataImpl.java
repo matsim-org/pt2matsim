@@ -18,7 +18,9 @@
 
 package org.matsim.pt2matsim.osm.lib;
 
-import org.matsim.pt2matsim.osm.parser.OsmParser;
+import org.matsim.pt2matsim.osm.parser.OsmXmlParser;
+import org.matsim.pt2matsim.osm.parser.OsmXmlParserHandler;
+import org.matsim.pt2matsim.osm.parser.TagFilter;
 
 import java.util.Map;
 
@@ -35,10 +37,9 @@ public class OsmDataImpl implements OsmData{
 	public OsmDataImpl(String osmFile) {
 		TagFilter[] filters = TagFilter.getDefaultPTFilter();
 
-		OsmParser parser = new OsmParser();
-		OsmParserHandler handler = new OsmParserHandler(filters);
-		parser.addHandler(handler);
-		parser.run(osmFile);
+		OsmXmlParserHandler handler = new OsmXmlParserHandler(filters);
+		OsmXmlParser parser = new OsmXmlParser(handler);
+		parser.readFile(osmFile);
 
 		this.ways = handler.getWays();
 		this.nodes = handler.getNodes();

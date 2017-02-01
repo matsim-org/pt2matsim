@@ -38,7 +38,7 @@ import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.osm.lib.Osm;
 import org.matsim.pt2matsim.osm.lib.OsmData;
-import org.matsim.pt2matsim.osm.lib.TagFilter;
+import org.matsim.pt2matsim.osm.parser.TagFilter;
 import org.matsim.pt2matsim.tools.NetworkTools;
 
 import java.io.File;

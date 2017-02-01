@@ -25,9 +25,8 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.osm.lib.Osm;
-import org.matsim.pt2matsim.osm.lib.OsmParserHandler;
-import org.matsim.pt2matsim.osm.lib.TagFilter;
-import org.matsim.pt2matsim.osm.parser.OsmParser;
+import org.matsim.pt2matsim.osm.parser.OsmXmlParserHandler;
+import org.matsim.pt2matsim.osm.parser.TagFilter;
 
 import java.util.*;
 
@@ -46,7 +45,7 @@ public class OsmTransitScheduleConverter {
 	private final TransitSchedule transitSchedule;
 	private final TransitScheduleFactory factory;
 	private final String osmInput;
-	private OsmParserHandler handler;
+	private OsmXmlParserHandler handler;
 
 	// parser
 	private Map<Long, Osm.Node> nodes;
@@ -124,11 +123,11 @@ public class OsmTransitScheduleConverter {
 		relationFilter.add(Osm.Key.ROUTE_MASTER, Osm.OsmValue.SUBWAY);
 		relationFilter.add(Osm.Key.ROUTE_MASTER, Osm.OsmValue.FERRY);
 
-		handler = new OsmParserHandler(nodeFilter, wayFilter, relationFilter);
+		handler = new OsmXmlParserHandler(nodeFilter, wayFilter, relationFilter);
 
-		OsmParser parser = new OsmParser();
-		parser.addHandler(handler);
-		parser.run(osmInput);
+//		OsmParser parser = new OsmParser();
+//		parser.addHandler(handler);
+//		parser.run(osmInput);
 	}
 
 	/**

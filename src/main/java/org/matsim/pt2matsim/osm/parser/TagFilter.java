@@ -17,9 +17,10 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.osm.lib;
+package org.matsim.pt2matsim.osm.parser;
 
 import org.matsim.core.utils.collections.MapUtils;
+import org.matsim.pt2matsim.osm.lib.Osm;
 
 import java.util.HashMap;
 import java.util.Map;

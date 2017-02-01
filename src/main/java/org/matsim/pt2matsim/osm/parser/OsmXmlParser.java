@@ -35,7 +35,7 @@ import java.util.Stack;
 /**
  * @author mrieser / Senozon AG
  */
-/*package*/ class OsmXmlParser extends MatsimXmlParser {
+public class OsmXmlParser extends MatsimXmlParser {
 
 	private final OsmNodeHandler nodeHandler;
 	private final OsmWayHandler wayHandler;

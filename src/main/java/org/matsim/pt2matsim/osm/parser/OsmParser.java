@@ -19,7 +19,6 @@
 
 package org.matsim.pt2matsim.osm.parser;
 
-import org.apache.log4j.Logger;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.io.UncheckedIOException;
@@ -36,9 +35,10 @@ import java.util.Locale;
 /**
  * Based on OsmParser by mrieser / Senozon AG
  */
+@Deprecated
 public class OsmParser {
 
-	private static final Logger log = Logger.getLogger(OsmParser.class);
+//	private static final Logger log = Logger.getLogger(OsmParser.class);
 
 	private final List<OsmHandler> handlers = new ArrayList<>();
 
@@ -58,7 +58,7 @@ public class OsmParser {
 	public void run(final String filename) throws UncheckedIOException {
 		OsmHandler distributor = new DataDistributor(this.handlers);
 		if (filename.toLowerCase(Locale.ROOT).endsWith(".osm.pbf")) {
-			log.error("*.osm.pbf are not supported. Use *.osm (xml format) instead.");
+//			log.error("*.osm.pbf are not supported. Use *.osm (xml format) instead.");
 		} else {
 			new OsmXmlParser(distributor).readFile(filename);
 		}
