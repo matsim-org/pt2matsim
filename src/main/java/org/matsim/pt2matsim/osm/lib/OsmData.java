@@ -34,9 +34,7 @@ import java.util.Map;
 public interface OsmData {
 
 	Map<Id<Osm.Node>, Osm.Node> getNodes();
-
 	Map<Id<Osm.Way>, Osm.Way> getWays();
-
 	Map<Id<Osm.Relation>, Osm.Relation> getRelations();
 
 	void removeNode(Id<Osm.Node> id);
@@ -48,7 +46,7 @@ public interface OsmData {
 	 */
 	void buildMap();
 
-	void handleNode(OsmImpl.ParsedNode node);
-	void handleWay(OsmImpl.ParsedWay way);
-	void handleRelation(OsmImpl.ParsedRelation relation);
+	void handleRelation(OsmFileReader.ParsedRelation parsedRelation);
+	void handleWay(OsmFileReader.ParsedWay parsedWay);
+	void handleNode(OsmFileReader.ParsedNode parsedNode);
 }

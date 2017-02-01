@@ -115,10 +115,10 @@ public final class Osm {
 	}
 
 	public interface Element {
+		long getOsmId();
+		ElementType getType();
 		Map<String, String> getTags();
 		String getValue(String key);
-
-		ElementType getType();
 	}
 
 	public interface Node extends Element, Identifiable<Node> {
@@ -135,6 +135,7 @@ public final class Osm {
 	public interface Relation extends Element, Identifiable<Relation> {
 
 		List<Element> getMembers();
+		String getMemberRole(Element member);
 		Map<Id<Relation>, Relation> getRelations();
 	}
 

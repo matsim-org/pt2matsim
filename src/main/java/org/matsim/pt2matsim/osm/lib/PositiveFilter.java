@@ -35,6 +35,7 @@ public class PositiveFilter {
 
 	/**
 	 * @return <code>true</code> if at least one of the given tags matches any one of the specified filter-tags.
+	 * Also returns true if no tags have been defined for the given element type.
 	 */
 	public boolean matches(Osm.Element element) {
 		Map<String, Set<String>> checkPairs = keyValuePairs.get(element.getType());
@@ -121,10 +122,10 @@ public class PositiveFilter {
 
 	/*pckg*/ void mergeFilter(PositiveFilter f) {
 		for(Osm.ElementType t : f.keyValuePairs.keySet()) {
-			keyValuePairs.get(t).putAll(f.keyValuePairs.get(t));
+			MapUtils.getMap(t, keyValuePairs).putAll(f.keyValuePairs.get(t));
 		}
 		for(Osm.ElementType t : f.keyValueExceptions.keySet()) {
-			keyValuePairs.get(t).putAll(f.keyValueExceptions.get(t));
+			MapUtils.getMap(t, keyValueExceptions).putAll(f.keyValueExceptions.get(t));
 		}
 	}
 }
