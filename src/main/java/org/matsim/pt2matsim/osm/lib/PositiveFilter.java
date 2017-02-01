@@ -1,9 +1,8 @@
 /* *********************************************************************** *
  * project: org.matsim.*
- *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2013 by the members listed in the COPYING,        *
+ * copyright       : (C) 2016 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -17,45 +16,30 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.osm.parser;
+package org.matsim.pt2matsim.osm.lib;
 
 import org.matsim.core.utils.collections.MapUtils;
-import org.matsim.pt2matsim.osm.lib.Osm;
+import org.matsim.pt2matsim.osm.parser.TagFilter;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * A helper class to easily find out if some OSM entity contains
- * the key-value pairs or tags (with all possible values) one is
- * interested in or not.
- * 
- * @author mrieser / Senozon AG
- *
- * Slightly adapted, exceptions are possible.
+ * @author polettif
  */
-public class TagFilter {
+public class PositiveFilter {
 
 	public final static String MATCH_ALL = "*";
 	private final Map<String, Set<String>> keyValuePairs = new HashMap<>();
 	private final Map<String, Set<String>> keyValueExceptions = new HashMap<>();
 
 	/**
-	 * Defines for which tag (node, way, relation) this filter applies.
-	 */
-	private final Osm.ElementType tagType;
-
-	public TagFilter(Osm.ElementType tag) {
-		this.tagType = tag;
-	}
-
-	/**
-	 *
+	 * @param element osm element (node/way/relation)
 	 * @param key tag name
 	 * @param value <code>null</code> if all values should be taken
 	 */
-	public void add(final String key, final String value) {
+	public void add(Osm.Element element, final String key, final String value) {
 		if(value == null) {
 			keyValuePairs.put(key, null);
 		} else {
@@ -64,9 +48,6 @@ public class TagFilter {
 		}
 	}
 
-	public void add(final String key) {
-		add(key, null);
-	}
 
 	/**
 	 * @param tags key,value pairs
@@ -115,21 +96,6 @@ public class TagFilter {
 		addException(key, null);
 	}
 
-	public Osm.ElementType getTag() {
-		return tagType;
-	}
-
-	/**
-	 * Merges the other filter into this filter
-	 *
-	 */
-	public void mergeFilter(TagFilter otherFilter) {
-		if(!otherFilter.getTag().equals(tagType)) {
-			throw new IllegalArgumentException("Filter types not compatible!");
-		}
-		this.keyValuePairs.putAll(otherFilter.keyValuePairs);
-		this.keyValueExceptions.putAll(otherFilter.keyValueExceptions);
-	}
 
 	/**
 	 * @return an array with filters that contain the usual pt filters
@@ -153,4 +119,5 @@ public class TagFilter {
 
 		return new TagFilter[]{parserWayFilter, parserRelationFilter};
 	}
+
 }

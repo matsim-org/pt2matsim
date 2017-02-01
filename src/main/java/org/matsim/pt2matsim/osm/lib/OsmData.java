@@ -48,7 +48,7 @@ public interface OsmData {
 	 */
 	void buildMap();
 
-	void handleNode(Osm.ParsedNode node);
-	void handleWay(Osm.ParsedWay way);
-	void handleRelation(Osm.ParsedRelation relation);
+	void handleNode(OsmImpl.ParsedNode node);
+	void handleWay(OsmImpl.ParsedWay way);
+	void handleRelation(OsmImpl.ParsedRelation relation);
 }
