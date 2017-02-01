@@ -116,27 +116,26 @@ public final class Osm {
 
 	public interface Element {
 		Map<String, String> getTags();
-
 		String getValue(String key);
 
-		Map<Id<Relation>, Relation> getRelations();
+		ElementType getType();
 	}
 
 	public interface Node extends Element, Identifiable<Node> {
-
 		Map<Id<Way>, Way> getWays();
-
 		Coord getCoord();
+		Map<Id<Relation>, Relation> getRelations();
 	}
 
 	public interface Way extends Element, Identifiable<Way> {
-
 		List<Node> getNodes();
+		Map<Id<Relation>, Relation> getRelations();
 	}
 
 	public interface Relation extends Element, Identifiable<Relation> {
 
 		List<Element> getMembers();
+		Map<Id<Relation>, Relation> getRelations();
 	}
 
 

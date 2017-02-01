@@ -103,6 +103,7 @@ public class OsmTransitScheduleConverter {
 	}
 
 	private void parse() {
+		/*
 		TagFilter nodeFilter = new TagFilter(Osm.ElementType.NODE);
 		nodeFilter.add(Osm.Key.PUBLIC_TRANSPORT, Osm.Value.STOP_POSITION);
 
@@ -123,6 +124,7 @@ public class OsmTransitScheduleConverter {
 		relationFilter.add(Osm.Key.ROUTE_MASTER, Osm.Value.MONORAIL);
 		relationFilter.add(Osm.Key.ROUTE_MASTER, Osm.Value.SUBWAY);
 		relationFilter.add(Osm.Key.ROUTE_MASTER, Osm.Value.FERRY);
+		*/
 
 //		handler = new OsmXmlParserHandler(nodeFilter, wayFilter, relationFilter);
 

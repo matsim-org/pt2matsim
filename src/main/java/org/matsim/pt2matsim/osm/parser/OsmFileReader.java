@@ -35,11 +35,6 @@ import java.util.Stack;
  */
 public class OsmFileReader extends MatsimXmlParser {
 
-//	todo cleanup
-//	private OsmNodeHandler nodeHandler;
-//	private OsmWayHandler wayHandler;
-//	private OsmRelationHandler relHandler;
-
 	private OsmData osmData;
 
 	private OsmImpl.ParsedNode currentNode = null;
@@ -57,16 +52,13 @@ public class OsmFileReader extends MatsimXmlParser {
 
 	@Override
 	public void startTag(final String name, final Attributes atts, final Stack<String> context) {
-//		if ("node".equals(name) & this.nodeHandler != null) {
 		if ("node".equals(name)) {
 			long id = Long.parseLong(atts.getValue("id"));
 			double lat = Double.parseDouble(atts.getValue("lat"));
 			double lon = Double.parseDouble(atts.getValue("lon"));
 			this.currentNode = new OsmImpl.ParsedNode(id, new Coord(lon, lat));
-//		} else if ("way".equals(name) & this.wayHandler != null) {
 		} else if ("way".equals(name)) {
 			this.currentWay = new OsmImpl.ParsedWay(Long.parseLong(atts.getValue("id")));
-//		} else if ("relation".equals(name) & this.relHandler != null) {
 		} else if ("relation".equals(name)) {
 			String id = StringCache.get(atts.getValue("id"));
 			this.currentRelation = new OsmImpl.ParsedRelation(Long.parseLong(id));
@@ -100,17 +92,14 @@ public class OsmFileReader extends MatsimXmlParser {
 
 	@Override
 	public void endTag(final String name, final String content, final Stack<String> context) {
-//		if ("node".equals(name) & this.nodeHandler != null) {
 		if ("node".equals(name)) {
 			this.nodeCounter.incCounter();
 			this.osmData.handleNode(this.currentNode);
 			this.currentNode = null;
-//		} else if ("way".equals(name) & this.wayHandler != null) {
 		} else if ("way".equals(name)) {
 			this.wayCounter.incCounter();
 			this.osmData.handleWay(this.currentWay);
 			this.currentWay = null;
-//		} else if ("relation".equals(name) & this.relHandler != null) {
 		} else if ("relation".equals(name)) {
 			this.relationCounter.incCounter();
 			this.osmData.handleRelation(this.currentRelation);

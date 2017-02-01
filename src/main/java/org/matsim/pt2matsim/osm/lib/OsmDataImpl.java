@@ -22,7 +22,6 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.collections.QuadTree;
-import org.matsim.pt2matsim.osm.parser.TagFilter;
 
 import java.util.*;
 
@@ -50,13 +49,10 @@ public class OsmDataImpl implements OsmData {
 	private QuadTree<Osm.Node> quadTree;
 
 	// Filters
-	private TagFilter nodeFilter;
-	private TagFilter relationFilter;
-	private TagFilter wayFilter;
-	private TagFilter filter = new TagFilter(Osm.ElementType.NODE);
+	private PositiveFilter filter = new PositiveFilter();
 
-	public OsmDataImpl(TagFilter... filter) {
-		for(TagFilter f : filter) {
+	public OsmDataImpl(PositiveFilter... filters) {
+		for(PositiveFilter f : filters) {
 			this.filter.mergeFilter(f);
 		}
 	}
@@ -187,9 +183,16 @@ public class OsmDataImpl implements OsmData {
 		Osm.Relation rel = relations.get(id);
 
 		for(Osm.Element e : rel.getMembers()) {
-			e.getRelations().remove(rel.getId());
+			if(e instanceof OsmImpl.OsmNode) {
+				((OsmImpl.OsmNode) e).getRelations().remove(rel.getId());
+			}
+			if(e instanceof OsmImpl.OsmWay) {
+				((OsmImpl.OsmWay) e).getRelations().remove(rel.getId());
+			}
+			if(e instanceof OsmImpl.OsmRelation) {
+				((OsmImpl.OsmRelation) e).getRelations().remove(rel.getId());
+			}
 		}
-
 		removeMemberFromRelations(rel);
 	}
 
@@ -203,7 +206,7 @@ public class OsmDataImpl implements OsmData {
 
 	@Override
 	public void handleNode(OsmImpl.ParsedNode node) {
-		if(nodeFilter == null || nodeFilter.matches(node.tags)) {
+		if(filter.matches(node)) {
 			parsedNodes.put(node.id, node);
 
 			updateExtent(node.coord);
@@ -221,14 +224,14 @@ public class OsmDataImpl implements OsmData {
 
 	@Override
 	public void handleRelation(OsmImpl.ParsedRelation relation) {
-		if(relationFilter == null || relationFilter.matches(relation.tags)) {
+		if(filter.matches(relation)) {
 			parsedRelations.put(relation.id, relation);
 		}
 	}
 
 	@Override
 	public void handleWay(OsmImpl.ParsedWay way) {
-		if(wayFilter == null || wayFilter.matches(way.tags)) {
+		if(filter.matches(way)) {
 			parsedWays.put(way.id, way);
 		}
 	}
