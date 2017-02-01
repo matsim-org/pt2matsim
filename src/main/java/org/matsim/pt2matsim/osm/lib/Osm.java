@@ -114,18 +114,6 @@ public final class Osm {
 		public static final String SUBWAY = "subway";
 	}
 
-	public static class Way {
-		public final long id;
-		public final List<Long> nodes = new ArrayList<>(6);
-		public final Map<String, String> tags = new HashMap<>(5, 0.9f);
-
-		public boolean used = true;
-
-		public Way(final long id) {
-			this.id = id;
-		}
-	}
-
 	public static class Node {
 		public final long id;
 		public final Coord coord;
@@ -137,6 +125,18 @@ public final class Osm {
 		public Node(final long id, final Coord coord) {
 			this.id = id;
 			this.coord = coord;
+		}
+	}
+
+	public static class Way {
+		public final long id;
+		public final List<Long> nodes = new ArrayList<>(6);
+		public final Map<String, String> tags = new HashMap<>(5, 0.9f);
+
+		public boolean used = true;
+
+		public Way(final long id) {
+			this.id = id;
 		}
 	}
 

@@ -16,8 +16,9 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.osm.lib;
+package org.matsim.pt2matsim.osm.parser;
 
+import org.matsim.pt2matsim.osm.lib.Osm;
 import org.matsim.pt2matsim.osm.parser.handler.OsmNodeHandler;
 import org.matsim.pt2matsim.osm.parser.handler.OsmRelationHandler;
 import org.matsim.pt2matsim.osm.parser.handler.OsmWayHandler;
@@ -32,7 +33,7 @@ import java.util.Map;
  *
  * @author polettif
  */
-public class OsmParserHandler implements OsmNodeHandler, OsmRelationHandler, OsmWayHandler {
+public class OsmXmlParserHandler implements OsmNodeHandler, OsmRelationHandler, OsmWayHandler {
 	
 	private TagFilter nodeFilter;
 	private TagFilter wayFilter;
@@ -42,10 +43,10 @@ public class OsmParserHandler implements OsmNodeHandler, OsmRelationHandler, Osm
 	private final Map<Long, Osm.Relation> relations = new HashMap<>();
 	private final Map<Long, Osm.Way> ways = new HashMap<>();
 
-	public OsmParserHandler() {
+	public OsmXmlParserHandler() {
 	}
 
-	public OsmParserHandler(TagFilter... filters) {
+	public OsmXmlParserHandler(TagFilter... filters) {
 		for(TagFilter filter : filters) {
 			switch(filter.getTag()) {
 				case NODE:
