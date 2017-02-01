@@ -115,7 +115,6 @@ public final class Osm {
 	}
 
 	public interface Element {
-		long getOsmId();
 		ElementType getType();
 		Map<String, String> getTags();
 		String getValue(String key);

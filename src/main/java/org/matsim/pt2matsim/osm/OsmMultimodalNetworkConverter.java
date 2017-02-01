@@ -57,9 +57,9 @@ public class OsmMultimodalNetworkConverter {
 
 	private final static Logger log = Logger.getLogger(OsmMultimodalNetworkConverter.class);
 
-	protected OsmConverterConfigGroup config;
-	private Map<String, OsmConverterConfigGroup.OsmWayParams> highwayParams = new HashMap<>();
-	private Map<String, OsmConverterConfigGroup.OsmWayParams> railwayParams = new HashMap<>();
+	private OsmConverterConfigGroup config;
+	private final Map<String, OsmConverterConfigGroup.OsmWayParams> highwayParams = new HashMap<>();
+	private final Map<String, OsmConverterConfigGroup.OsmWayParams> railwayParams = new HashMap<>();
 
 	private OsmData osmData;
 
@@ -70,7 +70,6 @@ public class OsmMultimodalNetworkConverter {
 	 */
 	private final Set<String> unknownHighways = new HashSet<>();
 	private final Set<String> unknownRailways = new HashSet<>();
-	private final Set<String> unknownPTs = new HashSet<>();
 	private final Set<String> unknownWays = new HashSet<>();
 	private final Set<String> unknownMaxspeedTags = new HashSet<>();
 	private final Set<String> unknownLanesTags = new HashSet<>();
@@ -262,12 +261,6 @@ public class OsmMultimodalNetworkConverter {
 			log.info("The following railway-types had no defaults set and were thus NOT converted:");
 			for(String railwayType : this.unknownRailways) {
 				log.info("- \"" + railwayType + "\"");
-			}
-		}
-		if(this.unknownPTs.size() > 0) {
-			log.info("The following PT-types had no defaults set and were thus NOT converted:");
-			for(String ptType : this.unknownPTs) {
-				log.info("- \"" + ptType + "\"");
 			}
 		}
 		if(this.unknownWays.size() > 0) {

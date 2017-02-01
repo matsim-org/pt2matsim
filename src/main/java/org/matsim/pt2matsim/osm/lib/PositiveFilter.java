@@ -29,7 +29,7 @@ import java.util.Set;
  */
 public class PositiveFilter {
 
-	public final static String MATCH_ALL = "*";
+	private final static String MATCH_ALL = "*";
 	private final Map<Osm.ElementType, Map<String, Set<String>>> keyValuePairs = new HashMap<>();
 	private final Map<Osm.ElementType, Map<String, Set<String>>> keyValueExceptions = new HashMap<>();
 
