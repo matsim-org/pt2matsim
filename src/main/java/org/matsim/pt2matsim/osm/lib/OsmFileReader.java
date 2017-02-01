@@ -27,7 +27,7 @@ import org.xml.sax.Attributes;
 import java.util.*;
 
 /**
- * @author mrieser / Senozon AG
+ * Based on mrieser / Senozon AG
  */
 public class OsmFileReader extends MatsimXmlParser {
 
