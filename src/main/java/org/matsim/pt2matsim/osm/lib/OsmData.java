@@ -26,6 +26,9 @@ import java.util.Map;
  * Interface to load an osm-xml file. Is used by the osm
  * network converter (similar to GtfsFeed and GtfsConverter)
  *
+ * Should be called OSMMap since it represents the map/network
+ * but that's a bit redundant
+ *
  * @author polettif
  */
 public interface OsmData {
@@ -39,4 +42,13 @@ public interface OsmData {
 	void removeNode(Id<Osm.Node> id);
 	void removeWay(Id<Osm.Way> id);
 	void removeRelation(Id<Osm.Relation> id);
+
+	/**
+	 * Creates the node/way/relation objects and connects them.
+	 */
+	void buildMap();
+
+	void handleNode(Osm.ParsedNode node);
+	void handleWay(Osm.ParsedWay way);
+	void handleRelation(Osm.ParsedRelation relation);
 }

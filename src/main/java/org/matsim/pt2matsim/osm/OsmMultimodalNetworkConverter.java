@@ -125,7 +125,7 @@ public class OsmMultimodalNetworkConverter {
 		Map<Id<Osm.Way>, Osm.Way> ways = osmData.getWays();
 		Map<Id<Osm.Relation>, Osm.Relation> relations = osmData.getRelations();
 
-		TagFilter serviceRailTracksFilter = new TagFilter(Osm.Tag.WAY);
+		TagFilter serviceRailTracksFilter = new TagFilter(Osm.Element.WAY);
 		serviceRailTracksFilter.add(Osm.Key.SERVICE);
 
 		// remove unusable ways

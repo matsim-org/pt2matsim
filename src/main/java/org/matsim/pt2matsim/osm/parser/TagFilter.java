@@ -44,9 +44,9 @@ public class TagFilter {
 	/**
 	 * Defines for which tag (node, way, relation) this filter applies.
 	 */
-	private final Osm.Tag tagType;
+	private final Osm.Element tagType;
 
-	public TagFilter(Osm.Tag tag) {
+	public TagFilter(Osm.Element tag) {
 		this.tagType = tag;
 	}
 
@@ -115,7 +115,7 @@ public class TagFilter {
 		addException(key, null);
 	}
 
-	public Osm.Tag getTag() {
+	public Osm.Element getTag() {
 		return tagType;
 	}
 
@@ -136,12 +136,12 @@ public class TagFilter {
 	 */
 	public static TagFilter[] getDefaultPTFilter() {
 		// read osm data
-		TagFilter parserWayFilter = new TagFilter(Osm.Tag.WAY);
+		TagFilter parserWayFilter = new TagFilter(Osm.Element.WAY);
 		parserWayFilter.add(Osm.Key.HIGHWAY);
 		parserWayFilter.add(Osm.Key.RAILWAY);
 		parserWayFilter.addException(Osm.Key.SERVICE);
 
-		TagFilter parserRelationFilter = new TagFilter(Osm.Tag.RELATION);
+		TagFilter parserRelationFilter = new TagFilter(Osm.Element.RELATION);
 		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.BUS);
 		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.TROLLEYBUS);
 		parserRelationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.RAIL);

@@ -19,10 +19,9 @@
 package org.matsim.pt2matsim.osm.lib;
 
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.collections.QuadTree;
-import org.matsim.pt2matsim.osm.parser.OsmXmlParser;
-import org.matsim.pt2matsim.osm.parser.OsmXmlParserHandler;
 import org.matsim.pt2matsim.osm.parser.TagFilter;
 
 import java.util.*;
@@ -38,30 +37,35 @@ public class OsmDataImpl implements OsmData {
 	private final Map<Id<Osm.Way>, Osm.Way> ways = new HashMap<>();
 	private final Map<Id<Osm.Relation>, Osm.Relation> relations = new HashMap<>();
 
-	private final QuadTree<Osm.Node> quadTree;
+	private final Map<Long, Osm.ParsedNode> parsedNodes = new HashMap<>();
+	private final Map<Long, Osm.ParsedRelation> parsedRelations = new HashMap<>();
+	private final Map<Long, Osm.ParsedWay> parsedWays = new HashMap<>();
 
-	public OsmDataImpl(String osmFile) {
-		TagFilter[] filters = TagFilter.getDefaultPTFilter();
+	// node extent
+	private double minX = Double.MAX_VALUE;
+	private double minY = Double.MAX_VALUE;
+	private double maxX = Double.MIN_VALUE;
+	private double maxY = Double.MIN_VALUE;
 
-		log.info("Reading OpenStreetMap file...");
-		OsmXmlParserHandler handler = new OsmXmlParserHandler(filters);
-		OsmXmlParser parser = new OsmXmlParser(handler);
-		parser.readFile(osmFile);
-		log.info("OpenStreetMap file read.");
+	private QuadTree<Osm.Node> quadTree;
 
-		quadTree = new QuadTree<>(handler.minX, handler.minY, handler.maxX, handler.maxY);
+	// Filters
+	private TagFilter nodeFilter;
+	private TagFilter relationFilter;
+	private TagFilter wayFilter;
+	private TagFilter filter = new TagFilter(Osm.Element.NODE);
 
-		log.info("Building map...");
-		buildMap(handler.getNodes().values(), handler.getWays().values(), handler.getRelations().values());
-		handler.getNodes().clear();
-		handler.getWays().clear();
-		handler.getRelations().clear();
-		log.info("Map built.");
+	public OsmDataImpl(TagFilter... filter) {
+		for(TagFilter f : filter) {
+			this.filter.mergeFilter(f);
+		}
 	}
 
-	private void buildMap(Collection<Osm.ParsedNode> parsedNodes, Collection<Osm.ParsedWay> parsedWays, Collection<Osm.ParsedRelation> parsedRelations) {
+	public void buildMap() {
+		quadTree = new QuadTree<>(minX, minY, maxX, maxY);
+
 		// create nodes
-		for(Osm.ParsedNode pn : parsedNodes) {
+		for(Osm.ParsedNode pn : parsedNodes.values()) {
 			Osm.Node newNode = new Osm.Node(pn.id, pn.coord, pn.tags);
 			quadTree.put(newNode.getCoord().getX(), newNode.getCoord().getY(), newNode);
 			if(nodes.put(newNode.getId(), newNode) != null) {
@@ -70,7 +74,7 @@ public class OsmDataImpl implements OsmData {
 		}
 
 		// create ways
-		for(Osm.ParsedWay pw : parsedWays) {
+		for(Osm.ParsedWay pw : parsedWays.values()) {
 			List<Osm.Node> nodeList = new ArrayList<>();
 			for(Long id : pw.nodes) {
 				nodeList.add(nodes.get(Id.create(id, Osm.Node.class)));
@@ -88,7 +92,7 @@ public class OsmDataImpl implements OsmData {
 		}
 
 		// create relations
-		for(Osm.ParsedRelation pr : parsedRelations) {
+		for(Osm.ParsedRelation pr : parsedRelations.values()) {
 			Osm.Relation newRel = new Osm.Relation(pr.id, pr.tags);
 			if(relations.put(newRel.getId(), newRel) != null) {
 				throw new RuntimeException("Relation id " + newRel.getId() + "already exists on map");
@@ -96,7 +100,7 @@ public class OsmDataImpl implements OsmData {
 		}
 
 		// add relation members
-		for(Osm.ParsedRelation pr : parsedRelations) {
+		for(Osm.ParsedRelation pr : parsedRelations.values()) {
 
 			Osm.Relation currentRel = relations.get(Id.create(pr.id, Osm.Relation.class));
 
@@ -128,6 +132,11 @@ public class OsmDataImpl implements OsmData {
 			}
 			currentRel.setMembers(memberList, memberRoles);
 		}
+
+		// clear memory
+		parsedNodes.clear();
+		parsedWays.clear();
+		parsedRelations.clear();
 	}
 
 	@Override
@@ -184,4 +193,35 @@ public class OsmDataImpl implements OsmData {
 		}
 	}
 
+	@Override
+	public void handleNode(Osm.ParsedNode node) {
+		if(nodeFilter == null || nodeFilter.matches(node.tags)) {
+			parsedNodes.put(node.id, node);
+
+			updateExtent(node.coord);
+		}
+	}
+
+	private void updateExtent(Coord c) {
+		if(c.getX() < minX) minX = c.getX();
+		if(c.getY() < minY) minY = c.getY();
+		if(c.getX() > maxX) maxX = c.getX();
+		if(c.getY() > maxY) maxY = c.getY();
+	}
+
+	// todo combine filters
+
+	@Override
+	public void handleRelation(Osm.ParsedRelation relation) {
+		if(relationFilter == null || relationFilter.matches(relation.tags)) {
+			parsedRelations.put(relation.id, relation);
+		}
+	}
+
+	@Override
+	public void handleWay(Osm.ParsedWay way) {
+		if(wayFilter == null || wayFilter.matches(way.tags)) {
+			parsedWays.put(way.id, way);
+		}
+	}
 }
