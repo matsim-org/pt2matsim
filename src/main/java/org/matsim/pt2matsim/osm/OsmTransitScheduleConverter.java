@@ -47,8 +47,6 @@ public class OsmTransitScheduleConverter {
 	private final CoordinateTransformation transformation;
 	private final TransitSchedule transitSchedule;
 	private final TransitScheduleFactory factory;
-	private final String osmInput;
-//	private OsmXmlParserHandler handler;
 
 	// filters
 	private final TagFilter stop_area;
@@ -62,11 +60,9 @@ public class OsmTransitScheduleConverter {
 	public OsmTransitScheduleConverter(TransitSchedule schedule, CoordinateTransformation transformation, String osmInput) {
 		this.transitSchedule = schedule;
 		this.transformation = transformation;
-		this.osmInput = osmInput;
 
 		this.osmData = new OsmDataImpl();
 		new OsmFileReader(osmData).readFile(osmInput);
-
 
 		this.factory = transitSchedule.getFactory();
 
@@ -274,7 +270,7 @@ public class OsmTransitScheduleConverter {
 
 			// route Stops
 			if(member.getType().equals(Osm.ElementType.NODE) && (Osm.Value.STOP.equals(relation.getMemberRole(member)) || Osm.Value.STOP_FORWARD.equals(relation.getMemberRole(member)))) {
-				Id<TransitStopFacility> id = Id.create(member.getOsmId(), TransitStopFacility.class);
+				Id<TransitStopFacility> id = Id.create(((Osm.Node) member).getId(), TransitStopFacility.class);
 				TransitStopFacility transitStopFacility = transitSchedule.getFacilities().get(id);
 				if(transitStopFacility == null) {
 					return null;

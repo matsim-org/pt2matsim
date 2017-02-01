@@ -37,16 +37,14 @@ public class OsmImpl {
 	 */
 	public static class Node implements Osm.Node {
 
-		private final long osmId;
 		private final Id<Osm.Node> id;
 		private final Coord coord;
 		private final Map<String, String> tags;
 
-		private Map<Id<Osm.Way>, Osm.Way> ways = new HashMap<>();
-		private Map<Id<Osm.Relation>, Osm.Relation> relations = new HashMap<>();
+		private final Map<Id<Osm.Way>, Osm.Way> ways = new HashMap<>();
+		private final Map<Id<Osm.Relation>, Osm.Relation> relations = new HashMap<>();
 
 		public Node(final long id, final Coord coord, Map<String, String> tags) {
-			this.osmId = id;
 			this.id = Id.create(id, Osm.Node.class);
 			this.coord = coord;
 			this.tags = tags;
@@ -69,11 +67,6 @@ public class OsmImpl {
 		@Override
 		public String getValue(String key) {
 			return tags.get(key);
-		}
-
-		@Override
-		public long getOsmId() {
-			return osmId;
 		}
 
 		@Override
@@ -122,15 +115,13 @@ public class OsmImpl {
 	 */
 	public static class Way implements Osm.Way {
 
-		private final long osmId;
 		private final Id<Osm.Way> id;
 		private final List<Osm.Node> nodes;
 		private final Map<String, String> tags;
 
-		private Map<Id<Osm.Relation>, Osm.Relation> relations = new HashMap<>();
+		private final Map<Id<Osm.Relation>, Osm.Relation> relations = new HashMap<>();
 
 		public Way(long id, List<Osm.Node> nodes, Map<String, String> tags) {
-			this.osmId = id;
 			this.id = Id.create(id, Osm.Way.class);
 			this.nodes =  nodes;
 			this.tags = tags;
@@ -153,11 +144,6 @@ public class OsmImpl {
 		@Override
 		public String getValue(String key) {
 			return tags.get(key);
-		}
-
-		@Override
-		public long getOsmId() {
-			return osmId;
 		}
 
 		@Override
@@ -197,16 +183,14 @@ public class OsmImpl {
 	 */
 	public static class Relation implements Osm.Relation {
 
-		private final long osmId;
 		private final Id<Osm.Relation> id;
 		private List<Osm.Element> members;
 		private final Map<String, String> tags;
 		private Map<Osm.Element, String> memberRoles;
 
-		private Map<Id<Osm.Relation>, Osm.Relation> relations = new HashMap<>();
+		private final Map<Id<Osm.Relation>, Osm.Relation> relations = new HashMap<>();
 
 		public Relation(long id, Map<String, String> tags) {
-			this.osmId = id;
 			this.id = Id.create(id, Osm.Relation.class);
 			this.tags = tags;
 		}
@@ -228,11 +212,6 @@ public class OsmImpl {
 		@Override
 		public String getValue(String key) {
 			return tags.get(key);
-		}
-
-		@Override
-		public long getOsmId() {
-			return osmId;
 		}
 
 		@Override

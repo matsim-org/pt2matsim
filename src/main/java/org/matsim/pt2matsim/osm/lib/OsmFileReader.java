@@ -31,7 +31,7 @@ import java.util.*;
  */
 public class OsmFileReader extends MatsimXmlParser {
 
-	private OsmData osmData;
+	private final OsmData osmData;
 
 	private ParsedNode currentNode = null;
 	private ParsedWay currentWay = null;
@@ -129,11 +129,6 @@ public class OsmFileReader extends MatsimXmlParser {
 		}
 
 		@Override
-		public long getOsmId() {
-			return id;
-		}
-
-		@Override
 		public Osm.ElementType getType() {
 			return Osm.ElementType.NODE;
 		}
@@ -159,11 +154,6 @@ public class OsmFileReader extends MatsimXmlParser {
 		}
 
 		@Override
-		public long getOsmId() {
-			return id;
-		}
-
-		@Override
 		public Osm.ElementType getType() {
 			return Osm.ElementType.WAY;
 		}
@@ -186,11 +176,6 @@ public class OsmFileReader extends MatsimXmlParser {
 		@Override
 		public String getValue(String key) {
 			return tags.get(key);
-		}
-
-		@Override
-		public long getOsmId() {
-			return id;
 		}
 
 		@Override
