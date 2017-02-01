@@ -19,13 +19,13 @@
 
 package org.matsim.pt2matsim.osm.parser.handler;
 
-import org.matsim.pt2matsim.osm.lib.Osm.Node;
+import org.matsim.pt2matsim.osm.lib.Osm.ParsedNode;
 
 /**
  * @author mrieser / Senozon AG
  */
 public interface OsmNodeHandler extends OsmHandler {
 
-	void handleNode(final Node node);
+	void handleNode(final ParsedNode node);
 	
 }

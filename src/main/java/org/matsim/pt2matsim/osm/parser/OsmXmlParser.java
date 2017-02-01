@@ -40,9 +40,9 @@ public class OsmXmlParser extends MatsimXmlParser {
 	private final OsmNodeHandler nodeHandler;
 	private final OsmWayHandler wayHandler;
 	private final OsmRelationHandler relHandler;
-	private Osm.Node currentNode = null;
-	private Osm.Way currentWay = null;
-	private Osm.Relation currentRelation = null;
+	private Osm.ParsedNode currentNode = null;
+	private Osm.ParsedWay currentWay = null;
+	private Osm.ParsedRelation currentRelation = null;
 	private final Counter nodeCounter = new Counter("node ");
 	private final Counter wayCounter = new Counter("way ");
 	private final Counter relationCounter = new Counter("relation ");
@@ -73,12 +73,12 @@ public class OsmXmlParser extends MatsimXmlParser {
 			long id = Long.parseLong(atts.getValue("id"));
 			double lat = Double.parseDouble(atts.getValue("lat"));
 			double lon = Double.parseDouble(atts.getValue("lon"));
-			this.currentNode = new Osm.Node(id, new Coord(lon, lat));
+			this.currentNode = new Osm.ParsedNode(id, new Coord(lon, lat));
 		} else if ("way".equals(name) & this.wayHandler != null) {
-			this.currentWay = new Osm.Way(Long.parseLong(atts.getValue("id")));
+			this.currentWay = new Osm.ParsedWay(Long.parseLong(atts.getValue("id")));
 		} else if ("relation".equals(name) & this.relHandler != null) {
 			String id = StringCache.get(atts.getValue("id"));
-			this.currentRelation = new Osm.Relation(Long.parseLong(id));
+			this.currentRelation = new Osm.ParsedRelation(Long.parseLong(id));
 		} else if ("nd".equals(name)) {
 			if (this.currentWay != null) {
 				this.currentWay.nodes.add(Long.valueOf(atts.getValue("ref")));
@@ -102,7 +102,7 @@ public class OsmXmlParser extends MatsimXmlParser {
 				} else if ("relation".equals(lcType)) {
 					type = Osm.Tag.RELATION;
 				}
-				this.currentRelation.members.add(new Osm.RelationMember(type, Long.parseLong(atts.getValue("ref")), StringCache.get(atts.getValue("role"))));
+				this.currentRelation.members.add(new Osm.ParsedRelationMember(type, Long.parseLong(atts.getValue("ref")), StringCache.get(atts.getValue("role"))));
 			}
 		}
 	}

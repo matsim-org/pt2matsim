@@ -18,6 +18,8 @@
 
 package org.matsim.pt2matsim.osm.lib;
 
+import org.matsim.api.core.v01.Id;
+
 import java.util.Map;
 
 /**
@@ -28,9 +30,13 @@ import java.util.Map;
  */
 public interface OsmData {
 
-	Map<Long, Osm.Node> getNodes();
+	Map<Id<Osm.Node>, Osm.Node> getNodes();
 
-	Map<Long, Osm.Relation> getRelations();
+	Map<Id<Osm.Way>, Osm.Way> getWays();
 
-	Map<Long, Osm.Way> getWays();
+	Map<Id<Osm.Relation>, Osm.Relation> getRelations();
+
+	void removeNode(Id<Osm.Node> id);
+	void removeWay(Id<Osm.Way> id);
+	void removeRelation(Id<Osm.Relation> id);
 }

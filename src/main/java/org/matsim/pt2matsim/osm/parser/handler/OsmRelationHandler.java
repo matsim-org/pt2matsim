@@ -19,13 +19,13 @@
 
 package org.matsim.pt2matsim.osm.parser.handler;
 
-import org.matsim.pt2matsim.osm.lib.Osm.Relation;
+import org.matsim.pt2matsim.osm.lib.Osm.ParsedRelation;
 
 /**
  * @author mrieser / Senozon AG
  */
 public interface OsmRelationHandler extends OsmHandler {
 
-	void handleRelation(final Relation relation);
+	void handleRelation(final ParsedRelation relation);
 
 }
