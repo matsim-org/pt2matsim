@@ -35,14 +35,14 @@ public final class Osm {
 	/**
 	 * OSM tags used by the converters
 	 */
-	public enum Tag {
+	public enum Element {
 		NODE("node"),
 		WAY("way"),
 		RELATION("relation");
 
 		public final String name;
 
-		Tag(String name) {
+		Element(String name) {
 			this.name = name;
 		}
 
@@ -153,11 +153,11 @@ public final class Osm {
 	}
 
 	public static class ParsedRelationMember {
-		public final Tag type;
+		public final Element type;
 		public final long refId;
 		public final String role;
 
-		public ParsedRelationMember(final Tag type, final long refId, final String role) {
+		public ParsedRelationMember(final Element type, final long refId, final String role) {
 			this.type = type;
 			this.refId = refId;
 			this.role = role;

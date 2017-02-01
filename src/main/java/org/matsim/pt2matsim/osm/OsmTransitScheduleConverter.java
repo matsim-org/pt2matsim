@@ -25,7 +25,6 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.osm.lib.Osm;
-import org.matsim.pt2matsim.osm.parser.OsmXmlParserHandler;
 import org.matsim.pt2matsim.osm.parser.TagFilter;
 
 import java.util.*;
@@ -35,6 +34,7 @@ import java.util.*;
  * available public transit data from OSM to a schedule: stop facilities,
  * transitRoutes and routeProfiles. Departures and link sequences are missing.
  *
+ * todo implement new framwork
  * @author polettif
  */
 public class OsmTransitScheduleConverter {
@@ -45,7 +45,7 @@ public class OsmTransitScheduleConverter {
 	private final TransitSchedule transitSchedule;
 	private final TransitScheduleFactory factory;
 	private final String osmInput;
-	private OsmXmlParserHandler handler;
+//	private OsmXmlParserHandler handler;
 
 	// parser
 	private Map<Long, Osm.ParsedNode> nodes;
@@ -68,13 +68,13 @@ public class OsmTransitScheduleConverter {
 		this.factory = transitSchedule.getFactory();
 
 		// initialize filters
-		stop_position = new TagFilter(Osm.Tag.NODE);
+		stop_position = new TagFilter(Osm.Element.NODE);
 		stop_position.add(Osm.Key.PUBLIC_TRANSPORT, Osm.OsmValue.STOP_POSITION);
 
-		stop_area = new TagFilter(Osm.Tag.RELATION);
+		stop_area = new TagFilter(Osm.Element.RELATION);
 		stop_area.add(Osm.Key.PUBLIC_TRANSPORT, Osm.OsmValue.STOP_AREA);
 
-		route_master = new TagFilter(Osm.Tag.RELATION);
+		route_master = new TagFilter(Osm.Element.RELATION);
 		route_master.add(Osm.Key.ROUTE_MASTER, Osm.OsmValue.BUS);
 		route_master.add(Osm.Key.ROUTE_MASTER, Osm.OsmValue.TROLLEYBUS);
 		route_master.add(Osm.Key.ROUTE_MASTER, Osm.OsmValue.TRAM);
@@ -82,7 +82,7 @@ public class OsmTransitScheduleConverter {
 		route_master.add(Osm.Key.ROUTE_MASTER, Osm.OsmValue.SUBWAY);
 		route_master.add(Osm.Key.ROUTE_MASTER, Osm.OsmValue.FERRY);
 
-		ptRoute = new TagFilter(Osm.Tag.RELATION);
+		ptRoute = new TagFilter(Osm.Element.RELATION);
 		ptRoute.add(Osm.Key.ROUTE, Osm.OsmValue.BUS);
 		ptRoute.add(Osm.Key.ROUTE, Osm.OsmValue.TROLLEYBUS);
 		ptRoute.add(Osm.Key.ROUTE, Osm.OsmValue.RAIL);
@@ -102,12 +102,12 @@ public class OsmTransitScheduleConverter {
 	}
 
 	private void parse() {
-		TagFilter nodeFilter = new TagFilter(Osm.Tag.NODE);
+		TagFilter nodeFilter = new TagFilter(Osm.Element.NODE);
 		nodeFilter.add(Osm.Key.PUBLIC_TRANSPORT, Osm.OsmValue.STOP_POSITION);
 
-		TagFilter wayFilter = new TagFilter(Osm.Tag.WAY);
+		TagFilter wayFilter = new TagFilter(Osm.Element.WAY);
 
-		TagFilter relationFilter = new TagFilter(Osm.Tag.RELATION);
+		TagFilter relationFilter = new TagFilter(Osm.Element.RELATION);
 		relationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.BUS);
 		relationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.TROLLEYBUS);
 		relationFilter.add(Osm.Key.ROUTE, Osm.OsmValue.RAIL);
@@ -123,7 +123,7 @@ public class OsmTransitScheduleConverter {
 		relationFilter.add(Osm.Key.ROUTE_MASTER, Osm.OsmValue.SUBWAY);
 		relationFilter.add(Osm.Key.ROUTE_MASTER, Osm.OsmValue.FERRY);
 
-		handler = new OsmXmlParserHandler(nodeFilter, wayFilter, relationFilter);
+//		handler = new OsmXmlParserHandler(nodeFilter, wayFilter, relationFilter);
 
 //		OsmParser parser = new OsmParser();
 //		parser.addHandler(handler);
@@ -137,9 +137,9 @@ public class OsmTransitScheduleConverter {
 	private void convert() {
 		Map<Id<TransitLine>, TransitLine> transitLinesDump = new HashMap<>();
 
-		this.nodes = handler.getNodes();
-		this.relations = handler.getRelations();
-		this.ways = handler.getWays();
+//		this.nodes = handler.getNodes();
+//		this.relations = handler.getRelations();
+//		this.ways = handler.getWays();
 
 		/**
 		 * Create TransitStopFacilities from public_transport=stop_position
@@ -267,7 +267,7 @@ public class OsmTransitScheduleConverter {
 			Osm.ParsedRelationMember member = relation.members.get(i);
 
 			// route Stops
-			if(member.type.equals(Osm.Tag.NODE) && (Osm.OsmValue.STOP.equals(member.role) || Osm.OsmValue.STOP_FORWARD.equals(member.role))) {
+			if(member.type.equals(Osm.Element.NODE) && (Osm.OsmValue.STOP.equals(member.role) || Osm.OsmValue.STOP_FORWARD.equals(member.role))) {
 				Id<TransitStopFacility> id = Id.create(member.refId, TransitStopFacility.class);
 				TransitStopFacility transitStopFacility = transitSchedule.getFacilities().get(id);
 				if(transitStopFacility == null) {

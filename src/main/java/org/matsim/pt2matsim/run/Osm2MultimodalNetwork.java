@@ -24,6 +24,7 @@ import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.osm.OsmMultimodalNetworkConverter;
 import org.matsim.pt2matsim.osm.lib.OsmData;
 import org.matsim.pt2matsim.osm.lib.OsmDataImpl;
+import org.matsim.pt2matsim.osm.parser.OsmFileReader;
 import org.matsim.pt2matsim.tools.NetworkTools;
 
 /**
@@ -69,16 +70,18 @@ public class Osm2MultimodalNetwork {
 	 * @param outputCoordinateSystem output coordinate system (no transformation is applied if <tt>null</tt>)
 	 */
 	public static void run(String osmFile, String outputNetworkFile, String outputCoordinateSystem) {
-		OsmConverterConfigGroup configGroup = OsmConverterConfigGroup.createDefaultConfig();
-		configGroup.setOsmFile(osmFile);
-		configGroup.setOutputNetworkFile(outputNetworkFile);
-		configGroup.setOutputCoordinateSystem(outputCoordinateSystem);
+		OsmConverterConfigGroup config = OsmConverterConfigGroup.createDefaultConfig();
+		config.setOsmFile(osmFile);
+		config.setOutputNetworkFile(outputNetworkFile);
+		config.setOutputCoordinateSystem(outputCoordinateSystem);
 
-		run(configGroup);
+		run(config);
 	}
 
 	public static void run(OsmConverterConfigGroup config) {
-		OsmData osmData = new OsmDataImpl(config.getOsmFile());
+		OsmData osmData = new OsmDataImpl();
+		new OsmFileReader(osmData).readFile(config.getOsmFile());
+
 		OsmMultimodalNetworkConverter converter = new OsmMultimodalNetworkConverter(osmData);
 		converter.convert(config);
 
