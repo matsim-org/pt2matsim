@@ -116,7 +116,6 @@ public class OsmTransitScheduleConverter {
 		ptRoute.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.FUNICULAR);
 		ptRoute.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.MONORAIL);
 		ptRoute.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.SUBWAY);
-		Map<Id<TransitLine>, TransitLine> transitLinesDump = new HashMap<>();
 
 		/**
 		 * Create TransitStopFacilities from public_transport=stop_position
@@ -133,15 +132,15 @@ public class OsmTransitScheduleConverter {
 		 * Create transitLines via route_masters
 		 */
 		for(Osm.Relation relation : osmData.getRelations().values()) {
+			// if relation is a route master
 			if(route_master.matches(relation)) {
 				Id<TransitLine> lineId = createLineId(relation);
 				TransitLine newTransitLine = factory.createTransitLine(lineId);
 				newTransitLine.setName(relation.getTags().get(Osm.Key.NAME));
 
 				for(Osm.Element member : relation.getMembers()) {
-					Osm.Relation routeRel = (Osm.Relation) member;
-					// maybe member route does not exist in area
-					if(routeRel != null) {
+					if(member != null && member.getType().equals(Osm.ElementType.RELATION)) {
+						Osm.Relation routeRel = (Osm.Relation) member;
 						TransitRoute newTransitRoute = createTransitRoute(routeRel);
 						if(newTransitRoute != null) {
 							newTransitLine.addRoute(newTransitRoute);
@@ -149,7 +148,7 @@ public class OsmTransitScheduleConverter {
 						}
 					}
 				}
-				transitLinesDump.put(lineId, newTransitLine);
+				transitSchedule.addTransitLine(newTransitLine);
 			}
 		}
 
@@ -160,22 +159,18 @@ public class OsmTransitScheduleConverter {
 			if(ptRoute.matches(relation) && !routesWithMaster.contains(relation)) {
 				Id<TransitLine> lineId = createLineId(relation);
 
-				if(!transitLinesDump.containsKey(lineId)) {
-					transitLinesDump.put(lineId, factory.createTransitLine(lineId));
+				TransitLine transitLine = transitSchedule.getTransitLines().get(lineId);
+				if(transitLine == null) {
+					transitLine = factory.createTransitLine(lineId);
+					transitSchedule.addTransitLine(transitLine);
 				}
 
-				TransitLine transitLine = transitLinesDump.get(lineId);
 
 				TransitRoute newTransitRoute = createTransitRoute(relation);
 				if(newTransitRoute != null) {
 					transitLine.addRoute(newTransitRoute);
 				}
 			}
-		}
-
-		// add lines to schedule
-		for(TransitLine transitLine : transitLinesDump.values()) {
-			this.transitSchedule.addTransitLine(transitLine);
 		}
 
 		log.info("MATSim Transit Schedule created.");
@@ -267,6 +262,7 @@ public class OsmTransitScheduleConverter {
 		}
 
 //		NetworkRoute networkRoute = (linkSequenceForward.size() == 0 ? null : RouteUtils.createNetworkRoute(linkSequenceForward, null));
+
 		if(stopSequenceForward.size() == 0) {
 			return null;
 		}
@@ -276,6 +272,10 @@ public class OsmTransitScheduleConverter {
 		TransitRoute newTransitRoute = factory.createTransitRoute(transitRouteId, null, stopSequenceForward, relation.getTags().get(Osm.Key.ROUTE));
 		newTransitRoute.addDeparture(factory.createDeparture(Id.create("departure" + routeNr, Departure.class), 60.0));
 
+		if(newTransitRoute.getStops().size() < 2) {
+			newTransitRoute  = null;
+		}
+
 		return newTransitRoute;
 	}
 
@@ -283,6 +283,9 @@ public class OsmTransitScheduleConverter {
 		return Id.create(createStringId(relation), TransitLine.class);
 	}
 
+	/**
+	 * Creates a transitLine id from a relation's tags
+	 */
 	private String createStringId(Osm.Relation relation) {
 		String id;
 		boolean ref = false, operator = false, name = false;
@@ -298,9 +301,9 @@ public class OsmTransitScheduleConverter {
 		}
 
 		if(operator && ref) {
-			id = relation.getValue("operator") + ": " + relation.getValue("ref");
+			id = relation.getValue("operator") + ":" + relation.getValue("ref");
 		} else if(operator && name) {
-			id = relation.getValue("operator") + ": " + relation.getValue("name");
+			id = relation.getValue("operator") + ":" + relation.getValue("name");
 		} else if(ref) {
 			id = relation.getValue("ref");
 		} else if(name) {
@@ -312,6 +315,7 @@ public class OsmTransitScheduleConverter {
 		return id;
 	}
 
+	@Deprecated
 	private Id<TransitLine> createLineId2(Osm.Relation relation) {
 		String id;
 		boolean ref = false, operator = false, name = false;

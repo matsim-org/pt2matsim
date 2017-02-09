@@ -16,7 +16,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.tools;
+package org.matsim.pt2matsim.run;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import org.apache.log4j.Logger;
@@ -30,6 +30,8 @@ import org.matsim.core.utils.gis.PointFeatureFactory;
 import org.matsim.core.utils.gis.PolylineFeatureFactory;
 import org.matsim.core.utils.gis.ShapeFileWriter;
 import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.pt2matsim.tools.NetworkTools;
+import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.*;
@@ -41,23 +43,7 @@ import java.util.*;
  *
  * @author polettif
  */
-public class ScheduleShapeFileWriter {
-
-	private static final Logger log = Logger.getLogger(ScheduleShapeFileWriter.class);
-
-	private final TransitSchedule schedule;
-	private final Network network;
-	private final String crs;
-
-	private Map<TransitStopFacility, Set<Id<TransitRoute>>> routesOnStopFacility = new HashMap<>();
-	private boolean realLinks = true;
-
-	public ScheduleShapeFileWriter(final TransitSchedule schedule, final Network network, String crs, boolean realLinks) {
-		this.schedule = schedule;
-		this.network = network;
-		this.crs = crs;
-		this.realLinks = realLinks;
-	}
+public class Schedule2ShapeFile {
 
 	/**
 	 * Converts the given schedule based on the given network
@@ -67,7 +53,7 @@ public class ScheduleShapeFileWriter {
 	 *             [1] input network
 	 *             [2] coordinate reference system (EPSG=*)
 	 *             [3] output folder
-	 *             [4] use network links (optional, default true)
+	 *             [4] use network links for routes (optional, default true)
 	 */
 	public static void main(final String[] args) {
 		if(args.length == 4) {
@@ -78,6 +64,23 @@ public class ScheduleShapeFileWriter {
 			throw new RuntimeException("Incorrect number of arguments");
 		}
 	}
+
+	private static final Logger log = Logger.getLogger(Schedule2ShapeFile.class);
+
+	private final TransitSchedule schedule;
+	private final Network network;
+	private final String crs;
+
+	private Map<TransitStopFacility, Set<Id<TransitRoute>>> routesOnStopFacility = new HashMap<>();
+	private boolean useNetworkLinks = true;
+
+	public Schedule2ShapeFile(final TransitSchedule schedule, final Network network, String crs, boolean networkLinks) {
+		this.schedule = schedule;
+		this.network = network;
+		this.crs = crs;
+		this.useNetworkLinks = networkLinks;
+	}
+
 
 	/**
 	 * Converts the given schedule based on the given network
@@ -91,14 +94,14 @@ public class ScheduleShapeFileWriter {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(scheduleFile);
 		Network network = NetworkTools.readNetwork(networkFile);
 
-		ScheduleShapeFileWriter s2s = new ScheduleShapeFileWriter(schedule, network, crs, writeLinks);
+		Schedule2ShapeFile s2s = new Schedule2ShapeFile(schedule, network, crs, writeLinks);
 
 		s2s.routes2Polylines(outputFolder + "transitRoutes.shp");
 		s2s.stopFacilities2Shapes(outputFolder + "stopFacilities.shp", outputFolder + "refLinks.shp");
 	}
 
 	public static void run(TransitSchedule schedule, Network network, String crs, String outputFolder) {
-		ScheduleShapeFileWriter s2s = new ScheduleShapeFileWriter(schedule, network, crs, true);
+		Schedule2ShapeFile s2s = new Schedule2ShapeFile(schedule, network, crs, true);
 
 		s2s.routes2Polylines(outputFolder + "transitRoutes.shp");
 		s2s.stopFacilities2Shapes(outputFolder + "stopFacilities.shp", outputFolder + "refLinks.shp");
@@ -138,14 +141,14 @@ public class ScheduleShapeFileWriter {
 			pf.setAttribute("postAreaId", stopFacility.getStopPostAreaId());
 			pf.setAttribute("isBlocking", stopFacility.getIsBlockingLane());
 
-			if(realLinks) pf.setAttribute("linkId", stopFacility.getLinkId().toString());
+			if(useNetworkLinks) pf.setAttribute("linkId", stopFacility.getLinkId().toString());
 
 			if(routesOnStopFacility.get(stopFacility) != null) {
 				pf.setAttribute("routes", CollectionUtils.idSetToString(routesOnStopFacility.get(stopFacility)));
 			}
 			pointFeatures.add(pf);
 
-			if(realLinks) {
+			if(useNetworkLinks) {
 				Link refLink = network.getLinks().get(stopFacility.getLinkId());
 
 				Coordinate[] coordinates = new Coordinate[2];
@@ -170,7 +173,7 @@ public class ScheduleShapeFileWriter {
 
 		ShapeFileWriter.writeGeometries(pointFeatures, pointOutputFile);
 
-		if(realLinks) {
+		if(useNetworkLinks) {
 			ShapeFileWriter.writeGeometries(lineFeatures, lineOutputFile);
 		}
 	}
@@ -198,7 +201,7 @@ public class ScheduleShapeFileWriter {
 				Coordinate[] coordinates = getCoordinatesFromRoute(transitRoute);
 
 				if(coordinates == null) {
-					log.warn("No links found for route " + transitRoute.getId() + " on line " + transitLine.getId());
+					if(useNetworkLinks) log.warn("No links found for route " + transitRoute.getId() + " on line " + transitLine.getId());
 					Coordinate[] stopFacilitiesCoordinates = getCoordinatesFromStopFacilities(transitRoute);
 					SimpleFeature f = ff.createPolyline(stopFacilitiesCoordinates);
 					f.setAttribute("line", transitLine.getId().toString());

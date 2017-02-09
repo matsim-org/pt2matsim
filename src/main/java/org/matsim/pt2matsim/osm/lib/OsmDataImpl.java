@@ -154,17 +154,17 @@ public class OsmDataImpl implements OsmData {
 
 	@Override
 	public Map<Id<Osm.Node>, Osm.Node> getNodes() {
-		return nodes;
+		return Collections.unmodifiableMap(nodes);
 	}
 
 	@Override
 	public Map<Id<Osm.Way>, Osm.Way> getWays() {
-		return ways;
+		return Collections.unmodifiableMap(ways);
 	}
 
 	@Override
 	public Map<Id<Osm.Relation>, Osm.Relation> getRelations() {
-		return relations;
+		return Collections.unmodifiableMap(relations);
 	}
 
 	@Override

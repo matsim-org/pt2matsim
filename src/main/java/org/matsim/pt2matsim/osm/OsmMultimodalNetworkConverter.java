@@ -241,11 +241,6 @@ public class OsmMultimodalNetworkConverter {
 			}
 		}
 
-		// free up memory
-		nodes.clear();
-		ways.clear();
-		relations.clear();
-
 		log.info("= conversion statistics: ==========================");
 		log.info("MATSim: # nodes created: " + this.network.getNodes().size());
 		log.info("MATSim: # links created: " + this.network.getLinks().size());

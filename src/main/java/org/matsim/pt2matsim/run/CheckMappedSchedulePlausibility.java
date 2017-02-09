@@ -26,7 +26,6 @@ import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt2matsim.plausibility.PlausibilityCheck;
 import org.matsim.pt2matsim.plausibility.StopFacilityHistogram;
 import org.matsim.pt2matsim.tools.NetworkTools;
-import org.matsim.pt2matsim.tools.ScheduleShapeFileWriter;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
 import java.io.File;
@@ -107,7 +106,7 @@ public class CheckMappedSchedulePlausibility {
 		check.writeCsv(outputFolder + "allPlausibilityWarnings.csv");
 		check.writeResultShapeFiles(outputFolder+"shp/warnings/");
 
-		ScheduleShapeFileWriter schedule2shp = new ScheduleShapeFileWriter(schedule, network, coordinateSystem, true);
+		Schedule2ShapeFile schedule2shp = new Schedule2ShapeFile(schedule, network, coordinateSystem, true);
 		schedule2shp.routes2Polylines(outputFolder+"shp/schedule/TransitRoutes.shp");
 		schedule2shp.stopFacilities2Shapes(outputFolder+"shp/schedule/StopFacilities.shp", outputFolder+"shp/schedule/StopFacilities_refLinks.shp");
 
