@@ -47,9 +47,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Implementation of a network converter. Modified version from {@link org.matsim.core.utils.io.OsmNetworkReader}
- * Uses a config file ({@link OsmConverterConfigGroup}) to store conversion parameters and default
- * values.
+ * Converts {@link OsmData} to a MATSim network, uses a config file ({@link OsmConverterConfigGroup})
+ * to store conversion parameters and default values
  *
  * @author polettif
  */

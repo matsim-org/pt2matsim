@@ -51,7 +51,7 @@ public class Osm2MultimodalNetwork {
 
 	/**
 	 * Converts an osm file to a MATSim network. The input and output file as well
-	 * as conversion parameters are defined in this file. Run {@link CreateDefaultOsmConfig}
+	 * as conversion parameters are defined in the config file. Run {@link CreateDefaultOsmConfig}
 	 * to create a default config.
 	 *
 	 * @param configFile the config.xml file
@@ -81,6 +81,8 @@ public class Osm2MultimodalNetwork {
 	public static void run(OsmConverterConfigGroup config) {
 		OsmData osmData = new OsmDataImpl(config.getBasicWayFilter());
 		new OsmFileReader(osmData).readFile(config.getOsmFile());
+
+		osmData.buildMap();
 
 		OsmMultimodalNetworkConverter converter = new OsmMultimodalNetworkConverter(osmData);
 		converter.convert(config);

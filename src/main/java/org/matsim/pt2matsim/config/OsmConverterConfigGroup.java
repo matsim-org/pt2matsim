@@ -48,9 +48,9 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	private static final String OUTPUT_NETWORK_FILE ="outputNetworkFile";
 	private static final String OUTPUT_COORDINATE_SYSTEM ="outputCoordinateSystem";
 	private static final String KEEP_PATHS ="keepPaths";
-	public static final String MAX_LINK_LENGTH = "maxLinkLength";
-	public static final String SCALE_MAX_SPEED = "scaleMaxSpeed";
-	public static final String GUESS_FREE_SPEED = "guessFreeSpeed";
+	private static final String MAX_LINK_LENGTH = "maxLinkLength";
+	private static final String SCALE_MAX_SPEED = "scaleMaxSpeed";
+	private static final String GUESS_FREE_SPEED = "guessFreeSpeed";
 
 	private String osmFile;
 	private String outputNetworkFile;
@@ -165,24 +165,24 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		Set<String> railSingleton = Collections.singleton("rail");
 
 		OsmConverterConfigGroup defaultConfig = new OsmConverterConfigGroup();
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Value.MOTORWAY, 		Osm.Key.HIGHWAY, 2, 120.0 / 3.6, 1.0, 2000, 	true, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Value.MOTORWAY,		Osm.Key.HIGHWAY, 2, 120.0 / 3.6, 1.0, 2000, 	true, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Value.MOTORWAY_LINK,	Osm.Key.HIGHWAY, 1, 80.0 / 3.6, 1.0, 1500, 	true, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Value.TRUNK,			Osm.Key.HIGHWAY, 1, 80.0 / 3.6, 1.0, 2000, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Value.TRUNK_LINK,	Osm.Key.HIGHWAY, 1, 50.0 / 3.6, 1.0, 1500, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Value.PRIMARY,		Osm.Key.HIGHWAY, 1, 80.0 / 3.6, 1.0, 1500, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Value.PRIMARY_LINK,	Osm.Key.HIGHWAY, 1, 60.0 / 3.6, 1.0, 1500, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Value.SECONDARY,		Osm.Key.HIGHWAY, 1, 60.0 / 3.6, 1.0, 1000, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Value.TERTIARY,		Osm.Key.HIGHWAY, 1, 50.0 / 3.6, 1.0, 600, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Value.MINOR,			Osm.Key.HIGHWAY, 1, 40.0 / 3.6, 1.0, 600, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Value.UNCLASSIFIED,	Osm.Key.HIGHWAY, 1, 50.0 / 3.6, 1.0, 600, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Value.RESIDENTIAL,	Osm.Key.HIGHWAY, 1, 30.0 / 3.6, 1.0, 600, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Value.LIVING_STREET,	Osm.Key.HIGHWAY, 1, 15.0 / 3.6, 1.0, 300, 	false, carSingleton));
-//		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.SERVICE,		Key.HIGHWAY, 1, 15.0 / 3.6, 1.0, 200, 	false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MOTORWAY, 2, 120.0 / 3.6, 1.0, 2000, 	true, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MOTORWAY, 2, 120.0 / 3.6, 1.0, 2000, 	true, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MOTORWAY_LINK, 1, 80.0 / 3.6, 1.0, 1500, 	true, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.TRUNK, 1, 80.0 / 3.6, 1.0, 2000, 	false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.TRUNK_LINK, 1, 50.0 / 3.6, 1.0, 1500, 	false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.PRIMARY, 1, 80.0 / 3.6, 1.0, 1500, 	false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.PRIMARY_LINK, 1, 60.0 / 3.6, 1.0, 1500, 	false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.SECONDARY, 1, 60.0 / 3.6, 1.0, 1000, 	false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.TERTIARY, 1, 50.0 / 3.6, 1.0, 600, 	false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MINOR, 1, 40.0 / 3.6, 1.0, 600, 	false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.UNCLASSIFIED, 1, 50.0 / 3.6, 1.0, 600, 	false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.RESIDENTIAL, 1, 30.0 / 3.6, 1.0, 600, 	false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.LIVING_STREET, 1, 15.0 / 3.6, 1.0, 300, 	false, carSingleton));
+//		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.SERVICE,		Osm.Key.HIGHWAY, 1, 15.0 / 3.6, 1.0, 200, 	false, carSingleton));
 
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Value.RAIL,			Osm.Key.RAILWAY,	1, 160.0 / 3.6, 1.0, 9999, false, railSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Value.TRAM,			Osm.Key.RAILWAY,	1, 40.0 / 3.6, 1.0, 9999, true, railSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Value.LIGHT_RAIL,	Osm.Key.RAILWAY,	1, 80.0 / 3.6, 1.0, 9999, false, railSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.RAIL, 1, 160.0 / 3.6, 1.0, 9999, false, railSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.TRAM, 1, 40.0 / 3.6, 1.0, 9999, true, railSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.LIGHT_RAIL, 1, 80.0 / 3.6, 1.0, 9999, false, railSingleton));
 
 		return defaultConfig;
 	}
@@ -210,7 +210,6 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	 * Defines link attributes for converting OSM highway paths
 	 * into MATSim links.
 	 *
-	 * @author polettif
 	 */
 	public static class OsmWayParams extends ReflectiveConfigGroup implements MatsimParameters {
 
@@ -239,7 +238,7 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 			super(SET_NAME);
 		}
 
-		public OsmWayParams(String osmValue, String osmKey, double lanes, double freespeed, double freespeedFactor, double laneCapacity, boolean oneway, Set<String> allowedTransportModes) {
+		public OsmWayParams(String osmKey, String osmValue, double lanes, double freespeed, double freespeedFactor, double laneCapacity, boolean oneway, Set<String> allowedTransportModes) {
 			super(SET_NAME);
 			this.osmKey = osmKey;
 			this.osmValue = osmValue;

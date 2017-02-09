@@ -29,6 +29,9 @@ import java.util.Map;
  * Should be called OSMMap since it represents the map/network
  * but that's a bit redundant
  *
+ * OSM data is read via {@link OsmFileReader}. After reading the file
+ * new elements cannot be added directly (indirectly via handlers).
+ *
  * @author polettif
  */
 public interface OsmData {
@@ -37,16 +40,43 @@ public interface OsmData {
 	Map<Id<Osm.Way>, Osm.Way> getWays();
 	Map<Id<Osm.Relation>, Osm.Relation> getRelations();
 
-	void removeNode(Id<Osm.Node> id);
-	void removeWay(Id<Osm.Way> id);
-	void removeRelation(Id<Osm.Relation> id);
-
 	/**
-	 * Creates the node/way/relation objects and connects them.
+	 * Creates the node/way/relation objects from parsed data
+	 * and connects them. Called in {@link OsmFileReader}
 	 */
 	void buildMap();
 
-	void handleRelation(OsmFileReader.ParsedRelation parsedRelation);
-	void handleWay(OsmFileReader.ParsedWay parsedWay);
+
+	/**
+	 * Defines how a node should be handled in {@link OsmFileReader}
+	 */
 	void handleNode(OsmFileReader.ParsedNode parsedNode);
+
+	/**
+	 * Defines how a way should be handled in {@link OsmFileReader}
+	 */
+	void handleWay(OsmFileReader.ParsedWay parsedWay);
+
+	/**
+	 * Defines how a relation should be handled in {@link OsmFileReader}
+	 */
+	void handleRelation(OsmFileReader.ParsedRelation parsedRelation);
+
+
+	/**
+	 * Removes the node from the osm data set. The node is removed from ways
+	 * and relations as well. This might lead to inconsistencies.
+	 */
+	void removeNode(Id<Osm.Node> id);
+
+	/**
+	 * Removes the node from the osm data set. The way is removed from relations
+	 * as well which might lead to inconsistencies.
+	 */
+	void removeWay(Id<Osm.Way> id);
+
+	/**
+	 * Removes the relation from the osm data set. The relation's members are not removed.
+	 */
+	void removeRelation(Id<Osm.Relation> id);
 }
