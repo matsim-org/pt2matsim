@@ -30,9 +30,9 @@ import org.matsim.core.utils.gis.PointFeatureFactory;
 import org.matsim.core.utils.gis.PolylineFeatureFactory;
 import org.matsim.core.utils.gis.ShapeFileWriter;
 import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.pt2matsim.tools.Network2ShapeFile;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
-import org.matsim.utils.gis.matsim2esri.network.Links2ESRIShape;
 import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.*;
@@ -97,7 +97,7 @@ public class Schedule2ShapeFile {
 		s2s.routes2Polylines(outputFolder + "transitRoutes.shp");
 		s2s.stopFacilities2Points(outputFolder + "stopFacilities.shp");
 		s2s.stopRefLinks2Polylines(outputFolder + "refLinks.shp");
-		s2s.convertNetwork(outputFolder + "network.shp");
+		s2s.convertNetwork(outputFolder);
 	}
 
 	public static void run(String crs, String outputFolder, TransitSchedule schedule, Network network) {
@@ -106,7 +106,7 @@ public class Schedule2ShapeFile {
 		s2s.routes2Polylines(outputFolder + "transitRoutes.shp");
 		s2s.stopFacilities2Points(outputFolder + "stopFacilities.shp");
 		s2s.stopRefLinks2Polylines(outputFolder + "refLinks.shp");
-		s2s.convertNetwork(outputFolder + "network.shp");
+		s2s.convertNetwork(outputFolder);
 	}
 
 	/**
@@ -239,9 +239,10 @@ public class Schedule2ShapeFile {
 	/**
 	 * Converts the network to a shapefile. Calls {@link org.matsim.utils.gis.matsim2esri.network.Links2ESRIShape}
 	 */
-	private void convertNetwork(String outputFile) {
-		Links2ESRIShape n2s = new Links2ESRIShape(network, outputFile, crs);
-		n2s.write();
+	private void convertNetwork(String outputFolder) {
+		Network2ShapeFile n2s = new Network2ShapeFile(crs, network);
+		n2s.convertNodes(outputFolder + "networkNodes.shp");
+		n2s.convertLinks(outputFolder + "networkLinks.shp");
 	}
 
 
