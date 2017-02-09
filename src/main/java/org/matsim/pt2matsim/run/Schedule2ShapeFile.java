@@ -32,14 +32,13 @@ import org.matsim.core.utils.gis.ShapeFileWriter;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
+import org.matsim.utils.gis.matsim2esri.network.Links2ESRIShape;
 import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.*;
 
 /**
  * Converts a MATSim Transit Schedule to a ESRI shape file.
- *
- * Experimental!
  *
  * @author polettif
  */
@@ -49,17 +48,16 @@ public class Schedule2ShapeFile {
 	 * Converts the given schedule based on the given network
 	 * to GIS shape files.
 	 *
-	 * @param args [0] input schedule
-	 *             [1] input network
-	 *             [2] coordinate reference system (EPSG=*)
-	 *             [3] output folder
-	 *             [4] use network links for routes (optional, default true)
+	 * @param args [0] coordinate reference system (EPSG:*)
+	 *             [1] output folder
+	 *             [2] input schedule
+	 *             [3] input network (optional)
 	 */
 	public static void main(final String[] args) {
-		if(args.length == 4) {
-			run(args[0], args[1], args[2], args[3], true);
-		} else if(args.length == 5) {
-			run(args[0], args[1], args[2], args[3], Boolean.parseBoolean(args[4]));
+		if(args.length == 3) {
+			run(args[0], args[1], args[2], null);
+		} else if(args.length == 4) {
+			run(args[0], args[1], args[2], args[3]);
 		} else {
 			throw new RuntimeException("Incorrect number of arguments");
 		}
@@ -70,59 +68,97 @@ public class Schedule2ShapeFile {
 	private final TransitSchedule schedule;
 	private final Network network;
 	private final String crs;
+	private final boolean useNetworkLinks;
 
 	private Map<TransitStopFacility, Set<Id<TransitRoute>>> routesOnStopFacility = new HashMap<>();
-	private boolean useNetworkLinks = true;
 
-	public Schedule2ShapeFile(final TransitSchedule schedule, final Network network, String crs, boolean networkLinks) {
+	public Schedule2ShapeFile(String crs, final TransitSchedule schedule, final Network network) {
 		this.schedule = schedule;
 		this.network = network;
 		this.crs = crs;
-		this.useNetworkLinks = networkLinks;
+		this.useNetworkLinks = network != null;
 	}
-
 
 	/**
 	 * Converts the given schedule based on the given network
 	 * to GIS shape files.
 	 *
-	 * @param scheduleFile input schedule
-	 * @param networkFile  input network
 	 * @param outputFolder output folder
+	 * @param crs          coordinate reference system (EPSG:*)
+	 * @param scheduleFile input schedule file
+	 * @param networkFile  input network file (<tt>null</tt> if not available)
 	 */
-	public static void run(String scheduleFile, String networkFile, String crs, String outputFolder, boolean writeLinks) {
+	public static void run(String crs, String outputFolder, String scheduleFile, String networkFile) {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(scheduleFile);
-		Network network = NetworkTools.readNetwork(networkFile);
+		Network network = networkFile == null ? null : NetworkTools.readNetwork(networkFile);
 
-		Schedule2ShapeFile s2s = new Schedule2ShapeFile(schedule, network, crs, writeLinks);
-
-		s2s.routes2Polylines(outputFolder + "transitRoutes.shp");
-		s2s.stopFacilities2Shapes(outputFolder + "stopFacilities.shp", outputFolder + "refLinks.shp");
-	}
-
-	public static void run(TransitSchedule schedule, Network network, String crs, String outputFolder) {
-		Schedule2ShapeFile s2s = new Schedule2ShapeFile(schedule, network, crs, true);
+		Schedule2ShapeFile s2s = new Schedule2ShapeFile(crs, schedule, network);
 
 		s2s.routes2Polylines(outputFolder + "transitRoutes.shp");
-		s2s.stopFacilities2Shapes(outputFolder + "stopFacilities.shp", outputFolder + "refLinks.shp");
+		s2s.stopFacilities2Points(outputFolder + "stopFacilities.shp");
+		s2s.stopRefLinks2Polylines(outputFolder + "refLinks.shp");
+		s2s.convertNetwork(outputFolder + "network.shp");
 	}
 
-	public void stopFacilities2Shapes(String pointOutputFile, String lineOutputFile) {
-		Collection<SimpleFeature> lineFeatures = new ArrayList<>();
+	public static void run(String crs, String outputFolder, TransitSchedule schedule, Network network) {
+		Schedule2ShapeFile s2s = new Schedule2ShapeFile(crs, schedule, network);
+
+		s2s.routes2Polylines(outputFolder + "transitRoutes.shp");
+		s2s.stopFacilities2Points(outputFolder + "stopFacilities.shp");
+		s2s.stopRefLinks2Polylines(outputFolder + "refLinks.shp");
+		s2s.convertNetwork(outputFolder + "network.shp");
+	}
+
+	/**
+	 * Converts reference links to polylines.
+	 */
+	public void stopRefLinks2Polylines(String outputFile) {
+		if(useNetworkLinks) {
+			Collection<SimpleFeature> lineFeatures = new ArrayList<>();
+
+			PolylineFeatureFactory polylineFeatureFactory = new PolylineFeatureFactory.Builder()
+					.setName("StopFacilities")
+					.setCrs(MGC.getCRS(crs))
+					.addAttribute("id", String.class)
+					.addAttribute("name", String.class)
+					.addAttribute("linkId", String.class)
+					.addAttribute("postAreaId", String.class)
+					.addAttribute("isBlocking", Boolean.class)
+					.addAttribute("routes", String.class)
+					.create();
+
+			for(TransitStopFacility stopFacility : schedule.getFacilities().values()) {
+				Link refLink = network.getLinks().get(stopFacility.getLinkId());
+
+				Coordinate[] coordinates = new Coordinate[2];
+				try {
+					coordinates[0] = MGC.coord2Coordinate(refLink.getFromNode().getCoord());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				coordinates[1] = MGC.coord2Coordinate(refLink.getToNode().getCoord());
+
+				SimpleFeature lf = polylineFeatureFactory.createPolyline(coordinates);
+				lf.setAttribute("id", stopFacility.getId().toString());
+				lf.setAttribute("name", stopFacility.getName());
+				lf.setAttribute("linkId", stopFacility.getLinkId().toString());
+				lf.setAttribute("postAreaId", stopFacility.getStopPostAreaId());
+				lf.setAttribute("isBlocking", stopFacility.getIsBlockingLane());
+				lineFeatures.add(lf);
+			}
+
+			ShapeFileWriter.writeGeometries(lineFeatures, outputFile);
+		}
+	}
+
+
+	/**
+	 * Converts the stop facilities to points.
+	 */
+	public void stopFacilities2Points(String pointOutputFile) {
 		Collection<SimpleFeature> pointFeatures = new ArrayList<>();
 
 		PointFeatureFactory pointFeatureFactory = new PointFeatureFactory.Builder()
-				.setName("StopFacilities")
-				.setCrs(MGC.getCRS(crs))
-				.addAttribute("id", String.class)
-				.addAttribute("name", String.class)
-				.addAttribute("linkId", String.class)
-				.addAttribute("postAreaId", String.class)
-				.addAttribute("isBlocking", Boolean.class)
-				.addAttribute("routes", String.class)
-				.create();
-
-		PolylineFeatureFactory polylineFeatureFactory = new PolylineFeatureFactory.Builder()
 				.setName("StopFacilities")
 				.setCrs(MGC.getCRS(crs))
 				.addAttribute("id", String.class)
@@ -147,39 +183,15 @@ public class Schedule2ShapeFile {
 				pf.setAttribute("routes", CollectionUtils.idSetToString(routesOnStopFacility.get(stopFacility)));
 			}
 			pointFeatures.add(pf);
-
-			if(useNetworkLinks) {
-				Link refLink = network.getLinks().get(stopFacility.getLinkId());
-
-				Coordinate[] coordinates = new Coordinate[2];
-				try {
-					coordinates[0] = MGC.coord2Coordinate(refLink.getFromNode().getCoord());
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				coordinates[1] = MGC.coord2Coordinate(refLink.getToNode().getCoord());
-
-				SimpleFeature lf = polylineFeatureFactory.createPolyline(coordinates);
-				lf.setAttribute("id", stopFacility.getId().toString());
-				lf.setAttribute("name", stopFacility.getName());
-				lf.setAttribute("linkId", stopFacility.getLinkId().toString());
-				lf.setAttribute("postAreaId", stopFacility.getStopPostAreaId());
-				lf.setAttribute("isBlocking", stopFacility.getIsBlockingLane());
-				if(routesOnStopFacility.get(stopFacility) != null)
-					pf.setAttribute("routes", CollectionUtils.idSetToString(routesOnStopFacility.get(stopFacility)));
-				lineFeatures.add(lf);
-			}
 		}
 
 		ShapeFileWriter.writeGeometries(pointFeatures, pointOutputFile);
-
-		if(useNetworkLinks) {
-			ShapeFileWriter.writeGeometries(lineFeatures, lineOutputFile);
-		}
 	}
 
-
-	public void routes2Polylines(String outFile) {
+	/**
+	 * Converts the transit routes to polylines
+	 */
+	public void routes2Polylines(String outputFile) {
 		Collection<SimpleFeature> features = new ArrayList<>();
 
 		PolylineFeatureFactory ff = new PolylineFeatureFactory.Builder()
@@ -201,7 +213,8 @@ public class Schedule2ShapeFile {
 				Coordinate[] coordinates = getCoordinatesFromRoute(transitRoute);
 
 				if(coordinates == null) {
-					if(useNetworkLinks) log.warn("No links found for route " + transitRoute.getId() + " on line " + transitLine.getId());
+					if(useNetworkLinks)
+						log.warn("No links found for route " + transitRoute.getId() + " on line " + transitLine.getId());
 					Coordinate[] stopFacilitiesCoordinates = getCoordinatesFromStopFacilities(transitRoute);
 					SimpleFeature f = ff.createPolyline(stopFacilitiesCoordinates);
 					f.setAttribute("line", transitLine.getId().toString());
@@ -220,9 +233,21 @@ public class Schedule2ShapeFile {
 			}
 		}
 
-		ShapeFileWriter.writeGeometries(features, outFile);
+		ShapeFileWriter.writeGeometries(features, outputFile);
 	}
 
+	/**
+	 * Converts the network to a shapefile. Calls {@link org.matsim.utils.gis.matsim2esri.network.Links2ESRIShape}
+	 */
+	private void convertNetwork(String outputFile) {
+		Links2ESRIShape n2s = new Links2ESRIShape(network, outputFile, crs);
+		n2s.write();
+	}
+
+
+	/**
+	 * @return the sum of all link lenght's of a transit route
+	 */
 	private double getRouteLength(TransitRoute transitRoute) {
 		double length = 0;
 		for(Link l : NetworkTools.getLinksFromIds(network, ScheduleTools.getTransitRouteLinkIds(transitRoute))) {
@@ -231,6 +256,9 @@ public class Schedule2ShapeFile {
 		return length;
 	}
 
+	/**
+	 * @return the coordinates of the transit route
+	 */
 	private Coordinate[] getCoordinatesFromRoute(TransitRoute transitRoute) {
 		List<Coordinate> coordList = new ArrayList<>();
 		List<Id<Link>> linkIds = ScheduleTools.getTransitRouteLinkIds(transitRoute);
@@ -250,6 +278,9 @@ public class Schedule2ShapeFile {
 		return null;
 	}
 
+	/**
+	 * @return an array of coordinates from stop facilities. Can be used to create straight lines between stops
+	 */
 	private Coordinate[] getCoordinatesFromStopFacilities(TransitRoute transitRoute) {
 		List<Coordinate> coordList = new ArrayList<>();
 

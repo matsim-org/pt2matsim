@@ -35,9 +35,6 @@ import java.io.File;
  */
 public class CheckMappedSchedulePlausibility {
 
-	protected static final Logger log = Logger.getLogger(PlausibilityCheck.class);
-
-
 	/**
 	 * Performs a plausibility check on the given schedule and network files
 	 * and writes the results to the output folder.
@@ -106,13 +103,17 @@ public class CheckMappedSchedulePlausibility {
 		check.writeCsv(outputFolder + "allPlausibilityWarnings.csv");
 		check.writeResultShapeFiles(outputFolder+"shp/warnings/");
 
-		Schedule2ShapeFile schedule2shp = new Schedule2ShapeFile(schedule, network, coordinateSystem, true);
+		Schedule2ShapeFile schedule2shp = new Schedule2ShapeFile(coordinateSystem, schedule, network);
 		schedule2shp.routes2Polylines(outputFolder+"shp/schedule/TransitRoutes.shp");
-		schedule2shp.stopFacilities2Shapes(outputFolder+"shp/schedule/StopFacilities.shp", outputFolder+"shp/schedule/StopFacilities_refLinks.shp");
+		schedule2shp.stopFacilities2Points(outputFolder+"shp/schedule/StopFacilities.shp");
+		schedule2shp.stopRefLinks2Polylines(outputFolder+"shp/schedule/StopFacilities_refLinks.shp");
 
 		// stop facility histogram
 		StopFacilityHistogram histogram = new StopFacilityHistogram(schedule);
 		histogram.createCsv(outputFolder + "stopfacilities.csv");
 		histogram.createPng(outputFolder + "stopfacilities_histogram.png");
 	}
+
+	protected static final Logger log = Logger.getLogger(PlausibilityCheck.class);
+
 }
