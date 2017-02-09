@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  *
  * @author polettif
  */
-public class MiscUtils {
+public final class MiscUtils {
 
 	private MiscUtils() {}
 

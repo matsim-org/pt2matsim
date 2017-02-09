@@ -16,7 +16,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.run;
+package org.matsim.pt2matsim.shp;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import org.apache.log4j.Logger;
@@ -30,7 +30,6 @@ import org.matsim.core.utils.gis.PointFeatureFactory;
 import org.matsim.core.utils.gis.PolylineFeatureFactory;
 import org.matsim.core.utils.gis.ShapeFileWriter;
 import org.matsim.pt.transitSchedule.api.*;
-import org.matsim.pt2matsim.tools.Network2ShapeFile;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.opengis.feature.simple.SimpleFeature;

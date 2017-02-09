@@ -20,7 +20,7 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
-import org.matsim.pt2matsim.gtfs.GtfsDefinitions.RouteTypes;
+import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions.RouteTypes;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -32,8 +32,6 @@ import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.Vehicles;
-import org.matsim.pt2matsim.tools.CoordTools;
-import org.matsim.pt2matsim.tools.MiscUtils;
 
 import java.util.*;
 
@@ -43,12 +41,11 @@ import java.util.*;
  *
  * @author polettif
  */
-public class ScheduleCleaner {
+public final class ScheduleCleaner {
 
 	protected static Logger log = Logger.getLogger(ScheduleTools.class);
 
-	private ScheduleCleaner() {
-	}
+	private ScheduleCleaner() {}
 
 	/**
 	 * Removes transit routes without link sequences and not used stop facilities from the schedule.

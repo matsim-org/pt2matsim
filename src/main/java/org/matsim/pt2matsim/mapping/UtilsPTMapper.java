@@ -43,11 +43,13 @@ import java.util.stream.Collectors;
  *
  * @author polettif
  */
-public class UtilsPTMapper {
+public final class UtilsPTMapper {
 
 	protected static Logger log = Logger.getLogger(UtilsPTMapper.class);
 	private static final String suffixChildStopFacilities = PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES;
 	private static final String suffixChildStopFacilitiesRegex = PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES_REGEX;
+
+	private UtilsPTMapper() {}
 
 	/**
 	 * @return the linkIds of the links in path

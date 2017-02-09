@@ -27,14 +27,13 @@ import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.pt2matsim.hafas.lib.*;
 import org.matsim.pt2matsim.run.Gtfs2TransitSchedule;
-import org.matsim.vehicles.*;
-import org.matsim.pt2matsim.hafas.lib.BitfeldAnalyzer;
-import org.matsim.pt2matsim.hafas.lib.OperatorReader;
-import org.matsim.pt2matsim.hafas.lib.StopReader;
-import org.matsim.pt2matsim.hafas.lib.FPLANReader;
-import org.matsim.pt2matsim.hafas.lib.FPLANRoute;
 import org.matsim.pt2matsim.tools.ScheduleCleaner;
+import org.matsim.vehicles.VehicleCapacity;
+import org.matsim.vehicles.VehicleType;
+import org.matsim.vehicles.Vehicles;
+import org.matsim.vehicles.VehiclesFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -117,8 +116,8 @@ public class HafasConverter {
 			Id<VehicleType> vehicleTypeId = fplanRoute.getVehicleTypeId();
 
 			// get wheter the route using this vehicle type should be added & set transport mode
-			if(HafasDefinitions.Vehicles.valueOf(vehicleTypeId.toString()).addToSchedule) {
-				String transportMode = HafasDefinitions.Vehicles.valueOf(vehicleTypeId.toString()).transportMode.modeName;
+			if(HafasDefaults.Vehicles.valueOf(vehicleTypeId.toString()).addToSchedule) {
+				String transportMode = HafasDefaults.Vehicles.valueOf(vehicleTypeId.toString()).transportMode.modeName;
 
 				Id<TransitLine> lineId = createLineId(fplanRoute);
 
@@ -140,16 +139,16 @@ public class HafasConverter {
 					vehicleType = vehicleFactory.createVehicleType(Id.create(vehicleTypeId.toString(), VehicleType.class));
 
 					// using default values for vehicle type
-					vehicleType.setLength(HafasDefinitions.Vehicles.valueOf(typeIdstr).length);
-					vehicleType.setWidth(HafasDefinitions.Vehicles.valueOf(typeIdstr).width);
-					vehicleType.setAccessTime(HafasDefinitions.Vehicles.valueOf(typeIdstr).accessTime);
-					vehicleType.setEgressTime(HafasDefinitions.Vehicles.valueOf(typeIdstr).egressTime);
-					vehicleType.setDoorOperationMode(HafasDefinitions.Vehicles.valueOf(typeIdstr).doorOperation);
-					vehicleType.setPcuEquivalents(HafasDefinitions.Vehicles.valueOf(typeIdstr).pcuEquivalents);
+					vehicleType.setLength(HafasDefaults.Vehicles.valueOf(typeIdstr).length);
+					vehicleType.setWidth(HafasDefaults.Vehicles.valueOf(typeIdstr).width);
+					vehicleType.setAccessTime(HafasDefaults.Vehicles.valueOf(typeIdstr).accessTime);
+					vehicleType.setEgressTime(HafasDefaults.Vehicles.valueOf(typeIdstr).egressTime);
+					vehicleType.setDoorOperationMode(HafasDefaults.Vehicles.valueOf(typeIdstr).doorOperation);
+					vehicleType.setPcuEquivalents(HafasDefaults.Vehicles.valueOf(typeIdstr).pcuEquivalents);
 
 					VehicleCapacity vehicleCapacity = vehicleFactory.createVehicleCapacity();
-					vehicleCapacity.setSeats(HafasDefinitions.Vehicles.valueOf(typeIdstr).capacitySeats);
-					vehicleCapacity.setStandingRoom(HafasDefinitions.Vehicles.valueOf(typeIdstr).capacityStanding);
+					vehicleCapacity.setSeats(HafasDefaults.Vehicles.valueOf(typeIdstr).capacitySeats);
+					vehicleCapacity.setStandingRoom(HafasDefaults.Vehicles.valueOf(typeIdstr).capacityStanding);
 					vehicleType.setCapacity(vehicleCapacity);
 
 					vehicles.addVehicleType(vehicleType);

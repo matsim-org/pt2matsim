@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
  *
  * @author polettif
  */
-public class CreateDefaultOsmConfig {
+public final class CreateDefaultOsmConfig {
 
 	/**
 	 * Creates a default publicTransitMapping config file.

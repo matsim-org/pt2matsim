@@ -48,7 +48,7 @@ import java.util.*;
  *
  * @author polettif
  */
-public class ScheduleTools {
+public final class ScheduleTools {
 
 	protected static Logger log = Logger.getLogger(ScheduleTools.class);
 

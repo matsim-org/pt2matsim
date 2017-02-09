@@ -42,7 +42,7 @@ import java.util.*;
  *
  * @author polettif
  */
-public class ShapeTools {
+public final class ShapeTools {
 
 	/**
 	 * Calculates the minimal distance from a point to a given routeShape

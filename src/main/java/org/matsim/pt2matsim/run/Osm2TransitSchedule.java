@@ -27,7 +27,7 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
 /**
  * @author polettif
  */
-public class Osm2TransitSchedule {
+public final class Osm2TransitSchedule {
 
 	/**
 	 * Converts the available public transit data of an osm file to a MATSim transit schedule
@@ -51,4 +51,6 @@ public class Osm2TransitSchedule {
 		new OsmTransitScheduleConverter(schedule, ct, osmFile).run();
 		ScheduleTools.writeTransitSchedule(schedule, outputScheduleFile);
 	}
+
+	private Osm2TransitSchedule() {}
 }

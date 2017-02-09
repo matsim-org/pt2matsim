@@ -31,9 +31,11 @@ import java.util.*;
  *
  * @author polettif
  */
-public class CsvTools {
+public final class CsvTools {
 
 	private static final char STANDARD_SEPARATOR = ',';
+
+	private CsvTools() {}
 
 	/**
 	 * Converts a table with Tuple&lt;line, column&gt; as key to a list of csv lines.
@@ -85,7 +87,6 @@ public class CsvTools {
 	 * @param columnNames array of attributes you need the indices of
 	 * @return the index for each attribute given in columnNames
 	 *
-	 * TODO throw exception for required columns, info/nothing for optional
 	 */
 	public static Map<String, Integer> getIndices(String[] header, String[] columnNames) {
 		Map<String, Integer> indices = new HashMap<>();

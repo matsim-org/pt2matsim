@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
  *
  * @author polettif
  */
-public class CreateDefaultPTMapperConfig {
+public final class CreateDefaultPTMapperConfig {
 
 	/**
 	 * Creates a default publicTransitMapping config file.

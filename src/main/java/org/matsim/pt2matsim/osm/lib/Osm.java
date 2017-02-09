@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Definitions for Osm including interfaces for elements
+ *
  * @author polettif
  */
 public final class Osm {

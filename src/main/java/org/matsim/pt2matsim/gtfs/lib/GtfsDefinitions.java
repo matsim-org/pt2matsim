@@ -18,7 +18,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.gtfs;
+package org.matsim.pt2matsim.gtfs.lib;
 
 public final class GtfsDefinitions {
 

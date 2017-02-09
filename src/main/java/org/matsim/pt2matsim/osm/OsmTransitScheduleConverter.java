@@ -33,8 +33,6 @@ import java.util.*;
  * available public transit data from OSM to a schedule: stop facilities,
  * transitRoutes and routeProfiles. Departures and link sequences are missing.
  *
- * todo create run access
- *
  * @author polettif
  */
 public class OsmTransitScheduleConverter {
@@ -46,10 +44,10 @@ public class OsmTransitScheduleConverter {
 	private final TransitScheduleFactory factory;
 
 	// filters
-	private PositiveFilter stop_area;
-	private PositiveFilter stop_position;
-	private PositiveFilter route_master;
-	private PositiveFilter ptRoute;
+	private PositiveTagFilter stop_area;
+	private PositiveTagFilter stop_position;
+	private PositiveTagFilter route_master;
+	private PositiveTagFilter ptRoute;
 	private final OsmData osmData;
 
 	private int routeNr = 0;
@@ -59,7 +57,7 @@ public class OsmTransitScheduleConverter {
 		this.transformation = transformation;
 
 		// Filters
-		PositiveFilter filter = new PositiveFilter();
+		PositiveTagFilter filter = new PositiveTagFilter();
 		filter.add(Osm.ElementType.NODE, Osm.Key.PUBLIC_TRANSPORT, Osm.Value.STOP_POSITION);
 		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.BUS);
 		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TROLLEYBUS);
@@ -93,13 +91,13 @@ public class OsmTransitScheduleConverter {
 	 */
 	private void convert() {
 		// initialize conversion filters
-		stop_position = new PositiveFilter();
+		stop_position = new PositiveTagFilter();
 		stop_position.add(Osm.ElementType.NODE, Osm.Key.PUBLIC_TRANSPORT, Osm.Value.STOP_POSITION);
 
-		stop_area = new PositiveFilter();
+		stop_area = new PositiveTagFilter();
 		stop_area.add(Osm.ElementType.RELATION, Osm.Key.PUBLIC_TRANSPORT, Osm.Value.STOP_AREA);
 
-		route_master = new PositiveFilter();
+		route_master = new PositiveTagFilter();
 		route_master.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.BUS);
 		route_master.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.TROLLEYBUS);
 		route_master.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.TRAM);
@@ -107,7 +105,7 @@ public class OsmTransitScheduleConverter {
 		route_master.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.SUBWAY);
 		route_master.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.FERRY);
 
-		ptRoute = new PositiveFilter();
+		ptRoute = new PositiveTagFilter();
 		ptRoute.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.BUS);
 		ptRoute.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TROLLEYBUS);
 		ptRoute.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.RAIL);

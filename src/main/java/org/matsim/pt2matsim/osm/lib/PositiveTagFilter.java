@@ -27,7 +27,7 @@ import java.util.Set;
 /**
  * @author polettif
  */
-public class PositiveFilter {
+public class PositiveTagFilter {
 
 	private final static String MATCH_ALL = "*";
 	private final Map<Osm.ElementType, Map<String, Set<String>>> keyValuePairs = new HashMap<>();
@@ -103,8 +103,8 @@ public class PositiveFilter {
 	/**
 	 * @return an array with filters that contain the usual pt filters
 	 */
-	public static PositiveFilter getDefaultPTFilter() {
-		PositiveFilter filter = new PositiveFilter();
+	public static PositiveTagFilter getDefaultPTFilter() {
+		PositiveTagFilter filter = new PositiveTagFilter();
 		filter.add(Osm.ElementType.WAY, Osm.Key.HIGHWAY, null);
 		filter.add(Osm.ElementType.WAY, Osm.Key.RAILWAY, null);
 		filter.addException(Osm.ElementType.WAY, Osm.Key.SERVICE, null);
@@ -120,7 +120,7 @@ public class PositiveFilter {
 		return filter;
 	}
 
-	/*pckg*/ void mergeFilter(PositiveFilter f) {
+	/*pckg*/ void mergeFilter(PositiveTagFilter f) {
 		for(Osm.ElementType t : f.keyValuePairs.keySet()) {
 			MapUtils.getMap(t, keyValuePairs).putAll(f.keyValuePairs.get(t));
 		}

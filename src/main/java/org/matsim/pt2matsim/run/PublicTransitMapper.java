@@ -32,7 +32,7 @@ import org.matsim.pt2matsim.mapping.PTMapperImpl;
  *
  * @author polettif
  */
-public class PublicTransitMapper {
+public final class PublicTransitMapper {
 
 	/**
 	 * Routes the unmapped MATSim Transit Schedule to the network using the file
@@ -62,4 +62,5 @@ public class PublicTransitMapper {
 		new PTMapperImpl(configFile).run();
 	}
 
+	private PublicTransitMapper() {}
 }

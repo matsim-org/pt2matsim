@@ -25,6 +25,7 @@ import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt2matsim.plausibility.PlausibilityCheck;
 import org.matsim.pt2matsim.plausibility.StopFacilityHistogram;
+import org.matsim.pt2matsim.shp.Schedule2ShapeFile;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
@@ -33,7 +34,7 @@ import java.io.File;
 /**
  * @author polettif
  */
-public class CheckMappedSchedulePlausibility {
+public final class CheckMappedSchedulePlausibility {
 
 	/**
 	 * Performs a plausibility check on the given schedule and network files

@@ -18,8 +18,6 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
-import org.matsim.pt2matsim.gtfs.GtfsDefinitions;
-
 /**
  * @author polettif
  */

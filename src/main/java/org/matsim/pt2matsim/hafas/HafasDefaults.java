@@ -27,7 +27,7 @@ import org.matsim.vehicles.VehicleType;
  *
  * @author polettif
  */
-public final class HafasDefinitions {
+public final class HafasDefaults {
 
 	public enum TransportModes {
 

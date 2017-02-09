@@ -27,16 +27,14 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
 
 import java.time.LocalDate;
 
-import static org.matsim.pt2matsim.gtfs.GtfsConverter.ALL_SERVICE_IDS;
-import static org.matsim.pt2matsim.gtfs.GtfsConverter.DAY_WITH_MOST_SERVICES;
-import static org.matsim.pt2matsim.gtfs.GtfsConverter.DAY_WITH_MOST_TRIPS;
+import static org.matsim.pt2matsim.gtfs.GtfsConverter.*;
 
 /**
  * Contract class to read GTFS files and convert them to an unmapped MATSim Transit Schedule
  *
  * @author polettif
  */
-public class Gtfs2TransitSchedule {
+public final class Gtfs2TransitSchedule {
 
 	protected static Logger log = Logger.getLogger(Gtfs2TransitSchedule.class);
 
@@ -144,5 +142,7 @@ public class Gtfs2TransitSchedule {
 			return true;
 		}
 	}
+
+	private Gtfs2TransitSchedule() {}
 
 }

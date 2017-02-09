@@ -52,13 +52,15 @@ import static org.matsim.pt2matsim.tools.ScheduleTools.getTransitRouteLinkIds;
  *
  * @author polettif
  */
-public class NetworkTools {
+public final class NetworkTools {
 
 	protected static Logger log = Logger.getLogger(NetworkTools.class);
 
-	private NetworkTools() {
-	}
+	private NetworkTools() {}
 
+	/**
+	 * Reads and returns a network
+	 */
 	public static Network readNetwork(String fileName) {
 		Network network = NetworkUtils.createNetwork();
 		new MatsimNetworkReader(network).readFile(fileName);

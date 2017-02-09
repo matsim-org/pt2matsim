@@ -30,7 +30,7 @@ import java.util.Map;
  *
  * @author polettif
  */
-public class OsmImpl {
+public class OsmElement {
 
 	/**
 	 * OSM node

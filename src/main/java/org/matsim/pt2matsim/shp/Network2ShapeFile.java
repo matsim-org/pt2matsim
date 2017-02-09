@@ -16,7 +16,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.tools;
+package org.matsim.pt2matsim.shp;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import org.matsim.api.core.v01.network.Link;
@@ -27,6 +27,7 @@ import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.core.utils.gis.PointFeatureFactory;
 import org.matsim.core.utils.gis.PolylineFeatureFactory;
 import org.matsim.core.utils.gis.ShapeFileWriter;
+import org.matsim.pt2matsim.tools.NetworkTools;
 import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.ArrayList;

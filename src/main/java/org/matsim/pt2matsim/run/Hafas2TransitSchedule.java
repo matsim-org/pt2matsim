@@ -38,7 +38,7 @@ import java.io.IOException;
  *
  * @author polettif
  */
-public class Hafas2TransitSchedule {
+public final class Hafas2TransitSchedule {
 
 	/**
 	 * Converts all files in <tt>hafasFolder</tt> and writes the output schedule and vehicles to the respective
@@ -73,4 +73,6 @@ public class Hafas2TransitSchedule {
 		ScheduleTools.writeTransitSchedule(schedule, outputScheduleFile);
 		ScheduleTools.writeVehicles(vehicles, outputVehicleFile);
 	}
+
+	private Hafas2TransitSchedule() {}
 }
