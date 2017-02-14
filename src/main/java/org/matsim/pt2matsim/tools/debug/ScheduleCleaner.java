@@ -16,7 +16,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.tools;
+package org.matsim.pt2matsim.tools.debug;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
@@ -30,6 +30,10 @@ import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt.utils.TransitScheduleValidator;
+import org.matsim.pt2matsim.tools.CoordTools;
+import org.matsim.pt2matsim.tools.MiscUtils;
+import org.matsim.pt2matsim.tools.NetworkTools;
+import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.Vehicles;
 

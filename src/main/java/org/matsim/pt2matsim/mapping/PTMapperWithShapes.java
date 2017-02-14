@@ -45,8 +45,8 @@ import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoSchedule;
 import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoScheduleImpl;
 import org.matsim.pt2matsim.plausibility.StopFacilityHistogram;
 import org.matsim.pt2matsim.tools.NetworkTools;
-import org.matsim.pt2matsim.tools.ScheduleCleaner;
 import org.matsim.pt2matsim.tools.ScheduleTools;
+import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 
 import java.util.Collections;
 import java.util.List;

@@ -1,4 +1,4 @@
-package org.matsim.pt2matsim.tools;
+package org.matsim.pt2matsim.tools.debug;
 
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.collections.MapUtils;
