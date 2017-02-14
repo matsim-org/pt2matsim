@@ -7,11 +7,13 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
-import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
+import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.lib.ShapedSchedule;
 import org.matsim.pt2matsim.lib.ShapedTransitSchedule;
-import org.matsim.pt2matsim.tools.*;
+import org.matsim.pt2matsim.plausibility.MappingAnalysis;
+import org.matsim.pt2matsim.tools.NetworkTools;
+import org.matsim.pt2matsim.tools.ScheduleTools;
 
 /**
  * @author polettif

@@ -29,7 +29,7 @@ import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.hafas.lib.*;
 import org.matsim.pt2matsim.run.Gtfs2TransitSchedule;
-import org.matsim.pt2matsim.tools.ScheduleCleaner;
+import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 import org.matsim.vehicles.VehicleCapacity;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.Vehicles;

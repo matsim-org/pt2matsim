@@ -22,13 +22,14 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.pt2matsim.plausibility.MappingAnalysis;
 
 import java.util.Map;
 
 /**
  * Wrapper class for a transit schedule that contains
  * routeShapes for transitRoutes. Is used for {@link org.matsim.pt2matsim.mapping.PTMapperWithShapes} and
- * {@link org.matsim.pt2matsim.tools.MappingAnalysis}
+ * {@link MappingAnalysis}
  *
  * @author polettif
  */
