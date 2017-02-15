@@ -36,7 +36,6 @@ public class NetworkToolsTest {
 	public static final Coord coordI = new Coord(20.0, -20.0);
 	public static final Coord coordW = new Coord(-10.0, 30.0);
 	public static final Coord coordX = new Coord(10.0, 5.0);
-	public static final Coord coordY = new Coord(10.0, 0.0);
 	public static final Coord coordZ = new Coord(10.0, -30.0);
 
 	/*
@@ -62,7 +61,7 @@ public class NetworkToolsTest {
 		network = initNetwork();
 	}
 
-	private Network initNetwork() {
+	public static Network initNetwork() {
 		Network net = NetworkTools.createNetwork();
 
 		NetworkFactory fac = net.getFactory();
@@ -78,7 +77,6 @@ public class NetworkToolsTest {
 		net.addNode(fac.createNode(Id.createNodeId("I"), coordI));
 		net.addNode(fac.createNode(Id.createNodeId("W"), coordW));
 		net.addNode(fac.createNode(Id.createNodeId("X"), coordX));
-		net.addNode(fac.createNode(Id.createNodeId("Y"), coordY));
 		net.addNode(fac.createNode(Id.createNodeId("Z"), coordZ));
 
 
