@@ -4,7 +4,7 @@ import org.junit.Test;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.core.utils.geometry.CoordUtils;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author polettif
@@ -13,24 +13,24 @@ public class CoordToolsTest {
 
 	private final double testDelta = 1/1000.;
 
-	private final Coord coordA = new Coord(0.0, 0.0);
-	private final Coord coordB = new Coord(2.0, 0.0);
-	private final Coord coordC = new Coord(2.0, 2.0);
+	public static final Coord coordA = new Coord(0.0, 0.0);
+	public static final Coord coordB = new Coord(2.0, 0.0);
+	public static final Coord coordC = new Coord(2.0, 2.0);
 
-	private final Coord coordD = new Coord(0.0, 2.0);
-	private final Coord coordE = new Coord(-2.0, 2.0);
-	private final Coord coordF = new Coord(-2.0, 0.0);
-	private final Coord coordG = new Coord(-2.0, -2.0);
-	private final Coord coordH = new Coord(0.0, -2.0);
+	public static final Coord coordD = new Coord(0.0, 2.0);
+	public static final Coord coordE = new Coord(-2.0, 2.0);
+	public static final Coord coordF = new Coord(-2.0, 0.0);
+	public static final Coord coordG = new Coord(-2.0, -2.0);
+	public static final Coord coordH = new Coord(0.0, -2.0);
 
-	private final Coord coordI = new Coord(2.0, -2.0);
-	private final Coord coordW = new Coord(-1.0, 3.0);
-	private final Coord coordX = new Coord(0.5, 0.5);
-	private final Coord coordY = new Coord(1.0, 0.0);
-	private final Coord coordP = new Coord(0.7, 0.1);
-	private final Coord coordZ = new Coord(1.0, -3.0);
+	public static final Coord coordI = new Coord(2.0, -2.0);
+	public static final Coord coordW = new Coord(-1.0, 3.0);
+	public static final Coord coordX = new Coord(0.5, 0.5);
+	public static final Coord coordY = new Coord(1.0, 0.0);
+	public static final Coord coordP = new Coord(0.7, 0.1);
+	public static final Coord coordZ = new Coord(1.0, -3.0);
 
-		/*
+	/*
 		     ^
              |
 		 W   |
@@ -78,7 +78,6 @@ public class CoordToolsTest {
 		Coord newPointG = CoordTools.calcNewPoint(coordA, 1.25*Math.PI, CoordUtils.calcEuclideanDistance(coordA, coordG));
 		assertEquals(newPointG.getX(), coordG.getX(), testDelta);
 		assertEquals(newPointG.getY(), coordG.getY(), testDelta);
-
 	}
 
 }
