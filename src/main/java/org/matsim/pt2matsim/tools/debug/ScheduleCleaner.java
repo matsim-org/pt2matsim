@@ -188,8 +188,8 @@ public final class ScheduleCleaner {
 	}
 
 	/**
-	 * Changes the schedule to an unmapped schedule by removes all link sequences
-	 * from a transit schedule and removing referenced links from stop facilities.
+	 * Changes the schedule to an unmapped schedule by removing all link sequences
+	 * from a transit schedule and removing referenced link ids from stop facilities.
 	 */
 	public static void removeMapping(TransitSchedule schedule) {
 		log.info("... Removing reference links and link sequences from schedule");
@@ -203,6 +203,13 @@ public final class ScheduleCleaner {
 				route.setRoute(null);
 			}
 		}
+	}
+
+	/**
+	 * todo Combines all child stops based on ".link:" to parent stops for debuggin
+	 */
+	protected void combineChildStopsToParentStop(TransitSchedule schedule) {
+
 	}
 
 	/**
