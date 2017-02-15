@@ -534,13 +534,21 @@ public final class NetworkTools {
 	 * are removed except the link in that sequence that is closest to the coordinate
 	 */
 	public static void reduceSequencedLinks(Collection<? extends Link> links, Coord coord) {
-		Map<Link, Link> linkSequence = new HashMap<>();
-		Set<Link> originLinks = new HashSet<>();
-		Map<Link, Link> linksToKeep = new HashMap<>();
+		Map<Link, Link> linkSequence = new HashMap<>(); // key points to succeeding link
+		Set<Link> originLinks = new HashSet<>();		// links from which a sequence of single file links originates
+		Map<Link, Link> linksToKeep = new HashMap<>();	// links from single file sequence that are closest to the coord
 
+		// get all single file links
+		Set<Link> singleFileLinks = new HashSet<>();
+		for(Link l : links) {
+			if(getSingleFilePrecedingLink(l) != null || getSingleFileSucceedingLink(l) != null) {
+				singleFileLinks.add(l);
+			}
+		}
+
+		// find origin links
 		Set<Link> found = new HashSet<>();
-
-		for(Link currentLink : links) {
+		for(Link currentLink : singleFileLinks) {
 			if(!found.contains(currentLink)) {
 				Link actual = currentLink;
 				Link precedingLink;
@@ -570,8 +578,6 @@ public final class NetworkTools {
 		// find closest link for each single link set
 		if(originLinks.size() != 0) {
 			for(Link originLink : originLinks) {
-				System.out.println(originLink);
-
 				Set<Link> consideredLinks = new HashSet<>();
 				double minDist = Double.MAX_VALUE;
 				Link actual = originLink;
@@ -586,28 +592,34 @@ public final class NetworkTools {
 					if(!consideredLinks.add(actual)) {
 						linkSequence.put(actual, null); // loop found, abort
 					}
-				} while(linkSequence.get(actual) != null);
+				} while(actual != null);
 			}
 
 			// remove links (all succedingLinks are up for removal except the ones closest to the stop)
-			for(Link succLink : linkSequence.values()) {
-				if(!linksToKeep.containsValue(succLink)) {
-					links.remove(succLink);
+			for(Link link : singleFileLinks) {
+				if(!linksToKeep.containsValue(link)) {
+					links.remove(link);
 				}
 			}
 		}
+
+//		NetworkTools.writeNetwork(NetworkTools.createNetworkFromLinks(new HashSet<>(singleFileLinks)), "singleFileLinks.xml");
+//		NetworkTools.writeNetwork(NetworkTools.createNetworkFromLinks(new HashSet<>(originLinks)), "originLinks.xml");
+//		NetworkTools.writeNetwork(NetworkTools.createNetworkFromLinks(new HashSet<>(linksToKeep.values())), "linksToKeep.xml");
+//		NetworkTools.writeNetwork(NetworkTools.createNetworkFromLinks(new HashSet<>(links)), "remainingLinks.xml");
 	}
 
 	/**
 	 * @return The preceding link if its the given link's only preceding link (ignoring opposite links)
+	 * Returns null if there are multiple succeeding links.
 	 */
 	/*pckg*/ static Link getSingleFilePrecedingLink(Link link) {
 		Link oppositeLink = getOppositeLink(link);
 		if((link.getFromNode().getInLinks().values().size() == 2
-				&& oppositeLink != null)
-				||
-				(link.getFromNode().getInLinks().values().size() == 1
-						&& oppositeLink == null)) {
+			&& oppositeLink != null)
+			||
+			(link.getFromNode().getInLinks().values().size() == 1
+			&& oppositeLink == null)) {
 			for(Link fromInLink : link.getFromNode().getInLinks().values()) {
 				if(fromInLink != oppositeLink) {
 					return fromInLink;
@@ -618,15 +630,17 @@ public final class NetworkTools {
 	}
 
 	/**
-	 * @return The succeeding link if its the given link's only succeding link (ignoring opposite links)
+	 * @return The succeeding link if its the given link's only succeding link (ignoring opposite links).
+	 * Returns null if there are multiple succeeding links.
 	 */
 	/*pckg*/ static Link getSingleFileSucceedingLink(Link link) {
 		Link oppositeLink = getOppositeLink(link);
 		if((link.getToNode().getOutLinks().values().size() == 2
-				&& oppositeLink != null)
-				||
-				(link.getToNode().getOutLinks().values().size() == 1
-						&& oppositeLink == null)) {
+			&& oppositeLink != null)
+			||
+			(link.getToNode().getOutLinks().values().size() == 1
+			&& oppositeLink == null)) {
+
 			for(Link toOutLink : link.getToNode().getOutLinks().values()) {
 				if(toOutLink != oppositeLink) {
 					return toOutLink;
@@ -634,6 +648,28 @@ public final class NetworkTools {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Creates a new network from a collection of links. For debugging.
+	 */
+	public static Network createNetworkFromLinks(Collection<? extends Link> links) {
+		Network network = NetworkTools.createNetwork();
+
+		Set<Node> nodes = new HashSet<>();
+		for(Link l : links) {
+			nodes.add(l.getFromNode());
+			nodes.add(l.getToNode());
+		}
+
+		for(Node n : nodes) {
+			NetworkUtils.createAndAddNode(network, n.getId(), n.getCoord());
+		}
+		for(Link l : links) {
+			network.addLink(network.getFactory().createLink(l.getId(), network.getNodes().get(l.getFromNode().getId()), network.getNodes().get(l.getToNode().getId())));
+		}
+
+		return network;
 	}
 
 	/**

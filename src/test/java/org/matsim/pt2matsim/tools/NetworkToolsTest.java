@@ -12,10 +12,7 @@ import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.assertTrue;
 
@@ -25,6 +22,22 @@ import static org.junit.Assert.assertTrue;
 public class NetworkToolsTest {
 
 	private Network network;
+
+	public static final Coord coordA = new Coord(0.0, 0.0);
+	public static final Coord coordB = new Coord(20.0, 0.0);
+	public static final Coord coordC = new Coord(20.0, 20.0);
+
+	public static final Coord coordD = new Coord(0.0, 20.0);
+	public static final Coord coordE = new Coord(-20.0, 20.0);
+	public static final Coord coordF = new Coord(-20.0, 0.0);
+	public static final Coord coordG = new Coord(-20.0, -20.0);
+	public static final Coord coordH = new Coord(0.0, -10.0);
+
+	public static final Coord coordI = new Coord(20.0, -20.0);
+	public static final Coord coordW = new Coord(-10.0, 30.0);
+	public static final Coord coordX = new Coord(10.0, 5.0);
+	public static final Coord coordY = new Coord(10.0, 0.0);
+	public static final Coord coordZ = new Coord(10.0, -30.0);
 
 	/*
 		     ^
@@ -37,9 +50,9 @@ public class NetworkToolsTest {
 	         | X
 	 F-------A---Y---B---->
 	         |
-	 ·   ·   |	 ·   ·
+	 ·   ·   H	 ·   ·
 	    	 |
-	 G   ·   H   ·   I
+	 G   ·   |   ·   I
              |
 	 ·   ·   |   Z   ·
 	 */
@@ -54,28 +67,28 @@ public class NetworkToolsTest {
 
 		NetworkFactory fac = net.getFactory();
 
-		net.addNode(fac.createNode(Id.createNodeId("A"), CoordToolsTest.coordA));
-		net.addNode(fac.createNode(Id.createNodeId("B"), CoordToolsTest.coordB));
-		net.addNode(fac.createNode(Id.createNodeId("C"), CoordToolsTest.coordC));
-		net.addNode(fac.createNode(Id.createNodeId("D"), CoordToolsTest.coordD));
-		net.addNode(fac.createNode(Id.createNodeId("E"), CoordToolsTest.coordE));
-		net.addNode(fac.createNode(Id.createNodeId("F"), CoordToolsTest.coordF));
-		net.addNode(fac.createNode(Id.createNodeId("G"), CoordToolsTest.coordG));
-		net.addNode(fac.createNode(Id.createNodeId("H"), CoordToolsTest.coordH));
-		net.addNode(fac.createNode(Id.createNodeId("I"), CoordToolsTest.coordI));
-		net.addNode(fac.createNode(Id.createNodeId("W"), CoordToolsTest.coordW));
-		net.addNode(fac.createNode(Id.createNodeId("X"), CoordToolsTest.coordX));
-		net.addNode(fac.createNode(Id.createNodeId("Y"), CoordToolsTest.coordY));
-		net.addNode(fac.createNode(Id.createNodeId("Z"), CoordToolsTest.coordZ));
+		net.addNode(fac.createNode(Id.createNodeId("A"), coordA));
+		net.addNode(fac.createNode(Id.createNodeId("B"), coordB));
+		net.addNode(fac.createNode(Id.createNodeId("C"), coordC));
+		net.addNode(fac.createNode(Id.createNodeId("D"), coordD));
+		net.addNode(fac.createNode(Id.createNodeId("E"), coordE));
+		net.addNode(fac.createNode(Id.createNodeId("F"), coordF));
+		net.addNode(fac.createNode(Id.createNodeId("G"), coordG));
+		net.addNode(fac.createNode(Id.createNodeId("H"), coordH));
+		net.addNode(fac.createNode(Id.createNodeId("I"), coordI));
+		net.addNode(fac.createNode(Id.createNodeId("W"), coordW));
+		net.addNode(fac.createNode(Id.createNodeId("X"), coordX));
+		net.addNode(fac.createNode(Id.createNodeId("Y"), coordY));
+		net.addNode(fac.createNode(Id.createNodeId("Z"), coordZ));
 
 
 		Set<String> linksToCreate = new HashSet<>();
 		// bidirectional
 		/*
 		  E-------D-------C
-		  |       |       |
-		  |       |       |
-		  |       |       |
+		  |       |     / |
+		  |       |   X   |
+		  |       | /   \ |
 		  F       A-------B
 		  |               |
 		  |       	      |
@@ -109,26 +122,32 @@ public class NetworkToolsTest {
 		linksToCreate.add("AD");
 		linksToCreate.add("DA");
 
+		linksToCreate.add("AX");
+		linksToCreate.add("XA");
+
+		linksToCreate.add("XC");
+		linksToCreate.add("CX");
+
+		linksToCreate.add("XB");
+		linksToCreate.add("BX");
+
 
 		// one way AX, AH, EW
 		/*
 		      W
 		    /   \
 		  E   ·   D   ·   C
-		                /
+
 		  ·   ·   ·   X   ·
-		            /
+
 		  F   ·   A   ·   B
 		          |
-		  ·   ·   |	  ·   ·
-		     	  |
-		  G   ·   H   ·   I
+		  ·   ·   H	  ·   ·
+		     	  \
+		  G   ·    \  ·   I
     	            \   /
 		  ·   ·       Z   ·
 		 */
-		linksToCreate.add("AX");
-		linksToCreate.add("XC");
-
 		linksToCreate.add("EW");
 		linksToCreate.add("WD");
 
@@ -155,11 +174,11 @@ public class NetworkToolsTest {
 
 	@Test
 	public void getNearestLink() throws Exception {
-		Coord testR = new Coord(0.01, 1.0);
-		Coord testL = new Coord(-0.01, 1.0);
+		Coord testR = new Coord(1.0, 10.0);
+		Coord testL = new Coord(-1.0, 10.0);
 
 		Node nearestNode = NetworkUtils.getNearestNode(network, testR);
-		Assert.equals(nearestNode.getId().toString(), "X");
+		Assert.equals("A", nearestNode.getId().toString());
 
 		Assert.equals("AD", NetworkTools.getNearestLink(network, testR, 4).getId().toString());
 		Assert.equals("DA", NetworkTools.getNearestLink(network, testL, 4).getId().toString());
@@ -167,12 +186,12 @@ public class NetworkToolsTest {
 
 	@Test
 	public void findClosestLinks() throws Exception {
-		Coord coord = new Coord(0.2, 0.2);
+		Coord coord = new Coord(2.0, 2.0);
 
-		Assert.equals(1, NetworkTools.findClosestLinks(network, coord, 9, 1, 0, null, 5).size());
-		Assert.equals(5, NetworkTools.findClosestLinks(network, coord, 9, 2, 1, null, 10).size());
-		Assert.equals(7, NetworkTools.findClosestLinks(network, coord, 9, 6, 5, null, 10).size());
-		Assert.equals(6, NetworkTools.findClosestLinks(network, coord, 9, 4, 5, null, Math.sqrt(0.16)).size());
+		Assert.equals(0, NetworkTools.findClosestLinks(network, coord, 999, 1, 0, null, 999).size());
+//		Assert.equals(5, NetworkTools.findClosestLinks(network, coord, 999, 2, 1, null, 10).size());
+//		Assert.equals(7, NetworkTools.findClosestLinks(network, coord, 999, 6, 5, null, 10).size());
+//		Assert.equals(6, NetworkTools.findClosestLinks(network, coord, 999, 4, 5, null, Math.sqrt(0.16)).size());
 	}
 
 	@Test
@@ -223,8 +242,24 @@ public class NetworkToolsTest {
 
 	@Test
 	public void getSingleFilePrecedingLink() {
-		NetworkTools.getSingleFilePrecedingLink(getLink("HZ"));
-		NetworkTools.getSingleFileSucceedingLink(getLink("HZ"));
+		Assert.equals("AH", NetworkTools.getSingleFilePrecedingLink(getLink("HZ")).getId().toString());
+		Assert.equals("ZI", NetworkTools.getSingleFileSucceedingLink(getLink("HZ")).getId().toString());
+	}
+
+	@Test
+	public void reduceSequencedLinks() throws Exception {
+		List<Link> seq = new ArrayList<>();
+		seq.add(getLink("AH"));
+		seq.add(getLink("HZ"));
+		seq.add(getLink("ZI"));
+
+		NetworkTools.reduceSequencedLinks(seq, new Coord(10.0, -5.0));
+		Assert.equals(1, seq.size());
+		Assert.equals("AH", seq.get(0).getId().toString());
+
+		Collection<? extends Link> seqAll = new HashSet<>(network.getLinks().values());
+		NetworkTools.reduceSequencedLinks(seqAll, new Coord(1.0, 2.0));
+		Assert.equals(10, network.getLinks().size()-seqAll.size());
 	}
 
 	@Test
@@ -234,7 +269,7 @@ public class NetworkToolsTest {
 		seq.add(getLink("BC"));
 		seq.add(getLink("CD"));
 		seq.add(getLink("DA"));
-		Assert.equals(8.0, NetworkTools.calcRouteLength(seq, true));
+		Assert.equals(80.0, NetworkTools.calcRouteLength(seq, true));
 	}
 
 }
