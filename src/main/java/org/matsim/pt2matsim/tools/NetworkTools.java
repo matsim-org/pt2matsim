@@ -156,7 +156,7 @@ public final class NetworkTools {
 	 * @param maxNLinks             How many links should be returned.
 	 * @param toleranceFactor       After maxNLinks links have been found, additional links within
 	 *                              <tt>toleranceFactor</tt>*<tt>distance to the Nth link</tt>
-	 *                              are added to the set. Must be >= 1.
+	 *                              are added to the set. No additional links whatsoever are added if > 1
 	 * @param networkTransportModes Only links with at least one of these transport modes are considered.
 	 *                              All links are considered if <tt>null</tt>.
 	 * @param maxLinkDistance       Only returns links which are closer than
@@ -178,7 +178,7 @@ public final class NetworkTools {
 			SortedMap<Double, Set<Link>> closestLinksSortedByDistance = new TreeMap<>();
 
 			// calculate lineSegmentDistance for all links
-			double tolFactor = (toleranceFactor < 1 ? 1 : toleranceFactor);
+			double tolFactor = (toleranceFactor < 1 ? 0 : toleranceFactor);
 			double maxSoftConstraintDistance = 0.0;
 			for(Link link : links) {
 				// only use links with a viable network transport mode
@@ -303,7 +303,7 @@ public final class NetworkTools {
 	/**
 	 * Checks if a link sequence has loops (i.e. the same link is passed twice).
 	 */
-	public static boolean linkSequenceHasLoops(List<Link> linkSequence) {
+	public static boolean linkSequenceHasDuplicateLink(List<Link> linkSequence) {
 		Set tmpSet = new HashSet<>(linkSequence);
 		return tmpSet.size() < linkSequence.size();
 	}
@@ -570,6 +570,8 @@ public final class NetworkTools {
 		// find closest link for each single link set
 		if(originLinks.size() != 0) {
 			for(Link originLink : originLinks) {
+				System.out.println(originLink);
+
 				Set<Link> consideredLinks = new HashSet<>();
 				double minDist = Double.MAX_VALUE;
 				Link actual = originLink;
@@ -599,7 +601,7 @@ public final class NetworkTools {
 	/**
 	 * @return The preceding link if its the given link's only preceding link (ignoring opposite links)
 	 */
-	private static Link getSingleFilePrecedingLink(Link link) {
+	/*pckg*/ static Link getSingleFilePrecedingLink(Link link) {
 		Link oppositeLink = getOppositeLink(link);
 		if((link.getFromNode().getInLinks().values().size() == 2
 				&& oppositeLink != null)
@@ -616,9 +618,9 @@ public final class NetworkTools {
 	}
 
 	/**
-	 * @return The succeeding link if its the given link's only preceding link (ignoring opposite links)
+	 * @return The succeeding link if its the given link's only succeding link (ignoring opposite links)
 	 */
-	private static Link getSingleFileSucceedingLink(Link link) {
+	/*pckg*/ static Link getSingleFileSucceedingLink(Link link) {
 		Link oppositeLink = getOppositeLink(link);
 		if((link.getToNode().getOutLinks().values().size() == 2
 				&& oppositeLink != null)
