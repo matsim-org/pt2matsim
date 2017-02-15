@@ -36,7 +36,6 @@ import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.UtilsPTMapper;
-import org.matsim.pt2matsim.mapping.networkRouter.Router;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.vehicles.*;
 
@@ -78,6 +77,79 @@ public final class ScheduleTools {
 		log.info("Writing transit schedule to file " + fileName);
 		new TransitScheduleWriter(schedule).writeFile(fileName);
 		log.info("done.");
+	}
+
+	public static void mergeSchedules(TransitSchedule baseSchedule, TransitSchedule mergeSchedule) {
+		mergeSchedules(baseSchedule, mergeSchedule, 0, 0);
+	}
+
+	/**
+	 * Merges mergeSchedule with an offset into baseSchedule. baseSchedule is modified. Can be used to generate schedule
+	 * that run longer than 24h for simulation purposes.
+	 *
+	 * @param mergeOffset offset in seconds added to the departures of mergeschedule
+	 * @param timeLimit departures are not added if they are after this timelimit (in seconds), starting from
+	 *                  0.0 of the baseschedulel
+	 */
+	public static void mergeSchedules(TransitSchedule baseSchedule, TransitSchedule mergeSchedule, double mergeOffset, double timeLimit) {
+		// merge stops
+		for(TransitStopFacility tsf : mergeSchedule.getFacilities().values()) {
+			if(!baseSchedule.getFacilities().containsKey(tsf.getId())) {
+				baseSchedule.addStopFacility(tsf);
+			}
+		}
+
+		// merge transit lines
+		for(TransitLine mergeTransitLine : mergeSchedule.getTransitLines().values()) {
+			TransitLine baseTransitLine = baseSchedule.getTransitLines().get(mergeTransitLine.getId());
+			if(baseTransitLine == null) {
+				baseSchedule.addTransitLine(mergeTransitLine);
+			} else {
+				for(TransitRoute mergeTR : mergeTransitLine.getRoutes().values()) {
+					TransitRoute baseTR = baseTransitLine.getRoutes().get(mergeTR.getId());
+					if(baseTR == null) {
+						baseTransitLine.addRoute(mergeTR);
+					} else {
+						if(transitRouteStopSequenceIsEqual(baseTR, mergeTR)) {
+							if(mergeOffset > 0) {
+								for(Departure departure : mergeTR.getDepartures().values()) {
+									if(departure.getDepartureTime()+mergeOffset < timeLimit) {
+										Id<Departure> newDepartureId = Id.create(departure.getId() + "+" + mergeOffset/(3600)+"h", Departure.class);
+										Departure newDeparture = baseSchedule.getFactory().createDeparture(newDepartureId, departure.getDepartureTime() + mergeOffset);
+										baseTR.addDeparture(newDeparture);
+
+									}
+								}
+							}
+						} else {
+							Id<TransitRoute> newTransitRouteId = Id.create(mergeTR.getId() + "_merged", TransitRoute.class);
+							TransitRoute newTransitRoute = baseSchedule.getFactory().createTransitRoute(newTransitRouteId, mergeTR.getRoute(), mergeTR.getStops(), mergeTR.getTransportMode());
+							baseTransitLine.addRoute(newTransitRoute);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private static boolean transitRouteStopSequenceIsEqual(TransitRoute transitRoute1, TransitRoute transitRoute2) {
+		List<TransitRouteStop> stops1 = transitRoute1.getStops();
+		List<TransitRouteStop> stops2 = transitRoute2.getStops();
+		if(stops1.size() != transitRoute2.getStops().size()) {
+			return false;
+		}
+
+		for(int i=0; i<stops1.size(); i++) {
+			TransitRouteStop s1 = stops1.get(i);
+			TransitRouteStop s2 = stops2.get(i);
+			if(!s1.getStopFacility().getId().equals(s2.getStopFacility().getId()) ||
+					!s1.getStopFacility().getCoord().equals(s2.getStopFacility().getCoord()) ||
+					s1.getArrivalOffset() != s2.getArrivalOffset() ||
+					s1.getDepartureOffset() != s2.getDepartureOffset()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -152,84 +224,6 @@ public final class ScheduleTools {
 				transitLink.setAllowedModes(modes);
 			}
 		}
-	}
-
-	/**
-	 * Generates link sequences (network route) for all transit routes in
-	 * the schedule, modifies the schedule. All stopFacilities used by a
-	 * route must have a link referenced.
-	 *
-	 * @param schedule where transitRoutes should be routed
-	 * @param network  the network where the routes should be routed
-	 * @param routers  A map defining the Router for each scheduleTransportMode (the mode
-	 *                 defined in the transitRoute).
-	 * @deprecated Use {@link org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters} instead
-	 */
-	@Deprecated
-	public static void routeSchedule(TransitSchedule schedule, Network network, Map<String, Router> routers) {
-		Counter counterRoute = new Counter("route # ");
-
-		log.info("Routing all routes with referenced links...");
-
-		if(routers == null) {
-			log.error("No routers given, routing cannot be completed!");
-			return;
-		}
-
-		for(TransitLine transitLine : schedule.getTransitLines().values()) {
-			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
-				if(!routers.containsKey(transitRoute.getTransportMode())) {
-					throw new RuntimeException("No router defined for " + transitRoute.getTransportMode());
-				}
-				if(transitRoute.getStops().size() > 0) {
-					Router modeDependentRouter = routers.get(transitRoute.getTransportMode());
-
-					counterRoute.incCounter();
-
-					List<TransitRouteStop> routeStops = transitRoute.getStops();
-					List<Id<Link>> linkIdSequence = new LinkedList<>();
-					linkIdSequence.add(routeStops.get(0).getStopFacility().getLinkId());
-
-					// route
-					for(int i = 0; i < routeStops.size() - 1; i++) {
-						if(routeStops.get(i).getStopFacility().getLinkId() == null) {
-							log.warn("stop facility " + routeStops.get(i).getStopFacility().getName() + " (" + routeStops.get(i).getStopFacility().getId() + ") not referenced!");
-							linkIdSequence = null;
-							break;
-						}
-						if(routeStops.get(i + 1).getStopFacility().getLinkId() == null) {
-							log.warn("stop facility " + routeStops.get(i - 1).getStopFacility().getName() + " (" + routeStops.get(i + 1).getStopFacility().getId() + " not referenced!");
-							linkIdSequence = null;
-							break;
-						}
-
-						Id<Link> currentLinkId = Id.createLinkId(routeStops.get(i).getStopFacility().getLinkId().toString());
-						Link currentLink = network.getLinks().get(currentLinkId);
-						Link nextLink = network.getLinks().get(routeStops.get(i + 1).getStopFacility().getLinkId());
-
-						LeastCostPathCalculator.Path leastCostPath = modeDependentRouter.calcLeastCostPath(currentLink.getToNode().getId(), nextLink.getFromNode().getId());
-
-						List<Id<Link>> path = null;
-						if(leastCostPath != null) {
-							path = UtilsPTMapper.getLinkIdsFromPath(leastCostPath);
-						}
-
-						if(path != null)
-							linkIdSequence.addAll(path);
-
-						linkIdSequence.add(nextLink.getId());
-					} // -for stops
-
-					// add link sequence to schedule
-					if(linkIdSequence != null) {
-						transitRoute.setRoute(RouteUtils.createNetworkRoute(linkIdSequence, network));
-					}
-				} else {
-					log.warn("Route " + transitRoute.getId() + " on line " + transitLine.getId() + " has no stop sequence");
-				}
-			} // -route
-		} // -line
-		log.info("Routing all routes with referenced links... done");
 	}
 
 	/**
