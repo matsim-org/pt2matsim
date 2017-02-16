@@ -13,8 +13,8 @@ import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.lib.RouteShape;
-import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.lib.ShapedTransitSchedule;
+import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,8 +44,6 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 		this.shapedSchedule = shapedSchedule;
 		this.network = network;
 		this.useArtificial = useArtificial;
-
-		init();
 	}
 
 	public ScheduleRoutersWithShapes(PublicTransitMappingConfigGroup config, ShapedTransitSchedule shapedSchedule, Network network) {
@@ -53,12 +51,11 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 		this.shapedSchedule = shapedSchedule;
 		this.network = network;
 		this.useArtificial = false;
-
-		init();
 	}
 
 
-	private void init() {
+	@Override
+	public void load() {
 		Counter c = new Counter(" # ");
 
 		RouterShapes.setTravelCostType(config.getTravelCostType());

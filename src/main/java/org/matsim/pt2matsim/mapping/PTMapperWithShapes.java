@@ -70,7 +70,9 @@ import java.util.List;
  * TODO create entry point in pt2matsim.run, adapt config
  *
  * @author polettif
+ * @deprecated use modules in PTMapperImpl insted
  */
+@Deprecated
 public class PTMapperWithShapes implements PTMapper {
 
 	protected static Logger log = Logger.getLogger(PTMapperWithShapes.class);

@@ -71,20 +71,8 @@ public class PTMapperImpl implements PTMapper {
 	private TransitSchedule schedule;
 
 	private final PseudoSchedule pseudoSchedule = new PseudoScheduleImpl();
-
-	/**
-	 * Loads the PublicTransitMapping config file. If paths to input files
-	 * (schedule and network) are provided in the config, mapping can be run
-	 * via {@link #run()}
-	 *
-	 * @param configPath the config file
-	 */
-	public PTMapperImpl(String configPath) {
-		Config configAll = ConfigUtils.loadConfig(configPath, new PublicTransitMappingConfigGroup());
-		this.config = ConfigUtils.addOrGetModule(configAll, PublicTransitMappingConfigGroup.GROUP_NAME, PublicTransitMappingConfigGroup.class );
-		this.schedule = config.getScheduleFile() == null ? null : ScheduleTools.readTransitSchedule(config.getScheduleFile());
-		this.network = config.getNetworkFile() == null ? null : NetworkTools.readNetwork(config.getNetworkFile());
-	}
+	private LinkCandidateCreator linkCandidates;
+	private ScheduleRouters scheduleRouters;
 
 	/**
 	 * Use this constructor if you just want to use the config for mapping parameters.
@@ -99,10 +87,19 @@ public class PTMapperImpl implements PTMapper {
 	 * @param schedule which will be newly routed.
 	 * @param network schedule is mapped to this network, is modified
 	 */
-	public PTMapperImpl(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network) {
+	public PTMapperImpl(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network, MapperModule... modules) {
 		this.config = config;
 		this.schedule = schedule;
 		this.network = network;
+
+		for(MapperModule m : modules) {
+			if(m instanceof LinkCandidateCreator) {	this.linkCandidates = (LinkCandidateCreator) m;	}
+			if(m instanceof ScheduleRouters) {	this.scheduleRouters = (ScheduleRouters) m;	}
+		}
+
+		// assign defaults
+		if(this.linkCandidates == null) {	this.linkCandidates = new LinkCandidateCreatorUnique(schedule, network, this.config);	}
+		if(this.scheduleRouters == null) {	this.scheduleRouters = new ScheduleRoutersTransportMode(this.config, schedule, network, false);	}
 	}
 
 
@@ -154,8 +151,8 @@ public class PTMapperImpl implements PTMapper {
 		 * initiate routers.
 		 */
 		log.info("==============================================");
-		log.info("Creating mode separated network and routers...");
-		ScheduleRouters scheduleRouters = new ScheduleRoutersTransportMode(config, schedule, network, false);
+		log.info("Creating network routers for transit routes...");
+		scheduleRouters.load();
 
 
 		/** [2]
@@ -166,7 +163,7 @@ public class PTMapperImpl implements PTMapper {
 		 */
 		log.info("===========================");
 		log.info("Creating link candidates...");
-		LinkCandidateCreator linkCandidates = new LinkCandidateCreatorUnique(this.schedule, this.network, this.config);
+		linkCandidates.load();
 
 
 		/** [3]
@@ -231,6 +228,7 @@ public class PTMapperImpl implements PTMapper {
 		log.info("===========================================================================================");
 		log.info("Initiating final routers to map transit routes with referenced facilities to the network...");
 		ScheduleRouters finalRouters = new ScheduleRoutersTransportMode(config, schedule, network, true);
+		finalRouters.load();
 
 
 		/** [7]

@@ -75,7 +75,7 @@ public class RouterShapes implements Router {
 		this.shape = shape;
 
 		this.network = NetworkTools.createFilteredNetworkByLinkMode(paramNetwork, networkTransportModes);
-		Collection<Node> nodesWithinBuffer = ShapeTools.getNodesWithinBuffer(network, shape, cutBuffer);
+		Collection<Node> nodesWithinBuffer = ShapeTools.getNodesWithinBuffer(this.network, shape, cutBuffer);
 		NetworkTools.cutNetwork(network, nodesWithinBuffer);
 
 		this.paths = new HashMap<>();

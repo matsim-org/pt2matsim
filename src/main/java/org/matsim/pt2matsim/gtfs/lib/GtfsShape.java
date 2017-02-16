@@ -111,6 +111,7 @@ public class GtfsShape implements RouteShape {
 	/**
 	 * @return the maximal SW and NE corners of the shape
 	 */
+	@Override
 	public Coord[] getExtent() {
 		return new Coord[]{new Coord(extentSWx, extentSWy), new Coord(extentNEx, extentNEy)};
 	}

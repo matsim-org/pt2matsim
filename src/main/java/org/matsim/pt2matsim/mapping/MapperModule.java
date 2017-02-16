@@ -16,29 +16,15 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.lib;
-
-import org.matsim.api.core.v01.Coord;
-import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.Identifiable;
-
-import java.util.List;
-import java.util.SortedMap;
+package org.matsim.pt2matsim.mapping;
 
 /**
- * A polyline representing a route as a list of point coordinates.
- *
  * @author polettif
  */
-public interface RouteShape extends Identifiable {
+public interface MapperModule {
 
-	Id<RouteShape> getId();
-
-	void addPoint(Coord point, int pos);
-
-	SortedMap<Integer, Coord> getCoordsSorted();
-
-	List<Coord> getCoords();
-
-	Coord[] getExtent();
+	/**
+	 * Loads the necessary data when called in the algorithm.
+	 */
+	void load();
 }
