@@ -49,27 +49,14 @@ import java.util.Set;
  */
 public class RouterShapes implements Router {
 
-	private final Network network;
-	private final LeastCostPathCalculator pathCalculator;
-	private final RouteShape shape;
-
-	private final Map<Tuple<Id<Node>, Id<Node>>, LeastCostPathCalculator.Path> paths;
 	private static PublicTransitMappingConfigGroup.TravelCostType travelCostType = PublicTransitMappingConfigGroup.TravelCostType.linkLength;
 	private static double maxWeightDistance = 30;
 	private static double cutBuffer = 1000;
+	private final Network network;
+	private final LeastCostPathCalculator pathCalculator;
+	private final RouteShape shape;
+	private final Map<Tuple<Id<Node>, Id<Node>>, LeastCostPathCalculator.Path> paths;
 
-
-	public static void setTravelCostType(PublicTransitMappingConfigGroup.TravelCostType type) {
-		travelCostType = type;
-	}
-
-	public static void setMaxWeightDistance(double distance) {
-		maxWeightDistance = distance;
-	}
-
-	public static void setNetworkCutBuffer(double buffer) {
-		cutBuffer = buffer;
-	}
 
 	public RouterShapes(Network paramNetwork, Set<String> networkTransportModes, RouteShape shape) {
 		this.shape = shape;
@@ -84,6 +71,18 @@ public class RouterShapes implements Router {
 		this.pathCalculator = factory.createPathCalculator(this.network, this, this);
 	}
 
+	public static void setTravelCostType(PublicTransitMappingConfigGroup.TravelCostType type) {
+		travelCostType = type;
+	}
+
+	public static void setMaxWeightDistance(double distance) {
+		maxWeightDistance = distance;
+	}
+
+	public static void setNetworkCutBuffer(double buffer) {
+		cutBuffer = buffer;
+	}
+
 	/**
 	 * Calculates the travel cost and change it based on distance to path
 	 */
@@ -93,7 +92,7 @@ public class RouterShapes implements Router {
 		if(shape != null) {
 			double dist = ShapeTools.calcMinDistanceToShape(link, shape);
 			double factor = dist / maxWeightDistance + 0.1;
-			if(factor > 1) factor = 2;
+			if(factor > 1) factor = 3;
 			travelCost *= factor;
 		}
 		return travelCost;
@@ -104,14 +103,13 @@ public class RouterShapes implements Router {
 	 */
 	@Override
 	public synchronized LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNodeId, Id<Node> toNodeId) {
-		Node nodeA = network.getNodes().get(fromNodeId);
-		Node nodeB = network.getNodes().get(toNodeId);
+		Node nodeA = this.network.getNodes().get(fromNodeId);
+		Node nodeB = this.network.getNodes().get(toNodeId);
 
 		if(nodeA != null && nodeB != null) {
 			Tuple<Id<Node>, Id<Node>> nodes = new Tuple<>(fromNodeId, toNodeId);
 			if(!paths.containsKey(nodes)) {
 				paths.put(nodes, pathCalculator.calcLeastCostPath(nodeA, nodeB, 0.0, null, null));
-
 			}
 			return paths.get(nodes);
 		} else {

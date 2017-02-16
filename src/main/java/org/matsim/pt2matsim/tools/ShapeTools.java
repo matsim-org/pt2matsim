@@ -197,7 +197,10 @@ public final class ShapeTools {
 		ShapeFileWriter.writeGeometries(features, outFile);
 	}
 
-	public static void writeShapeFile(Set<RouteShape> shapes, String outputCoordinateSystem, String filename) {
+	/**
+	 * Writes the given shapes to a shape file
+	 */
+	public static void writeShapeFile(Collection<? extends RouteShape> shapes, String outputCoordinateSystem, String filename) {
 		Collection<SimpleFeature> features = new ArrayList<>();
 
 		PolylineFeatureFactory ff = new PolylineFeatureFactory.Builder()
@@ -208,7 +211,6 @@ public final class ShapeTools {
 
 		for(RouteShape shape : shapes) {
 			if(shape != null) {
-
 				Collection<Coord> points = shape.getCoordsSorted().values();
 				int i = 0;
 				Coordinate[] coordinates = new Coordinate[points.size()];

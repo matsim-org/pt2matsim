@@ -13,15 +13,17 @@ import org.matsim.pt2matsim.lib.ShapedSchedule;
 import org.matsim.pt2matsim.lib.ShapedTransitSchedule;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWithShapes;
 import org.matsim.pt2matsim.plausibility.MappingAnalysis;
+import org.matsim.pt2matsim.shp.Schedule2ShapeFile;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
+import org.matsim.pt2matsim.tools.ShapeTools;
 
 /**
  * @author polettif
  */
-public class PTMapperWithShapesTest {
+public class PTMapperImplShapesTest {
 
-	protected static Logger log = Logger.getLogger(PTMapperWithShapesTest.class);
+	protected static Logger log = Logger.getLogger(PTMapperImplShapesTest.class);
 
 	private String base = "test/analysis/";
 	private String networkName = base + "network/addison.xml.gz";
@@ -31,21 +33,6 @@ public class PTMapperWithShapesTest {
 
 	private GtfsFeed gtfsFeed;
 	private Network network;
-
-	@Before
-	public void run() throws Exception {
-		network = NetworkTools.readNetwork(networkName);
-
-		gtfsFeed = new GtfsFeedImpl(gtfsFolder);
-		GtfsConverter gtfsConverter = new GtfsConverter(gtfsFeed);
-		gtfsConverter.convert(sampleDay, coordSys);
-
-		gtfsConverter.getShapedTransitSchedule().getTransitRouteShapeReference().writeToFile(base +"output/shapeRef.csv");
-		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), base +"mts/unmapped_schedule.xml.gz");
-
-		// debug shapes
-//		ShapeTools.writeShapeFile(Collections.singleton(gtfsConverter.getShapes().get("26")), coordSys, base + "output/gtfsShapeDebug.shp");
-	}
 
 	public static PublicTransitMappingConfigGroup createPTMConfig() {
 		PublicTransitMappingConfigGroup config = new PublicTransitMappingConfigGroup();
@@ -64,6 +51,21 @@ public class PTMapperWithShapesTest {
 		config.setNumOfThreads(8);
 
 		return config;
+	}
+
+	@Before
+	public void run() throws Exception {
+		network = NetworkTools.readNetwork(networkName);
+
+		gtfsFeed = new GtfsFeedImpl(gtfsFolder);
+		GtfsConverter gtfsConverter = new GtfsConverter(gtfsFeed);
+		gtfsConverter.convert(sampleDay, coordSys);
+
+		gtfsConverter.getShapedTransitSchedule().getTransitRouteShapeReference().writeToFile(base + "output/shapeRef.csv");
+		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), base + "mts/unmapped_schedule.xml.gz");
+
+		// debug shapes
+//		ShapeTools.writeShapeFile(Collections.singleton(gtfsConverter.getShapes().get("26")), coordSys, base + "output/gtfsShapeDebug.shp");
 	}
 
 	private void runNormalMapping() {
@@ -102,7 +104,6 @@ public class PTMapperWithShapesTest {
 		analysis.writeQuantileDistancesCsv(base +"output/Normal_DistancesQuantile.csv");
 		System.out.println("Q8585 normal: " + analysis.getQ8585());
 		System.out.println("Length diff. normal: " + Math.sqrt(analysis.getAverageSquaredLengthRatio())*100 + " %");
-
 	}
 
 	@Test
@@ -118,7 +119,6 @@ public class PTMapperWithShapesTest {
 		System.out.println("Q8585 with shapes: " + analysis.getQ8585());
 		System.out.println("Length diff. shapes: " + Math.sqrt(analysis.getAverageSquaredLengthRatio())*100 + " %");
 
-
 		/*
 		PlausibilityCheck.run(
 				base + "shape/output/shapes_schedule.xml.gz",
@@ -127,6 +127,13 @@ public class PTMapperWithShapesTest {
 				base + "shape/output/check/"
 		);
 		*/
+	}
+
+	@Test
+	public void writeShapes() {
+		Schedule2ShapeFile.run(coordSys, base + "output/shp/", base + "output/shapes_schedule.xml.gz", base + "output/shapes_network.xml.gz");
+		ShapedTransitSchedule shapedSchedule = new ShapedSchedule(base + "output/shapes_schedule.xml.gz", base + "output/shapeRef.csv", gtfsFolder + "shapes.txt", coordSys);
+		ShapeTools.writeShapeFile(shapedSchedule.getShapes().values(), coordSys, base + "output/shp/gtfsShapes.shp");
 	}
 
 
