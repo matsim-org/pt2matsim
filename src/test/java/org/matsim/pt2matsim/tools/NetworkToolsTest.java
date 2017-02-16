@@ -186,10 +186,10 @@ public class NetworkToolsTest {
 	public void findClosestLinks() throws Exception {
 		Coord coord = new Coord(2.0, 2.0);
 
-		Assert.assertEquals(0, NetworkTools.findClosestLinks(network, coord, 999, 1, 0, null, 999).size());
-//		Assert.assertEquals(5, NetworkTools.findClosestLinks(network, coord, 999, 2, 1, null, 10).size());
-//		Assert.assertEquals(7, NetworkTools.findClosestLinks(network, coord, 999, 6, 5, null, 10).size());
-//		Assert.assertEquals(6, NetworkTools.findClosestLinks(network, coord, 999, 4, 5, null, Math.sqrt(0.16)).size());
+//		Assert.assertEquals(0, NetworkTools.findClosestLinksCutoff(network, coord, 999, 1, 0, null, 999).size());
+//		Assert.assertEquals(5, NetworkTools.findClosestLinksCutoff(network, coord, 999, 2, 1, null, 10).size());
+//		Assert.assertEquals(7, NetworkTools.findClosestLinksCutoff(network, coord, 999, 6, 5, null, 10).size());
+//		Assert.assertEquals(6, NetworkTools.findClosestLinksCutoff(network, coord, 999, 4, 5, null, Math.sqrt(0.16)).size());
 	}
 
 	@Test

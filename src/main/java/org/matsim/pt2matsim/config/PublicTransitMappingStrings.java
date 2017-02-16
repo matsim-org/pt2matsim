@@ -18,7 +18,8 @@
 
 package org.matsim.pt2matsim.config;
 
-import java.util.Collections;
+import org.matsim.core.utils.collections.CollectionUtils;
+
 import java.util.Set;
 
 /**
@@ -32,7 +33,7 @@ public final class PublicTransitMappingStrings {
 	public static final String SUFFIX_CHILD_STOP_FACILITIES = ".link:";
 	public static final String SUFFIX_CHILD_STOP_FACILITIES_REGEX = "[.]link:";
 
-	public static final String ARTIFICIAL_LINK_MODE = "artificial";
-	public static final Set<String> ARTIFICIAL_LINK_MODE_AS_SET = Collections.singleton(ARTIFICIAL_LINK_MODE);
 	public static final String STOP_FACILITY_LOOP_LINK = "stopFacilityLink";
+	public static final String ARTIFICIAL_LINK_MODE = "artificial";
+	public static final Set<String> ARTIFICIAL_LINK_MODE_AS_SET = CollectionUtils.stringToSet(ARTIFICIAL_LINK_MODE);
 }
