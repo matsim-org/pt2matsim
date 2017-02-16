@@ -60,7 +60,6 @@ public class PseudoRoutingImpl implements PseudoRouting {
 
 	private final Set<ArtificialLink> necessaryArtificialLinks = new HashSet<>();
 	private final Map<Tuple<LinkCandidate, LinkCandidate>, ArtificialLink> allPossibleArtificialLinks = new HashMap<>();
-	private final Map<String, LeastCostPathCalculator.Path> localStoredPaths = new HashMap<>();
 
 	private final PseudoSchedule threadPseudoSchedule = new PseudoScheduleImpl();
 
@@ -79,8 +78,6 @@ public class PseudoRoutingImpl implements PseudoRouting {
 	public void run() {
 		for(TransitLine transitLine : queue) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
-
-				String scheduleTransportMode = transitRoute.getTransportMode();
 
 				/** [1]
 				 * Initiate pseudoGraph and Dijkstra algorithm for the current transitRoute.
@@ -123,19 +120,10 @@ public class PseudoRoutingImpl implements PseudoRouting {
 							 * to search a least cost path on the network.
 							 */
 							if(!linkCandidateCurrent.isLoopLink() && !linkCandidateNext.isLoopLink()) {
-								LeastCostPathCalculator.Path leastCostPath;
-
 								/**
 								 * Calculate the least cost path on the network
 								 */
-								String key = scheduleTransportMode + "--" + linkCandidateCurrent.toString() + "--" + linkCandidateNext.toString();
-								if(!localStoredPaths.containsKey(key)) {
-									leastCostPath = scheduleRouters.calcLeastCostPath(linkCandidateCurrent, linkCandidateNext, transitLine, transitRoute);
-									localStoredPaths.put(key, leastCostPath);
-								} else {
-									leastCostPath = localStoredPaths.get(key);
-								}
-
+								LeastCostPathCalculator.Path leastCostPath = scheduleRouters.calcLeastCostPath(linkCandidateCurrent, linkCandidateNext, transitLine, transitRoute);
 
 								if(leastCostPath != null) {
 									pathCost = leastCostPath.travelCost;

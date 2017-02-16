@@ -90,9 +90,7 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 		}
 	}
 
-	/**
-	 * Either extract the router or call this method
-	 */
+
 	@Override
 	public LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, TransitLine transitLine, TransitRoute transitRoute) {
 		return routers.get(transitLine).get(transitRoute).calcLeastCostPath(fromLinkCandidate.getToNodeId(), toLinkCandidate.getFromNodeId());
