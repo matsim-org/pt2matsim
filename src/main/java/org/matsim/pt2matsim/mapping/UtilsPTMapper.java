@@ -289,4 +289,17 @@ public final class UtilsPTMapper {
 			}
 		}
 	}
+
+	/**
+	 * @return true if the stop facility ids contain the child stop string ".link:"
+	 * which might lead to problems during mapping
+	 */
+	public static boolean idsContainChildStopString(TransitSchedule schedule) {
+		for(TransitStopFacility stopFacility : schedule.getFacilities().values()) {
+			if(ScheduleTools.getParentId(stopFacility.getId().toString()).length() != stopFacility.getId().toString().length()) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

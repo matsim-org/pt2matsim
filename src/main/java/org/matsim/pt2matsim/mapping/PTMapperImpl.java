@@ -120,6 +120,10 @@ public class PTMapperImpl implements PTMapper {
 			throw new RuntimeException("No network defined!");
 		}
 
+		if(UtilsPTMapper.idsContainChildStopString(schedule)) {
+			throw new RuntimeException("Some stopFacility ids contain the string \"" + PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES + "\"! Schedule cannot be mapped.");
+		}
+
 		setLogLevels();
 		config.loadParameterSets();
 
