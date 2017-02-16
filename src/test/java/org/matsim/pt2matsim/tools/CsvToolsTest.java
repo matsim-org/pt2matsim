@@ -1,6 +1,6 @@
 package org.matsim.pt2matsim.tools;
 
-import com.vividsolutions.jts.util.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 import org.matsim.core.utils.collections.MapUtils;
 
@@ -30,7 +30,7 @@ public class CsvToolsTest {
 
 		Map<String, Map<String, String>> readMap = CsvTools.readNestedMapFromFile(file, false);
 
-		Assert.equals(testMap, readMap);
+		Assert.assertEquals(testMap, readMap);
 	}
 
 }

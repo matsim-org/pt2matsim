@@ -1,6 +1,6 @@
 package org.matsim.pt2matsim.tools;
 
-import com.vividsolutions.jts.util.Assert;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.matsim.api.core.v01.Coord;
@@ -47,7 +47,7 @@ public class ScheduleToolsTest {
 		TransitStopFacility stop4BI = fac.createTransitStopFacility(Id.create("stop4.link:BI", TransitStopFacility.class), new Coord(20, -18), false);
 		TransitStopFacility stop1DE = fac.createTransitStopFacility(Id.create("stop1.link:DE", TransitStopFacility.class), new Coord(-19, 21), false);
 		TransitStopFacility stop2AD = fac.createTransitStopFacility(Id.create("stop2.link:AD", TransitStopFacility.class), new Coord(-2, 10), false);
-		TransitStopFacility stop3XA = fac.createTransitStopFacility(Id.create("stop3.link:XA", TransitStopFacility.class), new Coord(10, 40), false);
+		TransitStopFacility stop3XA = fac.createTransitStopFacility(Id.create("stop3.link:XA", TransitStopFacility.class), new Coord(10, 4), false);
 		TransitStopFacility stop4IB = fac.createTransitStopFacility(Id.create("stop4.link:IB", TransitStopFacility.class), new Coord(21, -20), false);
 		stop1ED.setLinkId(Id.createLinkId("ED"));
 		stop2DA.setLinkId(Id.createLinkId("DA"));
@@ -162,9 +162,9 @@ public class ScheduleToolsTest {
 		for(TransitLine l : testSchedule.getTransitLines().values()) { nRoutesTest += l.getRoutes().size(); }
 		for(TransitLine l : initSchedule().getTransitLines().values()) { nRoutesInit += l.getRoutes().size(); }
 
-		Assert.equals(testSchedule.getTransitLines().size(), initSchedule().getTransitLines().size());
-		Assert.equals(nRoutesInit, nRoutesTest);
-		Assert.equals(testSchedule.getFacilities().size(), initSchedule().getFacilities().size());
+		Assert.assertEquals(testSchedule.getTransitLines().size(), initSchedule().getTransitLines().size());
+		Assert.assertEquals(nRoutesInit, nRoutesTest);
+		Assert.assertEquals(testSchedule.getFacilities().size(), initSchedule().getFacilities().size());
 	}
 
 	@Test
@@ -186,10 +186,10 @@ public class ScheduleToolsTest {
 			}
 		}
 
-		Assert.equals(testSchedule.getTransitLines().size(), initSchedule().getTransitLines().size());
-		Assert.equals(nRoutesInit, nRoutesTest);
-		Assert.equals(testSchedule.getFacilities().size(), initSchedule().getFacilities().size());
-		Assert.equals(nDeparturesInit*2, nDeparturesTest);
+		Assert.assertEquals(testSchedule.getTransitLines().size(), initSchedule().getTransitLines().size());
+		Assert.assertEquals(nRoutesInit, nRoutesTest);
+		Assert.assertEquals(testSchedule.getFacilities().size(), initSchedule().getFacilities().size());
+		Assert.assertEquals(nDeparturesInit*2, nDeparturesTest);
 	}
 
 	@Test
@@ -211,9 +211,9 @@ public class ScheduleToolsTest {
 			}
 		}
 
-		Assert.equals(testSchedule.getTransitLines().size(), initSchedule().getTransitLines().size());
-		Assert.equals(nRoutesInit, nRoutesTest);
-		Assert.equals(testSchedule.getFacilities().size(), initSchedule().getFacilities().size());
-		Assert.equals(nDeparturesInit+6, nDeparturesTest);
+		Assert.assertEquals(testSchedule.getTransitLines().size(), initSchedule().getTransitLines().size());
+		Assert.assertEquals(nRoutesInit, nRoutesTest);
+		Assert.assertEquals(testSchedule.getFacilities().size(), initSchedule().getFacilities().size());
+		Assert.assertEquals(nDeparturesInit+6, nDeparturesTest);
 	}
 }
