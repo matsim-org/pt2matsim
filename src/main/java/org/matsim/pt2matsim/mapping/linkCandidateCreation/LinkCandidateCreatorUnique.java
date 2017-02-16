@@ -22,6 +22,7 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
@@ -174,11 +175,57 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 		return NetworkTools.createArtificialStopFacilityLink(stopFacility, network, config.getPrefixArtificial(), 20, loopLinkModes);
 	}
 
+	/**
+	 * Looks for nodes within search radius of <tt>coord</tt> (using {@link NetworkUtils#getNearestNodes},
+	 * fetches all in- and outlinks and sorts them ascending by their
+	 * distance to the coordinates given.
+	 * <p/>
+	 * The method then returns all links within <tt>maxLinkDistance</tt> or <tt>maxNLinks</tt>*
+	 * whichever is reached earlier. Links with the same distance (i.e. opposite links) are always returned.
+	 * <p/>
+	 * * Note: maxNLinks is not a hard constraint. This method returns more than maxNLinks links if two links
+	 * have the same distance to the facility. It also returns more than maxNLinks if toleranceFactor is > 1.
+	 * <p/>
+	 * Distance Link to Coordinate is calculated using {@link CoordUtils#distancePointLinesegment}).
+	 *
+	 * The abort conditions are ordered as follows:
+	 * <ol>
+	 *     <li>distance > maxLinkCandidateDistance</li>
+	 *     <li>distance > (distance of the maxNLinks-th link * toleranceFactor)</li>
+	 * </ol>
+	 *
+	 * @return list of the closest links from coordinate <tt>coord</tt>.
+	 */
 	private List<Link> findClosestLinks(PublicTransitMappingConfigGroup.LinkCandidateCreatorParams param, TransitRouteStop routeStop) {
-		return NetworkTools.findClosestLinks(network,
-				routeStop.getStopFacility().getCoord(), config.getNodeSearchRadius(),
-				param.getMaxNClosestLinks(), param.getLinkDistanceTolerance(),
-				param.getNetworkModes(), param.getMaxLinkCandidateDistance());
+		List<Link> closestLinks = new ArrayList<>();
+		Map<Double, Set<Link>> sortedLinks = NetworkTools.findClosestLinks(network, routeStop.getStopFacility().getCoord(), config.getNodeSearchRadius(), param.getNetworkModes());
+
+		// calculate lineSegmentDistance for all links
+		double tolFactor = (param.getLinkDistanceTolerance() < 1 ? 0 : param.getLinkDistanceTolerance());
+		double maxSoftConstraintDistance = 0.0;
+
+		int nLink = 0;
+		for(Map.Entry<Double, Set<Link>> entry : sortedLinks.entrySet()) {
+			// if the distance is greate than the maximum distance
+			if(entry.getKey() > param.getMaxLinkCandidateDistance()) {
+				break;
+			}
+
+			// when the link count limit is reached, set the soft constraint distance
+			if(nLink < param.getMaxNClosestLinks() && nLink + nLink + entry.getValue().size() >= param.getMaxNClosestLinks()) {
+				maxSoftConstraintDistance = entry.getKey() * tolFactor;
+			}
+
+			// check if distance is greater than soft constraint distance
+			if(nLink + entry.getValue().size() > param.getMaxNClosestLinks() && entry.getKey() > maxSoftConstraintDistance) {
+				break;
+			}
+
+			// if no loop break has been reached, add link to list
+			closestLinks.addAll(entry.getValue());
+			nLink += entry.getValue().size();
+		}
+		return closestLinks;
 	}
 
 	private final Set<String> scheduleTransportModes = new HashSet<>();

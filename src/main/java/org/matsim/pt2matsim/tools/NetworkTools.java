@@ -138,6 +138,84 @@ public final class NetworkTools {
 		}
 	}
 
+
+	/**
+	 * Looks for nodes within search radius of <tt>coord</tt> (using {@link NetworkUtils#getNearestNodes},
+	 * fetches all in- and outlinks and sorts them ascending by their
+	 * distance to the coordinates given. A map with the distance as key and a set as value is used
+	 * to (1) return the already calculated distance to the coord and (2) store two opposite links under
+	 * the same distance.
+	 *
+	 * @param network               The network (must be instance of {@link Network})
+	 * @param coord                 the coordinate from which the closest links are
+	 *                              to be searched
+	 * @param nodeSearchRadius      Only links from and to nodes within this radius are considered.
+	 * @param allowedTransportModes Only links with at least one of these transport modes are considered. All links are considered if <tt>null</tt>.
+	 */
+	 public static Map<Double, Set<Link>> findClosestLinks(Network network, Coord coord, double nodeSearchRadius, Set<String> allowedTransportModes) {
+		 Collection<Node> nearestNodes = NetworkUtils.getNearestNodes(network, coord, nodeSearchRadius);
+		 SortedMap<Double, Set<Link>> closestLinksSortedByDistance = new TreeMap<>();
+
+		 if(nearestNodes.size() != 0) {
+			 // fetch every in- and outlink of each node
+			 HashSet<Link> links = new HashSet<>();
+			 for(Node node : nearestNodes) {
+				 links.addAll(node.getOutLinks().values());
+				 links.addAll(node.getInLinks().values());
+			 }
+
+			 // calculate lineSegmentDistance for all links
+			 for(Link link : links) {
+				 // only use links with a viable network transport mode
+				 if(allowedTransportModes == null || MiscUtils.setsShareMinOneStringEntry(link.getAllowedModes(), allowedTransportModes)) {
+					 double lineSegmentDistance = CoordUtils.distancePointLinesegment(link.getFromNode().getCoord(), link.getToNode().getCoord(), coord);
+					 MapUtils.getSet(lineSegmentDistance, closestLinksSortedByDistance).add(link);
+				 }
+			 }
+		 }
+		 return closestLinksSortedByDistance;
+	}
+
+	/**
+	 * See {@link #findClosestLinks(Network, Coord, double, Set)}. Returns a list ordered ascending by distance to the coord.
+	 * For opposite links, the link which has the coordinate on its right side is sorted "closer" to the coord.
+	 * If more than two links have the exact same distance, links are sorted by distance to the next node. After that,
+	 * behaviour is undefined.
+	 */
+	public static List<Link> findClosestLinksSorted(Network network, Coord coord, double nodeSearchRadius, Set<String> allowedTransportModes) {
+		List<Link> links = new ArrayList<>();
+		Map<Double, Set<Link>> sortedLinks = findClosestLinks(network, coord, nodeSearchRadius, allowedTransportModes);
+
+		for(Set<Link> set : sortedLinks.values()) {
+			List<Link> list = new ArrayList<>(set);
+			if(list.size() == 1) {
+				links.add(list.get(0));
+			} else if(list.size() == 2) {
+				if(coordIsOnRightSideOfLink(coord, list.get(0))) {
+					links.add(list.get(0));
+					links.add(list.get(1));
+				} else {
+					links.add(list.get(1));
+					links.add(list.get(0));
+				}
+			} else {
+				Map<Double, Link> tmp = new HashMap<>();
+				for(Link l : list) {
+					double fromNodeDist = CoordUtils.calcEuclideanDistance(l.getFromNode().getCoord(), coord);
+					double toNodeDist = CoordUtils.calcEuclideanDistance(l.getFromNode().getCoord(), coord);
+					double nodeDist = fromNodeDist < toNodeDist ? fromNodeDist : toNodeDist;
+
+					double d = nodeDist + (coordIsOnRightSideOfLink(coord, l) ? 1 : 100);
+					while(tmp.putIfAbsent(d, l) == null) {
+						d += 0.01;
+					}
+				}
+				links.addAll(tmp.values());
+			}
+		}
+		return links;
+	}
+
 	/**
 	 * Looks for nodes within search radius of <tt>coord</tt> (using {@link NetworkUtils#getNearestNodes},
 	 * fetches all in- and outlinks and sorts them ascending by their
@@ -163,7 +241,8 @@ public final class NetworkTools {
 	 *                              this distance to the coordinate.
 	 * @return list of the closest links from coordinate <tt>coord</tt>.
 	 */
-	public static List<Link> findClosestLinks(Network network, Coord coord, double nodeSearchRadius, int maxNLinks, double toleranceFactor, Set<String> networkTransportModes, double maxLinkDistance) {
+	@Deprecated
+	public static List<Link> findClosestLinksCutoff(Network network, Coord coord, double nodeSearchRadius, int maxNLinks, double toleranceFactor, Set<String> networkTransportModes, double maxLinkDistance) {
 		List<Link> closestLinks = new ArrayList<>();
 		Collection<Node> nearestNodes = NetworkUtils.getNearestNodes(network, coord, nodeSearchRadius);
 
