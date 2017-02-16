@@ -24,6 +24,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.core.utils.gis.PolylineFeatureFactory;
@@ -90,11 +91,20 @@ public final class ShapeTools {
 	 */
 	public static Collection<Node> getNodesWithinBuffer(Network network, RouteShape shape, double buffer) {
 		Set<Node> nodesWithinBuffer = new HashSet<>();
+
+		for(Coord c : shape.getCoords()) {
+			nodesWithinBuffer.addAll(NetworkUtils.getNearestNodes(network, c, buffer));
+		}
+
+		/*
 		for(Node node : network.getNodes().values()) {
-			if(calcMinDistanceToShape(node.getCoord(), shape) <= buffer) {
-				nodesWithinBuffer.add(node);
+			if(CoordTools.isInBufferArea(node.getCoord(), shape.getExtent(), buffer)) {
+				if(calcMinDistanceToShape(node.getCoord(), shape) <= buffer) {
+					nodesWithinBuffer.add(node);
+				}
 			}
 		}
+		*/
 		return nodesWithinBuffer;
 	}
 

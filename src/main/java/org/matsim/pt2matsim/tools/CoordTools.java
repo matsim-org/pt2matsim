@@ -187,13 +187,15 @@ public final class CoordTools {
 	}
 
 	/**
-	 * Checks if a coordinate is in the area given by SE and NE.
+	 * Checks if a coordinate is in the area given by sw and ne.
 	 * @param coord the coordinate to check
-	 * @param SW the south-west corner of the area
-	 * @param NE the north-east corner of the area
+	 * @param sw the south-west corner of the area
+	 * @param ne the north-east corner of the area
 	 */
-	public static boolean isInArea(Coord coord, Coord SW, Coord NE) {
-		return (getCompassQuarter(SW, coord) == 1 && getCompassQuarter(NE, coord) == 3);
+	public static boolean isInArea(Coord coord, Coord sw, Coord ne) {
+		if(coord.getX() < sw.getX() || coord.getY() < sw.getY()) return false;
+		if(coord.getX() > ne.getX() || coord.getY() > ne.getY()) return false;
+		return true;
 	}
 
 	/**
@@ -202,8 +204,13 @@ public final class CoordTools {
 	 * @param area [0] the south-west corner of the area, [1] the north-east corner of the area
 	 */
 	public static boolean isInArea(Coord coord, Coord[] area) {
-		return (getCompassQuarter(area[0], coord) == 1 && getCompassQuarter(area[1], coord) == 3);
+		return isInArea(coord, area[0], area[1]);
 	}
+
+	public static boolean isInBufferArea(Coord coord, Coord[] extent, double buffer) {
+		return isInArea(coord, new Coord(extent[0].getX()-buffer, extent[0].getY()-buffer), new Coord(extent[1].getX()+buffer, extent[1].getY()+buffer));
+	}
+
 
 	/**
 	 * @return whether Coord2 lies<br/>
@@ -215,7 +222,6 @@ public final class CoordTools {
 	 */
 	public static int getCompassQuarter(Coord baseCoord, Coord toCoord) {
 		double az = getAzimuth(baseCoord, toCoord);
-
 
 		if(az < Math.PI/2) {
 			return 1;

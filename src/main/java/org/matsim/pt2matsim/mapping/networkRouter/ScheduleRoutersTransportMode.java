@@ -12,6 +12,7 @@ import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
+import org.matsim.pt2matsim.mapping.MapperModule;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.tools.NetworkTools;
 
@@ -24,7 +25,7 @@ import java.util.Set;
  *
  * @author polettif
  */
-public class ScheduleRoutersTransportMode implements ScheduleRouters {
+public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModule {
 
 	protected static Logger log = Logger.getLogger(ScheduleRoutersTransportMode.class);
 
@@ -41,10 +42,10 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters {
 		this.network = network;
 		this.useArtificial = useArtificialNetworkLinks;
 
-		init();
 	}
 
-	private void init() {
+	@Override
+	public void load() {
 		/**
 		 * Initialize routers
 		 */

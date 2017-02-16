@@ -21,7 +21,14 @@
 
 package org.matsim.pt2matsim.run;
 
+import org.matsim.api.core.v01.network.Network;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
+import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.mapping.PTMapperImpl;
+import org.matsim.pt2matsim.tools.NetworkTools;
+import org.matsim.pt2matsim.tools.ScheduleTools;
 
 /**
  * Allows to run an implementation
@@ -59,7 +66,12 @@ public final class PublicTransitMapper {
 	 * @param configFile the PublicTransitMapping config file
 	 */
 	public static void run(String configFile) {
-		new PTMapperImpl(configFile).run();
+		Config configAll = ConfigUtils.loadConfig(configFile, new PublicTransitMappingConfigGroup());
+		PublicTransitMappingConfigGroup config = ConfigUtils.addOrGetModule(configAll, PublicTransitMappingConfigGroup.class);
+		TransitSchedule schedule = config.getScheduleFile() == null ? null : ScheduleTools.readTransitSchedule(config.getScheduleFile());
+		Network network = config.getNetworkFile() == null ? null : NetworkTools.readNetwork(config.getNetworkFile());
+
+		new PTMapperImpl(config, schedule, network).run();
 	}
 
 	private PublicTransitMapper() {}

@@ -55,12 +55,11 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 		this.schedule = schedule;
 		this.network = network;
 		this.config = config;
-
-		createLinkCandidates();
 	}
 
 
-	private void createLinkCandidates() {
+	@Override
+	public void load() {
 		log.info("   search radius: " + config.getNodeSearchRadius());
 		log.info("   Note: loop links for stop facilities are created if no link candidate can be found.");
 

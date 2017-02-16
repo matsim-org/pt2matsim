@@ -11,6 +11,7 @@ import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.lib.ShapedSchedule;
 import org.matsim.pt2matsim.lib.ShapedTransitSchedule;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWithShapes;
 import org.matsim.pt2matsim.plausibility.MappingAnalysis;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
@@ -80,7 +81,7 @@ public class PTMapperWithShapesTest {
 		PublicTransitMappingConfigGroup config = createPTMConfig();
 		ShapedTransitSchedule shapedSchedule = new ShapedSchedule(base + "mts/unmapped_schedule.xml.gz", base + "output/shapeRef.csv", gtfsFolder+"shapes.txt", coordSys);
 
-		PTMapper ptMapper = new PTMapperWithShapes(config, shapedSchedule, network);
+		PTMapper ptMapper = new PTMapperImpl(config, shapedSchedule, network, new ScheduleRoutersWithShapes(config, shapedSchedule, network));
 //		ExtractDebugSchedule.run(shapedSchedule, "TTSB/B_1438", "602798A4122B5456");
 		ptMapper.run();
 
