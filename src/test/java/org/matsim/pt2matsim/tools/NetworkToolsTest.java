@@ -1,6 +1,6 @@
 package org.matsim.pt2matsim.tools;
 
-import com.vividsolutions.jts.util.Assert;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.matsim.api.core.v01.Coord;
@@ -176,40 +176,40 @@ public class NetworkToolsTest {
 		Coord testL = new Coord(-1.0, 10.0);
 
 		Node nearestNode = NetworkUtils.getNearestNode(network, testR);
-		Assert.equals("A", nearestNode.getId().toString());
+		Assert.assertEquals("A", nearestNode.getId().toString());
 
-		Assert.equals("AD", NetworkTools.getNearestLink(network, testR, 4).getId().toString());
-		Assert.equals("DA", NetworkTools.getNearestLink(network, testL, 4).getId().toString());
+		Assert.assertEquals("AD", NetworkTools.getNearestLink(network, testR, 4).getId().toString());
+		Assert.assertEquals("DA", NetworkTools.getNearestLink(network, testL, 4).getId().toString());
 	}
 
 	@Test
 	public void findClosestLinks() throws Exception {
 		Coord coord = new Coord(2.0, 2.0);
 
-		Assert.equals(0, NetworkTools.findClosestLinks(network, coord, 999, 1, 0, null, 999).size());
-//		Assert.equals(5, NetworkTools.findClosestLinks(network, coord, 999, 2, 1, null, 10).size());
-//		Assert.equals(7, NetworkTools.findClosestLinks(network, coord, 999, 6, 5, null, 10).size());
-//		Assert.equals(6, NetworkTools.findClosestLinks(network, coord, 999, 4, 5, null, Math.sqrt(0.16)).size());
+		Assert.assertEquals(0, NetworkTools.findClosestLinks(network, coord, 999, 1, 0, null, 999).size());
+//		Assert.assertEquals(5, NetworkTools.findClosestLinks(network, coord, 999, 2, 1, null, 10).size());
+//		Assert.assertEquals(7, NetworkTools.findClosestLinks(network, coord, 999, 6, 5, null, 10).size());
+//		Assert.assertEquals(6, NetworkTools.findClosestLinks(network, coord, 999, 4, 5, null, Math.sqrt(0.16)).size());
 	}
 
 	@Test
 	public void getOppositeLink() throws Exception {
 		Network network = initNetwork();
 
-		Assert.equals("AD", NetworkTools.getOppositeLink(network.getLinks().get(Id.createLinkId("DA"))).getId().toString());
+		Assert.assertEquals("AD", NetworkTools.getOppositeLink(network.getLinks().get(Id.createLinkId("DA"))).getId().toString());
 	}
 
 	@Test
 	public void coordIsOnRightSideOfLink() throws Exception {
 		Coord c = new Coord(-1.0, 1.0);
 
-		Assert.isTrue(NetworkTools.coordIsOnRightSideOfLink(c, network.getLinks().get(Id.createLinkId("IG"))));
-		Assert.isTrue(NetworkTools.coordIsOnRightSideOfLink(c, network.getLinks().get(Id.createLinkId("FE"))));
-		Assert.isTrue(NetworkTools.coordIsOnRightSideOfLink(c, network.getLinks().get(Id.createLinkId("ED"))));
-		Assert.isTrue(NetworkTools.coordIsOnRightSideOfLink(c, network.getLinks().get(Id.createLinkId("DA"))));
+		Assert.assertTrue(NetworkTools.coordIsOnRightSideOfLink(c, network.getLinks().get(Id.createLinkId("IG"))));
+		Assert.assertTrue(NetworkTools.coordIsOnRightSideOfLink(c, network.getLinks().get(Id.createLinkId("FE"))));
+		Assert.assertTrue(NetworkTools.coordIsOnRightSideOfLink(c, network.getLinks().get(Id.createLinkId("ED"))));
+		Assert.assertTrue(NetworkTools.coordIsOnRightSideOfLink(c, network.getLinks().get(Id.createLinkId("DA"))));
 
-		Assert.isTrue(!NetworkTools.coordIsOnRightSideOfLink(c, network.getLinks().get(Id.createLinkId("AD"))));
-		Assert.isTrue(!NetworkTools.coordIsOnRightSideOfLink(c, network.getLinks().get(Id.createLinkId("AX"))));
+		Assert.assertFalse(NetworkTools.coordIsOnRightSideOfLink(c, network.getLinks().get(Id.createLinkId("AD"))));
+		Assert.assertFalse(NetworkTools.coordIsOnRightSideOfLink(c, network.getLinks().get(Id.createLinkId("AX"))));
 	}
 
 	@Test
@@ -240,8 +240,8 @@ public class NetworkToolsTest {
 
 	@Test
 	public void getSingleFilePrecedingLink() {
-		Assert.equals("AH", NetworkTools.getSingleFilePrecedingLink(getLink("HZ")).getId().toString());
-		Assert.equals("ZI", NetworkTools.getSingleFileSucceedingLink(getLink("HZ")).getId().toString());
+		Assert.assertEquals("AH", NetworkTools.getSingleFilePrecedingLink(getLink("HZ")).getId().toString());
+		Assert.assertEquals("ZI", NetworkTools.getSingleFileSucceedingLink(getLink("HZ")).getId().toString());
 	}
 
 	@Test
@@ -252,12 +252,12 @@ public class NetworkToolsTest {
 		seq.add(getLink("ZI"));
 
 		NetworkTools.reduceSequencedLinks(seq, new Coord(10.0, -5.0));
-		Assert.equals(1, seq.size());
-		Assert.equals("AH", seq.get(0).getId().toString());
+		Assert.assertEquals(1, seq.size());
+		Assert.assertEquals("AH", seq.get(0).getId().toString());
 
 		Collection<? extends Link> seqAll = new HashSet<>(network.getLinks().values());
 		NetworkTools.reduceSequencedLinks(seqAll, new Coord(1.0, 2.0));
-		Assert.equals(10, network.getLinks().size()-seqAll.size());
+		Assert.assertEquals(10, network.getLinks().size()-seqAll.size());
 	}
 
 	@Test
@@ -267,7 +267,7 @@ public class NetworkToolsTest {
 		seq.add(getLink("BC"));
 		seq.add(getLink("CD"));
 		seq.add(getLink("DA"));
-		Assert.equals(80.0, NetworkTools.calcRouteLength(seq, true));
+		Assert.assertEquals(80.0, NetworkTools.calcRouteLength(seq, true), 0.0001);
 	}
 
 }

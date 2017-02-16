@@ -206,10 +206,31 @@ public final class ScheduleCleaner {
 	}
 
 	/**
-	 * todo Combines all child stops based on ".link:" to parent stops for debuggin
+	 * Combines all child stops based on ".link:" to parent stops for debugging.
+	 * Network routes and referenced links of child stop facilities are unchanged.
 	 */
-	protected void combineChildStopsToParentStop(TransitSchedule schedule) {
+	public static void combineChildStopsToParentStop(TransitSchedule schedule) {
+		for(TransitStopFacility transitStopFacility : new HashSet<>(schedule.getFacilities().values())) {
+			String parentIdStr = ScheduleTools.getParentId(transitStopFacility.getId().toString());
+			Id<TransitStopFacility> parentId = Id.create(parentIdStr, TransitStopFacility.class);
+			TransitStopFacility parentStop = schedule.getFacilities().get(parentId);
 
+			if(parentStop == null) {
+				TransitStopFacility newStopFacility = schedule.getFactory().createTransitStopFacility(parentId, transitStopFacility.getCoord(), transitStopFacility.getIsBlockingLane());
+				newStopFacility.setName(transitStopFacility.getName());
+				schedule.addStopFacility(newStopFacility);
+			}
+		}
+
+		for(TransitLine line : schedule.getTransitLines().values()) {
+			for(TransitRoute route : line.getRoutes().values()) {
+				for(TransitRouteStop stop : route.getStops()) {
+					Id<TransitStopFacility> parentId = Id.create(ScheduleTools.getParentId(stop.getStopFacility().getId().toString()), TransitStopFacility.class);
+					TransitStopFacility parentStopFacility = schedule.getFacilities().get(parentId);
+					stop.setStopFacility(parentStopFacility);
+				}
+			}
+		}
 	}
 
 	/**
