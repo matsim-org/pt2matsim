@@ -19,6 +19,7 @@
 package org.matsim.pt2matsim.mapping.pseudoRouter;
 
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 
@@ -42,4 +43,6 @@ public interface PseudoTransitRoute {
 	 * link candidates that are used by this PseudoTransitRoute
 	 */
 	List<PseudoRouteStop> getPseudoStops();
+
+	List<Id<Link>> getNetworkLinkIdList();
 }

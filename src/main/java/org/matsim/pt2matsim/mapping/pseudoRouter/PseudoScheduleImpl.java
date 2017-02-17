@@ -20,6 +20,7 @@ package org.matsim.pt2matsim.mapping.pseudoRouter;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
@@ -52,7 +53,7 @@ public class PseudoScheduleImpl implements PseudoSchedule {
 	}
 
 	@Override
-	public void createAndReplaceFacilities(TransitSchedule schedule) {
+	public void createFacilitiesAndLinkSequences(TransitSchedule schedule) {
 		TransitScheduleFactory scheduleFactory = schedule.getFactory();
 		List<Tuple<Id<TransitLine>, TransitRoute>> newRoutes = new ArrayList<>();
 
@@ -87,22 +88,21 @@ public class PseudoScheduleImpl implements PseudoSchedule {
 			}
 
 			// create a new transitRoute
-			TransitRoute newRoute = scheduleFactory.createTransitRoute(pseudoTransitRoute.getTransitRoute().getId(), null, newStopSequence, pseudoTransitRoute.getTransitRoute().getTransportMode());
+			TransitRoute newTransitRoute = scheduleFactory.createTransitRoute(pseudoTransitRoute.getTransitRoute().getId(), null, newStopSequence, pseudoTransitRoute.getTransitRoute().getTransportMode());
 
 			// add departures
-			pseudoTransitRoute.getTransitRoute().getDepartures().values().forEach(newRoute::addDeparture);
+			pseudoTransitRoute.getTransitRoute().getDepartures().values().forEach(newTransitRoute::addDeparture);
+
+			// add link sequence
+			List<Id<Link>> l = pseudoTransitRoute.getNetworkLinkIdList();
+			newTransitRoute.setRoute(new LinkNetworkRouteImpl(l.get(0), l.subList(1, l.size() - 1), l.get(l.size() - 1)));
 
 			// remove the old route
 			schedule.getTransitLines().get(pseudoTransitRoute.getTransitLineId()).removeRoute(pseudoTransitRoute.getTransitRoute());
 
 			// add new route to container
-			newRoutes.add(new Tuple<>(pseudoTransitRoute.getTransitLineId(), newRoute));
-
-		}
-
-		// add transit lines and routes again
-		for(Tuple<Id<TransitLine>, TransitRoute> entry : newRoutes) {
-			schedule.getTransitLines().get(entry.getFirst()).addRoute(entry.getSecond());
+			schedule.getTransitLines().get(pseudoTransitRoute.getTransitLineId()).addRoute(newTransitRoute);
+			//newRoutes.add(new Tuple<>(pseudoTransitRoute.getTransitLineId(), newRoute));
 		}
 	}
 }
