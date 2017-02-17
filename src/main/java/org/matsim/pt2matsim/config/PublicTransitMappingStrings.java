@@ -42,6 +42,12 @@ public final class PublicTransitMappingStrings {
 	public static final String PREFIX_ARTIFICIAL = "pt_";
 
 	public static Id<Link> createArtificialLinkId(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate) {
-		return Id.createLinkId(PREFIX_ARTIFICIAL + fromLinkCandidate.getToNodeId() + "-" + toLinkCandidate.getFromNodeId());
+		if(fromLinkCandidate.isLoopLink()) {
+			return Id.createLinkId(PREFIX_ARTIFICIAL + fromLinkCandidate.getStopFacilityId() + "_" + toLinkCandidate.getFromNodeId());
+		} else if(toLinkCandidate.isLoopLink()) {
+			return Id.createLinkId(PREFIX_ARTIFICIAL + fromLinkCandidate.getToNodeId() + "_" + toLinkCandidate.getStopFacilityId());
+		} else {
+			return Id.createLinkId(PREFIX_ARTIFICIAL + fromLinkCandidate.getToNodeId() + "_" + toLinkCandidate.getFromNodeId());
+		}
 	}
 }
