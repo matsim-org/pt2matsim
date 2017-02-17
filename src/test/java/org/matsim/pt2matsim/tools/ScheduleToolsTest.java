@@ -25,30 +25,20 @@ public class ScheduleToolsTest {
 	private Network network;
 	private TransitSchedule schedule;
 
-
-	@Before
-	public void prepare() {
-		network = NetworkToolsTest.initNetwork();
-		schedule = initSchedule();
-		TransitScheduleValidator.printResult(TransitScheduleValidator.validateAll(schedule, network));
-
-		// NetworkTools.writeNetwork(network, "network.xml");
-		// ScheduleTools.writeTransitSchedule(schedule, "schedule.xml");
-	}
-
 	public static TransitSchedule initSchedule() {
 		TransitSchedule transitSchedule = ScheduleTools.createSchedule();
 		TransitScheduleFactory fac = transitSchedule.getFactory();
 
 		// create StopFacilities
 		TransitStopFacility stop1ED = fac.createTransitStopFacility(Id.create("stop1.link:ED", TransitStopFacility.class), new Coord(-19, 20), false);
-		TransitStopFacility stop2DA = fac.createTransitStopFacility(Id.create("stop2.link:DA", TransitStopFacility.class), new Coord(0, 10), false);
+		TransitStopFacility stop1EW = fac.createTransitStopFacility(Id.create("stop1.link:EW", TransitStopFacility.class), new Coord(-19, 20), false);
+		TransitStopFacility stop1DE = fac.createTransitStopFacility(Id.create("stop1.link:DE", TransitStopFacility.class), new Coord(-19, 20), false);
 		TransitStopFacility stop3AX = fac.createTransitStopFacility(Id.create("stop3.link:AX", TransitStopFacility.class), new Coord(10, 4), false);
-		TransitStopFacility stop4BI = fac.createTransitStopFacility(Id.create("stop4.link:BI", TransitStopFacility.class), new Coord(20, -18), false);
-		TransitStopFacility stop1DE = fac.createTransitStopFacility(Id.create("stop1.link:DE", TransitStopFacility.class), new Coord(-19, 21), false);
-		TransitStopFacility stop2AD = fac.createTransitStopFacility(Id.create("stop2.link:AD", TransitStopFacility.class), new Coord(-2, 10), false);
 		TransitStopFacility stop3XA = fac.createTransitStopFacility(Id.create("stop3.link:XA", TransitStopFacility.class), new Coord(10, 4), false);
-		TransitStopFacility stop4IB = fac.createTransitStopFacility(Id.create("stop4.link:IB", TransitStopFacility.class), new Coord(21, -20), false);
+		TransitStopFacility stop2AD = fac.createTransitStopFacility(Id.create("stop2.link:AD", TransitStopFacility.class), new Coord(0, 10), false);
+		TransitStopFacility stop2DA = fac.createTransitStopFacility(Id.create("stop2.link:DA", TransitStopFacility.class), new Coord(0, 10), false);
+		TransitStopFacility stop4IB = fac.createTransitStopFacility(Id.create("stop4.link:IB", TransitStopFacility.class), new Coord(25, -18), false);
+		TransitStopFacility stop4BI = fac.createTransitStopFacility(Id.create("stop4.link:BI", TransitStopFacility.class), new Coord(25, -18), false);
 		stop1ED.setLinkId(Id.createLinkId("ED"));
 		stop2DA.setLinkId(Id.createLinkId("DA"));
 		stop3AX.setLinkId(Id.createLinkId("AX"));
@@ -58,7 +48,6 @@ public class ScheduleToolsTest {
 		stop3XA.setLinkId(Id.createLinkId("XA"));
 		stop4IB.setLinkId(Id.createLinkId("IB"));
 
-		TransitStopFacility stop1EW = fac.createTransitStopFacility(Id.create("stop1.link:EW", TransitStopFacility.class), new Coord(-19, 21), false);
 		TransitStopFacility stop5AH = fac.createTransitStopFacility(Id.create("stop5.link:AH", TransitStopFacility.class), new Coord(-1, -5), false);
 		TransitStopFacility stop6ZI = fac.createTransitStopFacility(Id.create("stop6.link:ZI", TransitStopFacility.class), new Coord(15, -25), false);
 		stop1EW.setLinkId(Id.createLinkId("EW"));
@@ -150,6 +139,16 @@ public class ScheduleToolsTest {
 		lineB.addRoute(routeB);
 
 		return transitSchedule;
+	}
+
+	@Before
+	public void prepare() {
+		network = NetworkToolsTest.initNetwork();
+		schedule = initSchedule();
+		TransitScheduleValidator.printResult(TransitScheduleValidator.validateAll(schedule, network));
+
+		// NetworkTools.writeNetwork(network, "network.xml");
+		// ScheduleTools.writeTransitSchedule(schedule, "schedule.xml");
 	}
 
 	@Test
