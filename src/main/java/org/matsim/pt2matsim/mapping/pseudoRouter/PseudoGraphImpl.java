@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
+import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 
 import java.util.*;
@@ -44,6 +45,7 @@ public class PseudoGraphImpl implements PseudoGraph {
 	private boolean dijkstraComplete = false;
 	private LinkedList<PseudoRouteStop> leastCostPath = null;
 	private List<Id<Link>> networkLinkIds = null;
+	private Map<String, List<Id<Link>>> stopPairLinks = new HashMap<>();
 
 	public PseudoGraphImpl() {
 		this.graph = new HashMap<>();
@@ -110,16 +112,25 @@ public class PseudoGraphImpl implements PseudoGraph {
 		/**
 		 * Fetch network links for least cost path
 		 */
+		networkLinkIds = new ArrayList<>();
+		networkLinkIds.add(leastCostPath.get(0).getLinkId());
+		for(int i = 0; i < leastCostPath.size() - 1; i++) {
+			PseudoRouteStop stopA = leastCostPath.get(i);
+			PseudoRouteStop stopB = leastCostPath.get(i + 1);
+
+			networkLinkIds.addAll(stopPairLinks.get(getKey(stopA, stopB)));
+			networkLinkIds.add(stopB.getLinkId());
+		}
 	}
 
 	@Override
 	public void addDummyEdges(List<TransitRouteStop> transitRouteStops, Collection<LinkCandidate> firstStopLinkCandidates, Collection<LinkCandidate> lastStopLinkCandidates) {
 		for(LinkCandidate lc : firstStopLinkCandidates) {
-			addEdge(SOURCE_PSEUDO_STOP, new PseudoRouteStopImpl(0, transitRouteStops.get(0), lc), 1.0);
+			addEdge(SOURCE_PSEUDO_STOP, new PseudoRouteStopImpl(0, transitRouteStops.get(0), lc), 1.0, null);
 		}
 		int last = transitRouteStops.size() - 1;
 		for(LinkCandidate lc : lastStopLinkCandidates) {
-			addEdge(new PseudoRouteStopImpl(last, transitRouteStops.get(last), lc), DESTINATION_PSEUDO_STOP, 1.0);
+			addEdge(new PseudoRouteStopImpl(last, transitRouteStops.get(last), lc), DESTINATION_PSEUDO_STOP, 1.0, null);
 		}
 	}
 
@@ -138,10 +149,10 @@ public class PseudoGraphImpl implements PseudoGraph {
 	public void addEdge(int orderOfFromStop, TransitRouteStop fromTransitRouteStop, LinkCandidate fromLinkCandidate, TransitRouteStop toTransitRouteStop, LinkCandidate toLinkCandidate, double pathTravelCost) {
 		PseudoRouteStop fromPseudoStop = new PseudoRouteStopImpl(orderOfFromStop, fromTransitRouteStop, fromLinkCandidate);
 		PseudoRouteStop toPseudoStop = new PseudoRouteStopImpl(orderOfFromStop+1, toTransitRouteStop, toLinkCandidate);
-		addEdge(fromPseudoStop, toPseudoStop, pathTravelCost);
+		addEdge(fromPseudoStop, toPseudoStop, pathTravelCost, null);
 	}
 
-	private void addEdge(PseudoRouteStop from, PseudoRouteStop to, double pathTravelCost) {
+	private void addEdge(PseudoRouteStop from, PseudoRouteStop to, double pathTravelCost, List<Link> links) {
 		if(!graph.containsKey(from.getId())) {
 			graph.put(from.getId(), from);
 		}
@@ -150,6 +161,24 @@ public class PseudoGraphImpl implements PseudoGraph {
 		}
 		double weight = pathTravelCost + 0.5 * from.getLinkCandidate().getLinkTravelCost() + 0.5 * to.getLinkCandidate().getLinkTravelCost();
 		graph.get(from.getId()).getNeighbours().put(graph.get(to.getId()), weight);
+
+		// store links
+		List<Id<Link>> linkIds = new ArrayList<>();
+		if(links == null) {
+			linkIds.add(PublicTransitMappingStrings.createArtificialLinkId(from, to));
+		} else {
+			for(Link l : links) {
+				linkIds.add(l.getId());
+			}
+		}
+		stopPairLinks.put(getKey(from, to), linkIds);
+	}
+
+	/**
+	 * @return String key to store links between stops
+	 */
+	private String getKey(PseudoRouteStop stopA, PseudoRouteStop stopB) {
+		return stopA.getId() + "->" + stopB.getId();
 	}
 }
 
