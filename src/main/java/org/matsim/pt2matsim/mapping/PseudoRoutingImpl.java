@@ -30,6 +30,7 @@ import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
+import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
@@ -140,7 +141,7 @@ public class PseudoRoutingImpl implements PseudoRouting {
 							 * below maxAllowedTravelCost, a normal edge is added to the pseudoGraph
 							 */
 							if(useExistingNetworkLinks) {
-								pseudoGraph.addEdge(i, routeStops.get(i), linkCandidateCurrent, routeStops.get(i+1), linkCandidateNext, pathCost);
+								pseudoGraph.addEdge(i, routeStops.get(i), linkCandidateCurrent, routeStops.get(i + 1), linkCandidateNext, pathCost, null);
 							}
 							/** [3.2]
 							 * Create artificial links between two routeStops if:
@@ -159,7 +160,7 @@ public class PseudoRoutingImpl implements PseudoRouting {
 
 								double artificialEdgeWeight = maxAllowedTravelCost - 0.5 * linkCandidateCurrent.getLinkTravelCost() - 0.5 * linkCandidateNext.getLinkTravelCost();
 
-								pseudoGraph.addEdge(i, routeStops.get(i), linkCandidateCurrent, routeStops.get(i+1), linkCandidateNext, artificialEdgeWeight);
+								pseudoGraph.addEdge(i, routeStops.get(i), linkCandidateCurrent, routeStops.get(i + 1), linkCandidateNext, artificialEdgeWeight, null);
 							}
 						}
 					}
@@ -228,7 +229,7 @@ public class PseudoRoutingImpl implements PseudoRouting {
 			Link existingLink = existingLinks.get(key);
 
 			if(existingLink == null) {
-				String newLinkIdStr = config.getPrefixArtificial() + artificialId++;
+				String newLinkIdStr = PublicTransitMappingStrings.PREFIX_ARTIFICIAL + artificialId++;
 				Id<Node> fromNodeId = a.getFromNodeId();
 				Node fromNode;
 				Id<Node> toNodeId = a.getToNodeId();

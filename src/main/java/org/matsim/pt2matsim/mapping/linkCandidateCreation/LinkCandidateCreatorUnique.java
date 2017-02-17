@@ -40,15 +40,14 @@ import java.util.*;
  */
 public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 
-	protected static Logger log = Logger.getLogger(LinkCandidateCreatorUnique.class);
-
 	private static final Set<String> loopLinkModes = CollectionUtils.stringToSet(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE + "," + PublicTransitMappingStrings.STOP_FACILITY_LOOP_LINK);
-
+	protected static Logger log = Logger.getLogger(LinkCandidateCreatorUnique.class);
 	private final TransitSchedule schedule;
 	private final Network network;
 	private final PublicTransitMappingConfigGroup config;
 
 	private final Map<CandidateKey, SortedSet<LinkCandidate>> linkCandidates = new HashMap<>();
+	private final Set<String> scheduleTransportModes = new HashSet<>();
 
 
 	public LinkCandidateCreatorUnique(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
@@ -56,7 +55,6 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 		this.network = network;
 		this.config = config;
 	}
-
 
 	@Override
 	public void load() {
@@ -171,7 +169,7 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 	}
 
 	private Link createLoopLink(TransitStopFacility stopFacility) {
-		return NetworkTools.createArtificialStopFacilityLink(stopFacility, network, config.getPrefixArtificial(), 20, loopLinkModes);
+		return NetworkTools.createArtificialStopFacilityLink(stopFacility, network, PublicTransitMappingStrings.PREFIX_ARTIFICIAL, 20, loopLinkModes);
 	}
 
 	/**
@@ -226,8 +224,6 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 		}
 		return closestLinks;
 	}
-
-	private final Set<String> scheduleTransportModes = new HashSet<>();
 
 	/**
 	 * Adds the manually set link candidates

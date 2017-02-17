@@ -39,8 +39,9 @@ public final class PublicTransitMappingStrings {
 	public static final String STOP_FACILITY_LOOP_LINK = "stopFacilityLink";
 	public static final String ARTIFICIAL_LINK_MODE = "artificial";
 	public static final Set<String> ARTIFICIAL_LINK_MODE_AS_SET = CollectionUtils.stringToSet(ARTIFICIAL_LINK_MODE);
+	public static final String PREFIX_ARTIFICIAL = "pt_";
 
 	public static Id<Link> createArtificialLinkId(PseudoRouteStop fromStop, PseudoRouteStop toStop) {
-		return null;
+		return Id.createLinkId(PREFIX_ARTIFICIAL + fromStop.getLinkCandidate().getToNodeId() + "-" + toStop.getLinkCandidate().getFromNodeId());
 	}
 }
