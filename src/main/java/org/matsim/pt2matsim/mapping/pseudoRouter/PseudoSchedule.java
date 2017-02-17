@@ -18,6 +18,8 @@
 
 package org.matsim.pt2matsim.mapping.pseudoRouter;
 
+import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
@@ -45,7 +47,7 @@ import java.util.Set;
  */
 public interface PseudoSchedule {
 
-	void addPseudoRoute(TransitLine transitLine, TransitRoute transitRoute, List<PseudoRouteStop> pseudoStopSequence);
+	void addPseudoRoute(TransitLine transitLine, TransitRoute transitRoute, List<PseudoRouteStop> pseudoStopSequence, List<Id<Link>> pseudoLinkList);
 
 	Set<PseudoTransitRoute> getPseudoRoutes();
 

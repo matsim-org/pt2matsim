@@ -18,6 +18,7 @@
 
 package org.matsim.pt2matsim.mapping.pseudoRouter;
 
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
@@ -40,5 +41,7 @@ public interface PseudoGraph {
 	void addDummyEdges(List<TransitRouteStop> transitRouteStops, Collection<LinkCandidate> firstStopLinkCandidates, Collection<LinkCandidate> lastStopLinkCandidates);
 
 	List<PseudoRouteStop> getLeastCostStopSequence();
+
+	List<Id<Link>> getNetworkLinkIds();
 
 }

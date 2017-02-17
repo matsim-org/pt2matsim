@@ -19,6 +19,7 @@
 package org.matsim.pt2matsim.mapping.pseudoRouter;
 
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
@@ -36,8 +37,8 @@ public class PseudoScheduleImpl implements PseudoSchedule {
 	private final Set<PseudoTransitRoute> pseudoSchedule = new HashSet<>();
 
 	@Override
-	public void addPseudoRoute(TransitLine transitLine, TransitRoute transitRoute, List<PseudoRouteStop> pseudoStopSequence) {
-		pseudoSchedule.add(new PseudoTransitRouteImpl(transitLine, transitRoute, pseudoStopSequence));
+	public void addPseudoRoute(TransitLine transitLine, TransitRoute transitRoute, List<PseudoRouteStop> pseudoStopSequence, List<Id<Link>> networkLinkList) {
+		pseudoSchedule.add(new PseudoTransitRouteImpl(transitLine, transitRoute, pseudoStopSequence, networkLinkList));
 	}
 
 	@Override
