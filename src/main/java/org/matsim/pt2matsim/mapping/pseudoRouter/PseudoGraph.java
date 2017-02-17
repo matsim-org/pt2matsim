@@ -44,4 +44,5 @@ public interface PseudoGraph {
 
 	List<Id<Link>> getNetworkLinkIds();
 
+	Collection<ArtificialLink> getArtificialNetworkLinks();
 }

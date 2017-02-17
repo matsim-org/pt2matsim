@@ -71,4 +71,6 @@ public interface LinkCandidate extends Comparable<LinkCandidate> {
 	double getPriority();
 
 	void setPriority(double priority);
+
+	Link getLink();
 }
