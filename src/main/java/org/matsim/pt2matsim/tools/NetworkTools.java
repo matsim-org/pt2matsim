@@ -303,8 +303,8 @@ public final class NetworkTools {
 
 		Coord coord = stopFacility.getCoord();
 
-		Node dummyNode = networkFactory.createNode(Id.createNodeId(prefix + stopFacility.getId() + "_node"), coord);
-		Link dummyLink = networkFactory.createLink(Id.createLinkId(prefix + stopFacility.getId() + "_link"), dummyNode, dummyNode);
+		Node dummyNode = networkFactory.createNode(Id.createNodeId(prefix + stopFacility.getId()), coord);
+		Link dummyLink = networkFactory.createLink(Id.createLinkId(prefix + stopFacility.getId()), dummyNode, dummyNode);
 
 		dummyLink.setAllowedModes(transportModes);
 		dummyLink.setLength(5);
