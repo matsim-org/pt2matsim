@@ -27,6 +27,24 @@ public class PTMapperImplTest {
 	public TransitSchedule schedule;
 	public PublicTransitMappingConfigGroup ptmConfig;
 
+	public static PublicTransitMappingConfigGroup initPTMConfig() {
+		PublicTransitMappingConfigGroup config = new PublicTransitMappingConfigGroup();
+		config.getModesToKeepOnCleanUp().add("car");
+		PublicTransitMappingConfigGroup.LinkCandidateCreatorParams lccParamsBus = new PublicTransitMappingConfigGroup.LinkCandidateCreatorParams("bus");
+		lccParamsBus.setNetworkModesStr("car");
+		lccParamsBus.setMaxLinkCandidateDistance(99.0);
+		lccParamsBus.setMaxNClosestLinks(4);
+		config.addParameterSet(lccParamsBus);
+
+		PublicTransitMappingConfigGroup.ModeRoutingAssignment mraBus = new PublicTransitMappingConfigGroup.ModeRoutingAssignment("bus");
+		mraBus.setNetworkModesStr("car,bus");
+		config.addParameterSet(mraBus);
+
+		config.addParameterSet(new PublicTransitMappingConfigGroup.ManualLinkCandidates());
+
+		return config;
+	}
+
 	@Before
 	public void prepare() {
 		ptmConfig = initPTMConfig();
@@ -68,23 +86,5 @@ public class PTMapperImplTest {
 				}
 			}
 		}
-	}
-
-	public static PublicTransitMappingConfigGroup initPTMConfig() {
-		PublicTransitMappingConfigGroup config = new PublicTransitMappingConfigGroup();
-		config.getModesToKeepOnCleanUp().add("car");
-		PublicTransitMappingConfigGroup.LinkCandidateCreatorParams lccParamsBus = new PublicTransitMappingConfigGroup.LinkCandidateCreatorParams("bus");
-		lccParamsBus.setNetworkModesStr("car");
-		lccParamsBus.setMaxLinkCandidateDistance(99.0);
-		lccParamsBus.setMaxNClosestLinks(6);
-		config.addParameterSet(lccParamsBus);
-
-		PublicTransitMappingConfigGroup.ModeRoutingAssignment mraBus = new PublicTransitMappingConfigGroup.ModeRoutingAssignment("bus");
-		mraBus.setNetworkModesStr("car,bus");
-		config.addParameterSet(mraBus);
-
-		config.addParameterSet(new PublicTransitMappingConfigGroup.ManualLinkCandidates());
-
-		return config;
 	}
 }

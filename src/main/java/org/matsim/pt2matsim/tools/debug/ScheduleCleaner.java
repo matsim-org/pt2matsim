@@ -219,6 +219,8 @@ public final class ScheduleCleaner {
 				TransitStopFacility newStopFacility = schedule.getFactory().createTransitStopFacility(parentId, transitStopFacility.getCoord(), transitStopFacility.getIsBlockingLane());
 				newStopFacility.setName(transitStopFacility.getName());
 				schedule.addStopFacility(newStopFacility);
+			} else if(!parentStop.getCoord().equals(transitStopFacility.getCoord())) {
+				throw new RuntimeException("Coordinates for " + parentStop.getId() + " and " + transitStopFacility.getId() + " are not equal");
 			}
 		}
 
