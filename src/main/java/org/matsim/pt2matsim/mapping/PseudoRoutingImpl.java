@@ -19,10 +19,8 @@
 package org.matsim.pt2matsim.mapping;
 
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.misc.Counter;
@@ -30,7 +28,6 @@ import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
-import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
@@ -155,11 +152,6 @@ public class PseudoRoutingImpl implements PseudoRouting {
 							 * facility and the other linkCandidates).
 							 */
 							else {
-								double freespeed = scheduleRouters.getArtificialLinkFreeSpeed(maxAllowedTravelCost, linkCandidateCurrent, linkCandidateNext, transitLine, transitRoute);
-								double length = scheduleRouters.getArtificialLinkLength(maxAllowedTravelCost, linkCandidateCurrent, linkCandidateNext, transitLine, transitRoute);
-								ArtificialLink artificialLink = new ArtificialLinkImpl(linkCandidateCurrent, linkCandidateNext, freespeed, length);
-								allPossibleArtificialLinks.put(new Tuple<>(linkCandidateCurrent, linkCandidateNext), artificialLink);
-
 								double artificialEdgeWeight = maxAllowedTravelCost - 0.5 * linkCandidateCurrent.getLinkTravelCost() - 0.5 * linkCandidateNext.getLinkTravelCost();
 
 								pseudoGraph.addEdge(i, routeStops.get(i), linkCandidateCurrent, routeStops.get(i + 1), linkCandidateNext, artificialEdgeWeight, null);
@@ -179,32 +171,20 @@ public class PseudoRoutingImpl implements PseudoRouting {
 				 * Find the least cost path i.e. the PseudoRouteStop sequence
 				 */
 				List<PseudoRouteStop> pseudoPath = pseudoGraph.getLeastCostStopSequence();
-				List<Id<Link>> networkLinkList = pseudoGraph.getNetworkLinkIds();
 
 				if(pseudoPath == null) {
 					throw new RuntimeException("PseudoGraph has no path from SOURCE to DESTINATION for transit route " + transitRoute.getId() + " " +
 							"on line " + transitLine.getId() + " from \"" + routeStops.get(0).getStopFacility().getName() + "\" " +
 							"to \"" + routeStops.get(routeStops.size() - 1).getStopFacility().getName() + "\"");
 				} else {
-					saveNecessaryArtificialLinks(pseudoPath);
-					threadPseudoSchedule.addPseudoRoute(transitLine, transitRoute, pseudoPath, networkLinkList);
+					necessaryArtificialLinks.addAll(pseudoGraph.getArtificialNetworkLinks());
+					threadPseudoSchedule.addPseudoRoute(transitLine, transitRoute, pseudoPath, pseudoGraph.getNetworkLinkIds());
 				}
 				increaseCounter();
 			}
 		}
 	}
 
-	/**
-	 * Gets the necessary artificial links from the least cost pseudoPath
-	 */
-	private void saveNecessaryArtificialLinks(List<PseudoRouteStop> pseudoPath) {
-		for(int i=0; i < pseudoPath.size()-1; i++) {
-			ArtificialLink a = allPossibleArtificialLinks.get(new Tuple<>(pseudoPath.get(i).getLinkCandidate(), pseudoPath.get(i + 1).getLinkCandidate()));
-			if(a != null) {
-				necessaryArtificialLinks.add(a);
-			}
-		}
-	}
 
 	/**
 	 * @return a pseudo schedule generated during run()
@@ -221,45 +201,22 @@ public class PseudoRoutingImpl implements PseudoRouting {
 	 */
 	@Override
 	public void addArtificialLinks(Network network) {
-		Map<Tuple<Id<Node>, Id<Node>>, Link> existingLinks = new HashMap<>();
-		for(Link l : network.getLinks().values()) {
-			existingLinks.put(new Tuple<>(l.getFromNode().getId(), l.getToNode().getId()), l);
-		}
-
 		for(ArtificialLink a : necessaryArtificialLinks) {
-			Tuple<Id<Node>, Id<Node>> key = new Tuple<>(a.getFromNodeId(), a.getToNodeId());
-
-			Link existingLink = existingLinks.get(key);
-
-			if(existingLink == null) {
-				String newLinkIdStr = PublicTransitMappingStrings.PREFIX_ARTIFICIAL + artificialId++;
-				Id<Node> fromNodeId = a.getFromNodeId();
-				Node fromNode;
-				Id<Node> toNodeId = a.getToNodeId();
-				Node toNode;
-
-				if(!network.getNodes().containsKey(fromNodeId)) {
-					fromNode = network.getFactory().createNode(fromNodeId, a.getFromNodeCoord());
-					network.addNode(fromNode);
-				} else {
-					fromNode = network.getNodes().get(fromNodeId);
-				}
-				if(!network.getNodes().containsKey(toNodeId)) {
-					toNode = network.getFactory().createNode(toNodeId, a.getToNodeCoord());
-					network.addNode(toNode);
-				} else {
-					toNode = network.getNodes().get(toNodeId);
-				}
-
-				Link newLink = network.getFactory().createLink(Id.createLinkId(newLinkIdStr), fromNode, toNode);
-				newLink.setAllowedModes(a.getAllowedModes());
-				newLink.setLength(a.getLength());
-				newLink.setFreespeed(a.getFreespeed());
-				newLink.setCapacity(a.getCapacity());
-
-				network.addLink(newLink);
-				existingLinks.put(new Tuple<>(fromNodeId, toNodeId), newLink);
+			if(!network.getLinks().containsKey(a.getId())) {
+				Link l = network.getFactory().createLink(a.getId(), a.getFromNode(), a.getToNode());
+				l.setAllowedModes(a.getAllowedModes());
+				l.setCapacity(a.getCapacity());
+				l.setFreespeed(a.getFreespeed());
+				l.setNumberOfLanes(a.getNumberOfLanes());
+				network.addLink(l);
 			}
+
+			// TODO use this when network writer doesn't need LinkImpl
+			/*
+			if(!network.getLinks().containsKey(a.getId())) {
+				network.addLink(a);
+			}
+			*/
 		}
 	}
 

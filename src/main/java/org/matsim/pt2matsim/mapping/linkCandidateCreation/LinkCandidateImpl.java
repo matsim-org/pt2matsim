@@ -33,19 +33,17 @@ public class LinkCandidateImpl implements LinkCandidate {
 
 	private final String id;
 	private final Id<TransitStopFacility> parentStopFacilityId;
-
-	private double priority;
+	private final Link link;
 	private final double stopFacilityDistance;
 	private final double linkTravelCost;
-
 	private final Id<Link> linkId;
 	private final Id<Node> fromNodeId;
 	private final Id<Node> toNodeId;
-
 	private final Coord stopFacilityCoord;
 	private final Coord fromNodeCoord;
 	private final Coord toNodeCoord;
 	private final boolean loopLink;
+	private double priority;
 
 	public LinkCandidateImpl(Link link, TransitStopFacility parentStopFacility, double linkTravelCost) {
 		this.id = parentStopFacility.getId().toString() + ".link:" + link.getId().toString();
@@ -65,6 +63,8 @@ public class LinkCandidateImpl implements LinkCandidate {
 		this.priority = 1/stopFacilityDistance;
 
 		this.loopLink = link.getFromNode().getId().toString().equals(link.getToNode().getId().toString());
+
+		this.link = link;
 	}
 
 	public LinkCandidateImpl() {
@@ -85,6 +85,8 @@ public class LinkCandidateImpl implements LinkCandidate {
 		this.priority = 0.0;
 
 		this.loopLink = true;
+
+		this.link = null;
 	}
 
 	@Override
@@ -137,6 +139,11 @@ public class LinkCandidateImpl implements LinkCandidate {
 	@Override
 	public void setPriority(double priority) {
 		this.priority = priority;
+	}
+
+	@Override
+	public Link getLink() {
+		return link;
 	}
 
 	@Override

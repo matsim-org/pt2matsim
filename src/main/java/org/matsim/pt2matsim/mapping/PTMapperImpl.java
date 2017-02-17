@@ -65,12 +65,10 @@ import java.util.List;
 public class PTMapperImpl implements PTMapper {
 
 	protected static Logger log = Logger.getLogger(PTMapperImpl.class);
-
+	private final PseudoSchedule pseudoSchedule = new PseudoScheduleImpl();
 	private PublicTransitMappingConfigGroup config;
 	private Network network;
 	private TransitSchedule schedule;
-
-	private final PseudoSchedule pseudoSchedule = new PseudoScheduleImpl();
 	private LinkCandidateCreator linkCandidates;
 	private ScheduleRouters scheduleRouters;
 
@@ -102,6 +100,15 @@ public class PTMapperImpl implements PTMapper {
 		if(this.scheduleRouters == null) {	this.scheduleRouters = new ScheduleRoutersTransportMode(this.config, schedule, network, false);	}
 	}
 
+	private static void setLogLevels() {
+		Logger.getLogger(org.matsim.core.router.Dijkstra.class).setLevel(Level.ERROR); // suppress no route found warnings
+		Logger.getLogger(Network.class).setLevel(Level.WARN);
+		Logger.getLogger(org.matsim.core.network.filter.NetworkFilterManager.class).setLevel(Level.WARN);
+		Logger.getLogger(org.matsim.core.router.util.PreProcessDijkstra.class).setLevel(Level.WARN);
+		Logger.getLogger(org.matsim.core.router.util.PreProcessDijkstra.class).setLevel(Level.WARN);
+		Logger.getLogger(org.matsim.core.router.util.PreProcessEuclidean.class).setLevel(Level.WARN);
+		Logger.getLogger(org.matsim.core.router.util.PreProcessLandmarks.class).setLevel(Level.WARN);
+	}
 
 	/**
 	 * Reads the schedule and network file specified in the PublicTransitMapping
@@ -405,25 +412,15 @@ public class PTMapperImpl implements PTMapper {
 	}
 
 	@Override
-	public void setConfig(Config config) {
-		this.config = ConfigUtils.addOrGetModule(config, PublicTransitMappingConfigGroup.GROUP_NAME, PublicTransitMappingConfigGroup.class );
-	}
-
-	@Override
-	public void setSchedule(TransitSchedule schedule) {
-		this.schedule = schedule;
-	}
-
-	@Override
-	public void setNetwork(Network network) {
-		this.network = network;
-	}
-
-	@Override
 	public Config getConfig() {
 		Config configAll = ConfigUtils.createConfig();
 		configAll.addModule(config);
 		return configAll;
+	}
+
+	@Override
+	public void setConfig(Config config) {
+		this.config = ConfigUtils.addOrGetModule(config, PublicTransitMappingConfigGroup.GROUP_NAME, PublicTransitMappingConfigGroup.class);
 	}
 
 	@Override
@@ -432,17 +429,17 @@ public class PTMapperImpl implements PTMapper {
 	}
 
 	@Override
+	public void setSchedule(TransitSchedule schedule) {
+		this.schedule = schedule;
+	}
+
+	@Override
 	public Network getNetwork() {
 		return network;
 	}
 
-	private static void setLogLevels() {
-		Logger.getLogger(org.matsim.core.router.Dijkstra.class).setLevel(Level.ERROR); // suppress no route found warnings
-		Logger.getLogger(Network.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.network.filter.NetworkFilterManager.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.router.util.PreProcessDijkstra.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.router.util.PreProcessDijkstra.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.router.util.PreProcessEuclidean.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.router.util.PreProcessLandmarks.class).setLevel(Level.WARN);
+	@Override
+	public void setNetwork(Network network) {
+		this.network = network;
 	}
 }

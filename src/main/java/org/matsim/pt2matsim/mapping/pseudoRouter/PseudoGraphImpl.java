@@ -22,8 +22,8 @@ package org.matsim.pt2matsim.mapping.pseudoRouter;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
-import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 
 import java.util.*;
@@ -44,8 +44,9 @@ public class PseudoGraphImpl implements PseudoGraph {
 	private final Map<Id<PseudoRouteStop>, PseudoRouteStop> graph;
 	private boolean dijkstraComplete = false;
 	private LinkedList<PseudoRouteStop> leastCostPath = null;
-	private List<Id<Link>> networkLinkIds = null;
-	private Map<String, List<Id<Link>>> stopPairLinks = new HashMap<>();
+	private List<Id<Link>> networkLinkIds = new ArrayList<>();
+	private Map<String, List<Link>> stopPairLinks = new HashMap<>();
+	private Collection<ArtificialLink> artificialNetworkLinks = new HashSet<>();
 
 	public PseudoGraphImpl() {
 		this.graph = new HashMap<>();
@@ -112,13 +113,17 @@ public class PseudoGraphImpl implements PseudoGraph {
 		/**
 		 * Fetch network links for least cost path
 		 */
-		networkLinkIds = new ArrayList<>();
 		networkLinkIds.add(leastCostPath.get(0).getLinkId());
 		for(int i = 0; i < leastCostPath.size() - 1; i++) {
 			PseudoRouteStop stopA = leastCostPath.get(i);
 			PseudoRouteStop stopB = leastCostPath.get(i + 1);
 
-			networkLinkIds.addAll(stopPairLinks.get(getKey(stopA, stopB)));
+			for(Link l : stopPairLinks.get(getKey(stopA, stopB))) {
+				networkLinkIds.add(l.getId());
+				if(l instanceof ArtificialLink) {
+					artificialNetworkLinks.add((ArtificialLink) l);
+				}
+			}
 			networkLinkIds.add(stopB.getLinkId());
 		}
 	}
@@ -126,11 +131,11 @@ public class PseudoGraphImpl implements PseudoGraph {
 	@Override
 	public void addDummyEdges(List<TransitRouteStop> transitRouteStops, Collection<LinkCandidate> firstStopLinkCandidates, Collection<LinkCandidate> lastStopLinkCandidates) {
 		for(LinkCandidate lc : firstStopLinkCandidates) {
-			addEdge(SOURCE_PSEUDO_STOP, new PseudoRouteStopImpl(0, transitRouteStops.get(0), lc), 1.0, null);
+			addEdge(SOURCE_PSEUDO_STOP, new PseudoRouteStopImpl(0, transitRouteStops.get(0), lc), 1.0, null, true);
 		}
 		int last = transitRouteStops.size() - 1;
 		for(LinkCandidate lc : lastStopLinkCandidates) {
-			addEdge(new PseudoRouteStopImpl(last, transitRouteStops.get(last), lc), DESTINATION_PSEUDO_STOP, 1.0, null);
+			addEdge(new PseudoRouteStopImpl(last, transitRouteStops.get(last), lc), DESTINATION_PSEUDO_STOP, 1.0, null, true);
 		}
 	}
 
@@ -147,13 +152,19 @@ public class PseudoGraphImpl implements PseudoGraph {
 	}
 
 	@Override
+	public Collection<ArtificialLink> getArtificialNetworkLinks() {
+		if(!dijkstraComplete) runDijkstra();
+		return this.artificialNetworkLinks;
+	}
+
+	@Override
 	public void addEdge(int orderOfFromStop, TransitRouteStop fromTransitRouteStop, LinkCandidate fromLinkCandidate, TransitRouteStop toTransitRouteStop, LinkCandidate toLinkCandidate, double pathTravelCost, List<Link> links) {
 		PseudoRouteStop fromPseudoStop = new PseudoRouteStopImpl(orderOfFromStop, fromTransitRouteStop, fromLinkCandidate);
 		PseudoRouteStop toPseudoStop = new PseudoRouteStopImpl(orderOfFromStop+1, toTransitRouteStop, toLinkCandidate);
-		addEdge(fromPseudoStop, toPseudoStop, pathTravelCost, links);
+		addEdge(fromPseudoStop, toPseudoStop, pathTravelCost, links, false);
 	}
 
-	private void addEdge(PseudoRouteStop from, PseudoRouteStop to, double pathTravelCost, List<Link> links) {
+	private void addEdge(PseudoRouteStop from, PseudoRouteStop to, double pathTravelCost, List<Link> networkLinks, boolean dummy) {
 		if(!graph.containsKey(from.getId())) {
 			graph.put(from.getId(), from);
 		}
@@ -164,15 +175,18 @@ public class PseudoGraphImpl implements PseudoGraph {
 		graph.get(from.getId()).getNeighbours().put(graph.get(to.getId()), weight);
 
 		// store links
-		List<Id<Link>> linkIds = new ArrayList<>();
-		if(links == null) {
-			linkIds.add(PublicTransitMappingStrings.createArtificialLinkId(from, to));
-		} else {
-			for(Link l : links) {
-				linkIds.add(l.getId());
+		if(!dummy) {
+			List<Link> links = new ArrayList<>();
+			if(networkLinks == null) {
+				ArtificialLink artificialLink = new ArtificialLinkImpl(from.getLinkCandidate(), to.getLinkCandidate(), 1, CoordUtils.calcEuclideanDistance(from.getLinkCandidate().getToNodeCoord(), to.getLinkCandidate().getFromNodeCoord()));
+				links.add(artificialLink);
+			} else {
+				for(Link l : networkLinks) {
+					links.add(l);
+				}
 			}
+			stopPairLinks.put(getKey(from, to), links);
 		}
-		stopPairLinks.put(getKey(from, to), linkIds);
 	}
 
 	/**

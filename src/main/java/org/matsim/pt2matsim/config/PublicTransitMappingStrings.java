@@ -21,7 +21,7 @@ package org.matsim.pt2matsim.config;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.utils.collections.CollectionUtils;
-import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoRouteStop;
+import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 
 import java.util.Set;
 
@@ -41,7 +41,7 @@ public final class PublicTransitMappingStrings {
 	public static final Set<String> ARTIFICIAL_LINK_MODE_AS_SET = CollectionUtils.stringToSet(ARTIFICIAL_LINK_MODE);
 	public static final String PREFIX_ARTIFICIAL = "pt_";
 
-	public static Id<Link> createArtificialLinkId(PseudoRouteStop fromStop, PseudoRouteStop toStop) {
-		return Id.createLinkId(PREFIX_ARTIFICIAL + fromStop.getLinkCandidate().getToNodeId() + "-" + toStop.getLinkCandidate().getFromNodeId());
+	public static Id<Link> createArtificialLinkId(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate) {
+		return Id.createLinkId(PREFIX_ARTIFICIAL + fromLinkCandidate.getToNodeId() + "-" + toLinkCandidate.getFromNodeId());
 	}
 }
