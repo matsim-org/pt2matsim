@@ -3,12 +3,16 @@ package org.matsim.pt2matsim.mapping;
 import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.pt.transitSchedule.api.TransitLine;
+import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
+import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.lib.ShapedSchedule;
 import org.matsim.pt2matsim.lib.ShapedTransitSchedule;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWithShapes;
@@ -17,6 +21,9 @@ import org.matsim.pt2matsim.shp.Schedule2ShapeFile;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ShapeTools;
+import org.matsim.pt2matsim.tools.debug.ExtractDebugSchedule;
+
+import java.util.Collections;
 
 /**
  * @author polettif
@@ -33,6 +40,9 @@ public class PTMapperImplShapesTest {
 
 	private GtfsFeed gtfsFeed;
 	private Network network;
+
+	private Id<TransitLine> debugLineId = Id.create("TTSB/B_1438", TransitLine.class);
+	private Id<TransitRoute> debugRouteId = Id.create("602798A4122B5456", TransitRoute.class);
 
 	public static PublicTransitMappingConfigGroup createPTMConfig() {
 		PublicTransitMappingConfigGroup config = new PublicTransitMappingConfigGroup();
@@ -84,7 +94,7 @@ public class PTMapperImplShapesTest {
 		ShapedTransitSchedule shapedSchedule = new ShapedSchedule(base + "mts/unmapped_schedule.xml.gz", base + "output/shapeRef.csv", gtfsFolder+"shapes.txt", coordSys);
 
 		PTMapper ptMapper = new PTMapperImpl(config, shapedSchedule, network, new ScheduleRoutersWithShapes(config, shapedSchedule, network));
-//		ExtractDebugSchedule.run(shapedSchedule, "TTSB/B_1438", "602798A4122B5456");
+		ExtractDebugSchedule.run(shapedSchedule, debugLineId.toString(), debugRouteId.toString());
 		ptMapper.run();
 
 		NetworkTools.writeNetwork(network, base + "output/shapes_network.xml.gz");
@@ -133,7 +143,9 @@ public class PTMapperImplShapesTest {
 	public void writeShapes() {
 		Schedule2ShapeFile.run(coordSys, base + "output/shp/", base + "output/shapes_schedule.xml.gz", base + "output/shapes_network.xml.gz");
 		ShapedTransitSchedule shapedSchedule = new ShapedSchedule(base + "output/shapes_schedule.xml.gz", base + "output/shapeRef.csv", gtfsFolder + "shapes.txt", coordSys);
-		ShapeTools.writeShapeFile(shapedSchedule.getShapes().values(), coordSys, base + "output/shp/gtfsShapes.shp");
+
+		Id<RouteShape> shapeId = shapedSchedule.getTransitRouteShapeReference().getShapeId(debugLineId, debugRouteId);
+		ShapeTools.writeShapeFile(Collections.singleton(shapedSchedule.getShapes().get(shapeId)), coordSys, base + "output/shp/gtfsShapes.shp");
 	}
 
 

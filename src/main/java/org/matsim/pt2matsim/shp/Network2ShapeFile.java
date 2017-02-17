@@ -40,6 +40,14 @@ import java.util.Collection;
  */
 public class Network2ShapeFile {
 
+	private final String crs;
+	private final Network network;
+
+	public Network2ShapeFile(String crs, Network network) {
+		this.crs = crs;
+		this.network = network;
+	}
+
 	/**
 	 * Converts a network to ESRI shape files (nodes and links)
 	 *
@@ -56,19 +64,14 @@ public class Network2ShapeFile {
 		}
 	}
 
-	public static void run(String crs, String networkFile, String nodesOutputFile, String linksOutputFile) {
-		Network2ShapeFile n2s = new Network2ShapeFile(crs, NetworkTools.readNetwork(networkFile));
-
-		n2s.convertNodes(nodesOutputFile);
-		n2s.convertLinks(linksOutputFile);
+	public static void run(String coordRefSys, String networkFile, String nodesOutputFile, String linksOutputFile) {
+		run(coordRefSys, NetworkTools.readNetwork(networkFile), nodesOutputFile, linksOutputFile);
 	}
 
-	private final String crs;
-	private final Network network;
-
-	public Network2ShapeFile(String crs, Network network) {
-		this.crs = crs;
-		this.network = network;
+	public static void run(String coordRefSys, Network network, String nodesOutputFile, String linksOutputFile) {
+		Network2ShapeFile n2s = new Network2ShapeFile(coordRefSys, network);
+		n2s.convertNodes(nodesOutputFile);
+		n2s.convertLinks(linksOutputFile);
 	}
 
 	// todo use custom maps Map<Id<Link>, Object> for attributes (e.g. transit lines)
