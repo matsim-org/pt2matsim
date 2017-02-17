@@ -146,10 +146,10 @@ public class PseudoGraphImpl implements PseudoGraph {
 	}
 
 	@Override
-	public void addEdge(int orderOfFromStop, TransitRouteStop fromTransitRouteStop, LinkCandidate fromLinkCandidate, TransitRouteStop toTransitRouteStop, LinkCandidate toLinkCandidate, double pathTravelCost) {
+	public void addEdge(int orderOfFromStop, TransitRouteStop fromTransitRouteStop, LinkCandidate fromLinkCandidate, TransitRouteStop toTransitRouteStop, LinkCandidate toLinkCandidate, double pathTravelCost, List<Link> links) {
 		PseudoRouteStop fromPseudoStop = new PseudoRouteStopImpl(orderOfFromStop, fromTransitRouteStop, fromLinkCandidate);
 		PseudoRouteStop toPseudoStop = new PseudoRouteStopImpl(orderOfFromStop+1, toTransitRouteStop, toLinkCandidate);
-		addEdge(fromPseudoStop, toPseudoStop, pathTravelCost, null);
+		addEdge(fromPseudoStop, toPseudoStop, pathTravelCost, links);
 	}
 
 	private void addEdge(PseudoRouteStop from, PseudoRouteStop to, double pathTravelCost, List<Link> links) {

@@ -52,7 +52,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private static final String MODES_TO_KEEP_ON_CLEAN_UP = "modesToKeepOnCleanUp";
 	private static final String NODE_SEARCH_RADIUS = "nodeSearchRadius";
 	private static final String TRAVEL_COST_TYPE = "travelCostType";
-	private static final String PREFIX_ARTIFICIAL = "prefixArtificial";
+	//	private static final String PREFIX_ARTIFICIAL = "prefixArtificial";
 	private static final String MAX_TRAVEL_COST_FACTOR = "maxTravelCostFactor";
 	private static final String NETWORK_FILE = "networkFile";
 	private static final String SCHEDULE_FILE = "scheduleFile";
@@ -75,7 +75,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private Set<String> modesToKeepOnCleanUp = new HashSet<>();
 	private double maxTravelCostFactor = 5.0;
 	private String manualLinkCandidateCsvFile = null;
-	private String prefixArtificial = "pt_";
+	//	private String prefixArtificial = "pt_";
 	private int numOfThreads = 2;
 	private double nodeSearchRadius = 500;
 	private boolean removeNotUsedStopFacilities = true;
@@ -86,15 +86,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private String outputNetworkFile = null;
 	private String outputStreetNetworkFile = null;
 	private String outputScheduleFile = null;
-
-	public enum TravelCostType {
-		travelTime, linkLength
-	}
 	private TravelCostType travelCostType = TravelCostType.linkLength;
-
-
 	public PublicTransitMappingConfigGroup() {	super(GROUP_NAME); }
-
 
 	/**
 	 * @return a new default public transit mapping config
@@ -144,8 +137,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		map.put(NODE_SEARCH_RADIUS,
 				"Defines the radius [meter] from a stop facility within nodes are searched. Values up to 2000 don't \n" +
 						"\t\thave any significant impact on performance.");
-		map.put(PREFIX_ARTIFICIAL,
-				"ID prefix used for all artificial links and nodes created during mapping.");
+//		map.put(PREFIX_ARTIFICIAL,
+//				"ID prefix used for all artificial links and nodes created during mapping.");
 		map.put(SCHEDULE_FREESPEED_MODES,
 				"After the schedule has been mapped, the free speed of links can be set according to the necessary travel \n" +
 						"\t\ttimes given by the transit schedule. The freespeed of a link is set to the minimal value needed by all \n" +
@@ -171,7 +164,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 				"\t\tExample line: 879843;bus,tram;565,566,5489,5488,321,45");
 		return map;
 	}
-
 
 	@Override
 	public ConfigGroup createParameterSet(final String type) {
@@ -239,7 +231,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		return manualLinkCandidates;
 	}
 
-
 	/**
 	 * References transportModes from the schedule (key) and the
 	 * allowed modeRouting of a link from the network (value). <p/>
@@ -265,7 +256,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		this.modeRoutingAssignment = modeRoutingAssignment;
 	}
 
-
 	public Map<String, LinkCandidateCreatorParams> getLinkCandidateCreatorParams() {
 		return linkCandidateParams;
 	}
@@ -280,7 +270,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		return linkCandidateParams.get(scheduleMode);
 	}
 
-
 	/**
 	 * All links that do not have a transit route on them are removed, except
 	 * the ones listed in this set (typically only car).
@@ -288,6 +277,17 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 
 	public Set<String> getModesToKeepOnCleanUp() {
 		return this.modesToKeepOnCleanUp;
+	}
+
+	@StringSetter(MODES_TO_KEEP_ON_CLEAN_UP)
+	private void setModesToKeepOnCleanUp(String modesToKeepOnCleanUp) {
+		if(modesToKeepOnCleanUp == null) {
+			this.modesToKeepOnCleanUp = null;
+			return;
+		}
+		for(String mode : modesToKeepOnCleanUp.split(",")) {
+			this.modesToKeepOnCleanUp.add(mode.trim());
+		}
 	}
 
 	public void setModesToKeepOnCleanUp(Set<String> modesToKeepOnCleanUp) {
@@ -305,18 +305,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		return this.modesToKeepOnCleanUp == null ? null : ret.substring(1);
 	}
 
-	@StringSetter(MODES_TO_KEEP_ON_CLEAN_UP)
-	private void setModesToKeepOnCleanUp(String modesToKeepOnCleanUp) {
-		if(modesToKeepOnCleanUp == null) {
-			this.modesToKeepOnCleanUp = null;
-			return;
-		}
-		for(String mode : modesToKeepOnCleanUp.split(",")) {
-			this.modesToKeepOnCleanUp.add(mode.trim());
-		}
-	}
-
-
 	/**
 	 * Defines whether at the end of mapping, all non-car link modes (bus, rail, etc)
 	 * should be replaced with pt (true) or not. Default: false.
@@ -326,7 +314,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 
 	@StringSetter(COMBINE_PT_MODES)
 	public void setCombinePtModes(boolean v) { this.combinePtModes = v; }
-
 
 	/**
 	 *
@@ -341,7 +328,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		this.addPtMode = addPtMode;
 	}
 
-
 	/**
 	 *
 	 */
@@ -354,7 +340,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	public void setRemoveNotUsedStopFacilities(boolean v) {
 		this.removeNotUsedStopFacilities = v;
 	}
-
 
 	/**
 	 * Defines the radius [meter] from a stop facility within nodes are searched.
@@ -370,7 +355,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		this.nodeSearchRadius = nodeSearchRadius;
 	}
 
-
 	/**
 	 * Threads
 	 */
@@ -383,7 +367,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	public void setNumOfThreads(int numOfThreads) {
 		this.numOfThreads = numOfThreads;
 	}
-
 
 	/**
 	 *
@@ -398,21 +381,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		this.travelCostType = type;
 	}
 
-
-	/**
-	 * ID prefix used for artificial links and nodes created if no nodes
-	 * are found within nodeSearchRadius
-	 */
-	@StringGetter(PREFIX_ARTIFICIAL)
-	public String getPrefixArtificial() {
-		return prefixArtificial;
-	}
-
-	@StringSetter(PREFIX_ARTIFICIAL)
-	public void setPrefixArtificial(String prefixArtificial) {
-		this.prefixArtificial = prefixArtificial;
-	}
-
 	/**
 	 * If all paths between two stops have a length > maxTravelCostFactor * beelineDistance,
 	 * an artificial link is created.
@@ -422,6 +390,20 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		return maxTravelCostFactor;
 	}
 
+
+	/**
+	 * ID prefix used for artificial links and nodes created if no nodes
+	 * are found within nodeSearchRadius
+	 */
+//	@StringGetter(PREFIX_ARTIFICIAL)
+//	public String getPrefixArtificial() {
+//		return prefixArtificial;
+//	}
+//
+//	@StringSetter(PREFIX_ARTIFICIAL)
+//	public void setPrefixArtificial(String prefixArtificial) {
+//		this.prefixArtificial = prefixArtificial;
+//	}
 	@StringSetter(MAX_TRAVEL_COST_FACTOR)
 	public void setMaxTravelCostFactor(double maxTravelCostFactor) {
 		if(maxTravelCostFactor < 1) {
@@ -430,7 +412,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		this.maxTravelCostFactor = maxTravelCostFactor;
 	}
 
-
 	/**
 	 *
 	 */
@@ -438,18 +419,19 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	public String getScheduleFreespeedModesStr() {
 		return "";
 	}
-	public Set<String> getScheduleFreespeedModes() {
-		return scheduleFreespeedModes;
-	}
 
 	@StringSetter(SCHEDULE_FREESPEED_MODES)
 	public void setScheduleFreespeedModesStr(String modes) {
 		this.scheduleFreespeedModes.addAll(CollectionUtils.stringToSet(modes));
 	}
+
+	public Set<String> getScheduleFreespeedModes() {
+		return scheduleFreespeedModes;
+	}
+
 	public void setScheduleFreespeedModes(Set<String> modes) {
 		this.scheduleFreespeedModes.addAll(modes);
 	}
-
 
 	/**
 	 * Manual link candidate csv
@@ -458,6 +440,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	public String getManualLinkCandidateCsvFileStr() {
 		return this.manualLinkCandidateCsvFile== null ? "" : this.manualLinkCandidateCsvFile;
 	}
+
 	public String getManualLinkCandidateCsvFile() {
 		return this.manualLinkCandidateCsvFile;
 	}
@@ -467,8 +450,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		this.manualLinkCandidateCsvFile = file.equals("") ? null :file;
 	}
 
-
-
 	/**
 	 * Params for filepaths
 	 */
@@ -476,6 +457,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	public String getNetworkFileStr() {
 		return this.networkFile == null ? "" : this.networkFile;
 	}
+
 	public String getNetworkFile() {
 		return this.networkFile;
 	}
@@ -489,6 +471,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	public String getScheduleFileStr() {
 		return this.scheduleFile == null ? "" : this.scheduleFile;
 	}
+
 	public String getScheduleFile() {
 		return this.scheduleFile;
 	}
@@ -514,6 +497,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	public String getOutputStreetNetworkFileStr() {
 		return this.outputStreetNetworkFile == null ? "" : this.outputStreetNetworkFile;
 	}
+
 	public String getOutputStreetNetworkFile() {
 		return this.outputStreetNetworkFile;
 	}
@@ -539,7 +523,9 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		return old;
 	}
 
-
+	public enum TravelCostType {
+		travelTime, linkLength
+	}
 
 	public static class LinkCandidateCreatorParams extends ReflectiveConfigGroup implements MatsimParameters {
 
@@ -559,6 +545,15 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		private double maxLinkCandidateDistance = 80;
 		private double linkDistanceTolerance = 1.0;
 		private boolean useLoopLink = false;
+
+		public LinkCandidateCreatorParams() {
+			super(SET_NAME);
+		}
+
+		public LinkCandidateCreatorParams(String scheduleMode) {
+			super(SET_NAME);
+			this.scheduleMode = scheduleMode;
+		}
 
 		@Override
 		public final Map<String, String> getComments() {
@@ -585,15 +580,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 			return map;
 		}
 
-		public LinkCandidateCreatorParams() {
-			super(SET_NAME);
-		}
-
-		public LinkCandidateCreatorParams(String scheduleMode) {
-			super(SET_NAME);
-			this.scheduleMode = scheduleMode;
-		}
-
 		@StringGetter(SCHEDULE_MODE)
 		public String getScheduleMode() {
 			return scheduleMode;
@@ -616,12 +602,13 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 			return this.networkModes;
 		}
 
+		public void setNetworkModes(Set<String> networkModes) {
+			this.networkModes = networkModes;
+		}
+
 		@StringSetter(NETWORK_MODES)
 		public void setNetworkModesStr(String networkModes) {
 			this.networkModes = CollectionUtils.stringToSet(networkModes);
-		}
-		public void setNetworkModes(Set<String> networkModes) {
-			this.networkModes = networkModes;
 		}
 
 		/**
@@ -697,6 +684,15 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		private String scheduleMode;
 		private Set<String> networkModes;
 
+		public ModeRoutingAssignment() {
+			super(SET_NAME);
+		}
+
+		public ModeRoutingAssignment(String scheduleMode) {
+			super(SET_NAME);
+			this.scheduleMode = scheduleMode;
+		}
+
 		@Override
 		public Map<String, String> getComments() {
 			Map<String, String> map = super.getComments();
@@ -705,15 +701,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 					"\t\t\tdefined here. Separate multiple modes by comma. If no network modes are defined, the transit route will\n" +
 					"\t\t\tuse artificial links.");
 			return map;
-		}
-
-		public ModeRoutingAssignment() {
-			super(SET_NAME);
-		}
-
-		public ModeRoutingAssignment(String scheduleMode) {
-			super(SET_NAME);
-			this.scheduleMode = scheduleMode;
 		}
 
 		@StringGetter(SCHEDULE_MODE)
@@ -729,14 +716,16 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		public String getNetworkModesStr() {
 			return CollectionUtils.setToString(networkModes);
 		}
-		public Set<String> getNetworkModes() {
-			return this.networkModes;
-		}
 
 		@StringSetter(NETWORK_MODES)
 		public void setNetworkModesStr(String networkModesStr) {
 			this.networkModes = CollectionUtils.stringToSet(networkModesStr);
 		}
+
+		public Set<String> getNetworkModes() {
+			return this.networkModes;
+		}
+
 		public void setNetworkModes(Set<String> networkModes) {
 			this.networkModes = networkModes;
 		}
@@ -794,9 +783,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		public String getStopFacilityIdStr() {
 			return stopFacilityId != null ? stopFacilityId.toString() : "";
 		}
-		public Id<TransitStopFacility> getStopFacilityId() {
-			return stopFacilityId;
-		}
+
 		@StringSetter(STOP_FACILITY)
 		public void setStopFacilityIdStr(String stopFacilityIdStr) {
 			if(stopFacilityIdStr.equals("")) {
@@ -805,6 +792,11 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 				this.stopFacilityId = Id.create(stopFacilityIdStr, TransitStopFacility.class);
 			}
 		}
+
+		public Id<TransitStopFacility> getStopFacilityId() {
+			return stopFacilityId;
+		}
+
 		public void setStopFacilityId(Id<TransitStopFacility> stopFacilityId) {
 			this.stopFacilityId = stopFacilityId;
 		}
@@ -816,14 +808,16 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		public String getScheduleModesStr() {
 			return CollectionUtils.setToString(this.scheduleModes);
 		}
-		public Set<String> getScheduleModes() {
-			return scheduleModes;
-		}
 
 		@StringSetter(SCHEDULE_MODES)
 		public void setScheduleModesStr(String modes) {
 			this.scheduleModes = CollectionUtils.stringToSet(modes);
 		}
+
+		public Set<String> getScheduleModes() {
+			return scheduleModes;
+		}
+
 		public void setScheduleModes(Set<String> modes) {
 			this.scheduleModes = modes;
 		}
@@ -835,9 +829,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		public String getLinkIdsStr() {
 			return CollectionUtils.idSetToString(linkIds);
 		}
-		public Set<Id<Link>> getLinkIds() {
-			return linkIds;
-		}
 
 		@StringSetter(LINK_IDS)
 		public void setLinkIdsStr(String linkIds) {
@@ -845,6 +836,11 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 				this.linkIds.add(Id.createLinkId(linkIdStr));
 			}
 		}
+
+		public Set<Id<Link>> getLinkIds() {
+			return linkIds;
+		}
+
 		public void setLinkIds(Set<Id<Link>> linkIds) {
 			this.linkIds = linkIds;
 		}
