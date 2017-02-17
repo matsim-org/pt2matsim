@@ -19,6 +19,7 @@
 package org.matsim.pt2matsim.mapping.pseudoRouter;
 
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 
@@ -32,11 +33,13 @@ public class PseudoTransitRouteImpl implements PseudoTransitRoute {
  	private final Id<TransitLine> transitLineId;
 	private final List<PseudoRouteStop> pseudoRouteStops;
 	private final TransitRoute transitRoute;
+	private final List<Id<Link>> networkLinkList;
 
-	public PseudoTransitRouteImpl(TransitLine transitLine, TransitRoute transitRoute, List<PseudoRouteStop> pseudoRouteStops) {
+	public PseudoTransitRouteImpl(TransitLine transitLine, TransitRoute transitRoute, List<PseudoRouteStop> pseudoRouteStops, List<Id<Link>> networkLinkList) {
 		this.transitLineId = transitLine.getId();
 		this.transitRoute = transitRoute;
 		this.pseudoRouteStops = pseudoRouteStops;
+		this.networkLinkList = networkLinkList;
 	}
 
 	public Id<TransitLine> getTransitLineId() {

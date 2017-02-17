@@ -140,6 +140,7 @@ public class PseudoGraphImpl implements PseudoGraph {
 		return this.leastCostPath;
 	}
 
+	@Override
 	public List<Id<Link>> getNetworkLinkIds() {
 		if(!dijkstraComplete) runDijkstra();
 		return this.networkLinkIds;
