@@ -65,9 +65,6 @@ public class RouterShapes implements Router {
 		Collection<Node> nodesWithinBuffer = ShapeTools.getNodesWithinBuffer(this.network, shape, cutBuffer);
 		NetworkTools.cutNetwork(network, nodesWithinBuffer);
 
-		// todo remove debug
-//		Network2ShapeFile.run("EPSG:2032", network, "test/analysis/output/shp/debugNodes.shp", "test/analysis/output/shp/debugLinks.shp");
-
 		this.paths = new HashMap<>();
 
 		LeastCostPathCalculatorFactory factory = new FastAStarEuclideanFactory(this.network, this);

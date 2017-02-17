@@ -62,9 +62,9 @@ public interface PseudoSchedule {
 	 * facility in the schedule's routeProfiles is replaced with a
 	 * child stop facility.
 	 *
-	 * @param schedule where stop facilities should be replaced
+	 * Creates the link sequences for the transit routes
 	 */
-	void createAndReplaceFacilities(TransitSchedule schedule);
+	void createFacilitiesAndLinkSequences(TransitSchedule schedule);
 
 }
 

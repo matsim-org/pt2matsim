@@ -224,29 +224,11 @@ public class PTMapperImpl implements PTMapper {
 		 * Replace the parent stop facilities in each transitRoute's routeProfile
 		 * with child StopFacilities. Add the new transitRoutes to the schedule.
 		 */
-		log.info("========================================================================");
-		log.info("Replacing parent StopFacilities in schedule with child StopFacilities...");
-		pseudoSchedule.createAndReplaceFacilities(schedule);
+		log.info("==========================================================================================");
+		log.info("Replacing parent StopFacilities in schedule, creating link sequences for transit routes...");
+		pseudoSchedule.createFacilitiesAndLinkSequences(schedule);
 
 		/** [6]
-		 * The final routing should be done on the merged network, so a mode dependent
-		 * router for each schedule mode is initialized using the same merged network.
-		 */
-		log.info("===========================================================================================");
-		log.info("Initiating final routers to map transit routes with referenced facilities to the network...");
-		ScheduleRouters finalRouters = new ScheduleRoutersTransportMode(config, schedule, network, true);
-		finalRouters.load();
-
-
-		/** [7]
-		 * Route all transitRoutes with the new referenced links. The shortest path
-		 * between child stopFacilities is calculated and added to the schedule.
-		 */
-		log.info("=============================================");
-		log.info("Creating link sequences for transit routes...");
-		ScheduleTools.routeSchedule(this.schedule, this.network, finalRouters);
-
-		/** [8]
 		 * Now that all lines have been routed, it is possible that a route passes
 		 * a link closer to a stop facility than its referenced link.
 		 */
@@ -257,7 +239,7 @@ public class PTMapperImpl implements PTMapper {
 			nPulled = UtilsPTMapper.pullChildStopFacilitiesTogether(this.schedule, this.network);
 		}
 
-		/** [9]
+		/** [7]
 		 * After all lines are created, clean the schedule and network. Removing
 		 * not used transit links includes removing artificial links that
 		 * needed to be added to the network for routing purposes.
@@ -266,14 +248,14 @@ public class PTMapperImpl implements PTMapper {
 		log.info("Clean schedule and network...");
 		cleanScheduleAndNetwork();
 
-		/** [10]
+		/** [8]
 		 * Validate the schedule
 		 */
 		log.info("======================");
 		log.info("Validating schedule...");
 		printValidateSchedule();
 
-		/** [11]
+		/** [9]
 		 * Write output files if defined in config
 		 */
 		log.info("=======================================");
