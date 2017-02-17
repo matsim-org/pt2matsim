@@ -18,7 +18,10 @@
 
 package org.matsim.pt2matsim.config;
 
+import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.utils.collections.CollectionUtils;
+import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoRouteStop;
 
 import java.util.Set;
 
@@ -36,4 +39,8 @@ public final class PublicTransitMappingStrings {
 	public static final String STOP_FACILITY_LOOP_LINK = "stopFacilityLink";
 	public static final String ARTIFICIAL_LINK_MODE = "artificial";
 	public static final Set<String> ARTIFICIAL_LINK_MODE_AS_SET = CollectionUtils.stringToSet(ARTIFICIAL_LINK_MODE);
+
+	public static Id<Link> createArtificialLinkId(PseudoRouteStop fromStop, PseudoRouteStop toStop) {
+		return null;
+	}
 }
