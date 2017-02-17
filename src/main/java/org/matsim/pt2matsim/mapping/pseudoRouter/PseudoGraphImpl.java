@@ -21,6 +21,7 @@ package org.matsim.pt2matsim.mapping.pseudoRouter;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 
@@ -31,16 +32,18 @@ import java.util.*;
  */
 public class PseudoGraphImpl implements PseudoGraph {
 
-	protected static Logger log = Logger.getLogger(PseudoGraphImpl.class);
-
 	/*package*/ static final String SOURCE = "SOURCE";
 	/*package*/ static final String DESTINATION = "DESTINATION";
+	protected static Logger log = Logger.getLogger(PseudoGraphImpl.class);
 	private final Id<PseudoRouteStop> SOURCE_ID = Id.create(SOURCE, PseudoRouteStop.class);
 	private final PseudoRouteStop SOURCE_PSEUDO_STOP = new PseudoRouteStopImpl(SOURCE);
 	private final Id<PseudoRouteStop> DESTINATION_ID = Id.create(DESTINATION, PseudoRouteStop.class);
 	private final PseudoRouteStop DESTINATION_PSEUDO_STOP = new PseudoRouteStopImpl(DESTINATION);
 
 	private final Map<Id<PseudoRouteStop>, PseudoRouteStop> graph;
+	private boolean dijkstraComplete = false;
+	private LinkedList<PseudoRouteStop> leastCostPath = null;
+	private List<Id<Link>> networkLinkIds = null;
 
 	public PseudoGraphImpl() {
 		this.graph = new HashMap<>();
@@ -63,16 +66,12 @@ public class PseudoGraphImpl implements PseudoGraph {
 		while(!queue.isEmpty()) {
 			currentStop = queue.pollFirst(); // vertex with shortest distance (first iteration will return source)
 
-			if(currentStop.getNeighbours().size() == 0) {
-//				throw new RuntimeException("PseudoRouteStop " + currentStop.getStopId() + " has no neighbours in the PseudoGraph!");
-			}
-
 			//look at distances to each neighbour
 			for(Map.Entry<PseudoRouteStop, Double> n : currentStop.getNeighbours().entrySet()) {
 				neighbour = n.getKey(); //the neighbour in this iteration
 
 				final double alternateDist = currentStop.getTravelCostToSource() + n.getValue();
-				if(alternateDist < neighbour.getTravelCostToSource()) { // shorter path to neighbour found
+				if(alternateDist < neighbour.getTravelCostToSource()) { // shorter leastCostPath to neighbour found
 					queue.remove(neighbour);
 					neighbour.setTravelCostToSource(alternateDist);
 					neighbour.setClosestPrecedingRouteStop(currentStop);
@@ -80,37 +79,37 @@ public class PseudoGraphImpl implements PseudoGraph {
 				}
 			}
 		}
-	}
+		dijkstraComplete = true;
 
-	/**
-	 * returns a path from the source to the destination
-	 */
-	public List<PseudoRouteStop> getShortestPseudoPath() {
+		/**
+		 * returns a leastCostPath from the source to the destination
+		 */
 		if(!graph.containsKey(DESTINATION_ID)) {
 			System.err.printf("Graph doesn't contain end PseudoRouteStop \"%s\"\n", DESTINATION_ID);
-			return null;
 		}
 
 		PseudoRouteStop step = graph.get(DESTINATION_ID);
-		LinkedList<PseudoRouteStop> path = new LinkedList<>();
+		leastCostPath = new LinkedList<>();
 
-		// check if a path exists
+		// check if a leastCostPath exists
 		if(step.getClosestPrecedingRouteStop() == null) {
-			return null;
+			leastCostPath = null;
 		}
-		path.add(step);
+		leastCostPath.add(step);
 		while(!step.getId().equals(SOURCE_ID)) {
 			step = step.getClosestPrecedingRouteStop();
-			path.add(step);
+			leastCostPath.add(step);
 		}
 
 		// Put it into the correct order
-		Collections.reverse(path);
+		Collections.reverse(leastCostPath);
 		// remove dummies
-		path.removeFirst();
-		path.removeLast();
+		leastCostPath.removeFirst();
+		leastCostPath.removeLast();
 
-		return path;
+		/**
+		 * Fetch network links for least cost path
+		 */
 	}
 
 	@Override
@@ -126,8 +125,13 @@ public class PseudoGraphImpl implements PseudoGraph {
 
 	@Override
 	public List<PseudoRouteStop> getLeastCostStopSequence() {
-		runDijkstra();
-		return getShortestPseudoPath();
+		if(!dijkstraComplete) runDijkstra();
+		return this.leastCostPath;
+	}
+
+	public List<Id<Link>> getNetworkLinkIds() {
+		if(!dijkstraComplete) runDijkstra();
+		return this.networkLinkIds;
 	}
 
 	@Override
