@@ -20,9 +20,7 @@ import org.matsim.pt2matsim.shp.Schedule2ShapeFile;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ShapeTools;
-import org.matsim.pt2matsim.tools.debug.ExtractDebugSchedule;
 
-import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -77,11 +75,9 @@ public class PTMapperImplShapesTest {
 		gtfsConverter.convert(sampleDay, coordSys);
 
 		TransitSchedule schedule = gtfsConverter.getSchedule();
-		ExtractDebugSchedule.run(schedule, debugLineId.toString(), debugRouteId.toString());
+		// debug
+		// ExtractDebugSchedule.run(schedule, debugLineId.toString(), debugRouteId.toString());
 		ScheduleTools.writeTransitSchedule(schedule, unmappedScheduleFile);
-
-		// debug shapes
-//		ShapeTools.writeESRIShapeFile(Collections.singleton(gtfsConverter.getShapes().get("26")), coordSys, base + "output/gtfsShapeDebug.shp");
 	}
 
 	private void runNormalMapping() {
@@ -159,7 +155,7 @@ public class PTMapperImplShapesTest {
 		Map<Id<RouteShape>, RouteShape> shapes = ShapeTools.readShapesFile(gtfsFolder + "shapes.txt", coordSys);
 
 		Id<RouteShape> shapeId = ScheduleTools.getShapeIdFromDescription(debugDescr);
-		ShapeTools.writeESRIShapeFile(Collections.singletonList(shapes.get(shapeId)), coordSys, base + "output/shp/gtfsShapes.shp");
+//		ShapeTools.writeESRIShapeFile(Collections.singletonList(shapes.get(shapeId)), coordSys, base + "output/shp/gtfsShapes.shp");
 	}
 
 

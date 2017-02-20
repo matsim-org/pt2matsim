@@ -61,9 +61,11 @@ public class RouterShapes implements Router {
 	public RouterShapes(Network paramNetwork, Set<String> networkTransportModes, RouteShape shape) {
 		this.shape = shape;
 
+		// todo this setup could be improved
 		this.network = NetworkTools.createFilteredNetworkByLinkMode(paramNetwork, networkTransportModes);
 		Collection<Node> nodesWithinBuffer = ShapeTools.getNodesWithinBuffer(this.network, shape, cutBuffer);
 		NetworkTools.cutNetwork(network, nodesWithinBuffer);
+
 
 		this.paths = new HashMap<>();
 
