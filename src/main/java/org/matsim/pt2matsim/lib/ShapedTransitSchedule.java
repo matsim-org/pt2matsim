@@ -28,11 +28,14 @@ import java.util.Map;
 
 /**
  * Wrapper class for a transit schedule that contains
- * routeShapes for transitRoutes. Is used for {@link org.matsim.pt2matsim.mapping.PTMapperWithShapes} and
+ * routeShapes for transitRoutes. Is used for {@link org.matsim.pt2matsim.mapping.PTMapperImpl} and
  * {@link MappingAnalysis}
  *
  * @author polettif
+ *
+ * @deprecated use shapes directly
  */
+@Deprecated
 public interface ShapedTransitSchedule extends TransitSchedule {
 
 	void addShape(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId, RouteShape shape);

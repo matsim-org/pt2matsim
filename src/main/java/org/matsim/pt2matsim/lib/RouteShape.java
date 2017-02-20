@@ -28,6 +28,8 @@ import java.util.SortedMap;
 /**
  * A polyline representing a route as a list of point coordinates.
  *
+ * Custom class, should consider switching to a geotools implementation
+ *
  * @author polettif
  */
 public interface RouteShape extends Identifiable {

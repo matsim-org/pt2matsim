@@ -18,10 +18,7 @@
 
 package org.matsim.pt2matsim.config;
 
-import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.utils.collections.CollectionUtils;
-import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 
 import java.util.Set;
 
@@ -40,14 +37,6 @@ public final class PublicTransitMappingStrings {
 	public static final String ARTIFICIAL_LINK_MODE = "artificial";
 	public static final Set<String> ARTIFICIAL_LINK_MODE_AS_SET = CollectionUtils.stringToSet(ARTIFICIAL_LINK_MODE);
 	public static final String PREFIX_ARTIFICIAL = "pt_";
+	public static final String DESCR_SHAPE_ID_PREFIX = "shapeId:";
 
-	public static Id<Link> createArtificialLinkId(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate) {
-		if(fromLinkCandidate.isLoopLink()) {
-			return Id.createLinkId(PREFIX_ARTIFICIAL + fromLinkCandidate.getStopFacilityId() + "_" + toLinkCandidate.getFromNodeId());
-		} else if(toLinkCandidate.isLoopLink()) {
-			return Id.createLinkId(PREFIX_ARTIFICIAL + fromLinkCandidate.getToNodeId() + "_" + toLinkCandidate.getStopFacilityId());
-		} else {
-			return Id.createLinkId(PREFIX_ARTIFICIAL + fromLinkCandidate.getToNodeId() + "_" + toLinkCandidate.getFromNodeId());
-		}
-	}
 }
