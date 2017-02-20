@@ -50,8 +50,6 @@ public interface LinkCandidate extends Comparable<LinkCandidate> {
 
 	double getStopFacilityDistance();
 
-	double getLinkTravelCost();
-
 	/**
 	 * @return true if the link candidate is an artificial loop link
 	 */

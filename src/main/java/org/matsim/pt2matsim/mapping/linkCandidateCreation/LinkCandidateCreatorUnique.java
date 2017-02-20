@@ -149,7 +149,7 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 			for(Link link : links) {
 				LinkCandidate linkCandidate =
 						allCandidates.computeIfAbsent(c.getKey().getTransitRouteStop().getStopFacility().getId().toString() + ":" + link.getId().toString(),
-								k -> new LinkCandidateImpl(link, c.getKey().getTransitRouteStop().getStopFacility(), getLinkTravelCost(link)));
+								k -> new LinkCandidateImpl(link, c.getKey().getTransitRouteStop().getStopFacility()));
 				MiscUtils.getSortedSet(getKey(key.getTransitLine(), key.getTransitRoute(), key.getTransitRouteStop()), linkCandidates).add(linkCandidate);
 			}
 		}
@@ -282,7 +282,7 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 										log.info("Manual link candidate will still be used");
 									}
 
-									lcSet.add(new LinkCandidateImpl(link, parentStopFacility, getLinkTravelCost(link)));
+									lcSet.add(new LinkCandidateImpl(link, parentStopFacility));
 								}
 							}
 							linkCandidates.put(getKey(transitLine, transitRoute, routeStop), lcSet);
