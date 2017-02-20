@@ -36,28 +36,22 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 
 	// dijkstra
 	public final Map<PseudoRouteStop, Double> neighbours = new HashMap<>();
-	private final LinkCandidate linkCandidate;
-	public double travelCostToSource = Double.MAX_VALUE; // MAX_VALUE assumed to be infinity
-	public PseudoRouteStop previous = null;
-
-	private final double linkTravelCost;
-
 	// schedule values
 	public final Id<PseudoRouteStop> id;
+	private final LinkCandidate linkCandidate;
 	private final String name;
-
 	private final Id<Link> linkId;
-
 	private final double departureOffset;
 	private final double arrivalOffset;
 	private final boolean awaitDepartureTime;
-
 	private final Coord coord;
 	private final boolean isBlockingLane;
 	private final String facilityName;
 	private final String stopPostAreaId;
 	private final Id<TransitStopFacility> parentStopFacilityId;
 	private final double stopFacilityDistance;
+	public double travelCostToSource = Double.MAX_VALUE; // MAX_VALUE assumed to be infinity
+	public PseudoRouteStop previous = null;
 
 	/**
 	 * Constructor. All primitive attribute values of the transitRouteStop are stored
@@ -82,7 +76,6 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 		this.awaitDepartureTime = routeStop.isAwaitDepartureTime();
 
 		// link value
-		this.linkTravelCost = linkCandidate.getLinkTravelCost();
 		this.linkCandidate = linkCandidate;
 	}
 
@@ -116,7 +109,6 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 		this.awaitDepartureTime = false;
 
 		// link value
-		this.linkTravelCost = 0.0;
 		this.linkCandidate = new LinkCandidateImpl();
 	}
 

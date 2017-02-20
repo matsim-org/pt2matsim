@@ -164,15 +164,14 @@ public class PseudoGraphImpl implements PseudoGraph {
 		addEdge(fromPseudoStop, toPseudoStop, pathTravelCost, links, false);
 	}
 
-	private void addEdge(PseudoRouteStop from, PseudoRouteStop to, double pathTravelCost, List<Link> networkLinks, boolean dummy) {
+	private void addEdge(PseudoRouteStop from, PseudoRouteStop to, double edgeWeight, List<Link> networkLinks, boolean dummy) {
 		if(!graph.containsKey(from.getId())) {
 			graph.put(from.getId(), from);
 		}
 		if(!graph.containsKey(to.getId())) {
 			graph.put(to.getId(), to);
 		}
-		double weight = pathTravelCost + 0.5 * from.getLinkCandidate().getLinkTravelCost() + 0.5 * to.getLinkCandidate().getLinkTravelCost();
-		graph.get(from.getId()).getNeighbours().put(graph.get(to.getId()), weight);
+		graph.get(from.getId()).getNeighbours().put(graph.get(to.getId()), edgeWeight);
 
 		// store links
 		if(!dummy) {

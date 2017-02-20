@@ -48,7 +48,6 @@ public class PseudoRoutingImpl implements PseudoRouting {
 	protected static Logger log = Logger.getLogger(PseudoRoutingImpl.class);
 
 	private static Counter counterPseudoRouting = new Counter("route # ");
-	private static int artificialId = 0;
 	private static boolean warnMinTravelCost = true;
 
 	private final PublicTransitMappingConfigGroup config;
@@ -140,7 +139,13 @@ public class PseudoRoutingImpl implements PseudoRouting {
 							 * below maxAllowedTravelCost, a normal edge is added to the pseudoGraph
 							 */
 							if(useExistingNetworkLinks) {
-								pseudoGraph.addEdge(i, routeStops.get(i), linkCandidateCurrent, routeStops.get(i + 1), linkCandidateNext, pathCost, pathLinks);
+
+								double currentCandidateTravelCost = scheduleRouters.getLinkTravelCost(transitLine, transitRoute, linkCandidateCurrent);
+								double nextCandidateTravelCost = scheduleRouters.getLinkTravelCost(transitLine, transitRoute, linkCandidateCurrent);
+
+								double edgeWeight = pathCost + 0.5 * currentCandidateTravelCost + 0.5 * nextCandidateTravelCost;
+
+								pseudoGraph.addEdge(i, routeStops.get(i), linkCandidateCurrent, routeStops.get(i + 1), linkCandidateNext, edgeWeight, pathLinks);
 							}
 							/** [3.2]
 							 * Create artificial links between two routeStops if:
@@ -152,7 +157,10 @@ public class PseudoRoutingImpl implements PseudoRouting {
 							 * facility and the other linkCandidates).
 							 */
 							else {
-								double artificialEdgeWeight = maxAllowedTravelCost - 0.5 * linkCandidateCurrent.getLinkTravelCost() - 0.5 * linkCandidateNext.getLinkTravelCost();
+								double currentCandidateTravelCost = scheduleRouters.getLinkTravelCost(transitLine, transitRoute, linkCandidateCurrent);
+								double nextCandidateTravelCost = scheduleRouters.getLinkTravelCost(transitLine, transitRoute, linkCandidateCurrent);
+
+								double artificialEdgeWeight = maxAllowedTravelCost - 0.5 * currentCandidateTravelCost - 0.5 * nextCandidateTravelCost;
 
 								pseudoGraph.addEdge(i, routeStops.get(i), linkCandidateCurrent, routeStops.get(i + 1), linkCandidateNext, artificialEdgeWeight, null);
 							}

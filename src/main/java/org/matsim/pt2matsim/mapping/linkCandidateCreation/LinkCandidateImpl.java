@@ -35,7 +35,6 @@ public class LinkCandidateImpl implements LinkCandidate {
 	private final Id<TransitStopFacility> parentStopFacilityId;
 	private final Link link;
 	private final double stopFacilityDistance;
-	private final double linkTravelCost;
 	private final Id<Link> linkId;
 	private final Id<Node> fromNodeId;
 	private final Id<Node> toNodeId;
@@ -45,10 +44,9 @@ public class LinkCandidateImpl implements LinkCandidate {
 	private final boolean loopLink;
 	private double priority;
 
-	public LinkCandidateImpl(Link link, TransitStopFacility parentStopFacility, double linkTravelCost) {
+	public LinkCandidateImpl(Link link, TransitStopFacility parentStopFacility) {
 		this.id = parentStopFacility.getId().toString() + ".link:" + link.getId().toString();
 		this.parentStopFacilityId = parentStopFacility.getId();
-		this.linkTravelCost = linkTravelCost;
 
 		this.linkId = link.getId();
 
@@ -70,7 +68,6 @@ public class LinkCandidateImpl implements LinkCandidate {
 	public LinkCandidateImpl() {
 		this.id = "dummy";
 		this.parentStopFacilityId = null;
-		this.linkTravelCost = 0;
 
 		this.linkId = null;
 
@@ -117,18 +114,6 @@ public class LinkCandidateImpl implements LinkCandidate {
 	@Override
 	public double getStopFacilityDistance() {
 		return stopFacilityDistance;
-	}
-
-	/*
-	TODO remove link travel cost from fields
-	instead let the ptmapper calculate the travel costs by using the router and the link (or perhaps link id).
-	This is necessary because link travel costs differ with the routers used and are normally not known during
-	link candidate creation.
-	 */
-
-	@Override
-	public double getLinkTravelCost() {
-		return linkTravelCost;
 	}
 
 	@Override
