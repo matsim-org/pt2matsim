@@ -26,7 +26,10 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
  * Interface to store the shape id belonging to transit routes.
  *
  * @author polettif
+ *
+ * @deprecated ids are stored in the transit route description
  */
+@Deprecated
 public interface TransitRouteShapeReference {
 
 	/**

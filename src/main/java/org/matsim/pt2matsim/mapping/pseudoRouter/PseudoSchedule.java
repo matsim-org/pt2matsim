@@ -34,7 +34,9 @@ import java.util.Set;
  *
  * <ul><li>PseudoSchedule</li>
  *     <ul><li>{@link PseudoTransitRoute}</li>
- *         <ul><li>List of {@link PseudoRouteStop}</li>
+ *         <ul>
+ *            	<li>List of {@link PseudoRouteStop}</li>
+ *         		<li>List of network links</li>
  *         </ul>
  *     </ul>
  * </ul>

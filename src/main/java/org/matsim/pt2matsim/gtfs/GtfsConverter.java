@@ -27,8 +27,6 @@ import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.gtfs.lib.*;
-import org.matsim.pt2matsim.lib.ShapedSchedule;
-import org.matsim.pt2matsim.lib.ShapedTransitSchedule;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
@@ -48,7 +46,6 @@ public class GtfsConverter {
 	public static final String ALL_SERVICE_IDS = "all";
 	public static final String DAY_WITH_MOST_TRIPS = "dayWithMostTrips";
 	public static final String DAY_WITH_MOST_SERVICES = "dayWithMostServices";
-	private static final String SHAPE_ID_PREFIX = "shapeId:";
 	protected static Logger log = Logger.getLogger(GtfsConverter.class);
 	private final boolean defaultAwaitDepartureTime = true;
 	private final boolean defaultBlocks = false;
@@ -56,7 +53,7 @@ public class GtfsConverter {
 
 	private LocalDate dateUsed = null;
 
-	private ShapedSchedule schedule;
+	private TransitSchedule schedule;
 	private Vehicles vhcls;
 
 	/**
@@ -85,10 +82,6 @@ public class GtfsConverter {
 		return vhcls;
 	}
 
-	public ShapedTransitSchedule getShapedTransitSchedule() {
-		return schedule;
-	}
-
 	/**
 	 * Converts the loaded gtfs data to a matsim transit schedule
 	 * <ol>
@@ -113,7 +106,7 @@ public class GtfsConverter {
 
 		if(extractDate != null) log.info("    Extracting schedule from date " + extractDate);
 
-		this.schedule = new ShapedSchedule(transitSchedule);
+		this.schedule = transitSchedule;
 		this.vhcls = vehicles;
 
 		TransitScheduleFactory scheduleFactory = schedule.getFactory();
@@ -244,10 +237,10 @@ public class GtfsConverter {
 					/* Save transit route (and line) for current shape */
 					if(trip.hasShape()) {
 						// misusing the description tag since transit routes are not attributable
-						transitRoute.setDescription("shapeId:" + trip.getShape().getId());
-						if(!transitRoute.getDescription().isEmpty() && !transitRoute.getDescription().equals(SHAPE_ID_PREFIX + trip.getShape().getId().toString())) {
-							log.warn("Two different shape ids for transit route" + transitRoute.getId());
+						if(transitRoute.getDescription() != null && !transitRoute.getDescription().equals(ScheduleTools.getDescriptionStrFromShapeId(trip.getShape().getId()))) {
+							log.warn("Two different shape ids for transit route " + transitRoute.getId() + ": " + transitRoute.getDescription() + " & " + trip.getShape().getId());
 						}
+						transitRoute.setDescription(ScheduleTools.getDescriptionStrFromShapeId(trip.getShape().getId()));
 					}
 				}
 			} // foreach trip

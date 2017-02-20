@@ -29,6 +29,7 @@ import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.mapping.PTMapperImpl;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
+import org.matsim.pt2matsim.tools.ShapeTools;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 
@@ -67,7 +68,6 @@ public class MappingAnalysisTest {
 //		ExtractDebugSchedule.run(schedule, "SBSB_1437", "59468A1158B4286");
 
 		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), input + "mts/schedule_unmapped.xml.gz");
-		gtfsConverter.getShapedTransitSchedule().getTransitRouteShapeReference().writeToFile(input + "mts/route_shape_ref.csv");
 
 		// read network
 		/*convert from osm
@@ -96,7 +96,7 @@ public class MappingAnalysisTest {
 	public void analysis() {
 		new File(input + "output/").mkdirs();
 
-		MappingAnalysis analysis = new MappingAnalysis(schedule, network, input + "mts/route_shape_ref.csv", input + "addisoncounty-vt-us-gtfs/shapes.txt", coordinateSystem);
+		MappingAnalysis analysis = new MappingAnalysis(schedule, network, ShapeTools.readShapesFile(input + "addisoncounty-vt-us-gtfs/shapes.txt", coordinateSystem));
 
 		analysis.run();
 		analysis.writeAllDistancesCsv(input+"output/DistancesAll.csv");

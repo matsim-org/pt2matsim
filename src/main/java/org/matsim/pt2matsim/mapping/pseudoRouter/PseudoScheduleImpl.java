@@ -97,6 +97,9 @@ public class PseudoScheduleImpl implements PseudoSchedule {
 			List<Id<Link>> l = pseudoTransitRoute.getNetworkLinkIdList();
 			newTransitRoute.setRoute(new LinkNetworkRouteImpl(l.get(0), l.subList(1, l.size() - 1), l.get(l.size() - 1)));
 
+			// add description
+			newTransitRoute.setDescription(pseudoTransitRoute.getTransitRoute().getDescription());
+
 			// remove the old route
 			schedule.getTransitLines().get(pseudoTransitRoute.getTransitLineId()).removeRoute(pseudoTransitRoute.getTransitRoute());
 

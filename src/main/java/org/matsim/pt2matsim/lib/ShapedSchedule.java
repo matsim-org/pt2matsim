@@ -42,6 +42,7 @@ import static org.matsim.pt2matsim.tools.CsvTools.getIndices;
  *
  * @author polettif
  */
+@Deprecated
 public class ShapedSchedule implements ShapedTransitSchedule {
 
 	private final TransitSchedule schedule;

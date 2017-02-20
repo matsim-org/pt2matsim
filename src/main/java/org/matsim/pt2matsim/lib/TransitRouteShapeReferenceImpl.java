@@ -30,7 +30,10 @@ import java.util.Map;
 
 /**
  * @author polettif
+ *
+ * @deprecated ids are stored in the transit route description
  */
+@Deprecated
 public class TransitRouteShapeReferenceImpl implements TransitRouteShapeReference {
 
 

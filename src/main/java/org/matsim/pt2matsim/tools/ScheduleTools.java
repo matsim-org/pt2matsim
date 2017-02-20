@@ -35,7 +35,9 @@ import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
+import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.UtilsPTMapper;
+import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.vehicles.*;
 
@@ -475,5 +477,28 @@ public final class ScheduleTools {
 	public static String getParentId(String stopFacilityId) {
 		String[] childStopSplit = stopFacilityId.split(PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES_REGEX);
 		return childStopSplit[0];
+	}
+
+	public static Id<Link> createArtificialLinkId(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate) {
+		if(fromLinkCandidate.isLoopLink()) {
+			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getStopFacilityId() + "_" + toLinkCandidate.getFromNodeId());
+		} else if(toLinkCandidate.isLoopLink()) {
+			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getToNodeId() + "_" + toLinkCandidate.getStopFacilityId());
+		} else {
+			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getToNodeId() + "_" + toLinkCandidate.getFromNodeId());
+		}
+	}
+
+	public static String getDescriptionStrFromShapeId(Id<RouteShape> id) {
+		return PublicTransitMappingStrings.DESCR_SHAPE_ID_PREFIX + id.toString();
+	}
+
+	public static Id<RouteShape> getShapeIdFromDescription(String transitRouteDescription) {
+		if(transitRouteDescription == null || !transitRouteDescription.contains(PublicTransitMappingStrings.DESCR_SHAPE_ID_PREFIX)) {
+			return null;
+		} else {
+			String[] shapeIdSplit = transitRouteDescription.split(PublicTransitMappingStrings.DESCR_SHAPE_ID_PREFIX);
+			return Id.create(shapeIdSplit[1], RouteShape.class);
+		}
 	}
 }

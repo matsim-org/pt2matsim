@@ -210,7 +210,7 @@ public final class ShapeTools {
 	/**
 	 * Writes the given shapes to a shape file
 	 */
-	public static void writeShapeFile(Collection<? extends RouteShape> shapes, String outputCoordinateSystem, String filename) {
+	public static void writeESRIShapeFile(Collection<? extends RouteShape> shapes, String outputCoordinateSystem, String filename) {
 		Collection<SimpleFeature> features = new ArrayList<>();
 
 		PolylineFeatureFactory ff = new PolylineFeatureFactory.Builder()

@@ -24,6 +24,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
+import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.utils.objectattributes.attributable.Attributes;
 
 import java.util.Set;
@@ -48,7 +49,7 @@ public class ArtificialLinkImpl implements ArtificialLink {
 	private final double numberOfLanes;
 
 	public ArtificialLinkImpl(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, double freespeed, double linklength) {
-		this.id = PublicTransitMappingStrings.createArtificialLinkId(fromLinkCandidate, toLinkCandidate);
+		this.id = ScheduleTools.createArtificialLinkId(fromLinkCandidate, toLinkCandidate);
 		this.fromNodeId = fromLinkCandidate.getToNodeId();
 		this.toNodeId = toLinkCandidate.getFromNodeId();
 		this.fromNodeCoord = fromLinkCandidate.getToNodeCoord();

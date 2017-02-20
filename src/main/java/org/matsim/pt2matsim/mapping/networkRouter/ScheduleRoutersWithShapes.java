@@ -10,11 +10,11 @@ import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
+import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
-import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.lib.RouteShape;
-import org.matsim.pt2matsim.lib.ShapedTransitSchedule;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
+import org.matsim.pt2matsim.tools.ScheduleTools;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,40 +33,33 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 	protected static Logger log = Logger.getLogger(ScheduleRoutersWithShapes.class);
 
 	private final PublicTransitMappingConfigGroup config;
-	private final ShapedTransitSchedule shapedSchedule;
-	private final boolean useArtificial;
+	private final TransitSchedule schedule;
+	private final Map<Id<RouteShape>, RouteShape> shapes;
 	private Map<TransitLine, Map<TransitRoute, Router>> routers = new HashMap<>();
 	private Map<Id<RouteShape>, Router> routersByShape = new HashMap<>();
 	private Network network;
 
-	public ScheduleRoutersWithShapes(PublicTransitMappingConfigGroup config, ShapedTransitSchedule shapedSchedule, Network network, boolean useArtificial) {
+	public ScheduleRoutersWithShapes(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network, Map<Id<RouteShape>, RouteShape> shapes) {
 		this.config = config;
-		this.shapedSchedule = shapedSchedule;
+		this.schedule = schedule;
 		this.network = network;
-		this.useArtificial = useArtificial;
+		this.shapes = shapes;
 	}
-
-	public ScheduleRoutersWithShapes(PublicTransitMappingConfigGroup config, ShapedTransitSchedule shapedSchedule, Network network) {
-		this.config = config;
-		this.shapedSchedule = shapedSchedule;
-		this.network = network;
-		this.useArtificial = false;
-	}
-
 
 	@Override
 	public void load() {
 		Counter c = new Counter(" route # ");
 
 		RouterShapes.setTravelCostType(config.getTravelCostType());
-		RouterShapes.setNetworkCutBuffer(100);
-		RouterShapes.setMaxWeightDistance(20);
+		RouterShapes.setNetworkCutBuffer(200);
+		RouterShapes.setMaxWeightDistance(50);
 
-		for(TransitLine transitLine : this.shapedSchedule.getTransitLines().values()) {
+		for(TransitLine transitLine : this.schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				c.incCounter();
 				// log.info("Initiating network and router for transit route " + transitRoute.getStopId() + " (line " + transitLine.getStopId() + ")");
-				RouteShape shape = shapedSchedule.getShape(transitLine.getId(), transitRoute.getId());
+				Id<RouteShape> shapeId = ScheduleTools.getShapeIdFromDescription(transitRoute.getDescription());
+				RouteShape shape = shapes.get(shapeId);
 
 				Router tmpRouter;
 
@@ -75,13 +68,11 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 					tmpRouter = new EmptyRouter();
 				}
 				else {
-					Id<RouteShape> shapeId = shape.getId();
 					tmpRouter = routersByShape.get(shapeId);
 					if(tmpRouter == null) {
 						Set<String> networkTransportModes = config.getModeRoutingAssignment().get(transitRoute.getTransportMode());
-						if(useArtificial) networkTransportModes.add(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE);
 
-						tmpRouter = new RouterShapes(network, networkTransportModes, shapedSchedule.getShape(transitLine.getId(), transitRoute.getId()));
+						tmpRouter = new RouterShapes(network, networkTransportModes, shape);
 						routersByShape.put(shapeId, tmpRouter);
 					}
 				}
