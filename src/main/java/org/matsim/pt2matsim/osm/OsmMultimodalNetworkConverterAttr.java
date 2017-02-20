@@ -332,7 +332,7 @@ public class OsmMultimodalNetworkConverterAttr {
 		// - check tag "oneway" with trunks, primary and secondary roads
 		// 		(if they are marked as such, the default number of lanes should be two instead of one)
 		if(highway != null) {
-			if(highway.equalsIgnoreCase("trunk") || highway.equalsIgnoreCase("primary") || highway.equalsIgnoreCase("secondary")) {
+			if(highway.equalsIgnoreCase(Osm.Value.TRUNK) || highway.equalsIgnoreCase(Osm.Value.PRIMARY) || highway.equalsIgnoreCase(Osm.Value.SECONDARY)) {
 				if(oneway && nofLanes == 1.0) {
 					nofLanes = 2.0;
 				}
@@ -450,16 +450,23 @@ public class OsmMultimodalNetworkConverterAttr {
 	private void addAttributes() {
 		for(Link link : this.network.getLinks().values()) {
 			Osm.Way way = osmData.getWays().get(osmIds.get(link.getId()));
+			link.getAttributes().putAttribute("osm:way:id", way.getId().toString());
 			for(Map.Entry<String, String> t : way.getTags().entrySet()) {
 				String key = "osm:way:" + t.getKey();
 				String val = t.getValue();
 				link.getAttributes().putAttribute(key.replace("&", "AND"), val.replace("&", "AND"));
 			}
 			for(Osm.Relation rel : way.getRelations().values()) {
-				for(Map.Entry<String, String> r : rel.getTags().entrySet()) {
-					String key = "osm:relation:" + r.getKey();
-					String val = r.getValue();
-					link.getAttributes().putAttribute(key.replace("&", "AND"), val.replace("&", "AND"));
+				String route = rel.getTags().get(Osm.Key.ROUTE);
+				if(route != null) {
+					String osmRouteKey = "osm:relation:route";
+					String attr = (String) link.getAttributes().getAttribute(osmRouteKey);
+					if(attr != null) {
+						attr += "," + route;
+					} else {
+						attr = route;
+					}
+					link.getAttributes().putAttribute(osmRouteKey, attr);
 				}
 			}
 		}
