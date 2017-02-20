@@ -52,6 +52,70 @@ public final class Osm {
 	}
 
 	/**
+	 * Parent class for a basic osm element node, way or relation
+	 */
+	public interface Element {
+
+		ElementType getType();
+
+		Map<String, String> getTags();
+
+		/**
+		 * @return the value associated with the given key
+		 */
+		String getValue(String key);
+	}
+
+	/**
+	 * osm node
+	 */
+	public interface Node extends Element, Identifiable<Node> {
+		Coord getCoord();
+
+		void setCoord(Coord coord);
+
+		/**
+		 * @return the ways of which this node is a member
+		 */
+		Map<Id<Way>, Way> getWays();
+
+		/**
+		 * @return the relations of which this node is a member
+		 */
+		Map<Id<Relation>, Relation> getRelations();
+	}
+
+	/**
+	 * osm way
+	 */
+	public interface Way extends Element, Identifiable<Way> {
+		List<Node> getNodes();
+
+		/**
+		 * @return the relations of which this node is a member
+		 */
+		Map<Id<Relation>, Relation> getRelations();
+	}
+
+	/**
+	 * osm relation
+	 */
+	public interface Relation extends Element, Identifiable<Relation> {
+		List<Element> getMembers();
+
+		/**
+		 * @return the role the given member has. <tt>null</tt> if element is not
+		 * a member or no role is assigned
+		 */
+		String getMemberRole(Element member);
+
+		/**
+		 * @return the relations of which this node is a member
+		 */
+		Map<Id<Relation>, Relation> getRelations();
+	}
+
+	/**
 	 * OSM tags used by the converters
 	 */
 	public static final class Key {
@@ -114,68 +178,6 @@ public final class Osm {
 		public static final String FUNICULAR = "funicular";
 		public static final String MONORAIL = "monorail";
 		public static final String SUBWAY = "subway";
-	}
-
-	/**
-	 * Parent class for a basic osm element node, way or relation
-	 */
-	public interface Element {
-
-		ElementType getType();
-
-		Map<String, String> getTags();
-
-		/**
-		 * @return the value associated with the given key
-		 */
-		String getValue(String key);
-	}
-
-	/**
-	 * osm node
-	 */
-	public interface Node extends Element, Identifiable<Node> {
-		Coord getCoord();
-
-		/**
-		 * @return the ways of which this node is a member
-		 */
-		Map<Id<Way>, Way> getWays();
-
-		/**
-		 * @return the relations of which this node is a member
-		 */
-		Map<Id<Relation>, Relation> getRelations();
-	}
-
-	/**
-	 * osm way
-	 */
-	public interface Way extends Element, Identifiable<Way> {
-		List<Node> getNodes();
-
-		/**
-		 * @return the relations of which this node is a member
-		 */
-		Map<Id<Relation>, Relation> getRelations();
-	}
-
-	/**
-	 * osm relation
-	 */
-	public interface Relation extends Element, Identifiable<Relation> {
-		List<Element> getMembers();
-
-		/**
-		 * @return the role the given member has. <tt>null</tt> if element is not
-		 * a member or no role is assigned
-		 */
-		String getMemberRole(Element member);
-
-		/**
-		 * @return the relations of which this node is a member
-		 */
-		Map<Id<Relation>, Relation> getRelations();
 	}
 
 

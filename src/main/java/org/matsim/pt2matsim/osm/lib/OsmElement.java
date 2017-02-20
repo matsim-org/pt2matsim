@@ -38,15 +38,16 @@ public class OsmElement {
 	public static class Node implements Osm.Node {
 
 		private final Id<Osm.Node> id;
-		private final Coord coord;
+		private final Coord wgs84coord;
 		private final Map<String, String> tags;
-
 		private final Map<Id<Osm.Way>, Osm.Way> ways = new HashMap<>();
 		private final Map<Id<Osm.Relation>, Osm.Relation> relations = new HashMap<>();
+		private Coord coord;
 
 		public Node(final long id, final Coord coord, Map<String, String> tags) {
 			this.id = Id.create(id, Osm.Node.class);
 			this.coord = coord;
+			this.wgs84coord = coord;
 			this.tags = tags;
 		}
 
@@ -57,6 +58,11 @@ public class OsmElement {
 
 		public Coord getCoord() {
 			return coord;
+		}
+
+		@Override
+		public void setCoord(Coord coord) {
+			this.coord = coord;
 		}
 
 		@Override
@@ -184,11 +190,10 @@ public class OsmElement {
 	public static class Relation implements Osm.Relation {
 
 		private final Id<Osm.Relation> id;
-		private List<Osm.Element> members;
 		private final Map<String, String> tags;
-		private Map<Osm.Element, String> memberRoles;
-
 		private final Map<Id<Osm.Relation>, Osm.Relation> relations = new HashMap<>();
+		private List<Osm.Element> members;
+		private Map<Osm.Element, String> memberRoles;
 
 		public Relation(long id, Map<String, String> tags) {
 			this.id = Id.create(id, Osm.Relation.class);

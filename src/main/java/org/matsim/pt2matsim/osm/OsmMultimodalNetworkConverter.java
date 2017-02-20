@@ -55,15 +55,8 @@ import java.util.Set;
 public class OsmMultimodalNetworkConverter {
 
 	private final static Logger log = Logger.getLogger(OsmMultimodalNetworkConverter.class);
-
-	private OsmConverterConfigGroup config;
 	private final Map<String, OsmConverterConfigGroup.OsmWayParams> highwayParams = new HashMap<>();
 	private final Map<String, OsmConverterConfigGroup.OsmWayParams> railwayParams = new HashMap<>();
-
-	private OsmData osmData;
-
-	private Network network;
-
 	/**
 	 * Maps for unknown entities
 	 */
@@ -72,6 +65,9 @@ public class OsmMultimodalNetworkConverter {
 	private final Set<String> unknownWays = new HashSet<>();
 	private final Set<String> unknownMaxspeedTags = new HashSet<>();
 	private final Set<String> unknownLanesTags = new HashSet<>();
+	private OsmConverterConfigGroup config;
+	private OsmData osmData;
+	private Network network;
 	private long id = 0;
 
 
@@ -129,7 +125,7 @@ public class OsmMultimodalNetworkConverter {
 
 		// transform nodes
 		for(Osm.Node node : nodes.values()) {
-			transformation.transform(node.getCoord());
+			node.setCoord(transformation.transform(node.getCoord()));
 		}
 
 
