@@ -102,19 +102,23 @@ public final class ShapeTools {
 	public static Collection<Node> getNodesWithinBuffer(Network network, RouteShape shape, double buffer) {
 		Set<Node> nodesWithinBuffer = new HashSet<>();
 
-		for(Coord c : shape.getCoords()) {
-			nodesWithinBuffer.addAll(NetworkUtils.getNearestNodes(network, c, buffer));
-		}
+		List<Coord> coords = shape.getCoords();
 
-		/*
-		for(Node node : network.getNodes().values()) {
-			if(CoordTools.isInBufferArea(node.getCoord(), shape.getExtent(), buffer)) {
-				if(calcMinDistanceToShape(node.getCoord(), shape) <= buffer) {
-					nodesWithinBuffer.add(node);
-				}
-			}
+		for(int i = 0; i < coords.size() - 1; i++) {
+			Coord current = coords.get(i);
+			Coord next = coords.get(i + 1);
+
+			double dist = 0;
+			double delta = buffer / 2;
+			double maxDist = CoordUtils.calcEuclideanDistance(current, next);
+			double az = CoordTools.getAzimuth(current, next);
+			do {
+				nodesWithinBuffer.addAll(NetworkUtils.getNearestNodes(network, CoordTools.calcNewPoint(current, az, dist), buffer));
+				dist += delta;
+			} while(dist < maxDist);
 		}
-		*/
+		nodesWithinBuffer.addAll(NetworkUtils.getNearestNodes(network, coords.get(coords.size() - 1), buffer));
+
 		return nodesWithinBuffer;
 	}
 
