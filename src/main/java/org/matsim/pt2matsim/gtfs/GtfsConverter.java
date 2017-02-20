@@ -45,15 +45,13 @@ import java.util.*;
  */
 public class GtfsConverter {
 
-	private final boolean defaultAwaitDepartureTime = true;
-	private final boolean defaultBlocks = false;
-
-	protected static Logger log = Logger.getLogger(GtfsConverter.class);
-
 	public static final String ALL_SERVICE_IDS = "all";
 	public static final String DAY_WITH_MOST_TRIPS = "dayWithMostTrips";
 	public static final String DAY_WITH_MOST_SERVICES = "dayWithMostServices";
-
+	private static final String SHAPE_ID_PREFIX = "shapeId:";
+	protected static Logger log = Logger.getLogger(GtfsConverter.class);
+	private final boolean defaultAwaitDepartureTime = true;
+	private final boolean defaultBlocks = false;
 	private final GtfsFeed feed;
 
 	private LocalDate dateUsed = null;
@@ -245,7 +243,11 @@ public class GtfsConverter {
 
 					/* Save transit route (and line) for current shape */
 					if(trip.hasShape()) {
-						schedule.addShape(transitLine.getId(), transitRoute.getId(), trip.getShape());
+						// misusing the description tag since transit routes are not attributable
+						transitRoute.setDescription("shapeId:" + trip.getShape().getId());
+						if(!transitRoute.getDescription().isEmpty() && !transitRoute.getDescription().equals(SHAPE_ID_PREFIX + trip.getShape().getId().toString())) {
+							log.warn("Two different shape ids for transit route" + transitRoute.getId());
+						}
 					}
 				}
 			} // foreach trip
