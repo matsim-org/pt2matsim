@@ -126,12 +126,9 @@ public class OsmMultimodalNetworkConverterAttr {
 		PositiveTagFilter serviceRailTracksFilter = new PositiveTagFilter();
 		serviceRailTracksFilter.add(Osm.ElementType.WAY, Osm.Key.SERVICE, null);
 
-
-		// transform nodes
 		for(Osm.Node node : nodes.values()) {
-			transformation.transform(node.getCoord());
+			node.setCoord(transformation.transform(node.getCoord()));
 		}
-
 
 		// remove unusable ways
 		log.info("remove unusable ways...");
