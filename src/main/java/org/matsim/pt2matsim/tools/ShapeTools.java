@@ -18,6 +18,7 @@
 
 package org.matsim.pt2matsim.tools;
 
+import com.opencsv.CSVReader;
 import com.vividsolutions.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -26,17 +27,26 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
+import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.geotools.MGC;
+import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.gis.PolylineFeatureFactory;
 import org.matsim.core.utils.gis.ShapeFileWriter;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
+import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions;
+import org.matsim.pt2matsim.gtfs.lib.GtfsShape;
 import org.matsim.pt2matsim.gtfs.lib.Route;
 import org.matsim.pt2matsim.gtfs.lib.Trip;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.opengis.feature.simple.SimpleFeature;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
+
+import static org.matsim.pt2matsim.tools.CsvTools.getIndices;
 
 /**
  * Provides tools to calculate RouteShape attributes such as minimal distances and lengths.
@@ -227,4 +237,36 @@ public final class ShapeTools {
 
 	}
 
+	public static Map<Id<RouteShape>, RouteShape> readShapesFile(String shapeFile, String outputCoordinateSystem) {
+		Map<Id<RouteShape>, RouteShape> shapes = new HashMap<>();
+		CoordinateTransformation ct = TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem);
+
+		CSVReader reader;
+		try {
+			reader = new CSVReader(new FileReader(shapeFile));
+			String[] header = reader.readNext();
+			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.SHAPES.columns);
+			String[] line = reader.readNext();
+			while(line != null) {
+				Id<RouteShape> shapeId = Id.create(line[col.get(GtfsDefinitions.SHAPE_ID)], RouteShape.class);
+				RouteShape currentShape = shapes.get(shapeId);
+				if(currentShape == null) {
+					currentShape = new GtfsShape(line[col.get(GtfsDefinitions.SHAPE_ID)]);
+					shapes.put(shapeId, currentShape);
+				}
+				Coord point = new Coord(Double.parseDouble(line[col.get(GtfsDefinitions.SHAPE_PT_LON)]), Double.parseDouble(line[col.get(GtfsDefinitions.SHAPE_PT_LAT)]));
+				currentShape.addPoint(ct.transform(point), Integer.parseInt(line[col.get(GtfsDefinitions.SHAPE_PT_SEQUENCE)]));
+				line = reader.readNext();
+			}
+			reader.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			throw new RuntimeException("File not found!");
+		} catch (ArrayIndexOutOfBoundsException i) {
+			throw new RuntimeException("Emtpy line found file!");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return shapes;
+	}
 }

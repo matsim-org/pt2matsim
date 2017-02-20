@@ -38,6 +38,9 @@ public final class Gtfs2TransitSchedule {
 
 	protected static Logger log = Logger.getLogger(Gtfs2TransitSchedule.class);
 
+	private Gtfs2TransitSchedule() {
+	}
+
 	/**
 	 * Reads gtfs files in and converts them to an unmapped
 	 * MATSim Transit Schedule (mts). "Unmapped" means stopFacilities are not
@@ -115,6 +118,7 @@ public final class Gtfs2TransitSchedule {
 		if(vehicleFile != null) {
 			ScheduleTools.writeVehicles(converter.getVehicles(), vehicleFile);
 		}
+		/*
 		if(transitRouteShapeRefFile != null) {
 			try {
 				MGC.getCRS(outputCoordinateSystem);
@@ -125,6 +129,7 @@ public final class Gtfs2TransitSchedule {
 			if(authExists)
 				converter.getShapedTransitSchedule().getTransitRouteShapeReference().writeToFile(transitRouteShapeRefFile);
 		}
+		*/
 	}
 
 	/**
@@ -142,7 +147,5 @@ public final class Gtfs2TransitSchedule {
 			return true;
 		}
 	}
-
-	private Gtfs2TransitSchedule() {}
 
 }
