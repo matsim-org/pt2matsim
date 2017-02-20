@@ -454,11 +454,15 @@ public class OsmMultimodalNetworkConverterAttr {
 		for(Link link : this.network.getLinks().values()) {
 			Osm.Way way = osmData.getWays().get(osmIds.get(link.getId()));
 			for(Map.Entry<String, String> t : way.getTags().entrySet()) {
-				link.getAttributes().putAttribute("osm:way:" + t.getKey(), t.getValue());
+				String key = "osm:way:" + t.getKey();
+				String val = t.getValue();
+				link.getAttributes().putAttribute(key.replace("&", "AND"), val.replace("&", "AND"));
 			}
 			for(Osm.Relation rel : way.getRelations().values()) {
 				for(Map.Entry<String, String> r : rel.getTags().entrySet()) {
-					link.getAttributes().putAttribute("osm:relation:" + r.getKey(), r.getValue());
+					String key = "osm:relation:" + r.getKey();
+					String val = r.getValue();
+					link.getAttributes().putAttribute(key.replace("&", "AND"), val.replace("&", "AND"));
 				}
 			}
 		}
