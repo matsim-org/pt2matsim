@@ -107,6 +107,6 @@ public class PTMapperImplTest {
 
 		// 1 loop link, 3 artificial links
 		Assert.assertEquals(NetworkToolsTest.initNetwork().getLinks().size()+4, network2.getLinks().size());
-		Assert.assertEquals(10, schedule2.getFacilities().size());
+		Assert.assertEquals(9, schedule2.getFacilities().size());
 	}
 }
