@@ -26,7 +26,6 @@ import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
-import org.matsim.pt2matsim.osm.OsmMultimodalNetworkConverter;
 import org.matsim.pt2matsim.osm.lib.Osm;
 import org.matsim.pt2matsim.osm.lib.PositiveTagFilter;
 
@@ -36,12 +35,19 @@ import java.util.Set;
 
 
 /**
- * Config group for osm conversion {@link OsmMultimodalNetworkConverter}
+ * Config group for osm conversion {@link org.matsim.pt2matsim.osm.OsmMultimodalNetworkConverter}
  *
  * @author polettif
  */
 public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 
+	// constant values used in converter
+	public static final String LINK_ATTRIBUTE_WAY_ID = "osm:way:id";
+	public static final String LINK_ATTRIBUTE_WAY_PREFIX = "osm:way:";
+	public static final String LINK_ATTRIBUTE_RELATION_ROUTE = "osm:relation:route";
+	public static final String LINK_ATTRIBUTE_RELATION_ROUTE_MASTER = "osm:relation:route_master";
+
+	// actual config values
 	public static final String GROUP_NAME = "OsmConverter";
 
 	private static final String OSM_FILE ="osmFile";
