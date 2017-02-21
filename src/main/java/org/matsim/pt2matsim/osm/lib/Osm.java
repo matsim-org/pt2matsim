@@ -22,6 +22,7 @@ import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Identifiable;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -136,6 +137,21 @@ public final class Osm {
 		public final static String ONEWAY = "oneway";
 		public final static String ACCESS = "access";
 		public static final String PSV = "psv";
+
+		// rarely used
+		public static final String TYPE = "type";
+		public static final String NETWORK = "network";
+		public static final String VEHICLE = "vehicle";
+		public static final String TUNNEL = "tunnel";
+		public static final String TRAFFIC_CALMING = "traffic_calming";
+		public static final String PASSING_PLACES = "passing_places";
+		public static final String MOTORCYCLE = "motorcycle";
+		public static final String FOOTWAY = "footway";
+		public static final String CROSSING = "crossing";
+
+		public static final List<String> DEFAULT_KEYS = Arrays.asList(
+				NAME, ROUTE, ROUTE_MASTER, PUBLIC_TRANSPORT, RAILWAY, HIGHWAY, SERVICE, LANES, JUNCTION, ONEWAY, ACCESS, PSV,
+				TYPE, NETWORK, VEHICLE, TUNNEL, TRAFFIC_CALMING, PASSING_PLACES, MOTORCYCLE, FOOTWAY, CROSSING);
 	}
 
 	/**

@@ -28,7 +28,7 @@ public class OsmMultimodalNetworkConverterTest {
 		new OsmFileReader(osm).readFile(osmConfig.getOsmFile());
 
 		// convert
-		OsmMultimodalNetworkConverterAttr converter = new OsmMultimodalNetworkConverterAttr(osm);
+		OsmMultimodalNetworkConverter converter = new OsmMultimodalNetworkConverter(osm);
 		converter.convert(osmConfig);
 
 		// write file

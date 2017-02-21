@@ -17,7 +17,7 @@ import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.PTMapper;
 import org.matsim.pt2matsim.mapping.PTMapperImpl;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWithShapes;
-import org.matsim.pt2matsim.osm.OsmMultimodalNetworkConverterAttr;
+import org.matsim.pt2matsim.osm.OsmMultimodalNetworkConverter;
 import org.matsim.pt2matsim.osm.lib.OsmData;
 import org.matsim.pt2matsim.osm.lib.OsmDataImpl;
 import org.matsim.pt2matsim.osm.lib.OsmFileReader;
@@ -65,7 +65,7 @@ public class ZVVTest {
 
 		OsmData osm = new OsmDataImpl();
 		new OsmFileReader(osm).readFile(osmName);
-		OsmMultimodalNetworkConverterAttr osmConverter = new OsmMultimodalNetworkConverterAttr(osm);
+		OsmMultimodalNetworkConverter osmConverter = new OsmMultimodalNetworkConverter(osm);
 		osmConverter.convert(osmConfig);
 		NetworkTools.writeNetwork(osmConverter.getNetwork(), inputNetworkFile);
 

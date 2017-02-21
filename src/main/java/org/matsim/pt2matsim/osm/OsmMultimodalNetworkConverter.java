@@ -27,7 +27,6 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.ConfigGroup;
-import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.network.io.NetworkWriter;
 import org.matsim.core.utils.collections.CollectionUtils;
@@ -65,6 +64,10 @@ public class OsmMultimodalNetworkConverter {
 	private final Set<String> unknownWays = new HashSet<>();
 	private final Set<String> unknownMaxspeedTags = new HashSet<>();
 	private final Set<String> unknownLanesTags = new HashSet<>();
+	/**
+	 * connects osm way ids and link ids of the generated network
+	 **/
+	private final Map<Id<Link>, Id<Osm.Way>> osmIds = new HashMap<>();
 	private OsmConverterConfigGroup config;
 	private OsmData osmData;
 	private Network network;
@@ -84,6 +87,7 @@ public class OsmMultimodalNetworkConverter {
 		readWayParams();
 		convertToNetwork(transformation);
 		cleanRoadNetwork();
+		if(config.getKeepTagsAsAttributes()) addAttributes();
 	}
 
 	/**
@@ -122,12 +126,9 @@ public class OsmMultimodalNetworkConverter {
 		PositiveTagFilter serviceRailTracksFilter = new PositiveTagFilter();
 		serviceRailTracksFilter.add(Osm.ElementType.WAY, Osm.Key.SERVICE, null);
 
-
-		// transform nodes
 		for(Osm.Node node : nodes.values()) {
 			node.setCoord(transformation.transform(node.getCoord()));
 		}
-
 
 		// remove unusable ways
 		log.info("remove unusable ways...");
@@ -331,7 +332,7 @@ public class OsmMultimodalNetworkConverter {
 		// - check tag "oneway" with trunks, primary and secondary roads
 		// 		(if they are marked as such, the default number of lanes should be two instead of one)
 		if(highway != null) {
-			if(highway.equalsIgnoreCase("trunk") || highway.equalsIgnoreCase("primary") || highway.equalsIgnoreCase("secondary")) {
+			if(highway.equalsIgnoreCase(Osm.Value.TRUNK) || highway.equalsIgnoreCase(Osm.Value.PRIMARY) || highway.equalsIgnoreCase(Osm.Value.SECONDARY)) {
 				if(oneway && nofLanes == 1.0) {
 					nofLanes = 2.0;
 				}
@@ -415,8 +416,6 @@ public class OsmMultimodalNetworkConverter {
 		Id<org.matsim.api.core.v01.network.Node> fromId = Id.create(fromNode.getId(), org.matsim.api.core.v01.network.Node.class);
 		Id<org.matsim.api.core.v01.network.Node> toId = Id.create(toNode.getId(), org.matsim.api.core.v01.network.Node.class);
 		if(network.getNodes().get(fromId) != null && network.getNodes().get(toId) != null) {
-			String origId = way.getId().toString();
-
 			if(!onewayReverse) {
 				Link l = network.getFactory().createLink(Id.create(this.id, Link.class), network.getNodes().get(fromId), network.getNodes().get(toId));
 				l.setLength(length);
@@ -424,9 +423,9 @@ public class OsmMultimodalNetworkConverter {
 				l.setCapacity(capacity);
 				l.setNumberOfLanes(nofLanes);
 				l.setAllowedModes(modes);
-				NetworkUtils.setOrigId(l, origId);
 
 				network.addLink(l);
+				osmIds.put(l.getId(), way.getId());
 				this.id++;
 			}
 			if(!oneway) {
@@ -436,10 +435,61 @@ public class OsmMultimodalNetworkConverter {
 				l.setCapacity(capacity);
 				l.setNumberOfLanes(nofLanes);
 				l.setAllowedModes(modes);
-				NetworkUtils.setOrigId(l, origId);
 
 				network.addLink(l);
+				osmIds.put(l.getId(), way.getId());
 				this.id++;
+			}
+		}
+	}
+
+	/**
+	 * Adds attributes to the network link. Cannot be added directly upon link creation since we need to
+	 * clean the road network and attributes are not be copied while filtering
+	 */
+	private void addAttributes() {
+		for(Link link : this.network.getLinks().values()) {
+			Osm.Way way = osmData.getWays().get(osmIds.get(link.getId()));
+
+			// way id
+			link.getAttributes().putAttribute(OsmConverterConfigGroup.LINK_ATTRIBUTE_WAY_ID, Long.parseLong(way.getId().toString()));
+
+			// default tags
+			for(Map.Entry<String, String> t : way.getTags().entrySet()) {
+				if(Osm.Key.DEFAULT_KEYS.contains(t.getKey())) {
+					String key = OsmConverterConfigGroup.LINK_ATTRIBUTE_WAY_PREFIX + t.getKey();
+					String val = t.getValue();
+					link.getAttributes().putAttribute(key.replace("&", "AND"), val.replace("&", "AND"));
+				}
+			}
+
+			// relation info
+			for(Osm.Relation rel : way.getRelations().values()) {
+				// route
+				String route = rel.getTags().get(Osm.Key.ROUTE);
+				if(route != null) {
+					String osmRouteKey = OsmConverterConfigGroup.LINK_ATTRIBUTE_RELATION_ROUTE;
+					String attr = (String) link.getAttributes().getAttribute(osmRouteKey);
+					if(attr != null) {
+						attr += "," + route;
+					} else {
+						attr = route;
+					}
+					link.getAttributes().putAttribute(osmRouteKey, attr);
+				}
+
+				// route master
+				String route_master = rel.getTags().get(Osm.Key.ROUTE_MASTER);
+				if(route_master != null) {
+					String osmRouteMasterKey = OsmConverterConfigGroup.LINK_ATTRIBUTE_RELATION_ROUTE_MASTER;
+					String attr = (String) link.getAttributes().getAttribute(osmRouteMasterKey);
+					if(attr != null) {
+						attr += "," + route_master;
+					} else {
+						attr = route_master;
+					}
+					link.getAttributes().putAttribute(osmRouteMasterKey, attr);
+				}
 			}
 		}
 	}
