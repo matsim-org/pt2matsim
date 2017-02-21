@@ -27,6 +27,7 @@ import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.gtfs.lib.*;
+import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
@@ -141,11 +142,15 @@ public class GtfsConverter {
 			schedule.addTransitLine(transitLine);
 			counterLines++;
 
+			Map<Id<TransitRoute>, Id<RouteShape>> routeShapeAssignment = new HashMap<>();
+
 			/** [3]
 			 * loop through each trip for the gtfsRoute and generate transitRoute (if the serviceId is correct)
 			 */
 			for(Trip trip : gtfsRoute.getTrips().values()) {
 				boolean isService = false;
+
+				Id<RouteShape> shapeId = trip.hasShape() ? trip.getShape().getId() : null;
 
 				// if trip is part of used serviceId
 				for(String serviceId : serviceIdsToConvert) {
@@ -204,43 +209,40 @@ public class GtfsConverter {
 						transitLine.addRoute(transitRoute);
 						counterRoutes++;
 					} else {
+
 						/** [5.2]
 						 * Calculate departures from stopTimes
 						 */
 
-						/* if stop sequence is already used by the same transitLine: just add new departure for the
+						/* if stop sequence is already used in the same transitLine: just add new departure for the
 						 * transitRoute that uses that stop sequence
 						 */
-						boolean routeExistsInTransitLine = false;
+						boolean createNewTransitRoute = true;
+
 						for(TransitRoute currentTransitRoute : transitLine.getRoutes().values()) {
 							if(currentTransitRoute.getStops().equals(transitRouteStops)) {
-								currentTransitRoute.addDeparture(scheduleFactory.createDeparture(Id.create(departureIds.getNext(currentTransitRoute.getId()), Departure.class), Time.parseTime(timeFormat.format(startTime))));
-								routeExistsInTransitLine = true;
-								transitRoute = currentTransitRoute;
-								break;
+								if(routeShapeAssignment.get(currentTransitRoute.getId()) == shapeId) {
+									currentTransitRoute.addDeparture(scheduleFactory.createDeparture(Id.create(departureIds.getNext(currentTransitRoute.getId()), Departure.class), Time.parseTime(timeFormat.format(startTime))));
+									createNewTransitRoute = false;
+									break;
+								}
 							}
 						}
 
 						/* if stop sequence is not used yet, create a new transitRoute (with transitRouteStops)
 						 * and add the departure
 						 */
-						if(!routeExistsInTransitLine) {
+						if(createNewTransitRoute) {
 							transitRoute = scheduleFactory.createTransitRoute(Id.create(trip.getId(), TransitRoute.class), null, transitRouteStops, gtfsRoute.getRouteType().name);
-
 							transitRoute.addDeparture(scheduleFactory.createDeparture(Id.create(departureIds.getNext(transitRoute.getId()), Departure.class), Time.parseTime(timeFormat.format(startTime))));
+
+							if(shapeId != null)
+								transitRoute.setDescription(ScheduleTools.getDescriptionStrFromShapeId(trip.getShape().getId()));
+							routeShapeAssignment.put(transitRoute.getId(), shapeId);
 
 							transitLine.addRoute(transitRoute);
 							counterRoutes++;
 						}
-					}
-
-					/* Save transit route (and line) for current shape */
-					if(trip.hasShape()) {
-						// misusing the description tag since transit routes are not attributable
-						if(transitRoute.getDescription() != null && !transitRoute.getDescription().equals(ScheduleTools.getDescriptionStrFromShapeId(trip.getShape().getId()))) {
-							log.warn("Two different shape ids for transit route " + transitRoute.getId() + ": " + transitRoute.getDescription() + " & " + trip.getShape().getId());
-						}
-						transitRoute.setDescription(ScheduleTools.getDescriptionStrFromShapeId(trip.getShape().getId()));
 					}
 				}
 			} // foreach trip
