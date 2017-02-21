@@ -87,7 +87,7 @@ public class OsmMultimodalNetworkConverterAttr {
 		readWayParams();
 		convertToNetwork(transformation);
 		cleanRoadNetwork();
-		addAttributes();
+		if(config.getKeepTagsAsAttributes()) addAttributes();
 	}
 
 	/**
