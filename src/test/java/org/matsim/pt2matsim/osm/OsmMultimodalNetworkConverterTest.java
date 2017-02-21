@@ -12,21 +12,26 @@ import org.matsim.pt2matsim.tools.NetworkTools;
  */
 public class OsmMultimodalNetworkConverterTest {
 
-	private String input = "test/analysis/";
+	private String base = "test/analysis/";
 
 	@Test
 	public void convert() throws Exception {
+		// setup config
 		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.createDefaultConfig();
 		osmConfig.setOutputCoordinateSystem("EPSG:2032");
-		osmConfig.setOsmFile(input + "osm/addison.osm");
-		osmConfig.setOutputNetworkFile(input + "network/addisonAttributes.xml");
+		osmConfig.setOsmFile(base + "osm/addison.osm");
+		osmConfig.setOutputNetworkFile(base + "output/addisonAttributes.xml.gz");
 		osmConfig.setMaxLinkLength(20);
 
+		// read osm file
 		OsmData osm = new OsmDataImpl();
 		new OsmFileReader(osm).readFile(osmConfig.getOsmFile());
 
+		// convert
 		OsmMultimodalNetworkConverterAttr converter = new OsmMultimodalNetworkConverterAttr(osm);
 		converter.convert(osmConfig);
+
+		// write file
 		NetworkTools.writeNetwork(converter.getNetwork(), osmConfig.getOutputNetworkFile());
 	}
 
