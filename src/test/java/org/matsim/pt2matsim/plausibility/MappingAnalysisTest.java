@@ -26,7 +26,7 @@ import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
-import org.matsim.pt2matsim.mapping.PTMapperImpl;
+import org.matsim.pt2matsim.mapping.PTMapper;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ShapeTools;
@@ -86,7 +86,7 @@ public class MappingAnalysisTest {
 	public void runMapping() {
 		PublicTransitMappingConfigGroup ptmConfig = PublicTransitMappingConfigGroup.createDefaultConfig();
 
-		new PTMapperImpl(ptmConfig, schedule, network).run();
+		new PTMapper(ptmConfig, schedule, network).run();
 
 		NetworkTools.writeNetwork(network, input+"output/addison_network.xml.gz");
 		ScheduleTools.writeTransitSchedule(schedule, input+"output/addison_schedule.xml.gz");

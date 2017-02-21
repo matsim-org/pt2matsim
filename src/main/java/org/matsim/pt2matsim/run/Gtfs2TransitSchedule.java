@@ -59,18 +59,13 @@ public final class Gtfs2TransitSchedule {
 	 *              [2] the output coordinate system. Use WGS84 for no transformation.<br/>
 	 *              [3] output transit schedule file
 	 *              [4] output default vehicles file (optional)
-	 *              [5] output shape reference file, CSV file that references transit routes and shapes. Can
-	 *              	be used by certain PTMapper implementations and MappingAnalysis (optional)
-	 *
 	 * Calls {@link #run}.
 	 */
 	public static void main(final String[] args) {
-		if(args.length == 6) {
-			run(args[0], args[1], args[2], args[3], args[4], args[5]);
-		} else if(args.length == 5) {
-			run(args[0], args[1], args[2], args[3], args[4], null);
+		if(args.length == 5) {
+			run(args[0], args[1], args[2], args[3], args[4]);
 		} else if(args.length == 4) {
-			run(args[0], args[1], args[2], args[3], null, null);
+			run(args[0], args[1], args[2], args[3], null);
 		} else {
 			throw new IllegalArgumentException("Wrong number of input arguments.");
 		}
@@ -93,10 +88,8 @@ public final class Gtfs2TransitSchedule {
 	 * @param outputCoordinateSystem 	the output coordinate system. Use WGS84 for no transformation.
 	 * @param scheduleFile              output transit schedule file
 	 * @param vehicleFile               output default vehicles file (optional)
-	 * @param transitRouteShapeRefFile  output route shape reference file. shape files. CSV file
-	 *                                  that references transit routes and shapes (optional)
 	 */
-	public static void run(String gtfsFolder, String sampleDayParam, String outputCoordinateSystem, String scheduleFile, String vehicleFile, String transitRouteShapeRefFile) {
+	public static void run(String gtfsFolder, String sampleDayParam, String outputCoordinateSystem, String scheduleFile, String vehicleFile) {
 		Logger.getLogger(MGC.class).setLevel(Level.ERROR);
 
 		// check sample day parameter
@@ -118,18 +111,6 @@ public final class Gtfs2TransitSchedule {
 		if(vehicleFile != null) {
 			ScheduleTools.writeVehicles(converter.getVehicles(), vehicleFile);
 		}
-		/*
-		if(transitRouteShapeRefFile != null) {
-			try {
-				MGC.getCRS(outputCoordinateSystem);
-			} catch (Exception e) {
-				authExists = false;
-				log.warn("Code " + outputCoordinateSystem + " not recognized by geotools. Shapefile not written.");
-			}
-			if(authExists)
-				converter.getShapedTransitSchedule().getTransitRouteShapeReference().writeToFile(transitRouteShapeRefFile);
-		}
-		*/
 	}
 
 	/**

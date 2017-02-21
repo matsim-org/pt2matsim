@@ -15,7 +15,6 @@ import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.PTMapper;
-import org.matsim.pt2matsim.mapping.PTMapperImpl;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWithShapes;
 import org.matsim.pt2matsim.osm.OsmMultimodalNetworkConverter;
 import org.matsim.pt2matsim.osm.lib.OsmData;
@@ -31,7 +30,7 @@ import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 import java.util.HashSet;
 import java.util.Map;
 
-import static org.matsim.pt2matsim.mapping.PTMapperImplShapesTest.createPTMConfig;
+import static org.matsim.pt2matsim.mapping.PTMapperShapesTest.createPTMConfig;
 
 /**
  * @author polettif
@@ -95,7 +94,7 @@ public class ZVVTest {
 		PublicTransitMappingConfigGroup config = createPTMConfig();
 		Map<Id<RouteShape>, RouteShape> shapes = ShapeTools.readShapesFile(gtfsShapeFile, coordSys);
 
-		PTMapper ptMapper = new PTMapperImpl(config, schedule, network, new ScheduleRoutersWithShapes(config, schedule, network, shapes));
+		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersWithShapes(config, schedule, network, shapes));
 		ptMapper.run();
 
 		NetworkTools.writeNetwork(network, outputNetwork1);

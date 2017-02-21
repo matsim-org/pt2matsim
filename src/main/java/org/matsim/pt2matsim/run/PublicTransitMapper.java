@@ -26,7 +26,7 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
-import org.matsim.pt2matsim.mapping.PTMapperImpl;
+import org.matsim.pt2matsim.mapping.PTMapper;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
@@ -35,11 +35,14 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
  * of public transit mapping via config file path.
  *
  * Currently redirects to the only implementation
- * {@link PTMapperImpl}.
+ * {@link PTMapper}.
  *
  * @author polettif
  */
 public final class PublicTransitMapper {
+
+	private PublicTransitMapper() {
+	}
 
 	/**
 	 * Routes the unmapped MATSim Transit Schedule to the network using the file
@@ -71,8 +74,6 @@ public final class PublicTransitMapper {
 		TransitSchedule schedule = config.getScheduleFile() == null ? null : ScheduleTools.readTransitSchedule(config.getScheduleFile());
 		Network network = config.getNetworkFile() == null ? null : NetworkTools.readNetwork(config.getNetworkFile());
 
-		new PTMapperImpl(config, schedule, network).run();
+		new PTMapper(config, schedule, network).run();
 	}
-
-	private PublicTransitMapper() {}
 }

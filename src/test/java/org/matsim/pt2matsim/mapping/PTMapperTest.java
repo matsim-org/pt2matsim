@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * @author polettif
  */
-public class PTMapperImplTest {
+public class PTMapperTest {
 
 	public Network network;
 	public TransitSchedule schedule;
@@ -56,7 +56,7 @@ public class PTMapperImplTest {
 		ScheduleCleaner.removeMapping(schedule);
 		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
 
-		new PTMapperImpl(ptmConfig, schedule, network).run();
+		new PTMapper(ptmConfig, schedule, network).run();
 
 //		NetworkTools.writeNetwork(network, "test/simple/outputNetwork.xml");
 //		ScheduleTools.writeTransitSchedule(schedule, "test/simple/outpuSchedule.xml");
@@ -103,7 +103,7 @@ public class PTMapperImplTest {
 		ScheduleCleaner.combineChildStopsToParentStop(schedule2);
 		ScheduleCleaner.removeMapping(schedule2);
 		ScheduleCleaner.removeNotUsedStopFacilities(schedule2);
-		new PTMapperImpl(ptmConfig2, schedule2, network2).run();
+		new PTMapper(ptmConfig2, schedule2, network2).run();
 
 		// 1 loop link, 3 artificial links
 		Assert.assertEquals(NetworkToolsTest.initNetwork().getLinks().size()+4, network2.getLinks().size());
