@@ -52,7 +52,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private static final String MODES_TO_KEEP_ON_CLEAN_UP = "modesToKeepOnCleanUp";
 	private static final String NODE_SEARCH_RADIUS = "nodeSearchRadius";
 	private static final String TRAVEL_COST_TYPE = "travelCostType";
-	//	private static final String PREFIX_ARTIFICIAL = "prefixArtificial";
 	private static final String MAX_TRAVEL_COST_FACTOR = "maxTravelCostFactor";
 	private static final String NETWORK_FILE = "networkFile";
 	private static final String SCHEDULE_FILE = "scheduleFile";
@@ -75,7 +74,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private Set<String> modesToKeepOnCleanUp = new HashSet<>();
 	private double maxTravelCostFactor = 5.0;
 	private String manualLinkCandidateCsvFile = null;
-	//	private String prefixArtificial = "pt_";
 	private int numOfThreads = 2;
 	private double nodeSearchRadius = 500;
 	private boolean removeNotUsedStopFacilities = true;
@@ -137,8 +135,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		map.put(NODE_SEARCH_RADIUS,
 				"Defines the radius [meter] from a stop facility within nodes are searched. Values up to 2000 don't \n" +
 						"\t\thave any significant impact on performance.");
-//		map.put(PREFIX_ARTIFICIAL,
-//				"ID prefix used for all artificial links and nodes created during mapping.");
 		map.put(SCHEDULE_FREESPEED_MODES,
 				"After the schedule has been mapped, the free speed of links can be set according to the necessary travel \n" +
 						"\t\ttimes given by the transit schedule. The freespeed of a link is set to the minimal value needed by all \n" +
@@ -279,6 +275,10 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		return this.modesToKeepOnCleanUp;
 	}
 
+	public void setModesToKeepOnCleanUp(Set<String> modesToKeepOnCleanUp) {
+		this.modesToKeepOnCleanUp = modesToKeepOnCleanUp;
+	}
+
 	@StringSetter(MODES_TO_KEEP_ON_CLEAN_UP)
 	private void setModesToKeepOnCleanUp(String modesToKeepOnCleanUp) {
 		if(modesToKeepOnCleanUp == null) {
@@ -288,10 +288,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		for(String mode : modesToKeepOnCleanUp.split(",")) {
 			this.modesToKeepOnCleanUp.add(mode.trim());
 		}
-	}
-
-	public void setModesToKeepOnCleanUp(Set<String> modesToKeepOnCleanUp) {
-		this.modesToKeepOnCleanUp = modesToKeepOnCleanUp;
 	}
 
 	@StringGetter(MODES_TO_KEEP_ON_CLEAN_UP)
@@ -391,19 +387,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	}
 
 
-	/**
-	 * ID prefix used for artificial links and nodes created if no nodes
-	 * are found within nodeSearchRadius
-	 */
-//	@StringGetter(PREFIX_ARTIFICIAL)
-//	public String getPrefixArtificial() {
-//		return prefixArtificial;
-//	}
-//
-//	@StringSetter(PREFIX_ARTIFICIAL)
-//	public void setPrefixArtificial(String prefixArtificial) {
-//		this.prefixArtificial = prefixArtificial;
-//	}
 	@StringSetter(MAX_TRAVEL_COST_FACTOR)
 	public void setMaxTravelCostFactor(double maxTravelCostFactor) {
 		if(maxTravelCostFactor < 1) {

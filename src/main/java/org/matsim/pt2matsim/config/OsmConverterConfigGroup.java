@@ -51,6 +51,7 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	private static final String MAX_LINK_LENGTH = "maxLinkLength";
 	private static final String SCALE_MAX_SPEED = "scaleMaxSpeed";
 	private static final String GUESS_FREE_SPEED = "guessFreeSpeed";
+	private static final String KEEP_TAGS_AS_ATTRIBUTES = "keepTagsAsAttributes";
 
 	private String osmFile;
 	private String outputNetworkFile;
@@ -61,11 +62,47 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	private boolean keepPaths = false;
 	private boolean scaleMaxSpeed = false;
 	private boolean guessFreeSpeed = false;
+	private boolean keepTagsAsAttributes = true;
+
+	public OsmConverterConfigGroup() {
+		super(GROUP_NAME);
+	}
+
+	/**
+	 * @return A new default OsmConverter config
+	 */
+	public static OsmConverterConfigGroup createDefaultConfig() {
+		Set<String> carSingleton = Collections.singleton("car");
+		Set<String> railSingleton = Collections.singleton("rail");
+
+		OsmConverterConfigGroup defaultConfig = new OsmConverterConfigGroup();
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MOTORWAY, 2, 120.0 / 3.6, 1.0, 2000, true, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MOTORWAY, 2, 120.0 / 3.6, 1.0, 2000, true, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MOTORWAY_LINK, 1, 80.0 / 3.6, 1.0, 1500, true, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.TRUNK, 1, 80.0 / 3.6, 1.0, 2000, false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.TRUNK_LINK, 1, 50.0 / 3.6, 1.0, 1500, false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.PRIMARY, 1, 80.0 / 3.6, 1.0, 1500, false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.PRIMARY_LINK, 1, 60.0 / 3.6, 1.0, 1500, false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.SECONDARY, 1, 60.0 / 3.6, 1.0, 1000, false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.TERTIARY, 1, 50.0 / 3.6, 1.0, 600, false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MINOR, 1, 40.0 / 3.6, 1.0, 600, false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.UNCLASSIFIED, 1, 50.0 / 3.6, 1.0, 600, false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.RESIDENTIAL, 1, 30.0 / 3.6, 1.0, 600, false, carSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.LIVING_STREET, 1, 15.0 / 3.6, 1.0, 300, false, carSingleton));
+//		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.SERVICE,		Osm.Key.HIGHWAY, 1, 15.0 / 3.6, 1.0, 200, 	false, carSingleton));
+
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.RAIL, 1, 160.0 / 3.6, 1.0, 9999, false, railSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.TRAM, 1, 40.0 / 3.6, 1.0, 9999, true, railSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.LIGHT_RAIL, 1, 80.0 / 3.6, 1.0, 9999, false, railSingleton));
+
+		return defaultConfig;
+	}
 
 	@StringGetter(OSM_FILE)
 	public String getOsmFile() {
 		return osmFile;
 	}
+
 	@StringSetter(OSM_FILE)
 	public void setOsmFile(String osmFile) {
 		this.osmFile = osmFile;
@@ -75,6 +112,7 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	public boolean getKeepPaths() {
 		return keepPaths;
 	}
+
 	@StringSetter(KEEP_PATHS)
 	public void setKeepPaths(boolean keepPaths) {
 		this.keepPaths = keepPaths;
@@ -84,6 +122,7 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	public boolean getGuessFreeSpeed() {
 		return guessFreeSpeed;
 	}
+
 	@StringSetter(GUESS_FREE_SPEED)
 	public void setGuessFreeSpeed(boolean guessFreeSpeed) {
 		this.guessFreeSpeed = guessFreeSpeed;
@@ -93,6 +132,7 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	public double getMaxLinkLength() {
 		return maxLinkLength;
 	}
+
 	@StringSetter(MAX_LINK_LENGTH)
 	public void setMaxLinkLength(double maxLinkLength) {
 		this.maxLinkLength = maxLinkLength;
@@ -102,34 +142,43 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	public boolean getScaleMaxSpeed() {
 		return scaleMaxSpeed;
 	}
+
 	@StringSetter(SCALE_MAX_SPEED)
 	public void setScaleMaxSpeed(boolean scaleMaxSpeed) {
 		this.scaleMaxSpeed = scaleMaxSpeed;
 	}
 
+	@StringGetter(KEEP_TAGS_AS_ATTRIBUTES)
+	public boolean getKeepTagsAsAttributes() {
+		return keepTagsAsAttributes;
+	}
+
+	@StringSetter(KEEP_TAGS_AS_ATTRIBUTES)
+	public void setKeepTagsAsAttributes(boolean v) {
+		this.keepTagsAsAttributes = v;
+	}
 
 	@StringGetter(OUTPUT_NETWORK_FILE)
 	public String getOutputNetworkFile() {
 		return outputNetworkFile;
 	}
+
 	@StringSetter(OUTPUT_NETWORK_FILE)
 	public void setOutputNetworkFile(String outputNetworkFile) {
 		this.outputNetworkFile = outputNetworkFile;
 	}
+
 	@StringGetter(OUTPUT_COORDINATE_SYSTEM)
 	public String getOutputCoordinateSystem() {
 		return outputCoordinateSystem;
 	}
+
 	@StringSetter(OUTPUT_COORDINATE_SYSTEM)
 	public void setOutputCoordinateSystem(String outputCoordinateSystem) {
 		if(outputCoordinateSystem != null) {
 			this.outputCoordinateSystem = outputCoordinateSystem;
 			this.coordinateTransformation = TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem);
 		}
-	}
-
-	public OsmConverterConfigGroup() {
-		super(GROUP_NAME);
 	}
 
 	@Override
@@ -146,6 +195,8 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 				"\t\tDefaults to <code>false</code>.");
 		map.put(GUESS_FREE_SPEED,
 				"If true: The first two digits of the maxspeed tag are used if it cannot be parsed (e.g. \"50; 80\" or similar).");
+		map.put(KEEP_TAGS_AS_ATTRIBUTES,
+				"If true: The osm tags for ways and containing relations are saved as link attributes in the network. Increases filesize. Default: true.");
 		map.put(SCALE_MAX_SPEED,
 				"In case the speed limit allowed does not represent the speed a vehicle can actually realize, e.g. by constrains of\n" +
 				"\t\ttraffic lights not explicitly modeled, a kind of \"average simulated speed\" can be used.\n" +
@@ -155,36 +206,6 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 
 	public CoordinateTransformation getCoordinateTransformation() {
 		return this.coordinateTransformation;
-	}
-
-	/**
-	 * @return A new default OsmConverter config
-	 */
-	public static OsmConverterConfigGroup createDefaultConfig() {
-		Set<String> carSingleton = Collections.singleton("car");
-		Set<String> railSingleton = Collections.singleton("rail");
-
-		OsmConverterConfigGroup defaultConfig = new OsmConverterConfigGroup();
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MOTORWAY, 2, 120.0 / 3.6, 1.0, 2000, 	true, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MOTORWAY, 2, 120.0 / 3.6, 1.0, 2000, 	true, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MOTORWAY_LINK, 1, 80.0 / 3.6, 1.0, 1500, 	true, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.TRUNK, 1, 80.0 / 3.6, 1.0, 2000, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.TRUNK_LINK, 1, 50.0 / 3.6, 1.0, 1500, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.PRIMARY, 1, 80.0 / 3.6, 1.0, 1500, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.PRIMARY_LINK, 1, 60.0 / 3.6, 1.0, 1500, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.SECONDARY, 1, 60.0 / 3.6, 1.0, 1000, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.TERTIARY, 1, 50.0 / 3.6, 1.0, 600, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MINOR, 1, 40.0 / 3.6, 1.0, 600, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.UNCLASSIFIED, 1, 50.0 / 3.6, 1.0, 600, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.RESIDENTIAL, 1, 30.0 / 3.6, 1.0, 600, 	false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.LIVING_STREET, 1, 15.0 / 3.6, 1.0, 300, 	false, carSingleton));
-//		defaultConfig.addParameterSet(new OsmWayParams(OsmValue.SERVICE,		Osm.Key.HIGHWAY, 1, 15.0 / 3.6, 1.0, 200, 	false, carSingleton));
-
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.RAIL, 1, 160.0 / 3.6, 1.0, 9999, false, railSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.TRAM, 1, 40.0 / 3.6, 1.0, 9999, true, railSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.LIGHT_RAIL, 1, 80.0 / 3.6, 1.0, 9999, false, railSingleton));
-
-		return defaultConfig;
 	}
 
 	@Override
