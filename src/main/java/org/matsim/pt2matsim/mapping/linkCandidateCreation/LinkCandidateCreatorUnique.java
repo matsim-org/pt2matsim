@@ -29,9 +29,9 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
-import org.matsim.pt2matsim.mapping.UtilsPTMapper;
 import org.matsim.pt2matsim.tools.MiscUtils;
 import org.matsim.pt2matsim.tools.NetworkTools;
+import org.matsim.pt2matsim.tools.PTMapperTools;
 
 import java.util.*;
 
@@ -118,7 +118,7 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 					/**
 					 * Separate links that belong to two subsequent stops
 					 */
-					UtilsPTMapper.separateLinks(currentStopFacility.getCoord(), currentLinks, previousStopFacility.getCoord(), previousLinks);
+					PTMapperTools.separateLinks(currentStopFacility.getCoord(), currentLinks, previousStopFacility.getCoord(), previousLinks);
 
 					candidates.put(getKey(transitLine, transitRoute, previousRouteStop), previousLinks);
 					candidates.put(getKey(transitLine, transitRoute, currentRouteStop), currentLinks);

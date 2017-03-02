@@ -18,13 +18,10 @@
 
 package org.matsim.pt2matsim.mapping.pseudoRouter;
 
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.pt2matsim.mapping.PseudoRouting;
-
-import java.util.Set;
 
 /**
  * Container class for artificial links created
@@ -38,15 +35,4 @@ public interface ArtificialLink extends Link {
 
 	Id<Node> getFromNodeId();
 
-	Coord getFromNodeCoord();
-
-	Coord getToNodeCoord();
-
-	double getFreespeed();
-
-	double getLength();
-
-	double getCapacity();
-
-	Set<String> getAllowedModes();
 }

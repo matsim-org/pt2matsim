@@ -22,7 +22,6 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.router.util.LeastCostPathCalculator;
-import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
@@ -33,7 +32,10 @@ import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.pseudoRouter.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Generates and calculates the pseudoRoutes for all the queued
@@ -56,7 +58,6 @@ public class PseudoRoutingImpl implements PseudoRouting {
 	private final List<TransitLine> queue = new ArrayList<>();
 
 	private final Set<ArtificialLink> necessaryArtificialLinks = new HashSet<>();
-	private final Map<Tuple<LinkCandidate, LinkCandidate>, ArtificialLink> allPossibleArtificialLinks = new HashMap<>();
 
 	private final PseudoSchedule threadPseudoSchedule = new PseudoScheduleImpl();
 
@@ -208,20 +209,8 @@ public class PseudoRoutingImpl implements PseudoRouting {
 	public void addArtificialLinks(Network network) {
 		for(ArtificialLink a : necessaryArtificialLinks) {
 			if(!network.getLinks().containsKey(a.getId())) {
-				Link l = network.getFactory().createLink(a.getId(), a.getFromNode(), a.getToNode());
-				l.setAllowedModes(a.getAllowedModes());
-				l.setCapacity(a.getCapacity());
-				l.setFreespeed(a.getFreespeed());
-				l.setNumberOfLanes(a.getNumberOfLanes());
-				network.addLink(l);
-			}
-
-			// TODO use this when network writer doesn't need LinkImpl
-			/*
-			if(!network.getLinks().containsKey(a.getId())) {
 				network.addLink(a);
 			}
-			*/
 		}
 	}
 

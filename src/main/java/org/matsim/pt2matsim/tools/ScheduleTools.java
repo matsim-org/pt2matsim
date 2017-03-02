@@ -36,7 +36,6 @@ import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.lib.RouteShape;
-import org.matsim.pt2matsim.mapping.UtilsPTMapper;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.vehicles.*;
@@ -278,7 +277,7 @@ public final class ScheduleTools {
 
 						List<Id<Link>> path = null;
 						if(leastCostPath != null) {
-							path = UtilsPTMapper.getLinkIdsFromPath(leastCostPath);
+							path = PTMapperTools.getLinkIdsFromPath(leastCostPath);
 						}
 
 						if(path != null)
@@ -500,5 +499,83 @@ public final class ScheduleTools {
 			String[] shapeIdSplit = transitRouteDescription.split(PublicTransitMappingStrings.DESCR_SHAPE_ID_PREFIX);
 			return Id.create(shapeIdSplit[1], RouteShape.class);
 		}
+	}
+
+	/**
+	 * Changes the free speed of links based on the necessary travel times
+	 * given by the schedule. Rather experimental and only recommended for
+	 * artificial and possibly rail links.
+	 */
+	public static void setFreeSpeedBasedOnSchedule(Network network, TransitSchedule schedule, Set<String> networkModes) {
+		Map<Id<Link>, Double> necessaryMinSpeeds = new HashMap<>();
+
+		for(TransitLine transitLine : schedule.getTransitLines().values()) {
+			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
+				List<Id<Link>> linkIds = getTransitRouteLinkIds(transitRoute);
+
+				Iterator<TransitRouteStop> stopsIterator = transitRoute.getStops().iterator();
+				List<Link> links = NetworkTools.getLinksFromIds(network, linkIds);
+
+				List<Id<Link>> linkIdsUpToCurrentStop = new ArrayList<>();
+				TransitRouteStop previousStop = stopsIterator.next();
+				TransitRouteStop nextStop = stopsIterator.next();
+				double lengthUpToCurrentStop = 0;
+				double departTime = previousStop.getDepartureOffset();
+
+				for(int i = 0; i < links.size() - 2; i++) {
+					Link linkFrom = links.get(i);
+					Link linkTo = links.get(i + 1);
+
+					linkIdsUpToCurrentStop.add(linkFrom.getId());
+
+					// get schedule travel time and necessary freespeed
+					lengthUpToCurrentStop += linkFrom.getLength();
+					if(nextStop.getStopFacility().getLinkId().equals(linkTo.getId())) {
+						double ttSchedule = nextStop.getArrivalOffset() - departTime;
+						double theoreticalMinSpeed = (lengthUpToCurrentStop / ttSchedule) * 1.02;
+
+						for(Id<Link> linkId : linkIdsUpToCurrentStop) {
+							double setMinSpeed = MapUtils.getDouble(linkId, necessaryMinSpeeds, 0);
+							if(theoreticalMinSpeed > setMinSpeed) {
+								necessaryMinSpeeds.put(linkId, theoreticalMinSpeed);
+							}
+						}
+
+						// reset
+						lengthUpToCurrentStop = 0;
+						linkIdsUpToCurrentStop = new ArrayList<>();
+						previousStop = nextStop;
+						departTime = previousStop.getDepartureOffset();
+						if(!nextStop.equals(transitRoute.getStops().get(transitRoute.getStops().size() - 1))) {
+							nextStop = stopsIterator.next();
+						}
+					}
+				}
+			}
+		}
+
+		for(Link link : network.getLinks().values()) {
+			if(MiscUtils.setsShareMinOneStringEntry(link.getAllowedModes(), networkModes)) {
+				if(necessaryMinSpeeds.containsKey(link.getId())) {
+					double necessaryMinSpeed = necessaryMinSpeeds.get(link.getId());
+					if(necessaryMinSpeed > link.getFreespeed()) {
+						link.setFreespeed(Math.ceil(necessaryMinSpeed));
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * @return true if the stop facility ids contain the child stop string ".link:"
+	 * which might lead to problems during mapping
+	 */
+	public static boolean idsContainChildStopString(TransitSchedule schedule) {
+		for(TransitStopFacility stopFacility : schedule.getFacilities().values()) {
+			if(getParentId(stopFacility.getId().toString()).length() != stopFacility.getId().toString().length()) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

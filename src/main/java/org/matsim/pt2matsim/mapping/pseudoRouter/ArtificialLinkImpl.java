@@ -37,23 +37,20 @@ public class ArtificialLinkImpl implements ArtificialLink {
 	private final Id<Link> id;
 	private final Id<Node> fromNodeId;
 	private final Id<Node> toNodeId;
-	private final Coord fromNodeCoord;
-	private final Coord toNodeCoord;
-	private final double freespeed;
-	private final double linkLength;
-	private final double capacity = 9999;
-	private final Set<String> transportModes = PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE_AS_SET;
-
 	private final Node fromNode;
 	private final Node toNode;
-	private final double numberOfLanes;
+	private double freespeed;
+	private double linkLength;
+	private double numberOfLanes;
+	private double capacity = 9999;
+	private Set<String> transportModes = PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE_AS_SET;
+
+	private Attributes attributes = new Attributes();
 
 	public ArtificialLinkImpl(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, double freespeed, double linklength) {
 		this.id = ScheduleTools.createArtificialLinkId(fromLinkCandidate, toLinkCandidate);
 		this.fromNodeId = fromLinkCandidate.getToNodeId();
 		this.toNodeId = toLinkCandidate.getFromNodeId();
-		this.fromNodeCoord = fromLinkCandidate.getToNodeCoord();
-		this.toNodeCoord = toLinkCandidate.getFromNodeCoord();
 		this.freespeed = freespeed;
 		this.linkLength = linklength;
 
@@ -84,7 +81,7 @@ public class ArtificialLinkImpl implements ArtificialLink {
 
 	@Override
 	public void setCapacity(double capacity) {
-
+		this.capacity = capacity;
 	}
 
 	@Override
@@ -99,7 +96,7 @@ public class ArtificialLinkImpl implements ArtificialLink {
 
 	@Override
 	public void setAllowedModes(Set<String> modes) {
-
+		this.transportModes = modes;
 	}
 
 	@Override
@@ -123,23 +120,13 @@ public class ArtificialLinkImpl implements ArtificialLink {
 	}
 
 	@Override
-	public Coord getFromNodeCoord() {
-		return fromNodeCoord;
-	}
-
-	@Override
-	public Coord getToNodeCoord() {
-		return toNodeCoord;
-	}
-
-	@Override
 	public double getFreespeed() {
 		return freespeed;
 	}
 
 	@Override
 	public void setFreespeed(double freespeed) {
-
+		this.freespeed = freespeed;
 	}
 
 	@Override
@@ -153,13 +140,19 @@ public class ArtificialLinkImpl implements ArtificialLink {
 	//
 	//
 	@Override
+	public Attributes getAttributes() {
+		return attributes;
+	}
+
+	@Override
 	public Id<Link> getId() {
 		return id;
 	}
 
+
 	@Override
-	public boolean setFromNode(Node node) {
-		throw new IllegalAccessError();
+	public Node getToNode() {
+		return toNode;
 	}
 
 	@Override
@@ -168,14 +161,15 @@ public class ArtificialLinkImpl implements ArtificialLink {
 	}
 
 	@Override
-	public Node getToNode() {
-		return toNode;
-	}
-
-	@Override
 	public Node getFromNode() {
 		return fromNode;
 	}
+
+	@Override
+	public boolean setFromNode(Node node) {
+		throw new IllegalAccessError();
+	}
+
 
 	@Override
 	public double getLength() {
@@ -184,7 +178,7 @@ public class ArtificialLinkImpl implements ArtificialLink {
 
 	@Override
 	public void setLength(double length) {
-
+		this.linkLength = length;
 	}
 
 	@Override
@@ -194,7 +188,7 @@ public class ArtificialLinkImpl implements ArtificialLink {
 
 	@Override
 	public void setNumberOfLanes(double lanes) {
-
+		this.numberOfLanes = lanes;
 	}
 
 	@Override
@@ -205,11 +199,6 @@ public class ArtificialLinkImpl implements ArtificialLink {
 	@Override
 	public int hashCode() {
 		return (fromNodeId.toString() + toNodeId.toString() + freespeed + linkLength).hashCode();
-	}
-
-	@Override
-	public Attributes getAttributes() {
-		return null;
 	}
 
 	@Override

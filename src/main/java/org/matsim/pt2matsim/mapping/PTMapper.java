@@ -43,6 +43,7 @@ import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoSchedule;
 import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoScheduleImpl;
 import org.matsim.pt2matsim.plausibility.StopFacilityHistogram;
 import org.matsim.pt2matsim.tools.NetworkTools;
+import org.matsim.pt2matsim.tools.PTMapperTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 
@@ -123,7 +124,7 @@ public class PTMapper {
 			throw new RuntimeException("No network defined!");
 		}
 
-		if(UtilsPTMapper.idsContainChildStopString(schedule)) {
+		if(ScheduleTools.idsContainChildStopString(schedule)) {
 			throw new RuntimeException("Some stopFacility ids contain the string \"" + PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES + "\"! Schedule cannot be mapped.");
 		}
 
@@ -235,7 +236,7 @@ public class PTMapper {
 		log.info("Pulling child stop facilities...");
 		int nPulled = 1;
 		while(nPulled != 0) {
-			nPulled = UtilsPTMapper.pullChildStopFacilitiesTogether(this.schedule, this.network);
+			nPulled = PTMapperTools.pullChildStopFacilitiesTogether(this.schedule, this.network);
 		}
 
 		/** [7]
@@ -276,7 +277,7 @@ public class PTMapper {
 		NetworkTools.resetLinkLength(network, PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE);
 
 		// changing the freespeed of the artificial links (value is used in simulations)
-		UtilsPTMapper.setFreeSpeedBasedOnSchedule(network, schedule, config.getScheduleFreespeedModes());
+		ScheduleTools.setFreeSpeedBasedOnSchedule(network, schedule, config.getScheduleFreespeedModes());
 
 		// Remove unnecessary parts of schedule
 		ScheduleCleaner.removeNotUsedTransitLinks(schedule, network, config.getModesToKeepOnCleanUp(), true);

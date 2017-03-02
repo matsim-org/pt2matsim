@@ -32,9 +32,9 @@ import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
-import org.matsim.pt2matsim.mapping.UtilsPTMapper;
 import org.matsim.pt2matsim.mapping.networkRouter.Router;
 import org.matsim.pt2matsim.tools.NetworkTools;
+import org.matsim.pt2matsim.tools.PTMapperTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
 import java.io.FileReader;
@@ -50,21 +50,6 @@ import java.util.stream.Collectors;
  */
 public class BasicScheduleEditor implements ScheduleEditor {
 
-	protected static Logger log = Logger.getLogger(RunScheduleEditor.class);
-
-	// fields
-	private final Network network;
-	private final TransitSchedule schedule;
-	private final TransitScheduleFactory scheduleFactory;
-	private final NetworkFactory networkFactory;
-
-	private final Map<String, Router> routers;
-
-	private final ParentStops parentStops;
-
-	private static final String SUFFIX_PATTERN = PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES_REGEX;
-	private static final String SUFFIX = PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES;
-
 	// commands
 	public static final String RR_VIA_LINK = "rerouteViaLink";
 	public static final String RR_FROM_STOP = "rerouteFromStop";
@@ -72,8 +57,17 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	public static final String ALL_TRANSIT_ROUTES_ON_LINK = "allTransitRoutesOnLink";
 	public static final String CHANGE_REF_LINK = "changeRefLink";
 	public static final String ADD_LINK = "addLink";
-
 	public static final String COMMENT_START = "//";
+	private static final String SUFFIX_PATTERN = PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES_REGEX;
+	private static final String SUFFIX = PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES;
+	protected static Logger log = Logger.getLogger(RunScheduleEditor.class);
+	// fields
+	private final Network network;
+	private final TransitSchedule schedule;
+	private final TransitScheduleFactory scheduleFactory;
+	private final NetworkFactory networkFactory;
+	private final Map<String, Router> routers;
+	private final ParentStops parentStops;
 
 	public BasicScheduleEditor(TransitSchedule schedule, Network network, Map<String, Router> routers) {
 		this.schedule = schedule;
@@ -289,9 +283,9 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			newLinkSequence.add(routeBeforeCut.getStartLinkId());
 			newLinkSequence.addAll(routeBeforeCut.getLinkIds());
 			newLinkSequence.add(routeBeforeCut.getEndLinkId());
-			newLinkSequence.addAll(UtilsPTMapper.getLinkIdsFromPath(path1));
+			newLinkSequence.addAll(PTMapperTools.getLinkIdsFromPath(path1));
 			newLinkSequence.add(viaLinkId);
-			newLinkSequence.addAll(UtilsPTMapper.getLinkIdsFromPath(path2));
+			newLinkSequence.addAll(PTMapperTools.getLinkIdsFromPath(path2));
 			newLinkSequence.add(routeAfterCut.getStartLinkId());
 			newLinkSequence.addAll(routeAfterCut.getLinkIds());
 			newLinkSequence.add(routeAfterCut.getEndLinkId());
@@ -491,7 +485,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			Link currentLink = network.getLinks().get(currentLinkId);
 			Link nextLink = network.getLinks().get(routeStops.get(i + 1).getStopFacility().getLinkId());
 
-			List<Id<Link>> path = UtilsPTMapper.getLinkIdsFromPath(router.calcLeastCostPath(currentLink.getToNode().getId(), nextLink.getFromNode().getId()));
+			List<Id<Link>> path = PTMapperTools.getLinkIdsFromPath(router.calcLeastCostPath(currentLink.getToNode().getId(), nextLink.getFromNode().getId()));
 
 			if(path != null)
 				linkSequence.addAll(path);
