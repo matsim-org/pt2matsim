@@ -46,7 +46,8 @@ have been made: The default values for links as well as parameters are stored in
 define whether an opposite link should be created and to set values for capacity, freespeed and the number of lanes
 for _highway=*_ and _railway=*_ tags. This also allows to convert rail links. In addition, ways that are only used by
 buses (i.e. are part of a relation tagged with _route=*_ in OSM) are included in a network. If information on number of lanes 
-or freespeed is available for an OSM way, it is used for the MATSim link. 
+or freespeed is available for an OSM way, it is used for the MATSim link. Relevant OSM attributes (for ways and routes) are
+stored as link attributes in the network.
 
 It is recommended to simplify the network by inserting only one link instead of multiple links between two intersections. 
 The Euclidian distance between the new link's end nodes will less than the the summed up length of the replaced links but 
@@ -94,12 +95,11 @@ with the following arguments:
     	- "dayWithMostServices"
     	- "dayWithMostTrips"
     	- "all"
-    [2] the output coordinate system. Use "WGS84" for no transformation. EPGS:* codes are supported.
+    [2] the output coordinate system. Use "WGS84" for no transformation. EPSG:* codes are supported.
     [3] output transit schedule file
     [4] output default vehicles file (optional)
-    [5] output shape reference file. A CSV file that references transit routes to shape ids. Can
-        be used by certain PTMapper implementations and MappingAnalysis (optional)
 
+If a feed contains shapes, the shape id is stored in the transit route's description.
 
 ### From HAFAS
 HAFAS is a data format used by Swiss public transit agencies (particularly SBB) and other agencies in Europe (e.g. Deutsche Bahn).
@@ -242,8 +242,7 @@ are added to the network in two cases: When no path on the network between two l
 cost path has costs greater than a threshold. This threshold is defined as _maxTravelCostFactor_ times the minimal travel costs. 
 The minimal travel costs depend on the parameter _travelCostType_: If it is _linkLength_, the beeline distance between the two 
 stops is used. If it is _travelTime_, the minimal travel cost is equivalent to the travel time needed based on the arrival and 
-departure offsets of the two stops. All artificial links (including loop links for stop facilities) and nodes have the prefix 
-defined in _prefixArtificial_.
+departure offsets of the two stops. All artificial links (including loop links for stop facilities) and nodes have the prefix "pt_".
 
 The step "PseudoRouting" creates _PseudoRoutes_ for each transit route, each of which contains a sequence of  _PseudoRouteStops_. 
 A _PseudoRouteStop_ contains information on the stop facility, the link candidate as well as departure and arrival offsets.
@@ -252,9 +251,8 @@ This pseudo routing step can be parallelized using multiple threads (_numOfThrea
 handled. However, the search for the shortest path between link candidates uses the routing algorithms provided in the MATSim core 
 which are not thread safe. Access to the mode separated routers had to be synchronized.
 
-After this step, all artificial links are added to the network. These links have a very low freespeed and an increased link length. 
-This prevents transit routes from using these links unless they have to.  At this point, the link sequences for the transit 
-routes have not yet been created. 
+Since the shortest paths on the network have been calculated, the optimal link sequence for each transit route is known.
+After this step, all artificial links are added to the network.
 
 #### Child stop facilities and route profiles
 After all pseudoRoutes have been created, most likely there are multiple best links for a stop facility because different routes 
@@ -264,17 +262,15 @@ link id, connected by the string ".link:". For example the child stop facility o
 432 would get the id "64587.link:432". Using the same connection string for all parts of the package allows to infer the parent 
 stop id based on the given stop facility id.
 
-Since it is now known which link candidates and thus child stop facility each transit route uses, route profiles (stop sequences) 
+Since it is now known which link candidates and thus child stop facility each transit route uses, route profiles (stop sequences)
 for all transit routes can be created.
 
 #### Cleaning schedule and network
 Pseudo routing is finished after the previous steps. However, some artifacts remain in the schedule and the network. By default, 
-stop facilities that are not used by any transit route are removed (_removeNotUsedStopFacilities_). The length of artificial 
-links is reset to the Euclidian distance. During pseudo routing, the freespeed of artificial links has been set very low and 
-has to be increased again. It is set according to the schedule: For all transit routes the minimal necessary freespeed to ensure 
-they are on schedule is calculated. The highest minimal freespeed of all transit routes of a link is used as the link's freespeed. 
-This process can be done for other link transport modes as well (defined in _scheduleFreespeedModes_). It is recommended to 
-do this for rail.
+stop facilities that are not used by any transit route are removed (_removeNotUsedStopFacilities_). The freespeed of artificial links is
+set according to the schedule: For all transit routes the minimal necessary freespeed to ensure they are on schedule is calculated. The
+highest minimal freespeed of all transit routes of a link is used as the link's freespeed. This process can be done for other link transport
+modes as well (defined in _scheduleFreespeedModes_). It is recommended to do this for rail.
 
 The transport mode of each transit route is assigned to its used links. Links that are not used by a transit route are 
 removed. This can clean up and simplify rail networks. Links which have a mode defined in _modesToKeepOnCleanup_ are kept 
@@ -298,7 +294,7 @@ that looks for implausible parts of a route and warns accordingly. It needs the 
 	[2]	coordinate system (of both schedule and network)
 	[3]	output folder
 
-The following files are created in the ouput folder:
+The following files are created in the output folder:
 
 - _allPlausibilityWarnings.csv_: shows all plausibility warnings in a csv file
 - _stopfacilities.csv_: the number of child stop facilities for all stop facilities as csv
@@ -310,5 +306,5 @@ The following files are created in the ouput folder:
 - _shp/schedule/StopFacilities.shp_: Stop Facilities as point shapefile
 - _shp/schedule/StopFacilities_refLinks.shp_: The stop facilities' reference links as polyline shapefile
 
-Shapefiles can be viewed in an GIS, a recommended open source GIS is QGIS. It is also possible to view them in senozon VIA.
-However, no line attributes can be displayed or viewed there.    
+Shapefiles can be viewed in a GIS, a recommended open source application is [QGIS](https://www.qgis.org). It is also possible to view them in [senozon via](https://via.senozon.com/).
+However, no line attributes can be displayed or viewed there.
