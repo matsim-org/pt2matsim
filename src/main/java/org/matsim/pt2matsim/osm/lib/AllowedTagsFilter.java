@@ -27,11 +27,31 @@ import java.util.Set;
 /**
  * @author polettif
  */
-public class PositiveTagFilter {
+public class AllowedTagsFilter {
 
 	private final static String MATCH_ALL = "*";
 	private final Map<Osm.ElementType, Map<String, Set<String>>> keyValuePairs = new HashMap<>();
 	private final Map<Osm.ElementType, Map<String, Set<String>>> keyValueExceptions = new HashMap<>();
+
+	/**
+	 * @return an array with filters that contain the usual pt filters
+	 */
+	public static AllowedTagsFilter getDefaultPTFilter() {
+		AllowedTagsFilter filter = new AllowedTagsFilter();
+		filter.add(Osm.ElementType.WAY, Osm.Key.HIGHWAY, null);
+		filter.add(Osm.ElementType.WAY, Osm.Key.RAILWAY, null);
+		filter.addException(Osm.ElementType.WAY, Osm.Key.SERVICE, null);
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.BUS);
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TROLLEYBUS);
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.RAIL);
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TRAM);
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.LIGHT_RAIL);
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.FUNICULAR);
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.MONORAIL);
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.SUBWAY);
+
+		return filter;
+	}
 
 	/**
 	 * @return <code>true</code> if at least one of the given tags matches any one of the specified filter-tags.
@@ -70,7 +90,6 @@ public class PositiveTagFilter {
 		return (checkPairs == null && checkExceptions == null);
 	}
 
-
 	/**
 	 * @param elementType osm element type (node/way/relation)
 	 * @param key tag name
@@ -100,27 +119,7 @@ public class PositiveTagFilter {
 		}
 	}
 
-	/**
-	 * @return an array with filters that contain the usual pt filters
-	 */
-	public static PositiveTagFilter getDefaultPTFilter() {
-		PositiveTagFilter filter = new PositiveTagFilter();
-		filter.add(Osm.ElementType.WAY, Osm.Key.HIGHWAY, null);
-		filter.add(Osm.ElementType.WAY, Osm.Key.RAILWAY, null);
-		filter.addException(Osm.ElementType.WAY, Osm.Key.SERVICE, null);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.BUS);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TROLLEYBUS);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.RAIL);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TRAM);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.LIGHT_RAIL);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.FUNICULAR);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.MONORAIL);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.SUBWAY);
-
-		return filter;
-	}
-
-	/*pckg*/ void mergeFilter(PositiveTagFilter f) {
+	/*pckg*/ void mergeFilter(AllowedTagsFilter f) {
 		for(Osm.ElementType t : f.keyValuePairs.keySet()) {
 			MapUtils.getMap(t, keyValuePairs).putAll(f.keyValuePairs.get(t));
 		}

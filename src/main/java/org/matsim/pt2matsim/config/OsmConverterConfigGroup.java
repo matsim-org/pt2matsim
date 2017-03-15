@@ -26,8 +26,8 @@ import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
+import org.matsim.pt2matsim.osm.lib.AllowedTagsFilter;
 import org.matsim.pt2matsim.osm.lib.Osm;
-import org.matsim.pt2matsim.osm.lib.PositiveTagFilter;
 
 import java.util.Collections;
 import java.util.Map;
@@ -224,8 +224,8 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		}
 	}
 
-	public PositiveTagFilter getBasicWayFilter() {
-		PositiveTagFilter filter = new PositiveTagFilter();
+	public AllowedTagsFilter getBasicWayFilter() {
+		AllowedTagsFilter filter = new AllowedTagsFilter();
 		for(ConfigGroup e : this.getParameterSets(OsmConverterConfigGroup.OsmWayParams.SET_NAME)) {
 			OsmConverterConfigGroup.OsmWayParams w = (OsmConverterConfigGroup.OsmWayParams) e;
 			filter.add(Osm.ElementType.WAY, w.getOsmKey(), w.getOsmValue());

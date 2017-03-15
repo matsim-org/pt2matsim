@@ -24,7 +24,9 @@ import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.pt.transitSchedule.api.*;
-import org.matsim.pt2matsim.osm.lib.*;
+import org.matsim.pt2matsim.osm.lib.AllowedTagsFilter;
+import org.matsim.pt2matsim.osm.lib.Osm;
+import org.matsim.pt2matsim.osm.lib.OsmData;
 
 import java.util.*;
 
@@ -39,65 +41,35 @@ public class OsmTransitScheduleConverter {
 
 	private static final Logger log = Logger.getLogger(OsmTransitScheduleConverter.class);
 
-	private final CoordinateTransformation transformation;
-	private final TransitSchedule transitSchedule;
-	private final TransitScheduleFactory factory;
-
-	// filters
-	private PositiveTagFilter stop_area;
-	private PositiveTagFilter stop_position;
-	private PositiveTagFilter route_master;
-	private PositiveTagFilter ptRoute;
 	private final OsmData osmData;
+
+	private CoordinateTransformation transformation;
+	private TransitSchedule transitSchedule;
+	private TransitScheduleFactory factory;
 
 	private int routeNr = 0;
 
-	public OsmTransitScheduleConverter(TransitSchedule schedule, CoordinateTransformation transformation, String osmInput) {
-		this.transitSchedule = schedule;
-		this.transformation = transformation;
-
-		// Filters
-		PositiveTagFilter filter = new PositiveTagFilter();
-		filter.add(Osm.ElementType.NODE, Osm.Key.PUBLIC_TRANSPORT, Osm.Value.STOP_POSITION);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.BUS);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TROLLEYBUS);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.RAIL);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TRAM);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.LIGHT_RAIL);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.FUNICULAR);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.MONORAIL);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.SUBWAY);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.BUS);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.TROLLEYBUS);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.TRAM);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.MONORAIL);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.SUBWAY);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.FERRY);
-
-
-		this.osmData = new OsmDataImpl(filter);
-		new OsmFileReader(osmData).readFile(osmInput);
-
-		this.factory = transitSchedule.getFactory();
-	}
-
-	public void run() {
-		convert();
+	public OsmTransitScheduleConverter(OsmData osmData) {
+		this.osmData = osmData;
 	}
 
 	/**
 	 * Converts relations, nodes and ways from osm to an
 	 * unmapped MATSim Transit Schedule
 	 */
-	private void convert() {
+	public void convert(TransitSchedule schedule, CoordinateTransformation transformation) {
+		this.transitSchedule = schedule;
+		this.factory = transitSchedule.getFactory();
+		this.transformation = transformation;
+
 		// initialize conversion filters
-		stop_position = new PositiveTagFilter();
+		AllowedTagsFilter stop_position = new AllowedTagsFilter();
 		stop_position.add(Osm.ElementType.NODE, Osm.Key.PUBLIC_TRANSPORT, Osm.Value.STOP_POSITION);
 
-		stop_area = new PositiveTagFilter();
+		AllowedTagsFilter stop_area = new AllowedTagsFilter();
 		stop_area.add(Osm.ElementType.RELATION, Osm.Key.PUBLIC_TRANSPORT, Osm.Value.STOP_AREA);
 
-		route_master = new PositiveTagFilter();
+		AllowedTagsFilter route_master = new AllowedTagsFilter();
 		route_master.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.BUS);
 		route_master.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.TROLLEYBUS);
 		route_master.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.TRAM);
@@ -105,7 +77,7 @@ public class OsmTransitScheduleConverter {
 		route_master.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.SUBWAY);
 		route_master.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.FERRY);
 
-		ptRoute = new PositiveTagFilter();
+		AllowedTagsFilter ptRoute = new AllowedTagsFilter();
 		ptRoute.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.BUS);
 		ptRoute.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TROLLEYBUS);
 		ptRoute.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.RAIL);
@@ -118,13 +90,40 @@ public class OsmTransitScheduleConverter {
 		/**
 		 * Create TransitStopFacilities from public_transport=stop_position
 		 */
-		createStopFacilities();
+		Map<Id<TransitStopFacility>, TransitStopFacility> stopFacilities = this.transitSchedule.getFacilities();
+
+		// create facilities from stop_area first
+		for(Osm.Relation relation : osmData.getRelations().values()) {
+			if(stop_area.matches(relation)) {
+				String stopPostAreaId = relation.getValue(Osm.Key.NAME);
+
+				// create a facility for each member
+				for(Osm.Element member : relation.getMembers()) {
+					if(relation.getMemberRole(member).equals(Osm.Value.STOP)) {
+						Osm.Node n = (Osm.Node) member;
+						TransitStopFacility newStopFacility = createStopFacilityFromOsmNode(n, stopPostAreaId);
+
+						if(!stopFacilities.containsValue(newStopFacility)) {
+							this.transitSchedule.addStopFacility(newStopFacility);
+						}
+					}
+				}
+			}
+		}
+
+		// create other facilities
+		for(Osm.Node node : osmData.getNodes().values()) {
+			if(stop_position.matches(node)) {
+				if(!stopFacilities.containsKey(Id.create(node.getId(), TransitStopFacility.class))) {
+					this.transitSchedule.addStopFacility(createStopFacilityFromOsmNode(node));
+				}
+			}
+		}
 
 		/**
 		 * https://wiki.openstreetmap.org/wiki/Relation:route_master
 		 */
 		Set<Osm.Relation> routesWithMaster = new HashSet<>();
-
 
 		/**
 		 * Create transitLines via route_masters
@@ -172,41 +171,9 @@ public class OsmTransitScheduleConverter {
 		}
 
 		log.info("MATSim Transit Schedule created.");
-	}
-
-	/**
-	 * creates stop facilities from nodes and adds them to the schedule
-	 */
-	private void createStopFacilities() {
-		Map<Id<TransitStopFacility>, TransitStopFacility> stopFacilities = this.transitSchedule.getFacilities();
-
-		// create facilities from stop_area first
-		for(Osm.Relation relation : osmData.getRelations().values()) {
-			if(stop_area.matches(relation)) {
-				String stopPostAreaId = relation.getValue(Osm.Key.NAME);
-
-				// create a facility for each member
-				for(Osm.Element member : relation.getMembers()) {
-					if(relation.getMemberRole(member).equals(Osm.Value.STOP)) {
-						Osm.Node n = (Osm.Node) member;
-						TransitStopFacility newStopFacility = createStopFacilityFromOsmNode(n, stopPostAreaId);
-
-						if(!stopFacilities.containsValue(newStopFacility)) {
-							this.transitSchedule.addStopFacility(newStopFacility);
-						}
-					}
-				}
-			}
-		}
-
-		// create other facilities
-		for(Osm.Node node : osmData.getNodes().values()) {
-			if(stop_position.matches(node)) {
-				if(!stopFacilities.containsKey(Id.create(node.getId(), TransitStopFacility.class))) {
-					this.transitSchedule.addStopFacility(createStopFacilityFromOsmNode(node));
-				}
-			}
-		}
+		this.transitSchedule = null;
+		this.factory = null;
+		this.transformation = null;
 	}
 
 	/**
@@ -311,41 +278,5 @@ public class OsmTransitScheduleConverter {
 		}
 
 		return id;
-	}
-
-	@Deprecated
-	private Id<TransitLine> createLineId2(Osm.Relation relation) {
-		String id;
-		boolean ref = false, operator = false, name = false;
-
-
-		if(relation.getTags().containsKey("ref")) {
-			ref = true;
-		}
-		if(relation.getTags().containsKey("operator")) {
-			operator = true;
-		}
-		if(relation.getTags().containsKey("name")) {
-			name = true;
-		}
-
-		if(operator && ref) {
-			id = relation.getValue("operator") + "_" + relation.getValue("ref");
-		} else if(operator && name) {
-			id = relation.getValue("operator") + "_" + relation.getValue("ref");
-		} else if(name) {
-			id = relation.getValue("name");
-		} else if(ref) {
-			id = relation.getValue("ref");
-		} else {
-			id = relation.getId().toString();
-		}
-
-		try {
-			return Id.create(id, TransitLine.class);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
 	}
 }
