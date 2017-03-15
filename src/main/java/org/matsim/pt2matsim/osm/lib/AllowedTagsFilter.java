@@ -34,7 +34,7 @@ public class AllowedTagsFilter {
 	private final Map<Osm.ElementType, Map<String, Set<String>>> keyValueExceptions = new HashMap<>();
 
 	/**
-	 * @return an array with filters that contain the usual pt filters
+	 * @return a filter that contains the usual pt elements
 	 */
 	public static AllowedTagsFilter getDefaultPTFilter() {
 		AllowedTagsFilter filter = new AllowedTagsFilter();
@@ -49,6 +49,13 @@ public class AllowedTagsFilter {
 		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.FUNICULAR);
 		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.MONORAIL);
 		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.SUBWAY);
+
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.BUS);
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.TROLLEYBUS);
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.TRAM);
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.MONORAIL);
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.SUBWAY);
+		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.FERRY);
 
 		return filter;
 	}

@@ -22,7 +22,9 @@ import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.osm.OsmTransitScheduleConverter;
-import org.matsim.pt2matsim.osm.lib.*;
+import org.matsim.pt2matsim.osm.lib.OsmData;
+import org.matsim.pt2matsim.osm.lib.OsmDataImpl;
+import org.matsim.pt2matsim.osm.lib.OsmFileReader;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
 /**
@@ -53,26 +55,8 @@ public final class Osm2TransitSchedule {
 		TransitSchedule schedule = ScheduleTools.createSchedule();
 		CoordinateTransformation ct = outputCoordinateSystem != null ? TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem) : null;
 
-		// initiate filters (reduces size of osmData)
-		AllowedTagsFilter filter = new AllowedTagsFilter();
-		filter.add(Osm.ElementType.NODE, Osm.Key.PUBLIC_TRANSPORT, Osm.Value.STOP_POSITION);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.BUS);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TROLLEYBUS);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.RAIL);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TRAM);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.LIGHT_RAIL);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.FUNICULAR);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.MONORAIL);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.SUBWAY);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.BUS);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.TROLLEYBUS);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.TRAM);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.MONORAIL);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.SUBWAY);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.FERRY);
-
 		// load osm file
-		OsmData osmData = new OsmDataImpl(filter);
+		OsmData osmData = new OsmDataImpl();
 		new OsmFileReader(osmData).readFile(osmFile);
 
 		// convert osm data
