@@ -23,9 +23,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.router.util.LeastCostPathCalculator;
-import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
-import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.vehicles.Vehicle;
 
 /**
@@ -45,16 +43,6 @@ public class EmptyRouter implements Router {
 	@Override
 	public double getMinimalTravelCost(TransitRouteStop fromStop, TransitRouteStop toStop) {
 		return Double.MAX_VALUE;
-	}
-
-	@Override
-	public double getArtificialLinkFreeSpeed(double maxAllowedTravelCost, LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate) {
-		return 1;
-	}
-
-	@Override
-	public double getArtificialLinkLength(double maxAllowedTravelCost, LinkCandidate linkCandidateCurrent, LinkCandidate linkCandidateNext) {
-		return CoordUtils.calcEuclideanDistance(linkCandidateCurrent.getToNodeCoord(), linkCandidateNext.getFromNodeCoord());
 	}
 
 	@Override

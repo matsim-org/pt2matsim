@@ -96,7 +96,9 @@ public class PTMapper {
 
 		// assign defaults
 		if(this.linkCandidates == null) {	this.linkCandidates = new LinkCandidateCreatorUnique(schedule, network, this.config);	}
-		if(this.scheduleRouters == null) {	this.scheduleRouters = new ScheduleRoutersTransportMode(this.config, schedule, network, false);	}
+		if(this.scheduleRouters == null) {
+			this.scheduleRouters = new ScheduleRoutersTransportMode(this.config, schedule, network);
+		}
 	}
 
 	private static void setLogLevels() {

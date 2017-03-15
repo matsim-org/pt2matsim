@@ -27,8 +27,6 @@ import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
-import org.matsim.pt2matsim.mapping.PseudoRouting;
-import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 
 /**
  * A Router that calculates the least cost path on a network.
@@ -44,16 +42,4 @@ public interface Router extends TravelDisutility, TravelTime {
 	 * @return The minimal travel cost between two TransitRouteStops
 	 */
 	double getMinimalTravelCost(TransitRouteStop fromStop, TransitRouteStop toStop);
-
-	/**
-	 * If {@link PseudoRouting} needs to add an artificial link to the network, this method returns
-	 * the freespeed value.
-	 */
-	double getArtificialLinkFreeSpeed(double maxAllowedTravelCost, LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate);
-
-	/**
-	 * If {@link PseudoRouting} needs to add an artificial link to the network, this method returns
-	 * the link length.
-	 */
-	double getArtificialLinkLength(double maxAllowedTravelCost, LinkCandidate linkCandidateCurrent, LinkCandidate linkCandidateNext);
 }
