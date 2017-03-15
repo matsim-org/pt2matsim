@@ -31,7 +31,6 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.lib.RouteShape;
-import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ShapeTools;
 import org.matsim.vehicles.Vehicle;
@@ -128,20 +127,6 @@ public class RouterShapes implements Router {
 			return travelTime;
 		} else {
 			return beelineDistance;
-		}
-	}
-
-	@Override
-	public double getArtificialLinkFreeSpeed(double maxAllowedTravelCost, LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate) {
-		return 1;
-	}
-
-	@Override
-	public double getArtificialLinkLength(double maxAllowedTravelCost, LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate) {
-		if(travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime)) {
-			return CoordUtils.calcEuclideanDistance(fromLinkCandidate.getToNodeCoord(), toLinkCandidate.getFromNodeCoord());
-		} else {
-			return maxAllowedTravelCost;
 		}
 	}
 

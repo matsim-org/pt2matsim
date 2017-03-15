@@ -23,13 +23,14 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.core.router.util.*;
+import org.matsim.core.router.util.FastAStarLandmarksFactory;
+import org.matsim.core.router.util.LeastCostPathCalculator;
+import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
-import org.matsim.vehicles.Vehicle;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
-import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
+import org.matsim.vehicles.Vehicle;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,16 +42,11 @@ import java.util.Map;
  */
 public class FastAStarRouter implements Router {
 
+	private static PublicTransitMappingConfigGroup.TravelCostType travelCostType = PublicTransitMappingConfigGroup.TravelCostType.linkLength;
 	private final Network network;
-
 	private final LeastCostPathCalculator pathCalculator;
 	private final Map<Tuple<Id<Node>, Id<Node>>, LeastCostPathCalculator.Path> paths;
-	private static PublicTransitMappingConfigGroup.TravelCostType travelCostType = PublicTransitMappingConfigGroup.TravelCostType.linkLength;
 
-
-	public static void setTravelCostType(PublicTransitMappingConfigGroup.TravelCostType type) {
-		travelCostType = type;
-	}
 
 	public FastAStarRouter(Network network) {
 		this.paths = new HashMap<>();
@@ -58,6 +54,10 @@ public class FastAStarRouter implements Router {
 
 		LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory(network, this);
 		this.pathCalculator = factory.createPathCalculator(network, this, this);
+	}
+
+	public static void setTravelCostType(PublicTransitMappingConfigGroup.TravelCostType type) {
+		travelCostType = type;
 	}
 
 	/**
@@ -91,28 +91,6 @@ public class FastAStarRouter implements Router {
 		}
 	}
 
-	@Override
-	public double getArtificialLinkFreeSpeed(double maxAllowedTravelCost, LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate) {
-		return 1;
-		/* Varying freespeeds do not work with maxAllowedTravelcost == 0.
-		if(travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime)) {
-			double linkLength = CoordUtils.calcEuclideanDistance(fromLinkCandidate.getToNodeCoord(), toLinkCandidate.getFromNodeCoord());
-			return linkLength / maxAllowedTravelCost;
-		} else {
-			return 1;
-		}
-		*/
-	}
-
-	@Override
-	public double getArtificialLinkLength(double maxAllowedTravelCost, LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate) {
-		if(travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime)) {
-			return CoordUtils.calcEuclideanDistance(fromLinkCandidate.getToNodeCoord(), toLinkCandidate.getFromNodeCoord());
-		} else {
-			return maxAllowedTravelCost;
-		}
-	}
-
 	// LeastCostPathCalculator methods
 	@Override
 	public double getLinkTravelDisutility(Link link, double time, Person person, Vehicle vehicle) {
@@ -122,12 +100,6 @@ public class FastAStarRouter implements Router {
 	@Override
 	public double getLinkMinimumTravelDisutility(Link link) {
 		return (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
-//		double travelCost = (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
-//		if(link.getToNode().getStopId().equals(uTurnFromNodeId) && link.getFromNode().getStopId().equals(uTurnToNodeId)) {
-//			return uTurnCost + travelCost;
-//		} else {
-//			return travelCost;
-//		}
 	}
 
 	@Override

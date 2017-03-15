@@ -102,14 +102,4 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 		return routers.get(transitLine).get(transitRoute).getLinkMinimumTravelDisutility(linkCandidateCurrent.getLink());
 	}
 
-	@Override
-	public double getArtificialLinkFreeSpeed(double maxAllowedTravelCost, LinkCandidate linkCandidateCurrent, LinkCandidate linkCandidateNext, TransitLine transitLine, TransitRoute transitRoute) {
-		return routers.get(transitLine).get(transitRoute).getArtificialLinkFreeSpeed(maxAllowedTravelCost, linkCandidateCurrent, linkCandidateNext);
-	}
-
-	@Override
-	public double getArtificialLinkLength(double maxAllowedTravelCost, LinkCandidate linkCandidateCurrent, LinkCandidate linkCandidateNext, TransitLine transitLine, TransitRoute transitRoute) {
-		return routers.get(transitLine).get(transitRoute).getArtificialLinkLength(maxAllowedTravelCost, linkCandidateCurrent, linkCandidateNext);
-	}
-
 }

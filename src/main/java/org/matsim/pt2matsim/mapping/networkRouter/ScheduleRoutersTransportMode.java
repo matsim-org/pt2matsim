@@ -11,7 +11,6 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
-import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.MapperModule;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.tools.NetworkTools;
@@ -32,15 +31,13 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 	private final PublicTransitMappingConfigGroup config;
 	private final TransitSchedule schedule;
 	private final Network network;
-	private final boolean useArtificial;
 	private final Map<TransitLine, Map<TransitRoute, Router>> routers = new HashMap<>();
 	private final Map<String, Router> routersByMode = new HashMap<>();
 
-	public ScheduleRoutersTransportMode(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network, boolean useArtificialNetworkLinks) {
+	public ScheduleRoutersTransportMode(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network) {
 		this.config = config;
 		this.schedule = schedule;
 		this.network = network;
-		this.useArtificial = useArtificialNetworkLinks;
 
 	}
 
@@ -61,8 +58,6 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 				if(tmpRouter == null) {
 					log.info("New router for schedule mode " + scheduleMode);
 					Set<String> networkTransportModes = modeRoutingAssignment.get(scheduleMode);
-
-					if(useArtificial) networkTransportModes.add(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE);
 
 					tmpRouter = new FastAStarRouter(NetworkTools.createFilteredNetworkByLinkMode(network, networkTransportModes));
 					routersByMode.put(scheduleMode, tmpRouter);
@@ -93,16 +88,6 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 	@Override
 	public double getLinkTravelCost(TransitLine transitLine, TransitRoute transitRoute, LinkCandidate linkCandidateCurrent) {
 		return routers.get(transitLine).get(transitRoute).getLinkMinimumTravelDisutility(linkCandidateCurrent.getLink());
-	}
-
-	@Override
-	public double getArtificialLinkFreeSpeed(double maxAllowedTravelCost, LinkCandidate linkCandidateCurrent, LinkCandidate linkCandidateNext, TransitLine transitLine, TransitRoute transitRoute) {
-		return routers.get(transitLine).get(transitRoute).getArtificialLinkFreeSpeed(maxAllowedTravelCost, linkCandidateCurrent, linkCandidateNext);
-	}
-
-	@Override
-	public double getArtificialLinkLength(double maxAllowedTravelCost, LinkCandidate linkCandidateCurrent, LinkCandidate linkCandidateNext, TransitLine transitLine, TransitRoute transitRoute) {
-		return routers.get(transitLine).get(transitRoute).getArtificialLinkFreeSpeed(maxAllowedTravelCost, linkCandidateCurrent, linkCandidateNext);
 	}
 
 }

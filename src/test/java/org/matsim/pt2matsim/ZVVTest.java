@@ -39,7 +39,7 @@ public class ZVVTest {
 
 
 	private String base = "test/zvv/";
-	private String osmName = base + "osm/zurich.osm";
+	private String osmName = base + "osmData/zurich.osmData";
 	private String gtfsFolder = base + "gtfs/";
 	private String gtfsShapeFile = gtfsFolder + GtfsDefinitions.Files.SHAPES.fileName;
 	private String inputNetworkFile = base + "network/network_unmapped.xml.gz";
@@ -47,8 +47,13 @@ public class ZVVTest {
 	private String inputScheduleFile = base + "mts/schedule_unmapped.xml.gz";
 
 	private String coordSys = "EPSG:2056";
-	private String outputNetwork1 = base + "output/shapes_network.xml.gz";
-	private String outputSchedule1 = base + "output/shapes_schedule.xml.gz";
+	private String outputNetwork1 = base + "output/standard_network.xml.gz";
+	private String outputSchedule1 = base + "output/standard_schedule.xml.gz";
+	private String outputNetwork2 = base + "output/shapes_network.xml.gz";
+	private String outputSchedule2 = base + "output/shapes_schedule.xml.gz";
+	private String outputNetwork3 = base + "output/osm_network.xml.gz";
+	private String outputSchedule3 = base + "output/osm_schedule.xml.gz";
+	private OsmData osmData;
 
 
 	@Before
@@ -62,9 +67,9 @@ public class ZVVTest {
 		osmConfig.setKeepPaths(true);
 		osmConfig.setOutputCoordinateSystem(coordSys);
 
-		OsmData osm = new OsmDataImpl();
-		new OsmFileReader(osm).readFile(osmName);
-		OsmMultimodalNetworkConverter osmConverter = new OsmMultimodalNetworkConverter(osm);
+		osmData = new OsmDataImpl();
+		new OsmFileReader(osmData).readFile(osmName);
+		OsmMultimodalNetworkConverter osmConverter = new OsmMultimodalNetworkConverter(osmData);
 		osmConverter.convert(osmConfig);
 		NetworkTools.writeNetwork(osmConverter.getNetwork(), inputNetworkFile);
 
@@ -86,8 +91,40 @@ public class ZVVTest {
 		ScheduleTools.writeTransitSchedule(schedule, inputScheduleFile);
 	}
 
+	/**
+	 * 1
+	 */
+	@Test
+	public void runMappingStandard() {
+		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
+		Network network = NetworkTools.readNetwork(inputNetworkFile);
 
-	private void runMapping() {
+		PublicTransitMappingConfigGroup config = createPTMConfig();
+
+		PTMapper ptMapper = new PTMapper(config, schedule, network);
+		ptMapper.run();
+
+		NetworkTools.writeNetwork(network, outputNetwork1);
+		ScheduleTools.writeTransitSchedule(ptMapper.getSchedule(), outputSchedule1);
+
+		// analysis
+		MappingAnalysis analysis = new MappingAnalysis(
+				ScheduleTools.readTransitSchedule(outputSchedule1),
+				NetworkTools.readNetwork(outputNetwork1),
+				ShapeTools.readShapesFile(gtfsShapeFile, coordSys)
+		);
+
+		analysis.run();
+//		analysis.writeQuantileDistancesCsv(base + "output/DistancesQuantile.csv");
+		System.out.println("Q8585: " + analysis.getQ8585());
+		System.out.println("Length diff: " + Math.sqrt(analysis.getAverageSquaredLengthRatio()) * 100 + " %");
+	}
+
+	/**
+	 * 2
+	 */
+	@Test
+	public void runMappingShapes() {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
 
@@ -97,25 +134,53 @@ public class ZVVTest {
 		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersWithShapes(config, schedule, network, shapes));
 		ptMapper.run();
 
-		NetworkTools.writeNetwork(network, outputNetwork1);
-		ScheduleTools.writeTransitSchedule(ptMapper.getSchedule(), outputSchedule1);
-	}
+		NetworkTools.writeNetwork(network, outputNetwork2);
+		ScheduleTools.writeTransitSchedule(ptMapper.getSchedule(), outputSchedule2);
 
-	@Test
-	public void runMappingAnalysisShapes() {
-		runMapping();
-
+		// analysis
 		MappingAnalysis analysis = new MappingAnalysis(
-				ScheduleTools.readTransitSchedule(outputSchedule1),
-				NetworkTools.readNetwork(outputNetwork1),
+				ScheduleTools.readTransitSchedule(outputSchedule2),
+				NetworkTools.readNetwork(outputNetwork2),
 				ShapeTools.readShapesFile(gtfsShapeFile, coordSys)
 		);
 
 		analysis.run();
-		analysis.writeQuantileDistancesCsv(base + "output/DistancesQuantile.csv");
+//		analysis.writeQuantileDistancesCsv(base + "output/DistancesQuantile.csv");
 		System.out.println("Q8585: " + analysis.getQ8585());
 		System.out.println("Length diff: " + Math.sqrt(analysis.getAverageSquaredLengthRatio()) * 100 + " %");
 	}
+
+	/**
+	 * 3
+	 */
+	@Test
+	public void runMappingOsm() {
+		/*
+		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
+		Network network = NetworkTools.readNetwork(inputNetworkFile);
+
+		PublicTransitMappingConfigGroup config = createPTMConfig();
+
+		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersOsmAtributes(config, schedule, network, osmData));
+		ptMapper.run();
+
+		NetworkTools.writeNetwork(network, outputNetwork3);
+		ScheduleTools.writeTransitSchedule(ptMapper.getSchedule(), outputSchedule3);
+
+		// analysis
+		MappingAnalysis analysis = new MappingAnalysis(
+				ScheduleTools.readTransitSchedule(outputSchedule2),
+				NetworkTools.readNetwork(outputNetwork2),
+				ShapeTools.readShapesFile(gtfsShapeFile, coordSys)
+		);
+
+		analysis.run();
+//		analysis.writeQuantileDistancesCsv(base + "output/DistancesQuantile.csv");
+		System.out.println("Q8585: " + analysis.getQ8585());
+		System.out.println("Length diff: " + Math.sqrt(analysis.getAverageSquaredLengthRatio()) * 100 + " %");
+		*/
+	}
+
 
 }
 
