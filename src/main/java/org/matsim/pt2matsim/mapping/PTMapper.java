@@ -24,7 +24,6 @@ package org.matsim.pt2matsim.mapping;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.Config;
@@ -47,7 +46,6 @@ import org.matsim.pt2matsim.tools.PTMapperTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -255,13 +253,6 @@ public class PTMapper {
 		log.info("Validating schedule...");
 		printValidateSchedule();
 
-		/** [9]
-		 * Write output files if defined in config
-		 */
-		log.info("=======================================");
-		log.info("Writing schedule and network to file...");
-		writeOutputFiles();
-
 		log.info("==================================================");
 		log.info("= Mapping transit schedule to network completed! =");
 		log.info("==================================================");
@@ -289,33 +280,6 @@ public class PTMapper {
 			NetworkTools.replaceNonCarModesWithPT(network);
 		} else if(config.getAddPtMode()) {
 			ScheduleTools.addPTModeToNetwork(schedule, network);
-		}
-	}
-
-	/**
-	 * Write the schedule and network to output files (if defined in config)
-	 */
-	private void writeOutputFiles() {
-		if(config.getOutputNetworkFile() != null && config.getOutputScheduleFile() != null) {
-			try {
-				ScheduleTools.writeTransitSchedule(schedule, config.getOutputScheduleFile());
-				NetworkTools.writeNetwork(network, config.getOutputNetworkFile());
-			} catch (Exception e) {
-				log.error("Cannot write to output directory! Trying to write schedule and network file in working directory");
-				long t = System.nanoTime() / 1000000;
-				try {
-					ScheduleTools.writeTransitSchedule(schedule, t + "schedule.xml.gz");
-					NetworkTools.writeNetwork(network, t + "network.xml.gz");
-				} catch (Exception e1) {
-					throw new RuntimeException("Files could not be written in working directory");
-				}
-			}
-			if(config.getOutputStreetNetworkFile() != null) {
-				NetworkTools.writeNetwork(NetworkTools.createFilteredNetworkByLinkMode(network, Collections.singleton(TransportMode.car)), config.getOutputStreetNetworkFile());
-			}
-		} else {
-			log.info("");
-			log.info("No output paths defined, schedule and network are not written to files.");
 		}
 	}
 

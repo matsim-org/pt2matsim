@@ -34,6 +34,9 @@ import org.matsim.pt2matsim.tools.NetworkTools;
  */
 public final class Osm2MultimodalNetwork {
 
+	private Osm2MultimodalNetwork() {
+	}
+
 	/**
 	 * Converts an osm file to a MATSim network. The input and output file as well
 	 * as conversion parameters are defined in this file. Run {@link CreateDefaultOsmConfig}
@@ -82,13 +85,9 @@ public final class Osm2MultimodalNetwork {
 		OsmData osmData = new OsmDataImpl(config.getBasicWayFilter());
 		new OsmFileReader(osmData).readFile(config.getOsmFile());
 
-		osmData.buildMap();
-
 		OsmMultimodalNetworkConverter converter = new OsmMultimodalNetworkConverter(osmData);
 		converter.convert(config);
 
 		NetworkTools.writeNetwork(converter.getNetwork(), config.getOutputNetworkFile());
 	}
-
-	private Osm2MultimodalNetwork() {}
 }
