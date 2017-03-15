@@ -50,17 +50,17 @@ public interface OsmData {
 	/**
 	 * Defines how a node should be handled in {@link OsmFileReader}
 	 */
-	void handleNode(OsmFileReader.ParsedNode parsedNode);
+	void handleParsedNode(OsmFileReader.ParsedNode parsedNode);
 
 	/**
 	 * Defines how a way should be handled in {@link OsmFileReader}
 	 */
-	void handleWay(OsmFileReader.ParsedWay parsedWay);
+	void handleParsedWay(OsmFileReader.ParsedWay parsedWay);
 
 	/**
 	 * Defines how a relation should be handled in {@link OsmFileReader}
 	 */
-	void handleRelation(OsmFileReader.ParsedRelation parsedRelation);
+	void handleParsedRelation(OsmFileReader.ParsedRelation parsedRelation);
 
 
 	/**

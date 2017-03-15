@@ -225,7 +225,7 @@ public class OsmDataImpl implements OsmData {
 	}
 
 	@Override
-	public void handleNode(OsmFileReader.ParsedNode node) {
+	public void handleParsedNode(OsmFileReader.ParsedNode node) {
 		if(filter.matches(node)) {
 			parsedNodes.put(node.id, node);
 			updateExtent(node.coord);
@@ -240,14 +240,14 @@ public class OsmDataImpl implements OsmData {
 	}
 
 	@Override
-	public void handleRelation(OsmFileReader.ParsedRelation relation) {
+	public void handleParsedRelation(OsmFileReader.ParsedRelation relation) {
 		if(filter.matches(relation)) {
 			parsedRelations.put(relation.id, relation);
 		}
 	}
 
 	@Override
-	public void handleWay(OsmFileReader.ParsedWay way) {
+	public void handleParsedWay(OsmFileReader.ParsedWay way) {
 		if(filter.matches(way)) {
 			parsedWays.put(way.id, way);
 		}

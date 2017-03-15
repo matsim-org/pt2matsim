@@ -22,6 +22,9 @@ package org.matsim.pt2matsim.osm;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.network.Link;
+import org.matsim.core.population.routes.NetworkRoute;
+import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.osm.lib.AllowedTagsFilter;
@@ -103,7 +106,7 @@ public class OsmTransitScheduleConverter {
 						Osm.Node n = (Osm.Node) member;
 						TransitStopFacility newStopFacility = createStopFacilityFromOsmNode(n, stopPostAreaId);
 
-						if(!stopFacilities.containsValue(newStopFacility)) {
+						if(!stopFacilities.containsKey(newStopFacility.getId())) {
 							this.transitSchedule.addStopFacility(newStopFacility);
 						}
 					}
@@ -203,6 +206,7 @@ public class OsmTransitScheduleConverter {
 	 */
 	private TransitRoute createTransitRoute(Osm.Relation relation) {
 		List<TransitRouteStop> stopSequenceForward = new ArrayList<>();
+		List<Id<Link>> linkSequenceForward = new ArrayList<>();
 
 		// create different RouteStops and stopFacilities for forward and backward
 		for(int i = 0; i < relation.getMembers().size() - 1; i++) {
@@ -221,12 +225,13 @@ public class OsmTransitScheduleConverter {
 			}
 
 			// route links
-//			if(member.type.equals(OsmParser.OsmRelationMemberType.WAY) && !OsmValue.BACKWARD.equals(member.role)) {
-//				linkSequenceForward.add(Id.createLinkId(member.refId));
-//			}
+			if(member.getType().equals(Osm.ElementType.WAY)) {
+				Osm.Way way = (Osm.Way) member;
+				linkSequenceForward.add(Id.createLinkId(way.getId().toString()));
+			}
 		}
 
-//		NetworkRoute networkRoute = (linkSequenceForward.size() == 0 ? null : RouteUtils.createNetworkRoute(linkSequenceForward, null));
+		NetworkRoute networkRoute = (linkSequenceForward.size() == 0 ? null : RouteUtils.createNetworkRoute(linkSequenceForward, null));
 
 		if(stopSequenceForward.size() == 0) {
 			return null;
@@ -236,6 +241,8 @@ public class OsmTransitScheduleConverter {
 		Id<TransitRoute> transitRouteId = Id.create(createStringId(relation) + (++routeNr), TransitRoute.class);
 		TransitRoute newTransitRoute = factory.createTransitRoute(transitRouteId, null, stopSequenceForward, relation.getTags().get(Osm.Key.ROUTE));
 		newTransitRoute.addDeparture(factory.createDeparture(Id.create("departure" + routeNr, Departure.class), 60.0));
+
+		newTransitRoute.setRoute(networkRoute);
 
 		if(newTransitRoute.getStops().size() < 2) {
 			newTransitRoute  = null;

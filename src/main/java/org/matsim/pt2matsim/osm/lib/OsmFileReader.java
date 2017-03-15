@@ -32,13 +32,12 @@ import java.util.*;
 public class OsmFileReader extends MatsimXmlParser {
 
 	private final OsmData osmData;
-
-	private ParsedNode currentNode = null;
-	private ParsedWay currentWay = null;
-	private ParsedRelation currentRelation = null;
 	private final Counter nodeCounter = new Counter("node ");
 	private final Counter wayCounter = new Counter("way ");
 	private final Counter relationCounter = new Counter("relation ");
+	private ParsedNode currentNode = null;
+	private ParsedWay currentWay = null;
+	private ParsedRelation currentRelation = null;
 
 	public OsmFileReader(OsmData osmData) {
 		super();
@@ -90,15 +89,15 @@ public class OsmFileReader extends MatsimXmlParser {
 	public void endTag(final String name, final String content, final Stack<String> context) {
 		if ("node".equals(name)) {
 			this.nodeCounter.incCounter();
-			this.osmData.handleNode(this.currentNode);
+			this.osmData.handleParsedNode(this.currentNode);
 			this.currentNode = null;
 		} else if ("way".equals(name)) {
 			this.wayCounter.incCounter();
-			this.osmData.handleWay(this.currentWay);
+			this.osmData.handleParsedWay(this.currentWay);
 			this.currentWay = null;
 		} else if ("relation".equals(name)) {
 			this.relationCounter.incCounter();
-			this.osmData.handleRelation(this.currentRelation);
+			this.osmData.handleParsedRelation(this.currentRelation);
 			this.currentRelation = null;
 		} else if ("osm".equals(name)) {
 			osmData.buildMap(); // finalize osmData
