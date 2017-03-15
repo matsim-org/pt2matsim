@@ -23,9 +23,9 @@ import org.junit.Test;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.ConfigWriter;
-import org.matsim.pt2matsim.run.*;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
+import org.matsim.pt2matsim.run.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -82,9 +82,6 @@ public class PT2MATSimTest {
 				output + "UnmappedGRTSchedule.xml.gz",
 				// [4] output default vehicles file (optional)
 				output + "Vehicles.xml",
-				// [5] output converted shape files. Is created based on shapes.txt and shows all trips
-				// 		contained in the schedule. (optional)
-				output + "GRTScheduleShapes/Shapes.shp"
 		};
 		Gtfs2TransitSchedule.main(gtfsConverterArgs);
 	}
@@ -133,17 +130,28 @@ public class PT2MATSimTest {
 	public void osmToNetwork() {
 		// Create an osmToNetwork-Config:
 		CreateDefaultOsmConfig.main(new String[]{output + "OsmConverterConfig.xml"});
+
 		// Open the osmToNetwork-Config and set the parameters to the required values
 		// (usually done manually by opening the config with a simple editor)
 		Config osmConverterConfig = ConfigUtils.loadConfig(
 				output + "OsmConverterConfig.xml",
-				OsmConverterConfigGroup.createDefaultConfig());
-		osmConverterConfig.getModule("OsmConverter").addParam("osmFile", input + "WaterlooCityCentre.osm");
-		osmConverterConfig.getModule("OsmConverter").addParam("outputCoordinateSystem", "WGS84");
-		osmConverterConfig.getModule("OsmConverter").addParam("outputNetworkFile", output + "CityCentreNetwork.xml.gz");
+				new OsmConverterConfigGroup());
+		OsmConverterConfigGroup osmConfig = ConfigUtils.addOrGetModule(osmConverterConfig, OsmConverterConfigGroup.class);
+		osmConfig.setOsmFile(input + "WaterlooCityCentre.osm");
+		osmConfig.setOutputCoordinateSystem("WGS84");
+		osmConfig.setOutputNetworkFile(output + "CityCentreNetwork.xml.gz");
+
 		// Save the osmToNetwork-Config
 		// (usually done manually)
 		new ConfigWriter(osmConverterConfig).write(output + "OsmConverterConfigAdjusted.xml");
+
+		// Alternative:
+		OsmConverterConfigGroup osmConfig2 = ConfigUtils.addOrGetModule(osmConverterConfig, OsmConverterConfigGroup.class);
+		osmConfig2.setOsmFile(input + "WaterlooCityCentre.osm");
+		osmConfig2.setOutputCoordinateSystem("WGS84");
+		osmConfig2.setOutputNetworkFile(output + "CityCentreNetwork.xml.gz");
+		Config config2 = ConfigUtils.createConfig(osmConfig2);
+		new ConfigWriter(config2).write(output + "OsmConverterConfigAdjusted_alternative.xml");
 
 		// Convert the OSM-file to a MATSim-network using the config
 		Osm2MultimodalNetwork.main(new String[]{output + "OsmConverterConfigAdjusted.xml"});

@@ -21,6 +21,8 @@
 
 package org.matsim.pt2matsim.run;
 
+import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
@@ -29,6 +31,8 @@ import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.mapping.PTMapper;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
+
+import java.util.Collections;
 
 /**
  * Allows to run an implementation
@@ -40,6 +44,8 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
  * @author polettif
  */
 public final class PublicTransitMapper {
+
+	protected static Logger log = Logger.getLogger(PublicTransitMapper.class);
 
 	private PublicTransitMapper() {
 	}
@@ -69,11 +75,29 @@ public final class PublicTransitMapper {
 	 * @param configFile the PublicTransitMapping config file
 	 */
 	public static void run(String configFile) {
+		// Load config, input schedule and input network
 		Config configAll = ConfigUtils.loadConfig(configFile, new PublicTransitMappingConfigGroup());
 		PublicTransitMappingConfigGroup config = ConfigUtils.addOrGetModule(configAll, PublicTransitMappingConfigGroup.class);
 		TransitSchedule schedule = config.getScheduleFile() == null ? null : ScheduleTools.readTransitSchedule(config.getScheduleFile());
 		Network network = config.getNetworkFile() == null ? null : NetworkTools.readNetwork(config.getNetworkFile());
 
+		// Run PTMapper
 		new PTMapper(config, schedule, network).run();
+
+		// Write the schedule and network to output files (if defined in config)
+		if(config.getOutputNetworkFile() != null && config.getOutputScheduleFile() != null) {
+			log.info("Writing schedule and network to file...");
+			try {
+				ScheduleTools.writeTransitSchedule(schedule, config.getOutputScheduleFile());
+				NetworkTools.writeNetwork(network, config.getOutputNetworkFile());
+			} catch (Exception e) {
+				log.error("Cannot write to output directory!");
+			}
+			if(config.getOutputStreetNetworkFile() != null) {
+				NetworkTools.writeNetwork(NetworkTools.createFilteredNetworkByLinkMode(network, Collections.singleton(TransportMode.car)), config.getOutputStreetNetworkFile());
+			}
+		} else {
+			log.info("No output paths defined, schedule and network are not written to files.");
+		}
 	}
 }
