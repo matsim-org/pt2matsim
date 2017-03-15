@@ -49,10 +49,10 @@ public class OsmDataImpl implements OsmData {
 	private QuadTree<Osm.Node> quadTree;
 
 	// Filters
-	private PositiveTagFilter filter = new PositiveTagFilter();
+	private AllowedTagsFilter filter = new AllowedTagsFilter();
 
-	public OsmDataImpl(PositiveTagFilter... filters) {
-		for(PositiveTagFilter f : filters) {
+	public OsmDataImpl(AllowedTagsFilter... filters) {
+		for(AllowedTagsFilter f : filters) {
 			this.filter.mergeFilter(f);
 		}
 	}
