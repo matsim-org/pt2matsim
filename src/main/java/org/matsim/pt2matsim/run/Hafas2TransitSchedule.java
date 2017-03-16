@@ -40,6 +40,9 @@ import java.io.IOException;
  */
 public final class Hafas2TransitSchedule {
 
+	private Hafas2TransitSchedule() {
+	}
+
 	/**
 	 * Converts all files in <tt>hafasFolder</tt> and writes the output schedule and vehicles to the respective
 	 * files. Stop Facility coordinates are transformed from WGS84 to <tt>outputCoordinateSystem</tt>.
@@ -68,11 +71,9 @@ public final class Hafas2TransitSchedule {
 		CoordinateTransformation transformation = !outputCoordinateSystem.equals("null") ?
 				TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem) : new IdentityTransformation();
 
-		new HafasConverter(hafasFolder, transformation, schedule, vehicles).run();
+		HafasConverter.run(hafasFolder, schedule, transformation, vehicles);
 
 		ScheduleTools.writeTransitSchedule(schedule, outputScheduleFile);
 		ScheduleTools.writeVehicles(vehicles, outputVehicleFile);
 	}
-
-	private Hafas2TransitSchedule() {}
 }
