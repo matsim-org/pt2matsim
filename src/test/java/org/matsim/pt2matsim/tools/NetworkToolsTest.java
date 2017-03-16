@@ -15,6 +15,7 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import java.util.*;
 
 import static org.junit.Assert.assertTrue;
+import static org.matsim.pt2matsim.tools.CoordToolsTest.*;
 
 /**
  * @author polettif
@@ -23,30 +24,15 @@ public class NetworkToolsTest {
 
 	private Network network;
 
-	public static final Coord coordA = new Coord(0.0, 0.0);
-	public static final Coord coordB = new Coord(20.0, 0.0);
-	public static final Coord coordC = new Coord(20.0, 20.0);
-
-	public static final Coord coordD = new Coord(0.0, 20.0);
-	public static final Coord coordE = new Coord(-20.0, 20.0);
-	public static final Coord coordF = new Coord(-20.0, 0.0);
-	public static final Coord coordG = new Coord(-20.0, -20.0);
-	public static final Coord coordH = new Coord(0.0, -10.0);
-
-	public static final Coord coordI = new Coord(20.0, -20.0);
-	public static final Coord coordW = new Coord(-10.0, 30.0);
-	public static final Coord coordX = new Coord(10.0, 5.0);
-	public static final Coord coordZ = new Coord(10.0, -30.0);
-
 	/*
-		     ^
+			 ^
              |
 		 W   |
 		     |
 	 E   ·   D   ·   C
 	         |
 	 ·   ·   |   ·   ·
-	         | X
+	         |  X
 	 F-------A---Y---B---->
 	         |
 	 ·   ·   H	 ·   ·
@@ -55,11 +41,6 @@ public class NetworkToolsTest {
              |
 	 ·   ·   |   Z   ·
 	 */
-
-	@Before
-	public void prepare() {
-		network = initNetwork();
-	}
 
 	public static Network initNetwork() {
 		Network net = NetworkTools.createNetwork();
@@ -164,6 +145,11 @@ public class NetworkToolsTest {
 		}
 
 		return net;
+	}
+
+	@Before
+	public void prepare() {
+		network = initNetwork();
 	}
 
 	private Link getLink(String id) {

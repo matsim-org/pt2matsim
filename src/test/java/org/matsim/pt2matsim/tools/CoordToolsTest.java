@@ -11,34 +11,30 @@ import static org.junit.Assert.assertEquals;
  */
 public class CoordToolsTest {
 
+	public static final Coord coordA = new Coord(0.0, 0.0);
+	public static final Coord coordB = new Coord(20.0, 0.0);
+	public static final Coord coordC = new Coord(20.0, 20.0);
+	public static final Coord coordD = new Coord(0.0, 20.0);
+	public static final Coord coordE = new Coord(-20.0, 20.0);
+	public static final Coord coordF = new Coord(-20.0, 0.0);
+	public static final Coord coordG = new Coord(-20.0, -20.0);
+	public static final Coord coordH = new Coord(0.0, -10.0);
+	public static final Coord coordI = new Coord(20.0, -20.0);
+	public static final Coord coordW = new Coord(-10.0, 30.0);
+	public static final Coord coordX = new Coord(10.0, 5.0);
+	public static final Coord coordZ = new Coord(10.0, -30.0);
+
 	private final double testDelta = 1/1000.;
 
-	public static final Coord coordA = new Coord(0.0, 0.0);
-	public static final Coord coordB = new Coord(2.0, 0.0);
-	public static final Coord coordC = new Coord(2.0, 2.0);
-
-	public static final Coord coordD = new Coord(0.0, 2.0);
-	public static final Coord coordE = new Coord(-2.0, 2.0);
-	public static final Coord coordF = new Coord(-2.0, 0.0);
-	public static final Coord coordG = new Coord(-2.0, -2.0);
-	public static final Coord coordH = new Coord(0.0, -2.0);
-
-	public static final Coord coordI = new Coord(2.0, -2.0);
-	public static final Coord coordW = new Coord(-1.0, 3.0);
-	public static final Coord coordX = new Coord(0.5, 0.5);
-	public static final Coord coordY = new Coord(1.0, 0.0);
-	public static final Coord coordP = new Coord(0.7, 0.1);
-	public static final Coord coordZ = new Coord(1.0, -3.0);
-
 	/*
-		     ^
+			 ^
              |
 		 W   |
 		     |
 	 E   ·   D   ·   C
 	         |
 	 ·   ·   |   ·   ·
-	         | X
+	         |  X
 	 F-------A---Y---B---->
 	         |
 	 ·   ·   |	 ·   ·
@@ -67,11 +63,15 @@ public class CoordToolsTest {
 		assertEquals(newPointD.getX(), coordD.getX(), testDelta);
 		assertEquals(newPointD.getY(), coordD.getY(), testDelta);
 
-		Coord newPointX = CoordTools.calcNewPoint(coordA, 0.25 * Math.PI, CoordUtils.calcEuclideanDistance(coordA, coordX));
-		assertEquals(newPointX.getX(), coordX.getX(), testDelta);
-		assertEquals(newPointX.getY(), coordX.getY(), testDelta);
+		Coord newPointX = CoordTools.calcNewPoint(coordA, 0.25 * Math.PI, CoordUtils.calcEuclideanDistance(coordA, coordC));
+		assertEquals(newPointX.getX(), coordC.getX(), testDelta);
+		assertEquals(newPointX.getY(), coordC.getY(), testDelta);
 
-		Coord newPointB = CoordTools.calcNewPoint(coordA, 0.50*Math.PI, 2);
+		Coord duplicateCoordZ = CoordTools.calcNewPoint(coordA, CoordTools.getAzimuth(coordA, coordZ), CoordUtils.calcEuclideanDistance(coordA, coordZ));
+		assertEquals(duplicateCoordZ.getX(), coordZ.getX(), testDelta);
+		assertEquals(duplicateCoordZ.getY(), coordZ.getY(), testDelta);
+
+		Coord newPointB = CoordTools.calcNewPoint(coordA, 0.50 * Math.PI, 20);
 		assertEquals(newPointB.getX(), coordB.getX(), testDelta);
 		assertEquals(newPointB.getY(), coordB.getY(), testDelta);
 
