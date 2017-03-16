@@ -1,0 +1,39 @@
+timetable_id,route_id,direction_id,start_date,end_date,monday,tuesday,wednesday,thursday,friday,saturday,sunday,route_label,service_notes,direction_label,orientation
+1,1429,0,20150101,20170101,0,0,0,0,0,1,0,Burlington Link Express Sat,Year Round,Northbound,horizontal
+2,1429,1,20150101,20170101,0,0,0,0,0,1,0,Burlington Link Express Sat,Year Round,Southbound,horizontal
+3,1431,0,20151118,20161011,0,0,0,0,0,1,0,College Hospital Loop,Beginning 11-18-2015,No direction,horizontal
+4,1431,0,20151118,20161011,1,1,1,1,1,0,0,College Hospital Loop,Beginning 11-18-2015,No direction,horizontal
+5,1431,0,20160101,20161011,1,1,1,1,1,0,0,College Hospital Loop,Ending 10-11-16,No direction,horizontal
+6,1431,0,20161012,20180101,1,1,1,1,1,0,0,College Hospital Loop,Beginning 10-12-16,No direction,horizontal
+7,1440,0,20150101,20170101,1,1,1,1,1,0,0,Commuter,Year Round,Northbound,horizontal
+8,1440,1,20150101,20170101,1,1,1,1,1,0,0,Commuter,Year Round,Southbound,horizontal
+9,1433,0,20151118,20161011,0,0,0,0,0,1,0,Marble Works Woodbridge Loop,Beginning 11-18-2015,No direction,horizontal
+10,1433,0,20151118,20161011,1,1,1,1,1,0,0,Marble Works Woodbridge Loop,Beginning 11-18-2015,No direction,horizontal
+11,1433,0,20160101,20161011,1,1,1,1,1,0,0,Marble Works Woodbridge Loop,Ending 10-11-16,No direction,horizontal
+12,1433,0,20161012,20180101,1,1,1,1,1,0,0,Marble Works Woodbridge Loop,Beginning 10-12-16,No direction,horizontal
+13,1430,0,20151118,20161011,0,0,0,0,0,1,0,Rte 7 South Loop,Beginning 11-18-2015,No direction,horizontal
+14,1430,0,20151118,20161011,1,1,1,1,1,0,0,Rte 7 South Loop,Beginning 11-18-2015,No direction,horizontal
+15,1430,0,20161012,20180101,0,0,0,0,0,1,0,Rte 7 South Loop,Beginning 10-12-16,No direction,horizontal
+16,1430,0,20161012,20180101,1,1,1,1,1,0,0,Rte 7 South Loop,Beginning 10-12-16,No direction,horizontal
+17,1435,0,20160101,20161011,0,0,0,0,0,1,0,Rutland Connector (ACTR),Ending 10-11-16,Northbound,horizontal
+18,1435,0,20160101,20161011,1,1,1,1,1,0,0,Rutland Connector (ACTR),Ending 10-11-16,Northbound,horizontal
+19,1435,1,20160101,20161011,0,0,0,0,0,1,0,Rutland Connector (ACTR),Ending 10-11-16,Southbound,horizontal
+20,1435,1,20160101,20161011,1,1,1,1,1,0,0,Rutland Connector (ACTR),Ending 10-11-16,Southbound,horizontal
+21,1435,0,20161012,20180101,0,0,0,0,0,1,0,Rutland Connector (ACTR),Beginning 10-12-16,Northbound,horizontal
+22,1435,0,20161012,20180101,1,1,1,1,1,0,0,Rutland Connector (ACTR),Beginning 10-12-16,Northbound,horizontal
+23,1435,1,20161012,20180101,0,0,0,0,0,1,0,Rutland Connector (ACTR),Beginning 10-12-16,Southbound,horizontal
+24,1435,1,20161012,20180101,1,1,1,1,1,0,0,Rutland Connector (ACTR),Beginning 10-12-16,Southbound,horizontal
+25,1434,0,20150101,20170101,0,0,0,0,0,1,0,Shaws Peterson Terrace Loop,Year Round,No direction,horizontal
+26,1434,0,20160101,20161011,1,1,1,1,1,0,0,Shaws Peterson Terrace Loop,Ending 10-11-16,No direction,horizontal
+27,1434,0,20161012,20180101,1,1,1,1,1,0,0,Shaws Peterson Terrace Loop,Beginning 10-12-16,No direction,horizontal
+28,1437,0,20160303,20161216,0,0,0,1,1,0,0,Snow Bowl Shuttle Bus,SBSB Off-Peak Th-F 2015-2016,No direction,horizontal
+29,1437,0,20160402,20161210,0,0,0,0,0,1,0,Snow Bowl Shuttle Bus,SBSB Off-Peak Sat 2015-2016,No direction,horizontal
+30,1437,0,20161219,20170228,0,0,0,0,1,0,0,Snow Bowl Shuttle Bus,Ski Season Mon-Fri 2016-2017,No direction,horizontal
+31,1437,0,20161219,20170228,1,1,1,1,1,0,0,Snow Bowl Shuttle Bus,Ski Season Mon-Fri 2016-2017,No direction,horizontal
+32,1437,0,20161219,20170326,0,0,0,0,0,1,1,Snow Bowl Shuttle Bus,Ski Season Sat-Sun 2016-2017,No direction,horizontal
+33,1437,0,20170302,20171219,0,0,0,1,1,0,0,Snow Bowl Shuttle Bus,SBSB Off-Peak Th-F 2017,No direction,horizontal
+34,1438,0,20151118,20161011,1,1,1,1,1,0,0,TriTown Bristol,Beginning 11-18-2015,No direction,horizontal
+35,1438,0,20161012,20180101,1,1,1,1,1,0,0,TriTown Bristol,Beginning 10-12-16,No direction,horizontal
+36,1439,0,20151118,20161011,1,1,1,1,1,0,0,TriTown Vergennes,Beginning 11-18-2015,No direction,horizontal
+37,1432,0,20160101,20161011,1,1,1,1,1,0,0,Weybridge St ADK Loop,Ending 10-11-16,No direction,horizontal
+38,1432,0,20161012,20180101,1,1,1,1,1,0,0,Weybridge St ADK Loop,Beginning 10-12-16,No direction,horizontal

@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.matsim.core.utils.collections.MapUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +16,7 @@ public class CsvToolsTest {
 
 	@Test
 	public void mapCsvTest() throws IOException {
-		String file = "testfile.csv";
+		String file = "test/testfile.csv";
 		Map<String, Map<String, String>> testMap = new HashMap<>();
 
 		MapUtils.getMap("A", testMap).put("a", "0");
@@ -27,10 +28,12 @@ public class CsvToolsTest {
 		MapUtils.getMap("C", testMap).put("a", "6");
 
 		CsvTools.writeNestedMapToFile(testMap, file);
-
 		Map<String, Map<String, String>> readMap = CsvTools.readNestedMapFromFile(file, false);
 
 		Assert.assertEquals(testMap, readMap);
+
+		File f = new File(file);
+		boolean del = f.delete();
 	}
 
 }

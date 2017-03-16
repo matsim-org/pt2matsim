@@ -13,7 +13,7 @@ public class GtfsFeedImplTest {
 
 	@Before
 	public void prepare() {
-		feed = new GtfsFeedImpl("test/analysis/addisoncounty-vt-us-gtfs/");
+		feed = new GtfsFeedImpl("test/Addisoncounty-GTFS/");
 	}
 
 	@Test

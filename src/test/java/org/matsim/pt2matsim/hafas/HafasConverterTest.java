@@ -19,8 +19,6 @@ import java.io.IOException;
  */
 public class HafasConverterTest {
 
-	private final String input = "test/input/PT2MATSimTest/";
-	private final String output = "test/output/PT2MATSimTest/";
 	private TransitSchedule schedule;
 	private Vehicles vehicles;
 
@@ -28,8 +26,8 @@ public class HafasConverterTest {
 	public void convert() throws IOException {
 		this.schedule = ScheduleTools.createSchedule();
 		this.vehicles = VehicleUtils.createVehiclesContainer();
-		String hafasFolder = input + "BrienzRothornBahn-HAFAS/";
-		String cs = "WGS84";
+		String hafasFolder = "test/BrienzRothornBahn-HAFAS/";
+		String cs = "EPSG:2056";
 		CoordinateTransformation ct = TransformationFactory.getCoordinateTransformation("WGS84", cs);
 
 		HafasConverter.run(hafasFolder, schedule, ct, vehicles);

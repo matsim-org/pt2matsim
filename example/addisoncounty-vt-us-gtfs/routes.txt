@@ -1,0 +1,12 @@
+agency_id,route_id,route_short_name,route_long_name,route_desc,route_type,route_url,route_color,route_text_color,route_sort_order,min_headway_minutes
+230,1440,116,Commuter,,3,http://actr-vt.org/assets/schedule_2013-12_116.png,8A5845,FFFFFF,0,
+230,1429,LINK,Burlington Link Express Sat,,3,http://actr-vt.org/burlington-link-express-map/burlington-link-express-schedule/,CA6C18,FFFFFF,0,
+230,1431,MSB,College Hospital Loop,,3,http://actr-vt.org/middlebury-shuttle-bus-map/college-hospital-loop-schedule/,00A6DE,FFFFFF,0,30
+230,1433,MSB,Marble Works Woodbridge Loop,,3,http://actr-vt.org/middlebury-shuttle-bus-map/marble-works-woodbridge-loop-schedule/,8CC63F,000000,0,30
+230,1430,MSB,Rte 7 South Loop,,3,http://actr-vt.org/assets/schedule_2013-12_MSB-Rt7South2.png,951B82,000000,0,60
+230,1434,MSB,Shaws Peterson Terrace Loop,,3,http://actr-vt.org/middlebury-shuttle-bus-map/shaws-peterson-terrace-loop-schedule/,F7931E,000000,0,30
+230,1432,MSB,Weybridge St ADK Loop,,3,http://actr-vt.org/middlebury-shuttle-bus-map/weybridge-st-adk-loop-schedule/,AA925E,FFFFFF,0,30
+230,1435,RC,Rutland Connector (ACTR),,3,http://actr-vt.org/rutland-connector-map/rutland-connector-schedule/,EC008C,000000,0,
+230,1437,SBSB,Snow Bowl Shuttle Bus,,3,http://www.actr-vt.org/bus_schedules/snow_bowl.php,00A651,,0,70
+230,1438,TTSB/B,TriTown Bristol,,3,http://actr-vt.org/tri-town-shuttle-bus-map/bristol-route-schedule/,E44223,000000,0,
+230,1439,TTSB/V,TriTown Vergennes,,3,http://actr-vt.org/tri-town-shuttle-bus-map/vergennes-route-schedule/,00A6BA,FFFFFF,0,
