@@ -114,8 +114,16 @@ public final class PTMapperTools {
 					List<Link> linkList = NetworkTools.getLinksFromIds(network, linkIdList);
 
 					currentStop = stopsIterator.next();
+
 					// look for a closer link before the route's start
+					// only use links with closer fromNodes
 					Set<Link> inlinksWithSameMode = NetworkTools.filterLinkSetExactlyByModes(linkList.get(0).getFromNode().getInLinks().values(), linkList.get(0).getAllowedModes());
+					double firstDist = CoordUtils.calcEuclideanDistance(currentStop.getStopFacility().getCoord(), linkList.get(0).getFromNode().getCoord());
+					for(Link l : new HashSet<>(inlinksWithSameMode)) {
+						if(CoordUtils.calcEuclideanDistance(l.getFromNode().getCoord(), currentStop.getStopFacility().getCoord()) > firstDist) {
+							inlinksWithSameMode.remove(l);
+						}
+					}
 					Id<Link> closerLinkBefore = useCloserRefLinkForChildStopFacility(schedule, network, transitRoute, currentStop.getStopFacility(), inlinksWithSameMode);
 					if(closerLinkBefore != null) {
 						linkIdList.add(0, closerLinkBefore);
