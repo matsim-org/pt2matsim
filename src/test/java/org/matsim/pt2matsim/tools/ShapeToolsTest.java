@@ -19,8 +19,8 @@ import java.util.Map;
  */
 public class ShapeToolsTest {
 
+	public static final double offset = 1.2;
 	private static final double d = 0.0001;
-	private static final double offset = 1.2;
 	private RouteShape shapeA1;
 	private RouteShape shapeA2;
 	private RouteShape shapeB;

@@ -58,7 +58,7 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				c.incCounter();
 				// log.info("Initiating network and router for transit route " + transitRoute.getStopId() + " (line " + transitLine.getStopId() + ")");
-				Id<RouteShape> shapeId = ScheduleTools.getShapeIdFromDescription(transitRoute.getDescription());
+				Id<RouteShape> shapeId = ScheduleTools.getShapeId(transitRoute);
 				RouteShape shape = shapes.get(shapeId);
 
 				Router tmpRouter;

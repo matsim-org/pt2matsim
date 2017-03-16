@@ -11,6 +11,7 @@ import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt.utils.TransitScheduleValidator;
+import org.matsim.pt2matsim.lib.RouteShape;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -91,7 +92,7 @@ public class ScheduleToolsTest {
 		routeA1.addDeparture(fac.createDeparture(Id.create("a1_1", Departure.class), 8 * 3600));
 		routeA1.addDeparture(fac.createDeparture(Id.create("a1_2", Departure.class), 11 * 3600));
 		routeA1.addDeparture(fac.createDeparture(Id.create("a1_3", Departure.class), 14 * 3600));
-
+		ScheduleTools.setShapeId(routeA1, Id.create("A1", RouteShape.class));
 		lineA.addRoute(routeA1);
 
 		// route A2
@@ -111,6 +112,7 @@ public class ScheduleToolsTest {
 		routeA2.addDeparture(fac.createDeparture(Id.create("a2_1", Departure.class), 9 * 3600));
 		routeA2.addDeparture(fac.createDeparture(Id.create("a2_2", Departure.class), 12 * 3600));
 		routeA2.addDeparture(fac.createDeparture(Id.create("a2_3", Departure.class), 15 * 3600));
+		ScheduleTools.setShapeId(routeA2, Id.create("A2", RouteShape.class));
 		lineA.addRoute(routeA2);
 
 		// routeB
@@ -136,6 +138,7 @@ public class ScheduleToolsTest {
 		routeB.addDeparture(fac.createDeparture(Id.create("b_2", Departure.class), 10 * 3600));
 		routeB.addDeparture(fac.createDeparture(Id.create("b_3", Departure.class), 13 * 3600));
 		routeB.addDeparture(fac.createDeparture(Id.create("b_4", Departure.class), 16 * 3600));
+		ScheduleTools.setShapeId(routeB, Id.create("B", RouteShape.class));
 		lineB.addRoute(routeB);
 
 		return transitSchedule;

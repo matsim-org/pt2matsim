@@ -236,8 +236,7 @@ public class GtfsConverter {
 							transitRoute = scheduleFactory.createTransitRoute(Id.create(trip.getId(), TransitRoute.class), null, transitRouteStops, gtfsRoute.getRouteType().name);
 							transitRoute.addDeparture(scheduleFactory.createDeparture(Id.create(departureIds.getNext(transitRoute.getId()), Departure.class), Time.parseTime(timeFormat.format(startTime))));
 
-							if(shapeId != null)
-								transitRoute.setDescription(ScheduleTools.getDescriptionStrFromShapeId(trip.getShape().getId()));
+							if(shapeId != null) ScheduleTools.setShapeId(transitRoute, trip.getShape().getId());
 							routeShapeAssignment.put(transitRoute.getId(), shapeId);
 
 							transitLine.addRoute(transitRoute);

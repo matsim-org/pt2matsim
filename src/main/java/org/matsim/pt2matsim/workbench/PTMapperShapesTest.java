@@ -38,9 +38,9 @@ public class PTMapperShapesTest {
 	private Id<TransitLine> debugLineId = Id.create("TTSB/B_1438", TransitLine.class);
 	private Id<TransitRoute> debugRouteId = Id.create("602798A4122B5456", TransitRoute.class);
 	private String debugDescr = "shapeId:26";
+	private String debugShapeId = "26";
 
 	private String unmappedScheduleFile = base + "mts/unmapped_schedule.xml.gz";
-
 	private String networkOutput1 = base + "output/normal_network.xml.gz";
 	private String scheduleOutput1 = base + "output/normal_schedule.xml.gz";
 	private String networkOutput2 = base + "output/shapes_network.xml.gz";
@@ -155,7 +155,7 @@ public class PTMapperShapesTest {
 
 		Map<Id<RouteShape>, RouteShape> shapes = ShapeTools.readShapesFile(gtfsFolder + "shapes.txt", coordSys);
 
-		Id<RouteShape> shapeId = ScheduleTools.getShapeIdFromDescription(debugDescr);
+		Id<RouteShape> shapeId = Id.create(debugShapeId, RouteShape.class);
 		ShapeTools.writeESRIShapeFile(Collections.singletonList(shapes.get(shapeId)), coordSys, base + "output/shp/gtfsShapes.shp");
 	}
 
