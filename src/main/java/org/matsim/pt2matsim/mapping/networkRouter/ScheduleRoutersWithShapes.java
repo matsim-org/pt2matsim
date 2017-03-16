@@ -14,8 +14,11 @@ import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
+import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
+import org.matsim.pt2matsim.tools.ShapeTools;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -35,24 +38,36 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 	private final PublicTransitMappingConfigGroup config;
 	private final TransitSchedule schedule;
 	private final Map<Id<RouteShape>, RouteShape> shapes;
+	private final double maxWeightDistance;
+	private final double cutBuffer;
 	private Map<TransitLine, Map<TransitRoute, Router>> routers = new HashMap<>();
 	private Map<Id<RouteShape>, Router> routersByShape = new HashMap<>();
 	private Network network;
 
-	public ScheduleRoutersWithShapes(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network, Map<Id<RouteShape>, RouteShape> shapes) {
+	public ScheduleRoutersWithShapes(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network, Map<Id<RouteShape>, RouteShape> shapes, double maxWeightDistance, double cutBuffer) {
 		this.config = config;
 		this.schedule = schedule;
 		this.network = network;
 		this.shapes = shapes;
+		this.maxWeightDistance = maxWeightDistance;
+		this.cutBuffer = cutBuffer;
 	}
+
+	public ScheduleRoutersWithShapes(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network, Map<Id<RouteShape>, RouteShape> shapes, double maxWeightDistance) {
+		this.config = config;
+		this.schedule = schedule;
+		this.network = network;
+		this.shapes = shapes;
+		this.maxWeightDistance = maxWeightDistance;
+		this.cutBuffer = maxWeightDistance * 5;
+	}
+
 
 	@Override
 	public void load() {
 		Counter c = new Counter(" route # ");
 
 		RouterShapes.setTravelCostType(config.getTravelCostType());
-		RouterShapes.setNetworkCutBuffer(200);
-		RouterShapes.setMaxWeightDistance(50);
 
 		for(TransitLine transitLine : this.schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
@@ -72,7 +87,12 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 					if(tmpRouter == null) {
 						Set<String> networkTransportModes = config.getModeRoutingAssignment().get(transitRoute.getTransportMode());
 
-						tmpRouter = new RouterShapes(network, networkTransportModes, shape);
+						// todo this setup could be improved (i.e. don't recreate/filter networks all over again)
+						Network cutNetwork = NetworkTools.createFilteredNetworkByLinkMode(network, networkTransportModes);
+						Collection<Node> nodesWithinBuffer = ShapeTools.getNodesWithinBuffer(cutNetwork, shape, cutBuffer);
+						NetworkTools.cutNetwork(cutNetwork, nodesWithinBuffer);
+
+						tmpRouter = new RouterShapes(network, shape, maxWeightDistance);
 						routersByShape.put(shapeId, tmpRouter);
 					}
 				}
@@ -80,7 +100,6 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 			}
 		}
 	}
-
 
 	@Override
 	public LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, TransitLine transitLine, TransitRoute transitRoute) {

@@ -31,14 +31,11 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.lib.RouteShape;
-import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ShapeTools;
 import org.matsim.vehicles.Vehicle;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * A LeastCostPathCalculator using FastAStarEuclidian. One Router should be initialized
@@ -49,24 +46,20 @@ import java.util.Set;
 public class RouterShapes implements Router {
 
 	private static PublicTransitMappingConfigGroup.TravelCostType travelCostType = PublicTransitMappingConfigGroup.TravelCostType.linkLength;
-	private static double maxWeightDistance = 30;
-	private static double cutBuffer = 1000;
+
 	private final Network network;
 	private final LeastCostPathCalculator pathCalculator;
+	private final double maxWeightDistance;
 	private final RouteShape shape;
+
 	private final Map<Tuple<Id<Node>, Id<Node>>, LeastCostPathCalculator.Path> paths;
 
 
-	public RouterShapes(Network paramNetwork, Set<String> networkTransportModes, RouteShape shape) {
+	public RouterShapes(Network network, RouteShape shape, double maxWeightDistance) {
 		this.shape = shape;
-
-		// todo this setup could be improved
-		this.network = NetworkTools.createFilteredNetworkByLinkMode(paramNetwork, networkTransportModes);
-		Collection<Node> nodesWithinBuffer = ShapeTools.getNodesWithinBuffer(this.network, shape, cutBuffer);
-		NetworkTools.cutNetwork(network, nodesWithinBuffer);
-
-
+		this.network = network;
 		this.paths = new HashMap<>();
+		this.maxWeightDistance = maxWeightDistance;
 
 		LeastCostPathCalculatorFactory factory = new FastAStarEuclideanFactory(this.network, this);
 		this.pathCalculator = factory.createPathCalculator(this.network, this, this);
@@ -74,14 +67,6 @@ public class RouterShapes implements Router {
 
 	public static void setTravelCostType(PublicTransitMappingConfigGroup.TravelCostType type) {
 		travelCostType = type;
-	}
-
-	public static void setMaxWeightDistance(double distance) {
-		maxWeightDistance = distance;
-	}
-
-	public static void setNetworkCutBuffer(double buffer) {
-		cutBuffer = buffer;
 	}
 
 	/**
