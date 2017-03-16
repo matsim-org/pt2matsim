@@ -72,10 +72,30 @@ public final class ShapeTools {
 	}
 
 	/**
-	 * Calculates the minimal distance from a link to a given routeShape.
-	 * Distances are calculated in intervals of 5 map units.
+	 * Calculates the minimal distance from a link to a given routeShape as
+	 * average distance of the the two link nodes and the center of the link.
 	 */
 	public static double calcMinDistanceToShape(Link link, RouteShape shape) {
+		Coord c1 = link.getFromNode().getCoord();
+		Coord c2 = link.getToNode().getCoord();
+		Coord c3 = CoordUtils.getCenter(c1, c2);
+
+		double dist1 = ShapeTools.calcMinDistanceToShape(c1, shape);
+		double dist2 = ShapeTools.calcMinDistanceToShape(c2, shape);
+		double dist3 = ShapeTools.calcMinDistanceToShape(c3, shape);
+
+		return (dist1 + dist2 + dist3) / 3.0;
+	}
+
+	/**
+	 * Calculates the minimal distance from a link to a given routeShape.
+	 * Distances are calculated in intervals of 5 map units.
+	 *
+	 * @deprecated if one of the end nodes is on the shape, distance is 0 even if
+	 * the link is perpendicular.
+	 */
+	@Deprecated
+	public static double calcMinDistanceToShapeInterval(Link link, RouteShape shape) {
 		double measureInterval = 5;
 
 		double minDist = Double.MAX_VALUE;

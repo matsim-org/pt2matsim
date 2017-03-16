@@ -116,4 +116,8 @@ public class GtfsShape implements RouteShape {
 		return new Coord[]{new Coord(extentSWx, extentSWy), new Coord(extentNEx, extentNEy)};
 	}
 
+	@Override
+	public String toString() {
+		return id.toString() + " [" + points.size() + " points]";
+	}
 }
