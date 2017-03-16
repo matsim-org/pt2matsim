@@ -28,7 +28,6 @@ import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.hafas.lib.*;
-import org.matsim.pt2matsim.run.Gtfs2TransitSchedule;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 import org.matsim.vehicles.VehicleCapacity;
 import org.matsim.vehicles.VehicleType;
@@ -42,33 +41,17 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Implementation of Hafas2MATSimTransitSchedule.
+ * Converts hafas files to a matsim transit schedule.
  *
  * @author polettif
  */
 public class HafasConverter {
 
-	protected static Logger log = Logger.getLogger(Gtfs2TransitSchedule.class);
-	private final TransitScheduleFactory scheduleFactory;
-	private final VehiclesFactory vehicleFactory;
+	protected static Logger log = Logger.getLogger(HafasConverter.class);
 
-	private TransitSchedule schedule;
-	private Vehicles vehicles;
-	private CoordinateTransformation transformation;
-	private final String hafasFolder;
-
-	public HafasConverter(String hafasFolder, CoordinateTransformation transformation, TransitSchedule schedule, Vehicles vehicles) {
-		this.schedule = schedule;
-		this.vehicles = vehicles;
-		this.transformation = transformation;
+	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles) throws IOException {
 		if(!hafasFolder.endsWith("/")) hafasFolder += "/";
-		this.hafasFolder = hafasFolder;
 
-		this.scheduleFactory = schedule.getFactory();
-		this.vehicleFactory = vehicles.getFactory();
-	}
-
-	public void run() throws IOException {
 		log.info("Creating the schedule based on HAFAS...");
 
 		// 1. Read and create stop facilities
@@ -92,7 +75,7 @@ public class HafasConverter {
 		log.info("  Read transit lines... done.");
 
 		log.info("  Creating Transit Routes...");
-		createTransitRoutesFromFPLAN(routes);
+		createTransitRoutesFromFPLAN(routes, schedule, vehicles);
 		log.info("  Creating Transit Routes... done.");
 
 		// 5. Clean schedule
@@ -104,7 +87,9 @@ public class HafasConverter {
 		log.info("Creating the schedule based on HAFAS... done.");
 	}
 
-	private void createTransitRoutesFromFPLAN(List<FPLANRoute> routes) {
+	private static void createTransitRoutesFromFPLAN(List<FPLANRoute> routes, TransitSchedule schedule, Vehicles vehicles) {
+		TransitScheduleFactory scheduleFactory = schedule.getFactory();
+		VehiclesFactory vehicleFactory = vehicles.getFactory();
 		Map<Id<TransitLine>, Integer> routeNrs = new HashMap<>();
 
 		Counter lineCounter = new Counter(" TransitLine # ");
@@ -178,7 +163,7 @@ public class HafasConverter {
 		}
 	}
 
-	private Id<TransitLine> createLineId(FPLANRoute route) {
+	private static Id<TransitLine> createLineId(FPLANRoute route) {
 		if(route.getOperator().equals("SBB")) {
 			long firstStopId;
 			long lastStopId;
@@ -207,7 +192,7 @@ public class HafasConverter {
 		}
 	}
 
-	private Id<TransitRoute> createRouteId(FPLANRoute route, int routeNr) {
+	private static Id<TransitRoute> createRouteId(FPLANRoute route, int routeNr) {
 		return Id.create(route.getFahrtNummer() + "_" + String.format("%03d", routeNr), TransitRoute.class);
 	}
 }
