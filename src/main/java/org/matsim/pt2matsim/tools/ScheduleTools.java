@@ -51,6 +51,7 @@ import java.util.*;
 public final class ScheduleTools {
 
 	protected static Logger log = Logger.getLogger(ScheduleTools.class);
+	private static TransitRoute shapeId;
 
 	private ScheduleTools() {}
 
@@ -488,19 +489,6 @@ public final class ScheduleTools {
 		}
 	}
 
-	public static String getDescriptionStrFromShapeId(Id<RouteShape> id) {
-		return PublicTransitMappingStrings.DESCR_SHAPE_ID_PREFIX + id.toString();
-	}
-
-	public static Id<RouteShape> getShapeIdFromDescription(String transitRouteDescription) {
-		if(transitRouteDescription == null || !transitRouteDescription.contains(PublicTransitMappingStrings.DESCR_SHAPE_ID_PREFIX)) {
-			return null;
-		} else {
-			String[] shapeIdSplit = transitRouteDescription.split(PublicTransitMappingStrings.DESCR_SHAPE_ID_PREFIX);
-			return Id.create(shapeIdSplit[1], RouteShape.class);
-		}
-	}
-
 	/**
 	 * Changes the free speed of links based on the necessary travel times
 	 * given by the schedule. Rather experimental and only recommended for
@@ -578,4 +566,29 @@ public final class ScheduleTools {
 		}
 		return false;
 	}
+
+	/**
+	 * Sets the shape id for the transit route (current workaround with description)
+	 */
+	public static void setShapeId(TransitRoute transitRoute, Id<RouteShape> id) {
+		transitRoute.setDescription(getDescriptionStrFromShapeId(id));
+	}
+
+	public static Id<RouteShape> getShapeId(TransitRoute transitRoute) {
+		return getShapeIdFromDescription(transitRoute.getDescription());
+	}
+
+	private static String getDescriptionStrFromShapeId(Id<RouteShape> id) {
+		return PublicTransitMappingStrings.DESCR_SHAPE_ID_PREFIX + id.toString();
+	}
+
+	private static Id<RouteShape> getShapeIdFromDescription(String transitRouteDescription) {
+		if(transitRouteDescription == null || !transitRouteDescription.contains(PublicTransitMappingStrings.DESCR_SHAPE_ID_PREFIX)) {
+			return null;
+		} else {
+			String[] shapeIdSplit = transitRouteDescription.split(PublicTransitMappingStrings.DESCR_SHAPE_ID_PREFIX);
+			return Id.create(shapeIdSplit[1], RouteShape.class);
+		}
+	}
+
 }

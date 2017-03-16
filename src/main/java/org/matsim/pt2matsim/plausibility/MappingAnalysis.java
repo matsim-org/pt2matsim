@@ -72,7 +72,7 @@ public class MappingAnalysis {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				tr.incCounter();
 
-				Id<RouteShape> shapeId = ScheduleTools.getShapeIdFromDescription(transitRoute.getDescription());
+				Id<RouteShape> shapeId = ScheduleTools.getShapeId(transitRoute);
 
 				RouteShape shape = shapes.get(shapeId);
 
@@ -248,5 +248,36 @@ public class MappingAnalysis {
 			}
 		}
 		return sum / n;
+	}
+
+	public List<Double> getRouteShapeDistances(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId) {
+		return routeDistances.get(transitLineId).get(transitRouteId);
+	}
+
+	/**
+	 * @return the quantiles for the distance between route and shape for the given transit route
+	 */
+	public TreeMap<Integer, Double> getQuantiles(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId) {
+		List<Double> values = routeDistances.get(transitLineId).get(transitRouteId);
+		values.sort(Double::compareTo);
+		int n = values.size();
+
+		TreeMap<Integer, Double> quantiles = new TreeMap<>();
+		quantiles.put(0, values.get(0));
+		quantiles.put(25, values.get((int) Math.round(n * 0.25) - 1));
+		quantiles.put(50, values.get((int) Math.round(n * 0.50) - 1));
+		quantiles.put(75, values.get((int) Math.round(n * 0.75) - 1));
+		quantiles.put(85, values.get((int) Math.round(n * 0.85) - 1));
+		quantiles.put(95, values.get((int) Math.round(n * 0.95) - 1));
+		quantiles.put(100, values.get(n - 1));
+
+		return quantiles;
+	}
+
+	/**
+	 * @return the ratio of the mapped path length and the shape length
+	 */
+	public double getLengthRatio(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId) {
+		return lengthRatios.get(transitLineId).get(transitRouteId);
 	}
 }
