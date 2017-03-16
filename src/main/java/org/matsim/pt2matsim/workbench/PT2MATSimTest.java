@@ -16,10 +16,8 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim;
+package org.matsim.pt2matsim.workbench;
 
-import org.junit.Before;
-import org.junit.Test;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.ConfigWriter;
@@ -35,25 +33,19 @@ import java.io.IOException;
  *
  * @author boescpa
  */
-public class PT2MATSimTest {
+public final class PT2MATSimTest {
 
-	private final String input = "test/input/PT2MATSimTest/";
-	private final String output = "test/output/PT2MATSimTest/";
+	private static final String input = "test/input/PT2MATSimTest/";
+	private static final String output = "test/output/PT2MATSimTest/";
 
-	@Before
-	public void prepareTests() {
-		// Create output folder if not existing:
-		new File(output + "GRTScheduleShapes/").mkdirs();
-	}
-
-	// To use the PT2MATSim Package, several steps are required:
-	public void runPT2MATSim() {
+	public static void main(String[] args) throws Exception {
+		prepare();
 		// 1. Convert a gtfs schedule to an unmapped transit schedule
 		gtfsToSchedule();
-			// OR a hafas schedule to an unmapped transit schedule
-			hafasToSchedule();
-			// OR an osm file to an unmapped transit schedule
-			osmToSchedule();
+		// OR a hafas schedule to an unmapped transit schedule
+		hafasToSchedule();
+		// OR an osm file to an unmapped transit schedule
+		osmToSchedule();
 		// 2. Convert an osm map to a network
 		osmToNetwork();
 		// 3. Map the schedule onto the network
@@ -62,14 +54,19 @@ public class PT2MATSimTest {
 		checkPlausibility();
 	}
 
+	public static void prepare() {
+		// Create output folder if not existing:
+		new File(output + "GRTScheduleShapes/").mkdirs();
+	}
+
+
 	/**
 	 * 	1. A GTFS or HAFAS Schedule or a OSM map with information on public transport
 	 * 	has to be converted to an unmapped MATSim Transit Schedule.
 	 *
 	 * 	Here as a first example, the GTFS-schedule of GrandRiverTransit, Waterloo-Area, Canada, is converted.
 	 */
-	@Test
-	public void gtfsToSchedule() {
+	public static void gtfsToSchedule() {
 		String[] gtfsConverterArgs = new String[]{
 				// [0] folder where the gtfs files are located (a single zip file is not supported)
 				input + "GrandRiverTransit-GTFS/",
@@ -87,8 +84,7 @@ public class PT2MATSimTest {
 	}
 	// Here as a second example, the HAFAS-schedule of the BrienzRothornBahn, Switzerland, is
 	// converted.
-	@Test
-	public void hafasToSchedule() {
+	public static void hafasToSchedule() {
 		String[] hafasConverterArgs = new String[]{
 				// [0] hafasFolder
 				input + "BrienzRothornBahn-HAFAS/",
@@ -107,8 +103,7 @@ public class PT2MATSimTest {
 	}
 	// And as a third example, the OSM-map of the Waterloo City Centre, Canada, is
 	// converted.
-	@Test
-	public void osmToSchedule() {
+	public static void osmToSchedule() {
 		String[] osmConverterArgs = new String[]{
 				// [0] osm file
 				input + "WaterlooCityCentre.osm",
@@ -126,8 +121,7 @@ public class PT2MATSimTest {
 	 *
 	 * Here as an example, the OSM-extract of the city centre of Waterloo, Canada, is converted.
 	 */
-	@Test
-	public void osmToNetwork() {
+	public static void osmToNetwork() {
 		// Create an osmToNetwork-Config:
 		CreateDefaultOsmConfig.main(new String[]{output + "OsmConverterConfig.xml"});
 
@@ -163,8 +157,7 @@ public class PT2MATSimTest {
 	 * 	Here as an example, the unmapped schedule of GrandRiverTransit (previously converted from GTFS) is mapped
 	 * 	to the converted OSM network of the Waterloo Area, Canada.
 	 */
-	@Test
-	public void mapScheduleToNetwork() {
+	public static void mapScheduleToNetwork() {
 		// Create a mapping config:
 		CreateDefaultPTMapperConfig.main(new String[]{output + "MapperConfig.xml"});
 		// Open the mapping config and set the parameters to the required values
@@ -192,8 +185,7 @@ public class PT2MATSimTest {
 	 * 	Here as an example, the mapped transit schedule and the multimodal network created in step 3 is
 	 * 	checked for plausibility.
 	 */
-	@Test
-	public void checkPlausibility() {
+	public static void checkPlausibility() {
 		CheckMappedSchedulePlausibility.run(
 				input + "MappedTransitSchedule.xml.gz",
 				input + "MultiModalNetwork.xml.gz",

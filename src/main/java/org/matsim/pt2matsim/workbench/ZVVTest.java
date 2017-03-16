@@ -1,7 +1,5 @@
-package org.matsim.pt2matsim;
+package org.matsim.pt2matsim.workbench;
 
-import org.junit.Before;
-import org.junit.Test;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.pt.transitSchedule.api.TransitLine;
@@ -30,7 +28,7 @@ import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 import java.util.HashSet;
 import java.util.Map;
 
-import static org.matsim.pt2matsim.mapping.PTMapperShapesTest.createPTMConfig;
+import static org.matsim.pt2matsim.workbench.PTMapperShapesTest.createPTMConfig;
 
 /**
  * @author polettif
@@ -55,10 +53,12 @@ public class ZVVTest {
 	private String outputSchedule3 = base + "output/osm_schedule.xml.gz";
 	private OsmData osmData;
 
-
-	@Before
-	public void prepare() {
-		convert();
+	public static void main(String[] args) throws Exception {
+		ZVVTest obj = new ZVVTest();
+		obj.convert();
+		obj.runMappingStandard();
+		obj.runMappingShapes();
+		obj.runMappingOsm();
 	}
 
 	private void convert() {
@@ -94,7 +94,6 @@ public class ZVVTest {
 	/**
 	 * 1
 	 */
-	@Test
 	public void runMappingStandard() {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
@@ -123,7 +122,6 @@ public class ZVVTest {
 	/**
 	 * 2
 	 */
-	@Test
 	public void runMappingShapes() {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
@@ -153,7 +151,6 @@ public class ZVVTest {
 	/**
 	 * 3
 	 */
-	@Test
 	public void runMappingOsm() {
 		/*
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
