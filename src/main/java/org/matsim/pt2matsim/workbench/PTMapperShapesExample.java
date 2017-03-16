@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public class PTMapperShapesExample {
 
-	private String base = "test/analysis/";
+	private String base = "example/";
 	private String networkInput = base + "network/addison.xml.gz";
 	private String coordSys = "EPSG:2032";
 	private String gtfsFolder = base + "addisoncounty-vt-us-gtfs/";

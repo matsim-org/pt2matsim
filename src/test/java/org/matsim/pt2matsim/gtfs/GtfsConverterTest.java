@@ -18,7 +18,7 @@ public class GtfsConverterTest {
 	public void convert() throws Exception {
 		String coordinateSystem = "EPSG:2032";
 
-		gtfsFeed = new GtfsFeedImpl("test/analysis/addisoncounty-vt-us-gtfs/");
+		gtfsFeed = new GtfsFeedImpl("test/Addisoncounty-GTFS/");
 
 		gtfsConverter = new GtfsConverter(gtfsFeed);
 		gtfsConverter.convert(GtfsConverter.ALL_SERVICE_IDS, coordinateSystem);
@@ -38,6 +38,17 @@ public class GtfsConverterTest {
 
 		Assert.assertEquals(gtfsFeed.getRoutes().size(), nTransitLines);
 		Assert.assertEquals(75, nTransitRoutes);
+	}
+
+	@Test
+	public void testSecondFeed() {
+		String coordinateSystem = "WGS84";
+
+		gtfsFeed = new GtfsFeedImpl("test/GrandRiverTransit-GTFS/");
+
+		gtfsConverter = new GtfsConverter(gtfsFeed);
+		gtfsConverter.convert(GtfsConverter.ALL_SERVICE_IDS, coordinateSystem);
+
 	}
 
 }

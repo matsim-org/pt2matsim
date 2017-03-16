@@ -5,27 +5,19 @@ import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.osm.lib.OsmData;
 import org.matsim.pt2matsim.osm.lib.OsmDataImpl;
 import org.matsim.pt2matsim.osm.lib.OsmFileReader;
-import org.matsim.pt2matsim.tools.NetworkTools;
 
 /**
  * @author polettif
  */
 public class OsmMultimodalNetworkConverterTest {
 
-	private String base = "test/analysis/";
-	private String input = "test/input/PT2MATSimTest/";
-	private String output = "test/output/";
-
 	@Test
 	public void convert() throws Exception {
 		// setup config
 		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.createDefaultConfig();
-//		osmConfig.setOutputCoordinateSystem("EPSG:2032");
-//		osmConfig.setOsmFile(base + "osm/addison.osm");
-//		osmConfig.setOutputNetworkFile(base + "output/addisonAttributes.xml.gz");
 		osmConfig.setOutputCoordinateSystem("WGS84");
-		osmConfig.setOsmFile(input + "WaterlooCityCentre.osm");
-		osmConfig.setOutputNetworkFile(base + "output/WaterlooCityCentre.xml.gz");
+		osmConfig.setOsmFile("test/osm/WaterlooCityCentre.osm");
+		osmConfig.setOutputNetworkFile("test/output/WaterlooCityCentre.xml.gz");
 		osmConfig.setMaxLinkLength(20);
 
 		// read osm file
@@ -37,7 +29,7 @@ public class OsmMultimodalNetworkConverterTest {
 		converter.convert(osmConfig);
 
 		// write file
-		NetworkTools.writeNetwork(converter.getNetwork(), osmConfig.getOutputNetworkFile());
+		// NetworkTools.writeNetwork(converter.getNetwork(), osmConfig.getOutputNetworkFile());
 	}
 
 }

@@ -38,6 +38,8 @@ import java.util.*;
  * available public transit data from OSM to a schedule: stop facilities,
  * transitRoutes and routeProfiles. Departures and link sequences are missing.
  *
+ * Experimental!
+ *
  * @author polettif
  */
 public class OsmTransitScheduleConverter {
@@ -102,7 +104,7 @@ public class OsmTransitScheduleConverter {
 
 				// create a facility for each member
 				for(Osm.Element member : relation.getMembers()) {
-					if(relation.getMemberRole(member).equals(Osm.Value.STOP)) {
+					if(relation.getMemberRole(member).equals(Osm.Value.STOP) && member.getType().equals(Osm.ElementType.NODE)) {
 						Osm.Node n = (Osm.Node) member;
 						TransitStopFacility newStopFacility = createStopFacilityFromOsmNode(n, stopPostAreaId);
 
