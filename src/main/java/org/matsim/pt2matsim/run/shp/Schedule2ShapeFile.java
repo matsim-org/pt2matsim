@@ -16,7 +16,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.shp;
+package org.matsim.pt2matsim.run.shp;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import org.apache.log4j.Logger;
@@ -43,6 +43,20 @@ import java.util.*;
  */
 public class Schedule2ShapeFile {
 
+	private static final Logger log = Logger.getLogger(Schedule2ShapeFile.class);
+	private final TransitSchedule schedule;
+	private final Network network;
+	private final String crs;
+	private final boolean useNetworkLinks;
+	private Map<TransitStopFacility, Set<Id<TransitRoute>>> routesOnStopFacility = new HashMap<>();
+
+	public Schedule2ShapeFile(String crs, final TransitSchedule schedule, final Network network) {
+		this.schedule = schedule;
+		this.network = network;
+		this.crs = crs;
+		this.useNetworkLinks = network != null;
+	}
+
 	/**
 	 * Converts the given schedule based on the given network
 	 * to GIS shape files.
@@ -60,22 +74,6 @@ public class Schedule2ShapeFile {
 		} else {
 			throw new RuntimeException("Incorrect number of arguments");
 		}
-	}
-
-	private static final Logger log = Logger.getLogger(Schedule2ShapeFile.class);
-
-	private final TransitSchedule schedule;
-	private final Network network;
-	private final String crs;
-	private final boolean useNetworkLinks;
-
-	private Map<TransitStopFacility, Set<Id<TransitRoute>>> routesOnStopFacility = new HashMap<>();
-
-	public Schedule2ShapeFile(String crs, final TransitSchedule schedule, final Network network) {
-		this.schedule = schedule;
-		this.network = network;
-		this.crs = crs;
-		this.useNetworkLinks = network != null;
 	}
 
 	/**

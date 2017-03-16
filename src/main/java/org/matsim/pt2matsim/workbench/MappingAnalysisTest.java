@@ -16,10 +16,8 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.plausibility;
+package org.matsim.pt2matsim.workbench;
 
-import org.junit.Before;
-import org.junit.Test;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
@@ -27,6 +25,7 @@ import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.mapping.PTMapper;
+import org.matsim.pt2matsim.plausibility.MappingAnalysis;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ShapeTools;
@@ -49,8 +48,14 @@ public class MappingAnalysisTest {
 
 	private String input = "test/analysis/";
 
+	public static void main(String[] args) throws Exception {
+		MappingAnalysisTest obj = new MappingAnalysisTest();
+		obj.prepare();
+		obj.runMapping();
+		obj.analysis();
+	}
 
-	@Before
+
 	public void prepare() throws IOException {
 
 		network = NetworkTools.readNetwork(input + "network/addison.xml.gz");
@@ -82,7 +87,6 @@ public class MappingAnalysisTest {
 
 	}
 
-	@Before
 	public void runMapping() {
 		PublicTransitMappingConfigGroup ptmConfig = PublicTransitMappingConfigGroup.createDefaultConfig();
 
@@ -92,7 +96,6 @@ public class MappingAnalysisTest {
 		ScheduleTools.writeTransitSchedule(schedule, input+"output/addison_schedule.xml.gz");
 	}
 
-	@Test
 	public void analysis() {
 		new File(input + "output/").mkdirs();
 

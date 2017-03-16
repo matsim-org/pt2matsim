@@ -1,7 +1,5 @@
-package org.matsim.pt2matsim.mapping;
+package org.matsim.pt2matsim.workbench;
 
-import org.junit.Before;
-import org.junit.Test;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.pt.transitSchedule.api.TransitLine;
@@ -12,10 +10,11 @@ import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.lib.RouteShape;
+import org.matsim.pt2matsim.mapping.PTMapper;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWithShapes;
 import org.matsim.pt2matsim.plausibility.MappingAnalysis;
-import org.matsim.pt2matsim.shp.Schedule2ShapeFile;
+import org.matsim.pt2matsim.run.shp.Schedule2ShapeFile;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ShapeTools;
@@ -47,6 +46,14 @@ public class PTMapperShapesTest {
 	private String networkOutput2 = base + "output/shapes_network.xml.gz";
 	private String scheduleOutput2 = base + "output/shapes_schedule.xml.gz";
 
+	public static void main(String[] args) throws Exception {
+		PTMapperShapesTest obj = new PTMapperShapesTest();
+		obj.convertGtfs();
+		obj.mappingAnalysisNormal();
+		obj.mappingAnalysisWithShapes();
+		obj.writeShapes();
+	}
+
 	public static PublicTransitMappingConfigGroup createPTMConfig() {
 		PublicTransitMappingConfigGroup config = new PublicTransitMappingConfigGroup();
 		config.getModesToKeepOnCleanUp().add("car");
@@ -66,7 +73,6 @@ public class PTMapperShapesTest {
 		return config;
 	}
 
-	@Before
 	public void convertGtfs() throws Exception {
 		gtfsFeed = new GtfsFeedImpl(gtfsFolder);
 		GtfsConverter gtfsConverter = new GtfsConverter(gtfsFeed);
@@ -105,7 +111,6 @@ public class PTMapperShapesTest {
 
 	}
 
-	@Test
 	public void mappingAnalysisNormal() {
 		runNormalMapping();
 
@@ -121,7 +126,6 @@ public class PTMapperShapesTest {
 		System.out.println("Length diff. normal: " + Math.sqrt(analysis.getAverageSquaredLengthRatio()) * 100 + " %");
 	}
 
-	@Test
 	public void mappingAnalysisWithShapes() {
 		runMappingWithShapes();
 
@@ -146,7 +150,6 @@ public class PTMapperShapesTest {
 		*/
 	}
 
-	@Test
 	public void writeShapes() {
 		Schedule2ShapeFile.run(coordSys, base + "output/shp/", base + "output/shapes_schedule.xml.gz", base + "output/shapes_network.xml.gz");
 

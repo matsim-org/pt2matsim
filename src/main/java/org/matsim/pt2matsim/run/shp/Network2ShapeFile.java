@@ -16,7 +16,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.shp;
+package org.matsim.pt2matsim.run.shp;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import org.matsim.api.core.v01.network.Link;
