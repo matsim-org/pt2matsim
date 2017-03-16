@@ -25,7 +25,7 @@ import java.util.Map;
 /**
  * @author polettif
  */
-public class PTMapperShapesTest {
+public class PTMapperShapesExample {
 
 	private String base = "test/analysis/";
 	private String networkInput = base + "network/addison.xml.gz";
@@ -47,7 +47,7 @@ public class PTMapperShapesTest {
 	private String scheduleOutput2 = base + "output/shapes_schedule.xml.gz";
 
 	public static void main(String[] args) throws Exception {
-		PTMapperShapesTest obj = new PTMapperShapesTest();
+		PTMapperShapesExample obj = new PTMapperShapesExample();
 		obj.convertGtfs();
 		obj.mappingAnalysisNormal();
 		obj.mappingAnalysisWithShapes();
@@ -100,7 +100,7 @@ public class PTMapperShapesTest {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(unmappedScheduleFile);
 		Network network = NetworkTools.readNetwork(networkInput);
 
-		ScheduleRouters routers = new ScheduleRoutersWithShapes(config, schedule, network, ShapeTools.readShapesFile(gtfsFolder + "shapes.txt", coordSys));
+		ScheduleRouters routers = new ScheduleRoutersWithShapes(config, schedule, network, ShapeTools.readShapesFile(gtfsFolder + "shapes.txt", coordSys), 50);
 
 		PTMapper ptMapper = new PTMapper(config, schedule, network, routers);
 //		ExtractDebugSchedule.run(schedule, debugLineId.toString(), debugRouteId.toString());

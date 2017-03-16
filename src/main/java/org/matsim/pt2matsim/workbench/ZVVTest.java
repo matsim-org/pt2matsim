@@ -28,7 +28,7 @@ import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 import java.util.HashSet;
 import java.util.Map;
 
-import static org.matsim.pt2matsim.workbench.PTMapperShapesTest.createPTMConfig;
+import static org.matsim.pt2matsim.workbench.PTMapperShapesExample.createPTMConfig;
 
 /**
  * @author polettif
@@ -129,7 +129,7 @@ public class ZVVTest {
 		PublicTransitMappingConfigGroup config = createPTMConfig();
 		Map<Id<RouteShape>, RouteShape> shapes = ShapeTools.readShapesFile(gtfsShapeFile, coordSys);
 
-		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersWithShapes(config, schedule, network, shapes));
+		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersWithShapes(config, schedule, network, shapes, 50));
 		ptMapper.run();
 
 		NetworkTools.writeNetwork(network, outputNetwork2);
