@@ -31,13 +31,17 @@ import java.util.Map;
 import static org.matsim.pt2matsim.workbench.PTMapperShapesExample.createPTMConfig;
 
 /**
+ * Mapping example for public transit in the zurich area (agency: ZVV).
+ *
+ * Transit schedule is available on opentransportdata.swiss
+ *
  * @author polettif
  */
 public class ZVVexample {
 
 
-	private String base = "test/zvv/";
-	private String osmName = base + "osmData/zurich.osmData";
+	private String base = "zvv/";
+	private String osmName = base + "osm/zurich.osm";
 	private String gtfsFolder = base + "gtfs/";
 	private String gtfsShapeFile = gtfsFolder + GtfsDefinitions.Files.SHAPES.fileName;
 	private String inputNetworkFile = base + "network/network_unmapped.xml.gz";
@@ -62,23 +66,36 @@ public class ZVVexample {
 	}
 
 	private void convert() {
-		// convert OSM
+		// 1. 	convert OSM
+		// 1.1. setup config
 		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.createDefaultConfig();
 		osmConfig.setKeepPaths(true);
 		osmConfig.setOutputCoordinateSystem(coordSys);
 
+		// 1.2 load osm file
 		osmData = new OsmDataImpl();
 		new OsmFileReader(osmData).readFile(osmName);
+
+		// 1.3 initiate and run converter
 		OsmMultimodalNetworkConverter osmConverter = new OsmMultimodalNetworkConverter(osmData);
 		osmConverter.convert(osmConfig);
+
+		// 1.4 write converted network
 		NetworkTools.writeNetwork(osmConverter.getNetwork(), inputNetworkFile);
 
+		// 2. create schedule
+		// 2.1 Load gtfs feed
 		GtfsFeed gtfsFeed = new GtfsFeedImpl(gtfsFolder);
+
+		// 2. convert gtfs to a unmapped schedule
 		GtfsConverter gtfsConverter = new GtfsConverter(gtfsFeed);
 		gtfsConverter.convert(GtfsConverter.DAY_WITH_MOST_SERVICES, coordSys);
 
+		// 3. write the transit schedule
 		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), fullScheduleFileUM);
+
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(fullScheduleFileUM);
+
 		for(TransitLine transitLine : new HashSet<>(schedule.getTransitLines().values())) {
 			for(TransitRoute transitRoute : new HashSet<>(transitLine.getRoutes().values())) {
 				if(!transitRoute.getTransportMode().equals("bus")) {
@@ -92,35 +109,30 @@ public class ZVVexample {
 	}
 
 	/**
-	 * 1
+	 * Runs a standard mapping
 	 */
 	public void runMappingStandard() {
+		// Load schedule and network
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
 
+		// create PTM config
 		PublicTransitMappingConfigGroup config = createPTMConfig();
 
+		// run PTMapepr
 		PTMapper ptMapper = new PTMapper(config, schedule, network);
 		ptMapper.run();
 
+		//
 		NetworkTools.writeNetwork(network, outputNetwork1);
-		ScheduleTools.writeTransitSchedule(ptMapper.getSchedule(), outputSchedule1);
+		ScheduleTools.writeTransitSchedule(schedule, outputSchedule1);
 
-		// analysis
-		MappingAnalysis analysis = new MappingAnalysis(
-				ScheduleTools.readTransitSchedule(outputSchedule1),
-				NetworkTools.readNetwork(outputNetwork1),
-				ShapeTools.readShapesFile(gtfsShapeFile, coordSys)
-		);
-
-		analysis.run();
-//		analysis.writeQuantileDistancesCsv(base + "output/DistancesQuantile.csv");
-		System.out.println("Q8585: " + analysis.getQ8585());
-		System.out.println("Length diff: " + Math.sqrt(analysis.getAverageSquaredLengthRatio()) * 100 + " %");
+		// analyse result
+		runAnalysis(outputSchedule1, outputNetwork1);
 	}
 
 	/**
-	 * 2
+	 * Maps a schedule with gtfs shape information to the network
 	 */
 	public void runMappingShapes() {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
@@ -133,26 +145,30 @@ public class ZVVexample {
 		ptMapper.run();
 
 		NetworkTools.writeNetwork(network, outputNetwork2);
-		ScheduleTools.writeTransitSchedule(ptMapper.getSchedule(), outputSchedule2);
+		ScheduleTools.writeTransitSchedule(schedule, outputSchedule2);
 
 		// analysis
+		runAnalysis(outputSchedule2, outputNetwork2);
+	}
+
+	/**
+	 * Analyses the mapping result
+	 */
+	private void runAnalysis(String scheduleFile, String networkFile) {
 		MappingAnalysis analysis = new MappingAnalysis(
-				ScheduleTools.readTransitSchedule(outputSchedule2),
-				NetworkTools.readNetwork(outputNetwork2),
+				ScheduleTools.readTransitSchedule(scheduleFile),
+				NetworkTools.readNetwork(networkFile),
 				ShapeTools.readShapesFile(gtfsShapeFile, coordSys)
 		);
-
 		analysis.run();
-//		analysis.writeQuantileDistancesCsv(base + "output/DistancesQuantile.csv");
 		System.out.println("Q8585: " + analysis.getQ8585());
 		System.out.println("Length diff: " + Math.sqrt(analysis.getAverageSquaredLengthRatio()) * 100 + " %");
 	}
 
 	/**
-	 * 3
+	 * Maps a schedule using osm pt information of the network
 	 */
 	public void runMappingOsm() {
-		/*
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
 
@@ -164,18 +180,7 @@ public class ZVVexample {
 		NetworkTools.writeNetwork(network, outputNetwork3);
 		ScheduleTools.writeTransitSchedule(ptMapper.getSchedule(), outputSchedule3);
 
-		// analysis
-		MappingAnalysis analysis = new MappingAnalysis(
-				ScheduleTools.readTransitSchedule(outputSchedule2),
-				NetworkTools.readNetwork(outputNetwork2),
-				ShapeTools.readShapesFile(gtfsShapeFile, coordSys)
-		);
-
-		analysis.run();
-//		analysis.writeQuantileDistancesCsv(base + "output/DistancesQuantile.csv");
-		System.out.println("Q8585: " + analysis.getQ8585());
-		System.out.println("Length diff: " + Math.sqrt(analysis.getAverageSquaredLengthRatio()) * 100 + " %");
-		*/
+		runAnalysis(outputSchedule3, outputNetwork3);
 	}
 
 
