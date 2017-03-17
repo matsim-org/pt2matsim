@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE config SYSTEM "http://www.matsim.org/files/dtd/config_v2.dtd">
+<config>
+
+    <!-- ====================================================================== -->
+
+    <module name="PublicTransitMapping">
+
+        <!-- The mode "pt" is added to all links used by public transit after mapping if true.
+        Is not executed if combinePtModes is true. Default: true -->
+        <param name="addPtMode" value="true"/>
+
+        <!-- Defines whether at the end of mapping, all non-car link modes (bus, rail, etc)
+        should be replaced with pt (true) or not. Default: false -->
+        <param name="combinePtModes" value="false"/>
+
+        <!-- Manual link candidates can be defined in a csv file. Each line contains stopFacilityId, modes and linkIds. Separator is ";"
+        Example line: 879843;bus,tram;565,566,5489,5488,321,45 -->
+        <param name="manualLinkCandidateCsvFile" value=""/>
+
+        <!-- If all paths between two stops have a [travelCost] > [maxTravelCostFactor] * [minTravelCost],
+        an artificial link is created. If travelCostType is travelTime
+        minTravelCost is the travelTime between stops from schedule. If travelCostType is
+        linkLength minTravel cost is the beeline distance. -->
+        <param name="maxTravelCostFactor" value="5.0"/>
+
+        <!-- All links that do not have a transit route on them are removed, except the ones
+        listed in this set (typically only car). Separated by comma. -->
+        <param name="modesToKeepOnCleanUp" value="car"/>
+
+        <!-- Path to the input network file. Not needed if PTMapper is called within another class. -->
+        <param name="networkFile" value=""/>
+
+        <!-- Defines the radius [meter] from a stop facility within nodes are searched. Values up to 2000 don't
+        have any significant impact on performance. -->
+        <param name="nodeSearchRadius" value="500.0"/>
+
+        <!-- Defines the number of numOfThreads that should be used for pseudoRouting. Default: 2. -->
+        <param name="numOfThreads" value="2"/>
+
+        <!-- Path to the output network file. Not needed if PTMapper is used within another class. -->
+        <param name="outputNetworkFile" value=""/>
+
+        <!-- Path to the output schedule file. Not needed if PTMapper is used within another class. -->
+        <param name="outputScheduleFile" value=""/>
+
+        <!-- Path to the output car only network file. The input multimodal map is filtered.
+        Not needed if PTMapper is used within another class. -->
+        <param name="outputStreetNetworkFile" value=""/>
+
+        <!-- If true, stop facilities that are not used by any transit route are removed from the schedule. Default: true -->
+        <param name="removeNotUsedStopFacilities" value="true"/>
+
+        <!-- Path to the input schedule file. Not needed if PTMapper is called within another class. -->
+        <param name="scheduleFile" value=""/>
+
+        <!-- After the schedule has been mapped, the free speed of links can be set according to the necessary travel
+        times given by the transit schedule. The freespeed of a link is set to the minimal value needed by all
+        transit routes passing using it. This is performed for "artificial" automatically, additional
+        modes (rail is recommended) can be added, separated by commas. -->
+        <param name="scheduleFreespeedModes" value=""/>
+
+        <!-- Defines which link attribute should be used for routing. Possible values "linkLength" (default)
+        and "travelTime". -->
+        <param name="travelCostType" value="linkLength"/>
+
+        <parameterset type="linkCandidateCreator">
+
+            <!-- After maxNClosestLinks link candidates have been found, additional link
+            candidates within [linkDistanceTolerance] * [distance to the Nth link] are added to the set.
+            Must be >= 1. -->
+            <param name="linkDistanceTolerance" value="1.0"/>
+
+            <!-- The maximal distance [meter] a link candidate is allowed to have from the stop facility. No link candidate
+            beyond this distance are added. -->
+            <param name="maxLinkCandidateDistance" value="80.0"/>
+
+            <!-- Number of link candidates considered for all stops, depends on accuracy of stops and desired
+            performance. Somewhere between 4 and 10 seems reasonable for bus stops, depending on the accuracy of the stop
+            facility coordinates and performance desires. Default: 8 -->
+            <param name="maxNClosestLinks" value="8"/>
+
+            <!-- Only links with at least one of these modes are considered as link candidate for this schedule mode.
+            Separate more than one stop with comma. -->
+            <param name="networkModes" value="car,bus"/>
+
+            <!-- For which schedule mode these settings apply. -->
+            <param name="scheduleMode" value="bus"/>
+
+            <!-- Define if a loop link for all stop facilities for the schedule mode should be created. All other parameters
+            are ignored if true. The node for the loop link is set on the coordinate of the stop facility. -->
+            <param name="useArtificialLoopLink" value="false"/>
+        </parameterset>
+
+        <parameterset type="linkCandidateCreator">
+
+            <!-- After maxNClosestLinks link candidates have been found, additional link
+            candidates within [linkDistanceTolerance] * [distance to the Nth link] are added to the set.
+            Must be >= 1. -->
+            <param name="linkDistanceTolerance" value="1.0"/>
+
+            <!-- The maximal distance [meter] a link candidate is allowed to have from the stop facility. No link candidate
+            beyond this distance are added. -->
+            <param name="maxLinkCandidateDistance" value="150.0"/>
+
+            <!-- Number of link candidates considered for all stops, depends on accuracy of stops and desired
+            performance. Somewhere between 4 and 10 seems reasonable for bus stops, depending on the accuracy of the stop
+            facility coordinates and performance desires. Default: 20 -->
+            <param name="maxNClosestLinks" value="20"/>
+
+            <!-- Only links with at least one of these modes are considered as link candidate for this schedule mode.
+            Separate more than one stop with comma. -->
+            <param name="networkModes" value="rail,light_rail"/>
+
+            <!-- For which schedule mode these settings apply. -->
+            <param name="scheduleMode" value="rail"/>
+
+            <!-- Define if a loop link for all stop facilities for the schedule mode should be created. All other parameters
+            are ignored if true. The node for the loop link is set on the coordinate of the stop facility. -->
+            <param name="useArtificialLoopLink" value="false"/>
+        </parameterset>
+
+        <parameterset type="linkCandidateCreator">
+
+            <!-- After maxNClosestLinks link candidates have been found, additional link
+            candidates within [linkDistanceTolerance] * [distance to the Nth link] are added to the set.
+            Must be >= 1. -->
+            <param name="linkDistanceTolerance" value="1.0"/>
+
+            <!-- The maximal distance [meter] a link candidate is allowed to have from the stop facility. No link candidate
+            beyond this distance are added. -->
+            <param name="maxLinkCandidateDistance" value="80.0"/>
+
+            <!-- Number of link candidates considered for all stops, depends on accuracy of stops and desired
+            performance. Somewhere between 4 and 10 seems reasonable for bus stops, depending on the accuracy of the stop
+            facility coordinates and performance desires. Default: 8 -->
+            <param name="maxNClosestLinks" value="8"/>
+
+            <!-- Only links with at least one of these modes are considered as link candidate for this schedule mode.
+            Separate more than one stop with comma. -->
+            <param name="networkModes" value=""/>
+
+            <!-- For which schedule mode these settings apply. -->
+            <param name="scheduleMode" value="tram"/>
+
+            <!-- Define if a loop link for all stop facilities for the schedule mode should be created. All other parameters
+            are ignored if true. The node for the loop link is set on the coordinate of the stop facility. -->
+            <param name="useArtificialLoopLink" value="true"/>
+        </parameterset>
+
+        <parameterset type="manualLinkCandidates">
+
+            <!-- The links, comma separated -->
+            <param name="links" value=""/>
+
+            <!-- If true, the link candidates found by the the link candidate creator are replaced with the links
+            defined here. If false, the manual links are added to the set. -->
+            <param name="replace" value="true"/>
+
+            <!-- The schedule transport modes for which these link apply. All possible links are considered if empty. -->
+            <param name="scheduleModes" value=""/>
+
+            <param name="stopFacility" value=""/>
+        </parameterset>
+
+        <parameterset type="modeRoutingAssignment">
+
+            <!-- Transit Routes with the given scheduleMode can only use links with at least one of the network modes
+            defined here. Separate multiple modes by comma. If no network modes are defined, the transit route will
+            use artificial links. -->
+            <param name="networkModes" value="car,bus"/>
+
+            <param name="scheduleMode" value="bus"/>
+        </parameterset>
+
+        <parameterset type="modeRoutingAssignment">
+
+            <!-- Transit Routes with the given scheduleMode can only use links with at least one of the network modes
+            defined here. Separate multiple modes by comma. If no network modes are defined, the transit route will
+            use artificial links. -->
+            <param name="networkModes" value="rail,light_rail"/>
+
+            <param name="scheduleMode" value="rail"/>
+        </parameterset>
+    </module>
+
+    <!-- ====================================================================== -->
+
+</config>

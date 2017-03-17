@@ -21,7 +21,6 @@
 
 package org.matsim.pt2matsim.mapping;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -101,14 +100,9 @@ public class PTMapper {
 		}
 	}
 
-	private static void setLogLevels() {
-		Logger.getLogger(org.matsim.core.router.Dijkstra.class).setLevel(Level.ERROR); // suppress no route found warnings
-		Logger.getLogger(Network.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.network.filter.NetworkFilterManager.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.router.util.PreProcessDijkstra.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.router.util.PreProcessDijkstra.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.router.util.PreProcessEuclidean.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.router.util.PreProcessLandmarks.class).setLevel(Level.WARN);
+	public static void run(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network) {
+		PTMapper ptMapper = new PTMapper(config, schedule, network);
+		ptMapper.run();
 	}
 
 	/**
@@ -128,7 +122,7 @@ public class PTMapper {
 			throw new RuntimeException("Some stopFacility ids contain the string \"" + PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES + "\"! Schedule cannot be mapped.");
 		}
 
-		setLogLevels();
+		PTMapperTools.setLogLevels();
 		config.loadParameterSets();
 
 		log.info("======================================");
@@ -365,23 +359,11 @@ public class PTMapper {
 		return configAll;
 	}
 
-	public void setConfig(Config config) {
-		this.config = ConfigUtils.addOrGetModule(config, PublicTransitMappingConfigGroup.GROUP_NAME, PublicTransitMappingConfigGroup.class);
-	}
-
 	public TransitSchedule getSchedule() {
 		return schedule;
 	}
 
-	public void setSchedule(TransitSchedule schedule) {
-		this.schedule = schedule;
-	}
-
 	public Network getNetwork() {
 		return network;
-	}
-
-	public void setNetwork(Network network) {
-		this.network = network;
 	}
 }
