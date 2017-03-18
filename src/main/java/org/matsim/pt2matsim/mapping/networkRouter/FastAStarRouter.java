@@ -40,6 +40,7 @@ import java.util.Map;
  *
  * @author polettif
  */
+@Deprecated
 public class FastAStarRouter implements Router {
 
 	private static PublicTransitMappingConfigGroup.TravelCostType travelCostType = PublicTransitMappingConfigGroup.TravelCostType.linkLength;

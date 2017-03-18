@@ -518,6 +518,8 @@ public final class NetworkTools {
 
 	/**
 	 * Creates mode dependent routers based on the actual network modes used.
+	 *
+	 * todo change to scheduleRouters
 	 */
 	public static Map<String, Router> guessRouters(TransitSchedule schedule, Network network) {
 		Map<String, Set<String>> modeAssignments = new HashMap<>();
