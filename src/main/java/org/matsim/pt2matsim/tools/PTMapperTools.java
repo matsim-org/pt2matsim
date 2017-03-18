@@ -28,6 +28,7 @@ import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 
 import java.util.*;
@@ -215,5 +216,23 @@ public final class PTMapperTools {
 		Logger.getLogger(org.matsim.core.router.util.PreProcessDijkstra.class).setLevel(Level.WARN);
 		Logger.getLogger(org.matsim.core.router.util.PreProcessEuclidean.class).setLevel(Level.WARN);
 		Logger.getLogger(org.matsim.core.router.util.PreProcessLandmarks.class).setLevel(Level.WARN);
+	}
+
+	/**
+	 * Calculates the travel cost (distance or time based on travelCostType)
+	 */
+	public static double calcTravelCost(TransitRouteStop fromTransitRouteStop, TransitRouteStop toTransitRouteStop, PublicTransitMappingConfigGroup.TravelCostType travelCostType) {
+		double travelTime = (toTransitRouteStop.getArrivalOffset() - fromTransitRouteStop.getDepartureOffset());
+		double beelineDistance = CoordUtils.calcEuclideanDistance(fromTransitRouteStop.getStopFacility().getCoord(), toTransitRouteStop.getStopFacility().getCoord());
+
+		if(travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime)) {
+			return travelTime;
+		} else {
+			return beelineDistance;
+		}
+	}
+
+	public static double calcTravelCost(Link link, PublicTransitMappingConfigGroup.TravelCostType travelCostType) {
+		return (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
 	}
 }

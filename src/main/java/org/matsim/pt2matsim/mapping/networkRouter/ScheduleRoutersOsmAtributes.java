@@ -16,7 +16,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.workbench;
+package org.matsim.pt2matsim.mapping.networkRouter;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Network;
@@ -37,6 +37,7 @@ import org.matsim.pt2matsim.osm.lib.OsmData;
 public class ScheduleRoutersOsmAtributes implements ScheduleRouters {
 
 	public ScheduleRoutersOsmAtributes(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network, OsmData osmData) {
+
 	}
 
 	@Override
@@ -60,7 +61,7 @@ public class ScheduleRoutersOsmAtributes implements ScheduleRouters {
 	}
 
 	@Override
-	public double getLinkTravelCost(TransitLine transitLine, TransitRoute transitRoute, LinkCandidate linkCandidateCurrent) {
+	public double getLinkCandidateTravelCost(TransitLine transitLine, TransitRoute transitRoute, LinkCandidate linkCandidateCurrent) {
 		return 0;
 	}
 }

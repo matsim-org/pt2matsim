@@ -13,6 +13,7 @@ import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.PTMapper;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersOsmAtributes;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWithShapes;
 import org.matsim.pt2matsim.osm.OsmMultimodalNetworkConverter;
 import org.matsim.pt2matsim.osm.lib.OsmData;
