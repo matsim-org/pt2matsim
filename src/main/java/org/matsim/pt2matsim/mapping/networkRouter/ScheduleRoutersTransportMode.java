@@ -8,7 +8,6 @@ import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.router.util.*;
 import org.matsim.core.utils.collections.MapUtils;
-import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
@@ -18,6 +17,8 @@ import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.mapping.MapperModule;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.tools.NetworkTools;
+import org.matsim.pt2matsim.tools.PTMapperTools;
+import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.vehicles.Vehicle;
 
 import java.util.HashMap;
@@ -33,57 +34,52 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 
 	protected static Logger log = Logger.getLogger(ScheduleRoutersTransportMode.class);
 
+	// standard fields
 	private final PublicTransitMappingConfigGroup config;
 	private final TransitSchedule schedule;
 	private final Network network;
-	private final Map<TransitLine, Map<TransitRoute, LeastCostPathCalculator>> routers = new HashMap<>();
-	private final Map<String, LeastCostPathCalculator> routersByMode = new HashMap<>();
 
-	private final LocalRouter genericRouter;
-	private Map<String, Network> modeNetworks = new HashMap<>();
+	// path calculators
+	private final Map<String, LeastCostPathCalculator> pathCalculatorsByMode = new HashMap<>();
+	private final Map<String, Network> networksByMode = new HashMap<>();
 
 	public ScheduleRoutersTransportMode(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network) {
 		this.config = config;
 		this.schedule = schedule;
 		this.network = network;
-
-		this.genericRouter = new LocalRouter(config.getTravelCostType());
 	}
 
+	/**
+	 * Load path calculators for all transit routes
+	 */
 	@Override
 	public void load() {
-		/**
-		 * Initialize routers
-		 */
 		Map<String, Set<String>> modeRoutingAssignment = config.getModeRoutingAssignment();
 
 		log.info("Initiating network and router for transit routes...");
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				String scheduleMode = transitRoute.getTransportMode();
-				LeastCostPathCalculator tmpRouter = routersByMode.get(scheduleMode);
+				LeastCostPathCalculator tmpRouter = pathCalculatorsByMode.get(scheduleMode);
 				if(tmpRouter == null) {
 					log.info("New router for schedule mode " + scheduleMode);
 					Set<String> networkTransportModes = modeRoutingAssignment.get(scheduleMode);
 
 					Network filteredNetwork = NetworkTools.createFilteredNetworkByLinkMode(this.network, networkTransportModes);
 
-					LocalRouter r = new LocalRouter(config.getTravelCostType());
+					LocalRouter r = new LocalRouter();
 
 					LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory(filteredNetwork, r);
 					tmpRouter = factory.createPathCalculator(filteredNetwork, r, r);
 
-					routersByMode.put(scheduleMode, tmpRouter);
-					modeNetworks.put(scheduleMode, filteredNetwork);
+					pathCalculatorsByMode.put(scheduleMode, tmpRouter);
+					networksByMode.put(scheduleMode, filteredNetwork);
 				}
-				MapUtils.getMap(transitLine, routers).put(transitRoute, tmpRouter);
 			}
 		}
 	}
 
-	/**
-	 * Either extract the router or call this method
-	 */
+
 	@Override
 	public LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, TransitLine transitLine, TransitRoute transitRoute) {
 		return this.calcLeastCostPath(fromLinkCandidate.getToNodeId(), toLinkCandidate.getFromNodeId(), transitLine, transitRoute);
@@ -91,12 +87,12 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 
 	@Override
 	public LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNodeId, Id<Node> toNodeId, TransitLine transitLine, TransitRoute transitRoute) {
-		Network n = modeNetworks.get(transitRoute.getTransportMode());
+		Network n = networksByMode.get(transitRoute.getTransportMode());
 		Node fromNode = n.getNodes().get(fromNodeId);
 		Node toNode = n.getNodes().get(toNodeId);
 
 		if(fromNode != null && toNode != null) {
-			return routers.get(transitLine).get(transitRoute).calcLeastCostPath(fromNode, toNode, 0, null, null);
+			return pathCalculatorsByMode.get(transitRoute.getTransportMode()).calcLeastCostPath(fromNode, toNode, 0, null, null);
 		} else {
 			return null;
 		}
@@ -104,31 +100,18 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 
 	@Override
 	public double getMinimalTravelCost(TransitRouteStop fromTransitRouteStop, TransitRouteStop toTransitRouteStop, TransitLine transitLine, TransitRoute transitRoute) {
-		double travelTime = (toTransitRouteStop.getArrivalOffset() - fromTransitRouteStop.getDepartureOffset());
-		double beelineDistance = CoordUtils.calcEuclideanDistance(fromTransitRouteStop.getStopFacility().getCoord(), toTransitRouteStop.getStopFacility().getCoord());
-
-		if(config.getTravelCostType().equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime)) {
-			return travelTime;
-		} else {
-			return beelineDistance;
-		}
+		return PTMapperTools.calcTravelCost(fromTransitRouteStop, toTransitRouteStop, config.getTravelCostType());
 	}
 
 	@Override
-	public double getLinkTravelCost(TransitLine transitLine, TransitRoute transitRoute, LinkCandidate linkCandidateCurrent) {
-		return genericRouter.getLinkMinimumTravelDisutility(linkCandidateCurrent.getLink());
+	public double getLinkCandidateTravelCost(TransitLine transitLine, TransitRoute transitRoute, LinkCandidate linkCandidateCurrent) {
+		return PTMapperTools.calcTravelCost(linkCandidateCurrent.getLink(), config.getTravelCostType());
 	}
 
 	/**
 	 * Class is sent to path calculator factory
 	 */
 	private class LocalRouter implements TravelDisutility, TravelTime{
-
-		private final PublicTransitMappingConfigGroup.TravelCostType type;
-
-		LocalRouter(PublicTransitMappingConfigGroup.TravelCostType travelCostType) {
-			this.type = travelCostType;
-		}
 
 		@Override
 		public double getLinkTravelDisutility(Link link, double time, Person person, Vehicle vehicle) {
@@ -137,7 +120,7 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 
 		@Override
 		public double getLinkMinimumTravelDisutility(Link link) {
-			return (type.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
+			return PTMapperTools.calcTravelCost(link, config.getTravelCostType());
 		}
 
 		@Override

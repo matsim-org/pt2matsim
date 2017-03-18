@@ -11,16 +11,15 @@ import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.utils.collections.MapUtils;
-import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.tools.NetworkTools;
+import org.matsim.pt2matsim.tools.PTMapperTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ShapeTools;
-import org.matsim.utils.objectattributes.attributeconverters.BooleanConverter;
 import org.matsim.vehicles.Vehicle;
 
 import java.util.Collection;
@@ -38,18 +37,22 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 
 	protected static Logger log = Logger.getLogger(ScheduleRoutersWithShapes.class);
 
+	// standard fields
 	private final PublicTransitMappingConfigGroup config;
 	private final TransitSchedule schedule;
+	private final Network network;
+
+	// path calculators
+	private final Map<Id<RouteShape>, LeastCostPathCalculator> pathCalculatorsByShape = new HashMap<>();
+	private Map<TransitLine, Map<TransitRoute, LeastCostPathCalculator>> pathCalculators = new HashMap<>();
+	private Map<TransitLine, Map<TransitRoute, Boolean>> mapArtificial = new HashMap<>();
+	private Map<TransitLine, Map<TransitRoute, Network>> networks = new HashMap<>();
+	private Map<TransitLine, Map<TransitRoute, ShapeRouter>> shapeRouters = new HashMap<>();
+
+	// shape fields
 	private final Map<Id<RouteShape>, RouteShape> shapes;
 	private final double maxWeightDistance;
 	private final double cutBuffer;
-	private final LocalRouter genericRouter;
-
-	private Map<TransitLine, Map<TransitRoute, LeastCostPathCalculator>> routers = new HashMap<>();
-	private Map<TransitLine, Map<TransitRoute, Boolean>> mapArtificial = new HashMap<>();
-	private Map<Id<RouteShape>, LeastCostPathCalculator> routersByShape = new HashMap<>();
-	private Network network;
-	private Map<TransitLine, Map<TransitRoute, Network>> networks = new HashMap<>();
 
 
 	public ScheduleRoutersWithShapes(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network, Map<Id<RouteShape>, RouteShape> shapes, double maxWeightDistance, double cutBuffer) {
@@ -59,7 +62,6 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 		this.shapes = shapes;
 		this.maxWeightDistance = maxWeightDistance;
 		this.cutBuffer = cutBuffer;
-		this.genericRouter = new LocalRouter(null);
 
 	}
 
@@ -67,6 +69,10 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 		this(config, schedule, network, shapes, maxWeightDistance, 5 * maxWeightDistance);
 	}
 
+
+	/**
+	 * Load path calculators for all transit routes
+	 */
 
 	@Override
 	public void load() {
@@ -80,6 +86,7 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 
 				LeastCostPathCalculator tmpRouter = null;
 				Network cutNetwork = null;
+				ShapeRouter r = null;
 
 				if(shape == null) {
 					MapUtils.getMap(transitLine, mapArtificial).put(transitRoute, true);
@@ -87,7 +94,7 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 				}
 				else {
 					MapUtils.getMap(transitLine, mapArtificial).put(transitRoute, false);
-					tmpRouter = routersByShape.get(shapeId);
+					tmpRouter = pathCalculatorsByShape.get(shapeId);
 					if(tmpRouter == null) {
 						Set<String> networkTransportModes = config.getModeRoutingAssignment().get(transitRoute.getTransportMode());
 
@@ -96,16 +103,17 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 						Collection<Node> nodesWithinBuffer = ShapeTools.getNodesWithinBuffer(cutNetwork, shape, cutBuffer);
 						NetworkTools.cutNetwork(cutNetwork, nodesWithinBuffer);
 
-						LocalRouter r = new LocalRouter(shape);
+						r = new ShapeRouter(shape);
 
 						FastAStarEuclideanFactory factory = new FastAStarEuclideanFactory(cutNetwork, r);
 						tmpRouter = factory.createPathCalculator(cutNetwork, r, r);
 
-						routersByShape.put(shapeId, tmpRouter);
+						pathCalculatorsByShape.put(shapeId, tmpRouter);
 					}
 				}
 				MapUtils.getMap(transitLine, networks).put(transitRoute, cutNetwork);
-				MapUtils.getMap(transitLine, routers).put(transitRoute, tmpRouter);
+				MapUtils.getMap(transitLine, pathCalculators).put(transitRoute, tmpRouter);
+				MapUtils.getMap(transitLine, shapeRouters).put(transitRoute, r);
 			}
 		}
 	}
@@ -122,7 +130,7 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 		Node toNode = n.getNodes().get(toNodeId);
 
 		if(fromNode != null && toNode != null) {
-			return routers.get(transitLine).get(transitRoute).calcLeastCostPath(fromNode, toNode, 0, null, null);
+			return pathCalculators.get(transitLine).get(transitRoute).calcLeastCostPath(fromNode, toNode, 0, null, null);
 		} else {
 			return null;
 		}
@@ -130,31 +138,23 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 
 	@Override
 	public double getMinimalTravelCost(TransitRouteStop fromTransitRouteStop, TransitRouteStop toTransitRouteStop, TransitLine transitLine, TransitRoute transitRoute) {
-		double travelTime = (toTransitRouteStop.getArrivalOffset() - fromTransitRouteStop.getDepartureOffset());
-		double beelineDistance = CoordUtils.calcEuclideanDistance(fromTransitRouteStop.getStopFacility().getCoord(), toTransitRouteStop.getStopFacility().getCoord());
-
-		if(config.getTravelCostType().equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime)) {
-			return travelTime;
-		} else {
-			return beelineDistance;
-		}
+		return PTMapperTools.calcTravelCost(fromTransitRouteStop, toTransitRouteStop, config.getTravelCostType());
 	}
 
 	@Override
-	public double getLinkTravelCost(TransitLine transitLine, TransitRoute transitRoute, LinkCandidate linkCandidateCurrent) {
-		return genericRouter.getLinkMinimumTravelDisutility(linkCandidateCurrent.getLink());
+	public double getLinkCandidateTravelCost(TransitLine transitLine, TransitRoute transitRoute, LinkCandidate linkCandidateCurrent) {
+		return shapeRouters.get(transitLine).get(transitRoute).calcLinkTravelCost(linkCandidateCurrent.getLink());
 	}
-
 
 
 	/**
 	 * Class is sent to path calculator factory
 	 */
-	private class LocalRouter implements TravelDisutility, TravelTime {
+	private class ShapeRouter implements TravelDisutility, TravelTime {
 
 		private final RouteShape shape;
 
-		LocalRouter(RouteShape shape) {
+		ShapeRouter(RouteShape shape) {
 			this.shape = shape;
 		}
 
