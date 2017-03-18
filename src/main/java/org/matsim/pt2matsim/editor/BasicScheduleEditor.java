@@ -30,9 +30,10 @@ import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.utils.collections.CollectionUtils;
+import org.matsim.core.utils.collections.Tuple;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
-import org.matsim.pt2matsim.mapping.networkRouter.Router;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.PTMapperTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
@@ -66,10 +67,10 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	private final TransitSchedule schedule;
 	private final TransitScheduleFactory scheduleFactory;
 	private final NetworkFactory networkFactory;
-	private final Map<String, Router> routers;
+	private final ScheduleRouters routers;
 	private final ParentStops parentStops;
 
-	public BasicScheduleEditor(TransitSchedule schedule, Network network, Map<String, Router> routers) {
+	public BasicScheduleEditor(TransitSchedule schedule, Network network, ScheduleRouters routers) {
 		this.schedule = schedule;
 		this.network = network;
 		this.scheduleFactory = schedule.getFactory();
@@ -101,6 +102,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	/**
 	 * Parses a command file (csv) and runs the commands specified
 	 */
+	@Override
 	public void parseCommandCsv(String filePath) throws IOException {
 		CSVReader reader = new CSVReader(new FileReader(filePath), ';');
 
@@ -116,6 +118,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	/**
 	 * executes a command line
 	 */
+	@Override
 	public void executeCmdLine(String[] cmd) {
 		/**
 		 * Reroute TransitRoute via new Link
@@ -123,7 +126,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 		 */
 		if(RR_VIA_LINK.equals(cmd[0])) {
 			if(cmd.length == 5) {
-				rerouteViaLink(getTransitRoute(cmd[1], cmd[2]), cmd[3], cmd[4]);
+				rerouteViaLink(getTransitLine(cmd[1]), getTransitRoute(cmd[1], cmd[2]), cmd[3], cmd[4]);
 			} else {
 				throw new IllegalArgumentException("Incorrect number of arguments for " + cmd[0] + "! 5 needed, " + cmd.length + " given");
 			}
@@ -135,7 +138,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 		 */
 		else if(RR_FROM_STOP.equals(cmd[0])) {
 			if(cmd.length == 5) {
-				rerouteFromStop(getTransitRoute(cmd[1], cmd[2]), cmd[3], cmd[4]);
+				rerouteFromStop(getTransitLine(cmd[1]), getTransitRoute(cmd[1], cmd[2]), cmd[3], cmd[4]);
 			} else {
 				throw new IllegalArgumentException("Incorrect number of arguments for " + cmd[0] + "! 5 needed, " + cmd.length + " given");
 			}
@@ -152,13 +155,13 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			} else if(cmd.length == 5) {
 				switch (cmd[1]) {
 					case ALL_TRANSIT_ROUTES_ON_LINK:
-						Set<TransitRoute> tmpTransitRoutes = getTransitRoutesOnLink(Id.createLinkId(cmd[2]));
-						for(TransitRoute tr : tmpTransitRoutes) {
-							changeRefLink(tr, cmd[3], cmd[4]);
+						Set<Tuple<TransitLine, TransitRoute>> tmpTransitRoutes = getTransitRoutesOnLink(Id.createLinkId(cmd[2]));
+						for(Tuple<TransitLine, TransitRoute> tpl : tmpTransitRoutes) {
+							changeRefLink(tpl.getFirst(), tpl.getSecond(), cmd[3], cmd[4]);
 						}
 						break;
 					default:
-						changeRefLink(getTransitRoute(cmd[1], cmd[2]), cmd[3], cmd[4]);
+						changeRefLink(getTransitLine(cmd[1]), getTransitRoute(cmd[1], cmd[2]), cmd[3], cmd[4]);
 				}
 			} else {
 				throw new IllegalArgumentException("Incorrect number of arguments for " + cmd[0] + "! 3 or 5 needed, " + cmd.length + " given");
@@ -185,7 +188,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 		 */
 		else if(REFRESH_TRANSIT_ROUTE.equals(cmd[0])) {
 			if(cmd.length >= 3) {
-				refreshTransitRoute(getTransitRoute(cmd[1], cmd[2]));
+				refreshTransitRoute(getTransitLine(cmd[1]), getTransitRoute(cmd[1], cmd[2]));
 			} else {
 				throw new IllegalArgumentException("Incorrect number of arguments for " + cmd[0] + "! 3 needed, " + cmd.length + " given");
 			}
@@ -201,22 +204,30 @@ public class BasicScheduleEditor implements ScheduleEditor {
 		}
 	}
 
+	/**
+	 * @return the TransitLine of the schedule
+	 */
+	private TransitLine getTransitLine(String transitLineStr) {
+		TransitLine transitLine = schedule.getTransitLines().get(Id.create(transitLineStr, TransitLine.class));
+		if(transitLine == null) {
+			throw new IllegalArgumentException("TransitLine " + transitLineStr + " not found!");
+		}
+		return transitLine;
+	}
+
 
 	/**
 	 * @return the TransitRoute of the schedule based on transit line and transit route as strings
 	 */
 	private TransitRoute getTransitRoute(String transitLineStr, String transitRouteStr) {
 		TransitLine transitLine = schedule.getTransitLines().get(Id.create(transitLineStr, TransitLine.class));
-
 		if(transitLine == null) {
 			throw new IllegalArgumentException("TransitLine " + transitLineStr + " not found!");
 		}
-
 		Id<TransitRoute> transitRouteId = Id.create(transitRouteStr, TransitRoute.class);
 		if(!transitLine.getRoutes().containsKey(transitRouteId)) {
 			throw new IllegalArgumentException("TransitRoute " + transitRouteStr + " not found in Transitline " + transitLineStr + "!");
 		}
-
 		return transitLine.getRoutes().get(transitRouteId);
 	}
 
@@ -226,7 +237,8 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	 * @param oldLinkId the section between two route stops where this link appears is rerouted
 	 * @param newLinkId the section is routed via this link
 	 */
-	public void rerouteViaLink(TransitRoute transitRoute, Id<Link> oldLinkId, Id<Link> newLinkId) {
+	@Override
+	public void rerouteViaLink(TransitLine transitLine, TransitRoute transitRoute, Id<Link> oldLinkId, Id<Link> newLinkId) {
 		List<TransitRouteStop> stopSequence = transitRoute.getStops();
 		List<Id<Link>> linkSequence = transitRoute.getRoute().getLinkIds();
 
@@ -239,7 +251,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			TransitRouteStop fromRouteStop = stopSequence.get(i);
 			for(Id<Link> linkId : linkSequence) {
 				if(linkId.equals(oldLinkId)) {
-					rerouteFromStop(transitRoute, fromRouteStop, newLinkId);
+					rerouteFromStop(transitLine, transitRoute, fromRouteStop, newLinkId);
 					break;
 				}
 				if(linkId.equals(refLinkIds.get(i))) {
@@ -249,8 +261,8 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			}
 		}
 	}
-	public void rerouteViaLink(TransitRoute transitRoute, String oldLinkId, String newLinkId) {
-		rerouteViaLink(transitRoute, Id.createLinkId(oldLinkId), Id.createLinkId(newLinkId));
+	public void rerouteViaLink(TransitLine transitLine, TransitRoute transitRoute, String oldLinkId, String newLinkId) {
+		rerouteViaLink(transitLine, transitRoute, Id.createLinkId(oldLinkId), Id.createLinkId(newLinkId));
 	}
 
 	/**
@@ -260,9 +272,8 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	 *                      routeStop is rerouted
 	 * @param viaLinkId		the section is routed via this link
 	 */
-	public void rerouteFromStop(TransitRoute transitRoute, TransitRouteStop fromRouteStop, Id<Link> viaLinkId) {
-		Router router = routers.get(transitRoute.getTransportMode());
-
+	@Override
+	public void rerouteFromStop(TransitLine transitLine, TransitRoute transitRoute, TransitRouteStop fromRouteStop, Id<Link> viaLinkId) {
 		List<TransitRouteStop> routeStops = transitRoute.getStops();
 		TransitRouteStop toRouteStop = routeStops.get(routeStops.indexOf(fromRouteStop) + 1);
 
@@ -275,8 +286,8 @@ public class BasicScheduleEditor implements ScheduleEditor {
 		NetworkRoute routeBeforeCut = transitRoute.getRoute().getSubRoute(transitRoute.getRoute().getStartLinkId(), cutFromLinkId);
 		NetworkRoute routeAfterCut = transitRoute.getRoute().getSubRoute(cutToLinkId, transitRoute.getRoute().getEndLinkId());
 
-		LeastCostPathCalculator.Path path1 = router.calcLeastCostPath(cutFromLink.getToNode().getId(), viaLink.getFromNode().getId());
-		LeastCostPathCalculator.Path path2 = router.calcLeastCostPath(viaLink.getToNode().getId(), cutToLink.getFromNode().getId());
+		LeastCostPathCalculator.Path path1 = routers.calcLeastCostPath(cutFromLink.getToNode().getId(), viaLink.getFromNode().getId(), transitLine, transitRoute);
+		LeastCostPathCalculator.Path path2 = routers.calcLeastCostPath(viaLink.getToNode().getId(), cutToLink.getFromNode().getId(), transitLine, transitRoute);
 
 		List<Id<Link>> newLinkSequence = new ArrayList<>();
 		if(path1 != null && path2 != null) {
@@ -293,8 +304,8 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			transitRoute.setRoute(RouteUtils.createNetworkRoute(newLinkSequence, network));
 		}
 	}
-	private void rerouteFromStop(TransitRoute transitRoute, String fromStopFacilityId, String viaLinkId) {
-		rerouteFromStop(transitRoute, getRouteStop(transitRoute, fromStopFacilityId), Id.createLinkId(viaLinkId));
+	private void rerouteFromStop(TransitLine transitLine, TransitRoute transitRoute, String fromStopFacilityId, String viaLinkId) {
+		rerouteFromStop(transitLine, transitRoute, getRouteStop(transitRoute, fromStopFacilityId), Id.createLinkId(viaLinkId));
 	}
 
 
@@ -350,6 +361,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	/**
 	 * Changes the reference of a stop facility (for all routes)
 	 */
+	@Override
 	public void changeRefLink(Id<TransitStopFacility> stopFacilityId, Id<Link> newRefLinkId) {
 		TransitStopFacility oldStopFacility = schedule.getFacilities().get(stopFacilityId);
 		TransitStopFacility newChildStopFacility = parentStops.getChildStopFacility(getParentId(stopFacilityId), newRefLinkId.toString());
@@ -365,11 +377,11 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	/**
 	 * changes the child stop in the given route
 	 */
-	private void changeRefLink(TransitRoute transitRoute, String childStopFacilityIdStr, String newRefLinkIdStr) {
+	private void changeRefLink(TransitLine transitLine, TransitRoute transitRoute, String childStopFacilityIdStr, String newRefLinkIdStr) {
 		TransitStopFacility childStopToReplace = schedule.getFacilities().get(Id.create(childStopFacilityIdStr, TransitStopFacility.class));
 		TransitStopFacility childStopReplaceWith = parentStops.getChildStopFacility(getParentId(childStopFacilityIdStr), newRefLinkIdStr);
 
-		replaceStopFacilityInRoute(transitRoute, childStopToReplace, childStopReplaceWith);
+		replaceStopFacilityInRoute(transitLine, transitRoute, childStopToReplace, childStopReplaceWith);
 	}
 
 	/**
@@ -386,6 +398,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	 * Adds a link to the network. Uses the attributes (freespeed, nr of lanes, transportModes)
 	 * of the attributeLink.
 	 */
+	@Override
 	public void addLink(Id<Link> newLinkId, Id<Node> fromNodeId, Id<Node> toNodeId, Id<Link> attributeLinkId) {
 		Node fromNode = network.getNodes().get(fromNodeId);
 		Node toNode = network.getNodes().get(toNodeId);
@@ -410,7 +423,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	/**
 	 * Replaces a stop facility with another one in the given route. Both ids must exist.
 	 */
-	public void replaceStopFacilityInRoute(TransitRoute transitRoute, Id<TransitStopFacility> toReplaceId, Id<TransitStopFacility> replaceWithId) {
+	public void replaceStopFacilityInRoute(TransitLine transitLine, TransitRoute transitRoute, Id<TransitStopFacility> toReplaceId, Id<TransitStopFacility> replaceWithId) {
 		TransitStopFacility toReplace = schedule.getFacilities().get(toReplaceId);
 		TransitStopFacility replaceWith = schedule.getFacilities().get(replaceWithId);
 
@@ -419,17 +432,17 @@ public class BasicScheduleEditor implements ScheduleEditor {
 		} else if(replaceWith == null) {
 			throw new IllegalArgumentException("StopFacility " + replaceWithId + " not found in schedule!");
 		}
-		replaceStopFacilityInRoute(transitRoute, toReplace, replaceWith);
+		replaceStopFacilityInRoute(transitLine, transitRoute, toReplace, replaceWith);
 	}
 
 	/**
 	 * Replaces a stop facility with another one in the given route. Both facilities must exist.
 	 */
-	public void replaceStopFacilityInRoute(TransitRoute transitRoute, TransitStopFacility toReplace, TransitStopFacility replaceWith) {
+	public void replaceStopFacilityInRoute(TransitLine transitLine, TransitRoute transitRoute, TransitStopFacility toReplace, TransitStopFacility replaceWith) {
 		TransitRouteStop routeStopToReplace = transitRoute.getStop(toReplace);
 		if(routeStopToReplace != null) {
 			routeStopToReplace.setStopFacility(replaceWith);
-			refreshTransitRoute(transitRoute);
+			refreshTransitRoute(transitLine, transitRoute);
 		} else {
 			throw new IllegalArgumentException("StopFacility " + toReplace.getId() + " not found in TransitRoute " + transitRoute.getId());
 		}
@@ -441,7 +454,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	public void replaceStopFacilityInAllRoutes(TransitStopFacility toReplace, TransitStopFacility replaceWith) {
 		for(TransitLine line : schedule.getTransitLines().values()) {
 			for(TransitRoute route : line.getRoutes().values()) {
-				replaceStopFacilityInRoute(route, toReplace, replaceWith);
+				replaceStopFacilityInRoute(line, route, toReplace, replaceWith);
 			}
 		}
 	}
@@ -449,12 +462,12 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	/**
 	 * Gets all transit routes that ar on the given link
 	 */
-	public Set<TransitRoute> getTransitRoutesOnLink(Id<Link> linkId) {
-		Set<TransitRoute> transitRoutesOnLink = new HashSet<>();
+	public Set<Tuple<TransitLine, TransitRoute>> getTransitRoutesOnLink(Id<Link> linkId) {
+		Set<Tuple<TransitLine, TransitRoute>> transitRoutesOnLink = new HashSet<>();
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				if(ScheduleTools.getTransitRouteLinkIds(transitRoute).contains(linkId)) {
-					transitRoutesOnLink.add(transitRoute);
+					transitRoutesOnLink.add(new Tuple<>(transitLine, transitRoute));
 				}
 			}
 		}
@@ -465,8 +478,8 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	 * "Refreshes" the transit route by routing between all referenced links
 	 * of the stop facilities.
 	 */
-	public void refreshTransitRoute(TransitRoute transitRoute) {
-		Router router = routers.get(transitRoute.getTransportMode());
+	@Override
+	public void refreshTransitRoute(TransitLine transitLine, TransitRoute transitRoute) {
 		List<TransitRouteStop> routeStops = transitRoute.getStops();
 		List<Id<Link>> linkSequence = new ArrayList<>();
 		linkSequence.add(routeStops.get(0).getStopFacility().getLinkId());
@@ -485,7 +498,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			Link currentLink = network.getLinks().get(currentLinkId);
 			Link nextLink = network.getLinks().get(routeStops.get(i + 1).getStopFacility().getLinkId());
 
-			List<Id<Link>> path = PTMapperTools.getLinkIdsFromPath(router.calcLeastCostPath(currentLink.getToNode().getId(), nextLink.getFromNode().getId()));
+			List<Id<Link>> path = PTMapperTools.getLinkIdsFromPath(routers.calcLeastCostPath(currentLink.getToNode().getId(), nextLink.getFromNode().getId(), transitLine, transitRoute));
 
 			if(path != null)
 				linkSequence.addAll(path);
@@ -500,9 +513,12 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	/**
 	 * Refreshes the whole schedule by routing all transit routes.
 	 */
+	@Override
 	public void refreshSchedule() {
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
-			transitLine.getRoutes().values().forEach(this::refreshTransitRoute);
+			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
+				refreshTransitRoute(transitLine, transitRoute);
+			}
 		}
 	}
 

@@ -21,6 +21,7 @@ package org.matsim.pt2matsim.editor;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
@@ -57,7 +58,7 @@ public interface ScheduleEditor {
 	 *                      routeStop is rerouted
 	 * @param viaLinkId		the section is routed via this link
 	 */
-	void rerouteFromStop(TransitRoute transitRoute, TransitRouteStop fromRouteStop, Id<Link> viaLinkId);
+	void rerouteFromStop(TransitLine transitLine, TransitRoute transitRoute, TransitRouteStop fromRouteStop, Id<Link> viaLinkId);
 
 	/**
 	 * Reroutes the section between two stops that passes the oldlink via the new link
@@ -65,7 +66,7 @@ public interface ScheduleEditor {
 	 * @param oldLinkId the section between two route stops where this link appears is rerouted
 	 * @param newLinkId the section is routed via this link
 	 */
-	void rerouteViaLink(TransitRoute transitRoute, Id<Link> oldLinkId, Id<Link> newLinkId);
+	void rerouteViaLink(TransitLine transitLine, TransitRoute transitRoute, Id<Link> oldLinkId, Id<Link> newLinkId);
 
 	/**
 	 * Changes the referenced link of a stop facility for all routes. A new child stop
@@ -92,5 +93,5 @@ public interface ScheduleEditor {
 	 *
 	 * @param transitRoute the transit route
 	 */
-	void refreshTransitRoute(TransitRoute transitRoute);
+	void refreshTransitRoute(TransitLine transitLine, TransitRoute transitRoute);
 }
