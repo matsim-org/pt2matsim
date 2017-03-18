@@ -33,6 +33,7 @@ import org.matsim.vehicles.Vehicle;
  *
  * @author polettif
  */
+@Deprecated
 public class EmptyRouter implements Router {
 
 	@Override

@@ -57,8 +57,6 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 		 */
 		Map<String, Set<String>> modeRoutingAssignment = config.getModeRoutingAssignment();
 
-		FastAStarRouter.setTravelCostType(config.getTravelCostType());
-
 		log.info("Initiating network and router for transit routes...");
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
@@ -93,7 +91,6 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 
 	@Override
 	public LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNodeId, Id<Node> toNodeId, TransitLine transitLine, TransitRoute transitRoute) {
-
 		Network n = modeNetworks.get(transitRoute.getTransportMode());
 		Node fromNode = n.getNodes().get(fromNodeId);
 		Node toNode = n.getNodes().get(toNodeId);
@@ -122,11 +119,14 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 		return genericRouter.getLinkMinimumTravelDisutility(linkCandidateCurrent.getLink());
 	}
 
+	/**
+	 * Class is sent to path calculator factory
+	 */
 	private class LocalRouter implements TravelDisutility, TravelTime{
 
 		private final PublicTransitMappingConfigGroup.TravelCostType type;
 
-		public LocalRouter(PublicTransitMappingConfigGroup.TravelCostType travelCostType) {
+		LocalRouter(PublicTransitMappingConfigGroup.TravelCostType travelCostType) {
 			this.type = travelCostType;
 		}
 

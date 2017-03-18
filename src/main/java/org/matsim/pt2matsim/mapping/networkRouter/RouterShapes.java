@@ -43,6 +43,7 @@ import java.util.Map;
  *
  * @author polettif
  */
+@Deprecated
 public class RouterShapes implements Router {
 
 	private static PublicTransitMappingConfigGroup.TravelCostType travelCostType = PublicTransitMappingConfigGroup.TravelCostType.linkLength;
@@ -63,10 +64,6 @@ public class RouterShapes implements Router {
 
 		LeastCostPathCalculatorFactory factory = new FastAStarEuclideanFactory(this.network, this);
 		this.pathCalculator = factory.createPathCalculator(this.network, this, this);
-	}
-
-	public static void setTravelCostType(PublicTransitMappingConfigGroup.TravelCostType type) {
-		travelCostType = type;
 	}
 
 	/**
