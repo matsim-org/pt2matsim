@@ -32,6 +32,7 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -60,7 +61,7 @@ public class GtfsConverter {
 	/**
 	 * The time format used in the output MATSim transit schedule
 	 */
-	private SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+	private DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
 
 
 	public GtfsConverter(GtfsFeed gtfsFeed) {

@@ -150,4 +150,21 @@ public class ServiceImpl implements Service {
 		trips.put(newTrip.getId(), newTrip);
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj)
+			return true;
+		if(obj == null)
+			return false;
+		if(getClass() != obj.getClass())
+			return false;
+
+		Service other = (Service) obj;
+		return (other.getId().equals(id));
+	}
+
+	@Override
+	public int hashCode() {
+		return id.hashCode();
+	}
 }

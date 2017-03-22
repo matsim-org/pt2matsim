@@ -57,5 +57,25 @@ public class FrequencyImpl implements Frequency {
 	public int getHeadWaySecs() {
 		return headwaySecs;
 	}
-	
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj)
+			return true;
+		if(obj == null)
+			return false;
+		if(getClass() != obj.getClass())
+			return false;
+
+		Frequency other = (Frequency) obj;
+		return (other.getStartTime().equals(startTime) &&
+				other.getEndTime().equals(endTime) &&
+				other.getHeadWaySecs() == headwaySecs);
+	}
+
+	@Override
+	public int hashCode() {
+		return startTime.hashCode() + endTime.hashCode() + headwaySecs;
+	}
+
 }

@@ -29,6 +29,7 @@ import org.matsim.pt2matsim.lib.RouteShape;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -65,7 +66,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 */
 	private Set<String> serviceIdsNotInCalendarTxt = new HashSet<>();
 
-	private SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+	private DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
 
 	// containers for storing gtfs data
 	private Map<String, Stop> gtfsStops = new HashMap<>();
@@ -82,6 +83,47 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 	public GtfsFeedImpl(String gtfsFolder) {
 		loadFiles(gtfsFolder);
+	}
+
+	/**
+	 * In case optional columns in a csv file are missing or are out of order, addressing array
+	 * values directly via integer (i.e. where the column should be) does not work.
+	 *
+	 * @param header          the header (first line) of the csv file
+	 * @param requiredColumns array of attributes you need the indices of
+	 * @return the index for each attribute given in columnNames
+	 */
+	private static Map<String, Integer> getIndices(String[] header, String[] requiredColumns, String[] optionalColumns) {
+		Map<String, Integer> indices = new HashMap<>();
+		Set<String> requiredNotFound = new HashSet<>();
+
+		for(String columnName : requiredColumns) {
+			boolean found = false;
+			for(int i = 0; i < header.length; i++) {
+				if(header[i].equals(columnName)) {
+					indices.put(columnName, i);
+					found = true;
+					break;
+				}
+			}
+			if(!found) {
+				requiredNotFound.add(columnName);
+			}
+		}
+
+		if(requiredNotFound.size() > 0) {
+			throw new IllegalArgumentException("Required column(s) " + requiredNotFound + " not found in csv. Might be some additional characters in the header or the encoding not being UTF-8.");
+		}
+
+		for(String columnName : optionalColumns) {
+			for(int i = 0; i < header.length; i++) {
+				if(header[i].equals(columnName)) {
+					indices.put(columnName, i);
+					break;
+				}
+			}
+		}
+		return indices;
 	}
 
 	/**
@@ -472,48 +514,6 @@ public class GtfsFeedImpl implements GtfsFeed {
 			throw new RuntimeException("Emtpy line found in frequencies.txt");
 		}
 	}
-
-	/**
-	 * In case optional columns in a csv file are missing or are out of order, addressing array
-	 * values directly via integer (i.e. where the column should be) does not work.
-	 *
-	 * @param header      the header (first line) of the csv file
-	 * @param requiredColumns array of attributes you need the indices of
-	 * @return the index for each attribute given in columnNames
-	 */
-	private static Map<String, Integer> getIndices(String[] header, String[] requiredColumns, String[] optionalColumns) {
-		Map<String, Integer> indices = new HashMap<>();
-		Set<String> requiredNotFound = new HashSet<>();
-
-		for(String columnName : requiredColumns) {
-			boolean found = false;
-			for(int i = 0; i < header.length; i++) {
-				if(header[i].equals(columnName)) {
-					indices.put(columnName, i);
-					found = true;
-					break;
-				}
-			}
-			if(!found) {
-				requiredNotFound.add(columnName);
-			}
-		}
-
-		if(requiredNotFound.size() > 0) {
-			throw new IllegalArgumentException("Required column(s) "+requiredNotFound+" not found in csv. Might be some additional characters in the header or the encoding not being UTF-8.");
-		}
-
-		for(String columnName : optionalColumns) {
-			for(int i = 0; i < header.length; i++) {
-				if(header[i].equals(columnName)) {
-					indices.put(columnName, i);
-					break;
-				}
-			}
-		}
-		return indices;
-	}
-
 
 	@Override
 	public Map<String, Stop> getStops() {
