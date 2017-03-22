@@ -21,17 +21,13 @@ package org.matsim.pt2matsim.gtfs.lib;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author polettif
  */
 public interface Service {
-	void addAddition(String addition);
 
-	void addException(String exception);
-
-	Set<LocalDate> getCoveredDays();
+	Collection<LocalDate> getCoveredDays();
 
 	String getId();
 
@@ -46,8 +42,6 @@ public interface Service {
 	Collection<LocalDate> getExceptions();
 
 	Map<String, Trip> getTrips();
-
-	void addTrip(Trip newTrip);
 
 	/**
 	 * @return <code>true</code> if the given date is used by the given service.

@@ -60,7 +60,6 @@ public class ServiceImpl implements Service {
 	}
 
 
-	@Override
 	public void addAddition(String addition) {
 		LocalDate additionDate = parseDateFormat(addition);
 		additions.add(additionDate);
@@ -70,7 +69,6 @@ public class ServiceImpl implements Service {
 	/**
 	 * Adds a new exception date
 	 */
-	@Override
 	public void addException(String exception) {
 		LocalDate exceptionDate = parseDateFormat(exception);
 		exceptions.add(exceptionDate);
@@ -81,8 +79,8 @@ public class ServiceImpl implements Service {
 	 * @return a set of dates on which this service runs
 	 */
 	@Override
-	public Set<LocalDate> getCoveredDays() {
-		return coveredDays;
+	public Collection<LocalDate> getCoveredDays() {
+		return Collections.unmodifiableCollection(coveredDays);
 	}
 
 	/**
@@ -129,7 +127,7 @@ public class ServiceImpl implements Service {
 	 */
 	@Override
 	public Collection<LocalDate> getAdditions() {
-		return additions;
+		return Collections.unmodifiableCollection(additions);
 	}
 
 	/**
@@ -137,15 +135,14 @@ public class ServiceImpl implements Service {
 	 */
 	@Override
 	public Collection<LocalDate> getExceptions() {
-		return exceptions;
+		return Collections.unmodifiableCollection(exceptions);
 	}
 
 	@Override
 	public Map<String, Trip> getTrips() {
-		return trips;
+		return Collections.unmodifiableMap(trips);
 	}
 
-	@Override
 	public void addTrip(Trip newTrip) {
 		trips.put(newTrip.getId(), newTrip);
 	}

@@ -25,8 +25,6 @@ import java.util.Map;
  */
 public interface Route {
 
-	void addTrip(Trip trip);
-
 	Map<String, Trip> getTrips();
 
 	String getId();

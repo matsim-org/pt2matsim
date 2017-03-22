@@ -22,6 +22,7 @@ package org.matsim.pt2matsim.gtfs.lib;
 
 import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions.RouteTypes;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,29 +32,26 @@ public class RouteImpl implements Route {
 	private final String routeId;
 	private final String shortName;
 	private final RouteTypes routeType;
-	private Map<String, Trip> trips;
+	private final Map<String, Trip> trips = new HashMap<>();
 
 	public RouteImpl(String routeId, String shortName, RouteTypes routeType) {
 		this.routeId = routeId;
 		this.shortName = shortName;
 		this.routeType = routeType;
-		this.trips = new HashMap<>();
 	}
 
 	/**
-	 * Puts a new trip
+	 * adds a new trip
 	 * @param trip trip
 	 */
-	@Override
 	public void addTrip(Trip trip) {
 		trips.put(trip.getId(), trip);
 	}
 
 	@Override
 	public Map<String, Trip> getTrips() {
-		return trips;
+		return Collections.unmodifiableMap(trips);
 	}
-
 
 	/**
 	 * required attribute
