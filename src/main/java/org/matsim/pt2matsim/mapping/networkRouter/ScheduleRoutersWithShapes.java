@@ -12,7 +12,10 @@ import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.misc.Counter;
-import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.pt.transitSchedule.api.TransitLine;
+import org.matsim.pt.transitSchedule.api.TransitRoute;
+import org.matsim.pt.transitSchedule.api.TransitRouteStop;
+import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
@@ -44,15 +47,14 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 
 	// path calculators
 	private final Map<Id<RouteShape>, LeastCostPathCalculator> pathCalculatorsByShape = new HashMap<>();
-	private Map<TransitLine, Map<TransitRoute, LeastCostPathCalculator>> pathCalculators = new HashMap<>();
-	private Map<TransitLine, Map<TransitRoute, Boolean>> mapArtificial = new HashMap<>();
-	private Map<TransitLine, Map<TransitRoute, Network>> networks = new HashMap<>();
-	private Map<TransitLine, Map<TransitRoute, ShapeRouter>> shapeRouters = new HashMap<>();
-
 	// shape fields
 	private final Map<Id<RouteShape>, RouteShape> shapes;
 	private final double maxWeightDistance;
 	private final double cutBuffer;
+	private Map<TransitLine, Map<TransitRoute, LeastCostPathCalculator>> pathCalculators = new HashMap<>();
+	private Map<TransitLine, Map<TransitRoute, Boolean>> mapArtificial = new HashMap<>();
+	private Map<TransitLine, Map<TransitRoute, Network>> networks = new HashMap<>();
+	private Map<TransitLine, Map<TransitRoute, ShapeRouter>> shapeRouters = new HashMap<>();
 
 
 	public ScheduleRoutersWithShapes(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network, Map<Id<RouteShape>, RouteShape> shapes, double maxWeightDistance, double cutBuffer) {
@@ -124,7 +126,7 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 	}
 
 	@Override
-	public LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNodeId, Id<Node> toNodeId, TransitLine transitLine, TransitRoute transitRoute) {
+	public synchronized LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNodeId, Id<Node> toNodeId, TransitLine transitLine, TransitRoute transitRoute) {
 		Network n = networks.get(transitLine).get(transitRoute);
 		Node fromNode = n.getNodes().get(fromNodeId);
 		Node toNode = n.getNodes().get(toNodeId);

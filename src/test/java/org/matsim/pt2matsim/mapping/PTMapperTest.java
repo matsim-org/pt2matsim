@@ -32,6 +32,7 @@ public class PTMapperTest {
 	public static PublicTransitMappingConfigGroup initPTMConfig() {
 		PublicTransitMappingConfigGroup config = new PublicTransitMappingConfigGroup();
 		config.getModesToKeepOnCleanUp().add("car");
+		config.setNumOfThreads(2);
 		PublicTransitMappingConfigGroup.LinkCandidateCreatorParams lccParamsBus = new PublicTransitMappingConfigGroup.LinkCandidateCreatorParams("bus");
 		lccParamsBus.setNetworkModesStr("car");
 		lccParamsBus.setMaxLinkCandidateDistance(99.0);
