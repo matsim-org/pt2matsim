@@ -84,14 +84,22 @@ public class AllowedTagsFilterTest {
 
 	@Test
 	public void mergeFilter() {
-		AllowedTagsFilter merged = new AllowedTagsFilter();
-		merged.mergeFilter(filter1);
-		merged.mergeFilter(filter2);
+		AllowedTagsFilter merged12 = new AllowedTagsFilter();
+		merged12.mergeFilter(filter1);
+		merged12.mergeFilter(filter2);
+		Assert.assertTrue(merged12.matches(way11));
+		Assert.assertTrue(merged12.matches(way12));
+		Assert.assertTrue(merged12.matches(way21));
+		Assert.assertTrue(merged12.matches(way22));
 
-//		Assert.assertTrue(merged.matches(way11));
-//		Assert.assertTrue(merged.matches(way12));
-//		Assert.assertTrue(merged.matches(way21));
-//		Assert.assertTrue(merged.matches(way22));
+		AllowedTagsFilter merged123 = new AllowedTagsFilter();
+		merged123.mergeFilter(filter1);
+		merged123.mergeFilter(filter2);
+		merged123.mergeFilter(filter3);
+		Assert.assertTrue(merged123.matches(way11));
+		Assert.assertTrue(merged123.matches(way12));
+		Assert.assertFalse(merged123.matches(way21));
+		Assert.assertFalse(merged123.matches(way22));
 	}
 
 }
