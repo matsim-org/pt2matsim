@@ -427,22 +427,22 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 				for(Route currentGtfsRoute : routes.values()) {
 					Trip trip = currentGtfsRoute.getTrips().get(line[col.get(GtfsDefinitions.TRIP_ID)]);
+					Stop stop = stops.get(line[col.get(GtfsDefinitions.STOP_ID)]);
+
 					if(trip != null) {
 						try {
-							String stopId = line[col.get(GtfsDefinitions.STOP_ID)];
-							String tripId = line[col.get(GtfsDefinitions.TRIP_ID)];
 							if(!line[col.get(GtfsDefinitions.ARRIVAL_TIME)].equals("")) {
 
 								StopTime newStopTime = new StopTimeImpl(Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]),
 										timeFormat.parse(line[col.get(GtfsDefinitions.ARRIVAL_TIME)]),
 										timeFormat.parse(line[col.get(GtfsDefinitions.DEPARTURE_TIME)]),
-										stopId,
-										tripId
+										stop,
+										trip
 								);
 								((TripImpl) trip).addStopTime(newStopTime);
 
 								// add trip to stop
-								((StopImpl) stops.get(stopId)).addTrip(trips.get(tripId));
+								((StopImpl) stop).addTrip(trip);
 							}
 							/** GTFS Reference: If this stop isn't a time point, use an empty string value for the
 							 * arrival_time and departure_time fields.
@@ -454,13 +454,13 @@ public class GtfsFeedImpl implements GtfsFeed {
 								StopTime newStopTime = new StopTimeImpl(currentStopSequencePosition,
 										previousStopTime.getArrivalTime(),
 										previousStopTime.getDepartureTime(),
-										stopId,
-										tripId);
+										stop,
+										trip);
 
 								((TripImpl) trip).addStopTime(newStopTime);
 
 								// add trip to stop
-								((StopImpl) stops.get(stopId)).addTrip(trips.get(tripId));
+								((StopImpl) stop).addTrip(trip);
 
 								if(warnStopTimes) {
 									log.warn("No arrival time set! Stops without arrival times will be scheduled based on the " +

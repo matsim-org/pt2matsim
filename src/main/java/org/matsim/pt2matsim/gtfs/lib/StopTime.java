@@ -24,9 +24,10 @@ import java.util.Date;
  * @author polettif
  */
 public interface StopTime {
-	String getStopId();
 
-	String getTripId();
+	Stop getStop();
+
+	Trip getTrip();
 
 	Date getArrivalTime();
 

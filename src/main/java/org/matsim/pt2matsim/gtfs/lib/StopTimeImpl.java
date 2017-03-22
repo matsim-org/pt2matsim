@@ -30,33 +30,28 @@ public class StopTimeImpl implements StopTime {
 	private final Integer sequencePosition;
 	private final Date arrivalTime;
 	private final Date departureTime;
-	private final String stopId;
-	private final String tripId;
+	private final Stop stop;
+	private final Trip trip;
 	private final int hash;
 
-	public StopTimeImpl(Integer sequencePosition, Date arrivalTime, Date departureTime, String stopId, String tripId) {
+	public StopTimeImpl(Integer sequencePosition, Date arrivalTime, Date departureTime, Stop stop, Trip trip) {
 		this.sequencePosition = sequencePosition;
 		this.arrivalTime = arrivalTime;
 		this.departureTime = departureTime;
-		this.stopId = stopId;
-		this.tripId = tripId;
-		this.hash = (sequencePosition.toString() + stopId + tripId + arrivalTime.toString() + departureTime.toString()).hashCode();
+		this.stop = stop;
+		this.trip = trip;
+		this.hash = (sequencePosition.toString() + stop.getId() + trip.getId() + arrivalTime.toString() + departureTime.toString()).hashCode();
 	}
 
-	/**
-	 * required attribute
-	 */
+
 	@Override
-	public String getStopId() {
-		return stopId;
+	public Stop getStop() {
+		return stop;
 	}
 
-	/**
-	 * required attribute
-	 */
 	@Override
-	public String getTripId() {
-		return tripId;
+	public Trip getTrip() {
+		return trip;
 	}
 
 	/**
@@ -95,7 +90,7 @@ public class StopTimeImpl implements StopTime {
 			return false;
 
 		StopTime other = (StopTime) obj;
-		return (other.getStopId().equals(stopId) &&
+		return (other.getStop().getId().equals(stop.getId()) &&
 				other.getSequencePosition().equals(sequencePosition) &&
 				other.getArrivalTime().equals(arrivalTime) &&
 				other.getDepartureTime().equals(departureTime));
