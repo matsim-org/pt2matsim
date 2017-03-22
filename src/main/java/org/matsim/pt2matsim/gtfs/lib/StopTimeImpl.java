@@ -26,12 +26,13 @@ import java.util.Date;
  * Container for GTFS StopTime. Contains stopId, arrivalTime and departureTime
  */
 public class StopTimeImpl implements StopTime {
-	
+
 	private final Integer sequencePosition;
 	private final Date arrivalTime;
 	private final Date departureTime;
-	private String stopId;
-	private String tripId;
+	private final String stopId;
+	private final String tripId;
+	private final int hash;
 
 	public StopTimeImpl(Integer sequencePosition, Date arrivalTime, Date departureTime, String stopId, String tripId) {
 		this.sequencePosition = sequencePosition;
@@ -39,6 +40,7 @@ public class StopTimeImpl implements StopTime {
 		this.departureTime = departureTime;
 		this.stopId = stopId;
 		this.tripId = tripId;
+		this.hash = (sequencePosition.toString() + stopId + tripId + arrivalTime.toString() + departureTime.toString()).hashCode();
 	}
 
 	/**
@@ -75,11 +77,34 @@ public class StopTimeImpl implements StopTime {
 
 	/**
 	 * required attribute
+	 *
 	 * @return the position of the stopTime within the stopSequence
 	 */
 	@Override
 	public Integer getSequencePosition() {
 		return sequencePosition;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj)
+			return true;
+		if(obj == null)
+			return false;
+		if(getClass() != obj.getClass())
+			return false;
+
+		StopTime other = (StopTime) obj;
+		return (other.getStopId().equals(stopId) &&
+				other.getSequencePosition().equals(sequencePosition) &&
+				other.getArrivalTime().equals(arrivalTime) &&
+				other.getDepartureTime().equals(departureTime));
+
+	}
+
+	@Override
+	public int hashCode() {
+		return hash;
 	}
 
 }

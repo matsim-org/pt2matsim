@@ -110,4 +110,22 @@ public class TripImpl implements Trip {
 	public List<Frequency> getFrequencies() {
 		return frequencies;
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj)
+			return true;
+		if(obj == null)
+			return false;
+		if(getClass() != obj.getClass())
+			return false;
+
+		Trip other = (Trip) obj;
+		return (other.getId().equals(tripId));
+	}
+
+	@Override
+	public int hashCode() {
+		return tripId.hashCode();
+	}
 }

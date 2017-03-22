@@ -120,4 +120,23 @@ public class GtfsShape implements RouteShape {
 	public String toString() {
 		return id.toString() + " [" + points.size() + " points]";
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj)
+			return true;
+		if(obj == null)
+			return false;
+		if(getClass() != obj.getClass())
+			return false;
+
+		RouteShape other = (RouteShape) obj;
+		return (other.getId().equals(id) &&
+				other.getCoordsSorted().equals(points));
+	}
+
+	@Override
+	public int hashCode() {
+		return (id + points.values().toString()).hashCode();
+	}
 }

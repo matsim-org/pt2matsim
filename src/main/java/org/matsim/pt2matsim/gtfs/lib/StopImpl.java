@@ -27,11 +27,13 @@ public class StopImpl implements Stop {
 	private final String id;
 	private final Coord coord;
 	private final String name;
+	private final int hash;
 
 	public StopImpl(String id, String name, Coord coord) {
 		this.id = id;
 		this.coord = coord;
 		this.name = name;
+		this.hash = (id + name + coord.toString()).hashCode();
 	}
 
 	/**
@@ -58,4 +60,23 @@ public class StopImpl implements Stop {
 		return name;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj)
+			return true;
+		if(obj == null)
+			return false;
+		if(getClass() != obj.getClass())
+			return false;
+
+		Stop other = (Stop) obj;
+		return (other.getId().equals(id) &&
+				other.getCoord().equals(coord) &&
+				other.getName().equals(name));
+	}
+
+	@Override
+	public int hashCode() {
+		return hash;
+	}
 }

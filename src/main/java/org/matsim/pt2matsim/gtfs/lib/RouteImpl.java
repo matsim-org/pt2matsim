@@ -27,10 +27,10 @@ import java.util.Map;
 
 
 public class RouteImpl implements Route {
-	                           
-	private String routeId;
-	private String shortName;
-	private RouteTypes routeType;
+
+	private final String routeId;
+	private final String shortName;
+	private final RouteTypes routeType;
 	private Map<String, Trip> trips;
 
 	public RouteImpl(String routeId, String shortName, RouteTypes routeType) {
@@ -79,4 +79,24 @@ public class RouteImpl implements Route {
 		return routeType;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj)
+			return true;
+		if(obj == null)
+			return false;
+		if(getClass() != obj.getClass())
+			return false;
+
+		Route other = (Route) obj;
+		return (other.getId().equals(routeId) &&
+				other.getRouteType().equals(routeType) &&
+				other.getTrips().keySet().equals(trips.keySet()));
+
+	}
+
+	@Override
+	public int hashCode() {
+		return (routeId + routeType.toString() + trips.keySet().toString()).hashCode();
+	}
 }
