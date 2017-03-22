@@ -21,7 +21,6 @@ package org.matsim.pt2matsim.gtfs;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
-import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
@@ -68,8 +67,10 @@ public class GtfsConverter {
 		this.feed = gtfsFeed;
 	}
 
-	public void convert(String serviceIdsParam, String outputCoordinateSystem) {
-		convert(serviceIdsParam, TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem), ScheduleTools.createSchedule(), VehicleUtils.createVehiclesContainer());
+	public TransitSchedule convert(String serviceIdsParam, String outputCoordinateSystem) {
+		TransitSchedule schedule = ScheduleTools.createSchedule();
+		convert(serviceIdsParam, TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem), schedule, VehicleUtils.createVehiclesContainer());
+		return schedule;
 	}
 
 	public void convert(String serviceIdsParam, String outputCoordinateSystem, TransitSchedule transitSchedule, Vehicles vehicles) {
@@ -100,11 +101,6 @@ public class GtfsConverter {
 		log.info("Converting to MATSim transit schedule");
 
 		LocalDate extractDate = getExtractDate(serviceIdsParam);
-
-		/**
-		 * The types of dates that will be represented by the new file
-		 */
-		Set<String> serviceIdsToConvert = getServiceIds(extractDate);
 
 		if(extractDate != null) log.info("    Extracting schedule from date " + extractDate);
 
@@ -149,18 +145,9 @@ public class GtfsConverter {
 			 * loop through each trip for the gtfsRoute and generate transitRoute (if the serviceId is correct)
 			 */
 			for(Trip trip : gtfsRoute.getTrips().values()) {
-				boolean isService = false;
-
 				Id<RouteShape> shapeId = trip.hasShape() ? trip.getShape().getId() : null;
 
-				// if trip is part of used serviceId
-				for(String serviceId : serviceIdsToConvert) {
-					if(trip.getService().equals(feed.getServices().get(serviceId))) {
-						isService = true;
-					}
-				}
-
-				if(isService) {
+				if(trip.getService().runsOnDate(extractDate)) {
 					/** [4]
 					 * Get the stop sequence (with arrivalOffset and departureOffset) of the trip.
 					 */
@@ -273,19 +260,13 @@ public class GtfsConverter {
 
 			case DAY_WITH_MOST_SERVICES: {
 				log.info("    Using service IDs of the day with the most services (" + DAY_WITH_MOST_SERVICES + ").");
-				Map<LocalDate, Set<String>> dateStats = getDateStats();
 				LocalDate date = null;
 				int maxNServiceIds = 0;
-				for(Map.Entry<LocalDate, Set<String>> idsOnDayEntry : dateStats.entrySet()) {
-					try {
-						LocalDate currentDate = idsOnDayEntry.getKey();
-						Set<String> currentIds = idsOnDayEntry.getValue();
-						if(currentIds.size() > maxNServiceIds) {
-							maxNServiceIds = currentIds.size();
-							date = currentDate;
-						}
-					} catch (Exception e1) {
-						e1.printStackTrace();
+				for(Map.Entry<LocalDate, Set<Service>> servicesOnDayEntry : feed.getServicesOnDates().entrySet()) {
+					LocalDate currentDate = servicesOnDayEntry.getKey();
+					if(servicesOnDayEntry.getValue().size() > maxNServiceIds) {
+						maxNServiceIds = servicesOnDayEntry.getValue().size();
+						date = currentDate;
 					}
 				}
 				return date;
@@ -293,17 +274,12 @@ public class GtfsConverter {
 
 			case DAY_WITH_MOST_TRIPS: {
 				log.info("    Using service IDs of the day with the most trips (" + DAY_WITH_MOST_TRIPS + ").");
-				Map<LocalDate, Set<String>> dateStats = getDateStats();
 				LocalDate date = null;
 				int maxTrips = 0;
-				for(Map.Entry<LocalDate, Set<String>> idsOnDayEntry : dateStats.entrySet()) {
-					int nTrips = 0;
-					for(String serviceId : idsOnDayEntry.getValue()) {
-						nTrips += feed.getServices().get(serviceId).getTrips().size();
-					}
-					if(nTrips > maxTrips) {
-						maxTrips = nTrips;
-						date = idsOnDayEntry.getKey();
+				for(Map.Entry<LocalDate, Set<Trip>> tripsOnDayEntry : feed.getTripsOnDates().entrySet()) {
+					if(tripsOnDayEntry.getValue().size() > maxTrips) {
+						maxTrips = tripsOnDayEntry.getValue().size();
+						date = tripsOnDayEntry.getKey();
 					}
 				}
 				return date;
@@ -319,57 +295,6 @@ public class GtfsConverter {
 				return date;
 			}
 		}
-	}
-
-	/**
-	 * @return a map which stores the services run on each day
-	 */
-	private Map<LocalDate, Set<String>> getDateStats() {
-		Map<LocalDate, Set<String>> dateStat = new HashMap<>();
-		for(Service service : feed.getServices().values()) {
-			Set<LocalDate> days = service.getCoveredDays();
-			for(LocalDate day : days) {
-				MapUtils.getSet(day, dateStat).add(service.getId());
-			}
-		}
-		return dateStat;
-	}
-
-	/**
-	 * @return All service ids that run on the given date
-	 */
-	private Set<String> getServiceIds(LocalDate checkDate) {
-		if(checkDate == null) {
-			return new HashSet<>(feed.getServices().keySet());
-		} else {
-			HashSet<String> idsOnCheckDate = new HashSet<>();
-			for(Service service : feed.getServices().values()) {
-				if(serviceCoversDate(service, checkDate)) {
-					idsOnCheckDate.add(service.getId());
-				}
-			}
-			return idsOnCheckDate;
-		}
-	}
-
-	/**
-	 * @return <code>true</code> if the given date is used by the given service.
-	 */
-	private boolean serviceCoversDate(Service service, LocalDate checkDate) {
-		// check if checkDate is an addition
-		if(service.getAdditions().contains(checkDate)) {
-			return true;
-		}
-		if(service.getEndDate() == null || service.getStartDate() == null || checkDate.isAfter(service.getEndDate()) || checkDate.isBefore(service.getStartDate())) {
-			return false;
-		}
-		// check if the checkDate is not an exception of the service
-		if(service.getExceptions().contains(checkDate)) {
-			return false;
-		}
-		// test if checkdate's weekday is covered (0 = monday)
-		int weekday = checkDate.getDayOfWeek().getValue() - 1;
-		return service.getDays()[weekday];
 	}
 
 	/**

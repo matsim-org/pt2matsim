@@ -22,9 +22,12 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.pt2matsim.gtfs.lib.Route;
 import org.matsim.pt2matsim.gtfs.lib.Service;
 import org.matsim.pt2matsim.gtfs.lib.Stop;
+import org.matsim.pt2matsim.gtfs.lib.Trip;
 import org.matsim.pt2matsim.lib.RouteShape;
 
+import java.time.LocalDate;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * An interface to load and convert GTFS feeds
@@ -32,6 +35,10 @@ import java.util.Map;
  * @author polettif
  */
 public interface GtfsFeed {
+
+	Map<LocalDate, Set<Service>> getServicesOnDates();
+
+	Map<LocalDate, Set<Trip>> getTripsOnDates();
 
 	Map<String, Stop> getStops();
 

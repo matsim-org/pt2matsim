@@ -23,6 +23,7 @@ import com.opencsv.CSVReader;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
+import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.pt2matsim.gtfs.lib.*;
 import org.matsim.pt2matsim.lib.RouteShape;
 
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 
 
@@ -72,14 +74,11 @@ public class GtfsFeedImpl implements GtfsFeed {
 	private Map<String, Stop> gtfsStops = new HashMap<>();
 	private Map<String, Route> routes = new TreeMap<>();
 	private Map<String, Service> services = new HashMap<>();
+	private Map<LocalDate, Set<Service>> serviceDateStat = new HashMap<>();
+	private Map<LocalDate, Set<Trip>> tripDateStat = new HashMap<>();
 	private Map<String, Trip> trips = new HashMap<>();
 	private Map<Id<RouteShape>, RouteShape> shapes = new HashMap<>();
 	private boolean warnStopTimes = true;
-
-	/**
-	 * map for counting how many trips use each serviceId
-	 */
-	private Map<String, Integer> nTripsPerServiceId = new HashMap<>();
 
 	public GtfsFeedImpl(String gtfsFolder) {
 		loadFiles(gtfsFolder);
@@ -152,6 +151,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 			throw new RuntimeException("File stop_times.txt not found!");
 		}
 		loadFrequencies();
+		calcDateStats();
 		log.info("All files loaded");
 	}
 
@@ -513,6 +513,29 @@ public class GtfsFeedImpl implements GtfsFeed {
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new RuntimeException("Emtpy line found in frequencies.txt");
 		}
+	}
+
+	/**
+	 * @return a map which stores the service ids that run on each day
+	 */
+	private void calcDateStats() {
+		for(Service service : services.values()) {
+			Set<LocalDate> days = service.getCoveredDays();
+			for(LocalDate day : days) {
+				MapUtils.getSet(day, serviceDateStat).add(service);
+				MapUtils.getSet(day, tripDateStat).addAll(service.getTrips().values());
+			}
+		}
+	}
+
+	@Override
+	public Map<LocalDate, Set<Service>> getServicesOnDates() {
+		return serviceDateStat;
+	}
+
+	@Override
+	public Map<LocalDate, Set<Trip>> getTripsOnDates() {
+		return tripDateStat;
 	}
 
 	@Override
