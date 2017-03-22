@@ -13,9 +13,10 @@ import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.PTMapper;
-import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersOsmAtributes;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersOsmAttributes;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWithShapes;
 import org.matsim.pt2matsim.osm.OsmMultimodalNetworkConverter;
+import org.matsim.pt2matsim.osm.lib.AllowedTagsFilter;
 import org.matsim.pt2matsim.osm.lib.OsmData;
 import org.matsim.pt2matsim.osm.lib.OsmDataImpl;
 import org.matsim.pt2matsim.osm.lib.OsmFileReader;
@@ -40,7 +41,6 @@ import static org.matsim.pt2matsim.workbench.PTMapperShapesExample.createPTMConf
  */
 public class ZVVexample {
 
-
 	private String base = "zvv/";
 	private String osmName = base + "osm/zurich.osm";
 	private String gtfsFolder = base + "gtfs/";
@@ -61,9 +61,9 @@ public class ZVVexample {
 	public static void main(String[] args) throws Exception {
 		ZVVexample obj = new ZVVexample();
 		obj.convert();
-		obj.runMappingStandard();
-		obj.runMappingShapes();
-		obj.runMappingOsm();
+//		obj.runMappingStandard();
+//		obj.runMappingShapes();
+//		obj.runMappingOsm();
 	}
 
 	private void convert() {
@@ -74,7 +74,7 @@ public class ZVVexample {
 		osmConfig.setOutputCoordinateSystem(coordSys);
 
 		// 1.2 load osm file
-		osmData = new OsmDataImpl();
+		osmData = new OsmDataImpl(AllowedTagsFilter.getDefaultPTFilter());
 		new OsmFileReader(osmData).readFile(osmName);
 
 		// 1.3 initiate and run converter
@@ -175,7 +175,7 @@ public class ZVVexample {
 
 		PublicTransitMappingConfigGroup config = createPTMConfig();
 
-		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersOsmAtributes(config, schedule, network, osmData));
+		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersOsmAttributes(config, schedule, network));
 		ptMapper.run();
 
 		NetworkTools.writeNetwork(network, outputNetwork3);

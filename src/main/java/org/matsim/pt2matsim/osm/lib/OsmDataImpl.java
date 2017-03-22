@@ -22,6 +22,7 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.collections.QuadTree;
+import org.matsim.core.utils.misc.Counter;
 
 import java.util.*;
 
@@ -36,9 +37,9 @@ public class OsmDataImpl implements OsmData {
 	private final Map<Id<Osm.Way>, Osm.Way> ways = new HashMap<>();
 	private final Map<Id<Osm.Relation>, Osm.Relation> relations = new HashMap<>();
 
-	private final Map<Long, OsmFileReader.ParsedNode> parsedNodes = new HashMap<>();
-	private final Map<Long, OsmFileReader.ParsedRelation> parsedRelations = new HashMap<>();
-	private final Map<Long, OsmFileReader.ParsedWay> parsedWays = new HashMap<>();
+	private Map<Long, OsmFileReader.ParsedNode> parsedNodes = null;
+	private Map<Long, OsmFileReader.ParsedRelation> parsedRelations = null;
+	private Map<Long, OsmFileReader.ParsedWay> parsedWays = null;
 
 	// node extent
 	private double minX = Double.MAX_VALUE;
@@ -58,19 +59,27 @@ public class OsmDataImpl implements OsmData {
 	}
 
 	public void buildMap() {
+		log.info("Build map...");
 		quadTree = new QuadTree<>(minX, minY, maxX, maxY);
 
 		// create nodes
+		log.info("Create nodes...");
+		Counter pnCounter = new Counter(" # ");
 		for(OsmFileReader.ParsedNode pn : parsedNodes.values()) {
+			pnCounter.incCounter();
 			Osm.Node newNode = new OsmElement.Node(pn.id, pn.coord, pn.tags);
 			quadTree.put(newNode.getCoord().getX(), newNode.getCoord().getY(), newNode);
 			if(nodes.put(newNode.getId(), newNode) != null) {
 				throw new RuntimeException("Node id " + newNode.getId() + "already exists on map");
 			}
 		}
+		parsedNodes = null;
 
 		// create ways
+		log.info("Create ways...");
+		Counter pwCounter = new Counter(" # ");
 		for(OsmFileReader.ParsedWay pw : parsedWays.values()) {
+			pwCounter.incCounter();
 			boolean nodesAvailable = true;
 			List<Osm.Node> nodeList = new ArrayList<>();
 			for(Long id : pw.nodes) {
@@ -95,9 +104,13 @@ public class OsmDataImpl implements OsmData {
 				}
 			}
 		}
+		parsedWays = null;
 
 		// create relations
+		log.info("Create relations...");
+		Counter prCounter = new Counter(" # ");
 		for(OsmFileReader.ParsedRelation pr : parsedRelations.values()) {
+			prCounter.incCounter();
 			Osm.Relation newRel = new OsmElement.Relation(pr.id, pr.tags);
 			if(relations.put(newRel.getId(), newRel) != null) {
 				throw new RuntimeException("Relation id " + newRel.getId() + "already exists on map");
@@ -145,11 +158,7 @@ public class OsmDataImpl implements OsmData {
 			}
 			((OsmElement.Relation) currentRel).setMembers(memberList, memberRoles);
 		}
-
-		// clear memory
-		parsedNodes.clear();
-		parsedWays.clear();
-		parsedRelations.clear();
+		parsedRelations = null;
 	}
 
 	@Override
@@ -227,6 +236,7 @@ public class OsmDataImpl implements OsmData {
 	@Override
 	public void handleParsedNode(OsmFileReader.ParsedNode node) {
 		if(filter.matches(node)) {
+			if(parsedNodes == null) parsedNodes = new HashMap<>();
 			parsedNodes.put(node.id, node);
 			updateExtent(node.coord);
 		}
@@ -240,16 +250,18 @@ public class OsmDataImpl implements OsmData {
 	}
 
 	@Override
-	public void handleParsedRelation(OsmFileReader.ParsedRelation relation) {
-		if(filter.matches(relation)) {
-			parsedRelations.put(relation.id, relation);
+	public void handleParsedWay(OsmFileReader.ParsedWay way) {
+		if(filter.matches(way)) {
+			if(parsedWays == null) parsedWays = new HashMap<>();
+			parsedWays.put(way.id, way);
 		}
 	}
 
 	@Override
-	public void handleParsedWay(OsmFileReader.ParsedWay way) {
-		if(filter.matches(way)) {
-			parsedWays.put(way.id, way);
+	public void handleParsedRelation(OsmFileReader.ParsedRelation relation) {
+		if(filter.matches(relation)) {
+			if(parsedRelations == null) parsedRelations = new HashMap<>();
+			parsedRelations.put(relation.id, relation);
 		}
 	}
 

@@ -162,7 +162,7 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 		 * Calculates the travel cost and change it based on distance to path
 		 */
 		private double calcLinkTravelCost(Link link) {
-			double travelCost = (config.getTravelCostType().equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
+			double travelCost = PTMapperTools.calcTravelCost(link, config.getTravelCostType());
 
 			if(shape != null) {
 				double dist = ShapeTools.calcMinDistanceToShape(link, shape);
