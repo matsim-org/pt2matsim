@@ -4,7 +4,7 @@ PT2MATSim is a package to convert schedule data such as GTFS, HAFAS or OSM to a 
 
 There are multiple public transit schedule data formats, widely used formats are GTFS and HAFAS. Numerous GTFS feeds are
 publicly available (see [transitfeeds.com](https://transitfeeds.com) or [transit.land](http://www.transit.land)), otherwise these files
-have to be obtained from the public transit agency. The Swiss public transit schedule is available in HAFAS format via [fahrplanfelder.ch](http://fahrplanfelder.ch).
+have to be obtained from the public transit agency. The Swiss public transit schedule is available GTFS and HAFAS format via [opentransportdata.swiss](https://opentransportdata.swiss).
 Public transit data feeds can be converted to unmapped MATSim transit schedules using the classes _Gtfs2Transitschedule_ or _Hafas2TransitSchedule_.
 It is possible to convert public transit information from OpenStreetMap files (_Osm2TransitSchedule_). However,
 OSM currently does not contain any temporal information, the accuracy of the schedule data varies and is
