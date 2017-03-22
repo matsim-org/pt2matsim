@@ -175,7 +175,7 @@ public class GtfsConverter {
 								e.printStackTrace();
 							}
 						}
-						TransitRouteStop newTRS = scheduleFactory.createTransitRouteStop(schedule.getFacilities().get(Id.create(stopTime.getStopId(), TransitStopFacility.class)), arrival, departure);
+						TransitRouteStop newTRS = scheduleFactory.createTransitRouteStop(schedule.getFacilities().get(Id.create(stopTime.getStop().getId(), TransitStopFacility.class)), arrival, departure);
 						newTRS.setAwaitDepartureTime(defaultAwaitDepartureTime);
 						transitRouteStops.add(newTRS);
 					}
