@@ -1,0 +1,163 @@
+/* *********************************************************************** *
+ * project: org.matsim.*
+ * *********************************************************************** *
+ *                                                                         *
+ * copyright       : (C) 2016 by the members listed in the COPYING,        *
+ *                   LICENSE and WARRANTY file.                            *
+ * email           : info at matsim dot org                                *
+ *                                                                         *
+ * *********************************************************************** *
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *   See also COPYING, LICENSE and WARRANTY file                           *
+ *                                                                         *
+ * *********************************************************************** */
+
+package org.matsim.pt2matsim.mapping.networkRouter;
+
+import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.Node;
+import org.matsim.api.core.v01.population.Person;
+import org.matsim.core.router.util.*;
+import org.matsim.core.utils.collections.MapUtils;
+import org.matsim.core.utils.misc.Counter;
+import org.matsim.pt.transitSchedule.api.TransitLine;
+import org.matsim.pt.transitSchedule.api.TransitRoute;
+import org.matsim.pt.transitSchedule.api.TransitRouteStop;
+import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
+import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
+import org.matsim.pt2matsim.lib.RouteShape;
+import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
+import org.matsim.pt2matsim.tools.NetworkTools;
+import org.matsim.pt2matsim.tools.PTMapperTools;
+import org.matsim.pt2matsim.tools.ScheduleTools;
+import org.matsim.pt2matsim.tools.ShapeTools;
+import org.matsim.utils.objectattributes.attributable.Attributes;
+import org.matsim.vehicles.Vehicle;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * @author polettif
+ */
+public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
+
+
+	protected static Logger log = Logger.getLogger(ScheduleRoutersWithShapes.class);
+
+	// standard fields
+	private final PublicTransitMappingConfigGroup config;
+	private final TransitSchedule schedule;
+	private final Network network;
+
+	// path calculators
+	private final Map<String, LeastCostPathCalculator> pathCalculatorsByMode = new HashMap<>();
+	private final Map<String, Network> networksByMode = new HashMap<>();
+	private Map<TransitLine, Map<TransitRoute, OsmRouter>> osmRouters = new HashMap<>();
+
+
+	public ScheduleRoutersOsmAttributes(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network) {
+		this.config = config;
+		this.schedule = schedule;
+		this.network = network;
+	}
+	/**
+	 * Load path calculators for all transit routes
+	 */
+	@Override
+	public void load() {
+		Map<String, Set<String>> modeRoutingAssignment = config.getModeRoutingAssignment();
+
+		log.info("Initiating network and router for transit routes...");
+		for(TransitLine transitLine : schedule.getTransitLines().values()) {
+			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
+				String scheduleMode = transitRoute.getTransportMode();
+				LeastCostPathCalculator tmpRouter = pathCalculatorsByMode.get(scheduleMode);
+				if(tmpRouter == null) {
+					log.info("New router for schedule mode " + scheduleMode);
+					Set<String> networkTransportModes = modeRoutingAssignment.get(scheduleMode);
+
+					Network filteredNetwork = NetworkTools.createFilteredNetworkByLinkMode(this.network, networkTransportModes);
+
+					OsmRouter r = new OsmRouter();
+
+					LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory(filteredNetwork, r);
+					tmpRouter = factory.createPathCalculator(filteredNetwork, r, r);
+
+					pathCalculatorsByMode.put(scheduleMode, tmpRouter);
+					networksByMode.put(scheduleMode, filteredNetwork);
+				}
+			}
+		}
+	}
+
+
+	@Override
+	public LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, TransitLine transitLine, TransitRoute transitRoute) {
+		return this.calcLeastCostPath(fromLinkCandidate.getToNodeId(), toLinkCandidate.getFromNodeId(), transitLine, transitRoute);
+	}
+
+	@Override
+	public LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNodeId, Id<Node> toNodeId, TransitLine transitLine, TransitRoute transitRoute) {
+		Network n = networksByMode.get(transitRoute.getTransportMode());
+		Node fromNode = n.getNodes().get(fromNodeId);
+		Node toNode = n.getNodes().get(toNodeId);
+
+		if(fromNode != null && toNode != null) {
+			return pathCalculatorsByMode.get(transitRoute.getTransportMode()).calcLeastCostPath(fromNode, toNode, 0, null, null);
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public double getMinimalTravelCost(TransitRouteStop fromTransitRouteStop, TransitRouteStop toTransitRouteStop, TransitLine transitLine, TransitRoute transitRoute) {
+		return PTMapperTools.calcTravelCost(fromTransitRouteStop, toTransitRouteStop, config.getTravelCostType());
+	}
+
+	@Override
+	public double getLinkCandidateTravelCost(TransitLine transitLine, TransitRoute transitRoute, LinkCandidate linkCandidateCurrent) {
+		return PTMapperTools.calcTravelCost(linkCandidateCurrent.getLink(), config.getTravelCostType());
+	}
+
+	/**
+	 * Class is sent to path calculator factory
+	 */
+	private class OsmRouter implements TravelDisutility, TravelTime{
+
+		private double calcLinkTravelCost(Link link) {
+			double travelCost = PTMapperTools.calcTravelCost(link, config.getTravelCostType());
+
+			Attributes attributes = network.getLinks().get(link.getId()).getAttributes();
+
+			Object a = attributes.getAttribute(OsmConverterConfigGroup.LINK_ATTRIBUTE_RELATION_ROUTE_MASTER);
+
+			return travelCost;
+		}
+
+		@Override
+		public double getLinkTravelDisutility(Link link, double time, Person person, Vehicle vehicle) {
+			return calcLinkTravelCost(link);
+		}
+
+		@Override
+		public double getLinkMinimumTravelDisutility(Link link) {
+			return calcLinkTravelCost(link);
+		}
+
+		@Override
+		public double getLinkTravelTime(Link link, double time, Person person, Vehicle vehicle) {
+			return link.getLength() / link.getFreespeed();
+		}
+	}
+}

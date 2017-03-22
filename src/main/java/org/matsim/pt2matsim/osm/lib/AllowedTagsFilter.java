@@ -21,6 +21,7 @@ package org.matsim.pt2matsim.osm.lib;
 import org.matsim.core.utils.collections.MapUtils;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,7 +41,6 @@ public class AllowedTagsFilter {
 		AllowedTagsFilter filter = new AllowedTagsFilter();
 		filter.add(Osm.ElementType.WAY, Osm.Key.HIGHWAY, null);
 		filter.add(Osm.ElementType.WAY, Osm.Key.RAILWAY, null);
-		filter.addException(Osm.ElementType.WAY, Osm.Key.SERVICE, null);
 		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.BUS);
 		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TROLLEYBUS);
 		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.RAIL);
@@ -72,7 +72,7 @@ public class AllowedTagsFilter {
 		if(checkExceptions != null) {
 			// check for exceptions
 			for(Map.Entry<String, Set<String>> e : checkExceptions.entrySet()) {
-				if(tags.containsKey(e.getKey()) && e.getValue() == null) {
+				if(tags.containsKey(e.getKey()) && e.getValue().size() == 0) {
 					return false;
 				}
 				String value = tags.get(e.getKey());
@@ -84,7 +84,7 @@ public class AllowedTagsFilter {
 		if(checkPairs != null) {
 			// check for positive list
 			for(Map.Entry<String, Set<String>> e : checkPairs.entrySet()) {
-				if(tags.containsKey(e.getKey()) && e.getValue() == null) {
+				if(tags.containsKey(e.getKey()) && e.getValue().size() == 0) {
 					return true;
 				}
 				String value = tags.get(e.getKey());
@@ -99,13 +99,13 @@ public class AllowedTagsFilter {
 
 	/**
 	 * @param elementType osm element type (node/way/relation)
-	 * @param key tag name
-	 * @param value <code>null</code> if all values should be taken
+	 * @param key         tag name
+	 * @param value       <code>null</code> if all values should be taken
 	 */
 	public void add(Osm.ElementType elementType, final String key, final String value) {
 		Map<String, Set<String>> map = MapUtils.getMap(elementType, keyValuePairs);
 		if(value == null) {
-			map.put(key, null);
+			map.put(key, new HashSet<>());
 		} else {
 			Set<String> values = MapUtils.getSet(key, map);
 			values.add(value);
@@ -127,11 +127,27 @@ public class AllowedTagsFilter {
 	}
 
 	/*pckg*/ void mergeFilter(AllowedTagsFilter f) {
-		for(Osm.ElementType t : f.keyValuePairs.keySet()) {
-			MapUtils.getMap(t, keyValuePairs).putAll(f.keyValuePairs.get(t));
+		for(Map.Entry<Osm.ElementType, Map<String, Set<String>>> typeMapEntry : f.keyValuePairs.entrySet()) {
+			for(Map.Entry<String, Set<String>> entry : typeMapEntry.getValue().entrySet()) {
+				if(entry.getKey() != null) {
+					if(entry.getValue() == null) {
+						MapUtils.getSet(entry.getKey(), MapUtils.getMap(typeMapEntry.getKey(), this.keyValuePairs)).add(null);
+					} else {
+						MapUtils.getSet(entry.getKey(), MapUtils.getMap(typeMapEntry.getKey(), this.keyValuePairs)).addAll(entry.getValue());
+					}
+				}
+
+			}
 		}
-		for(Osm.ElementType t : f.keyValueExceptions.keySet()) {
-			MapUtils.getMap(t, keyValueExceptions).putAll(f.keyValueExceptions.get(t));
+		for(Map.Entry<Osm.ElementType, Map<String, Set<String>>> typeMapEntry : f.keyValueExceptions.entrySet()) {
+			for(Map.Entry<String, Set<String>> entry : typeMapEntry.getValue().entrySet()) {
+				if(entry.getKey() != null) {
+					if(entry.getValue() == null) {
+						MapUtils.getSet(entry.getKey(), MapUtils.getMap(typeMapEntry.getKey(), this.keyValueExceptions)).add(null);
+					} else {
+						MapUtils.getSet(entry.getKey(), MapUtils.getMap(typeMapEntry.getKey(), this.keyValueExceptions)).addAll(entry.getValue());
+					}				}
+			}
 		}
 	}
 }
