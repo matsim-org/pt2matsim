@@ -48,4 +48,9 @@ public interface Service {
 	Map<String, Trip> getTrips();
 
 	void addTrip(Trip newTrip);
+
+	/**
+	 * @return <code>true</code> if the given date is used by the given service.
+	 */
+	boolean runsOnDate(LocalDate extractDate);
 }

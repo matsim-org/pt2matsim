@@ -151,6 +151,27 @@ public class ServiceImpl implements Service {
 	}
 
 	@Override
+	public boolean runsOnDate(LocalDate checkDate) {
+		if(checkDate == null) {
+			return true;
+		}
+		// check if checkDate is an addition
+		if(this.getAdditions().contains(checkDate)) {
+			return true;
+		}
+		if(this.getEndDate() == null || this.getStartDate() == null || checkDate.isAfter(this.getEndDate()) || checkDate.isBefore(this.getStartDate())) {
+			return false;
+		}
+		// check if the checkDate is not an exception of the service
+		if(this.getExceptions().contains(checkDate)) {
+			return false;
+		}
+		// test if checkdate's weekday is covered (0 = monday)
+		int weekday = checkDate.getDayOfWeek().getValue() - 1;
+		return this.getDays()[weekday];
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if(this == obj)
 			return true;

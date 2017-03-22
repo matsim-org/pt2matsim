@@ -13,6 +13,7 @@ public class GtfsConverterTest {
 
 	private GtfsFeed gtfsFeed;
 	private GtfsConverter gtfsConverter;
+	private TransitSchedule scheduleAddison;
 
 	@Before
 	public void convert() throws Exception {
@@ -21,17 +22,17 @@ public class GtfsConverterTest {
 		gtfsFeed = new GtfsFeedImpl("test/Addisoncounty-GTFS/");
 
 		gtfsConverter = new GtfsConverter(gtfsFeed);
-		gtfsConverter.convert(GtfsConverter.ALL_SERVICE_IDS, coordinateSystem);
+		scheduleAddison = gtfsConverter.convert(GtfsConverter.ALL_SERVICE_IDS, coordinateSystem);
+		gtfsConverter.convert(GtfsConverter.DAY_WITH_MOST_SERVICES, coordinateSystem);
+		gtfsConverter.convert(GtfsConverter.DAY_WITH_MOST_TRIPS, coordinateSystem);
 	}
 
 	@Test
 	public void numberOfRoutes() {
-		TransitSchedule schedule = gtfsConverter.getSchedule();
-
 		int nTransitLines = 0;
 		int nTransitRoutes = 0;
 
-		for(TransitLine tl : schedule.getTransitLines().values()) {
+		for(TransitLine tl : scheduleAddison.getTransitLines().values()) {
 			nTransitLines++;
 			nTransitRoutes += tl.getRoutes().size();
 		}
@@ -46,9 +47,11 @@ public class GtfsConverterTest {
 
 		gtfsFeed = new GtfsFeedImpl("test/GrandRiverTransit-GTFS/");
 
-		gtfsConverter = new GtfsConverter(gtfsFeed);
-		gtfsConverter.convert(GtfsConverter.ALL_SERVICE_IDS, coordinateSystem);
+		GtfsConverter gtfsConverter2 = new GtfsConverter(gtfsFeed);
+		int scheduleServices = gtfsConverter2.convert(GtfsConverter.DAY_WITH_MOST_SERVICES, coordinateSystem).getTransitLines().size();
+		int scheduleDay = gtfsConverter2.convert("20161027", coordinateSystem).getTransitLines().size();
 
+		Assert.assertEquals(scheduleServices, scheduleDay);
 	}
 
 }
