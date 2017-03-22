@@ -7,8 +7,6 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.router.util.*;
-import org.matsim.core.utils.collections.MapUtils;
-import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
@@ -18,7 +16,6 @@ import org.matsim.pt2matsim.mapping.MapperModule;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.PTMapperTools;
-import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.vehicles.Vehicle;
 
 import java.util.HashMap;
@@ -86,7 +83,8 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 	}
 
 	@Override
-	public LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNodeId, Id<Node> toNodeId, TransitLine transitLine, TransitRoute transitRoute) {
+	public synchronized LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNodeId, Id<Node> toNodeId, TransitLine transitLine, TransitRoute transitRoute) {
+		// Synchronized since the used Dijkstra algorithm is not thread safe
 		Network n = networksByMode.get(transitRoute.getTransportMode());
 		Node fromNode = n.getNodes().get(fromNodeId);
 		Node toNode = n.getNodes().get(toNodeId);
