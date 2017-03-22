@@ -28,8 +28,6 @@ import java.util.SortedMap;
  */
 public interface Trip {
 
-	void addFrequency(Frequency frequency);
-
 	boolean hasShape();
 
 	String getId();
@@ -43,6 +41,4 @@ public interface Trip {
 	SortedMap<Integer, StopTime> getStopTimes();
 
 	List<Frequency> getFrequencies();
-
-	void addStopTime(StopTime newStopTime);
 }

@@ -22,12 +22,18 @@ package org.matsim.pt2matsim.gtfs.lib;
 
 import org.matsim.api.core.v01.Coord;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 public class StopImpl implements Stop {
 
 	private final String id;
 	private final Coord coord;
 	private final String name;
 	private final int hash;
+	private final Set<Trip> trips = new HashSet<>();
 
 	public StopImpl(String id, String name, Coord coord) {
 		this.id = id;
@@ -58,6 +64,15 @@ public class StopImpl implements Stop {
 	@Override
 	public String getName() {
 		return name;
+	}
+
+	@Override
+	public Collection<Trip> getTrips() {
+		return Collections.unmodifiableCollection(trips);
+	}
+
+	public void addTrip(Trip trip) {
+		trips.add(trip);
 	}
 
 	@Override

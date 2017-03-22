@@ -20,6 +20,8 @@ package org.matsim.pt2matsim.gtfs.lib;
 
 import org.matsim.api.core.v01.Coord;
 
+import java.util.Collection;
+
 /**
  * @author polettif
  */
@@ -29,4 +31,6 @@ public interface Stop {
 	Coord getCoord();
 
 	String getName();
+
+	Collection<Trip> getTrips();
 }

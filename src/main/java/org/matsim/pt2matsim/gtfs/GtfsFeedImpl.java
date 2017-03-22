@@ -71,7 +71,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	private DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
 
 	// containers for storing gtfs data
-	private Map<String, Stop> gtfsStops = new HashMap<>();
+	private Map<String, Stop> stops = new HashMap<>();
 	private Map<String, Route> routes = new TreeMap<>();
 	private Map<String, Service> services = new HashMap<>();
 	private Map<LocalDate, Set<Service>> serviceDateStat = new HashMap<>();
@@ -156,7 +156,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	}
 
 	/**
-	 * Reads all stops and puts them in {@link #gtfsStops}
+	 * Reads all stops and puts them in {@link #stops}
 	 * <p/>
 	 * <br/><br/>
 	 * stops.txt <i>[https://developers.google.com/transit/gtfs/reference]</i><br/>
@@ -177,8 +177,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 			while(line != null) {
 				String stopId = line[col.get(GtfsDefinitions.STOP_ID)];
 				Coord coord = new Coord(Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LON)]), Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LAT)]));
-				Stop GtfsStop = new StopImpl(stopId, line[col.get(GtfsDefinitions.STOP_NAME)], coord);
-				gtfsStops.put(stopId, GtfsStop);
+				Stop stop = new StopImpl(stopId, line[col.get(GtfsDefinitions.STOP_NAME)], coord);
+				stops.put(stopId, stop);
 
 				line = reader.readNext();
 			}
@@ -267,9 +267,9 @@ public class GtfsFeedImpl implements GtfsFeed {
 				}
 
 				if(line[col.get(GtfsDefinitions.EXCEPTION_TYPE)].equals("2")) {
-					currentService.addException(line[col.get(GtfsDefinitions.DATE)]);
+					((ServiceImpl) currentService).addException(line[col.get(GtfsDefinitions.DATE)]);
 				} else {
-					currentService.addAddition(line[col.get(GtfsDefinitions.DATE)]);
+					((ServiceImpl) currentService).addAddition(line[col.get(GtfsDefinitions.DATE)]);
 				}
 
 				line = reader.readNext();
@@ -365,7 +365,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 * <p/>
 	 * <br/><br/>
 	 * trips.txt <i>[https://developers.google.com/transit/gtfs/reference]</i><br/>
-	 * Trips for each route. A trip is a sequence of two or more gtfsStops that occurs at specific time.
+	 * Trips for each route. A trip is a sequence of two or more stops that occurs at specific time.
 	 *
 	 * @throws IOException
 	 */
@@ -390,8 +390,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 				}
 
 				// store Trip
-				gtfsRoute.addTrip(newTrip);
-				service.addTrip(newTrip);
+				((RouteImpl) gtfsRoute).addTrip(newTrip);
+				((ServiceImpl) service).addTrip(newTrip);
 				trips.put(newTrip.getId(), newTrip);
 
 				line = reader.readNext();
@@ -409,7 +409,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 * <p/>
 	 * <br/><br/>
 	 * stop_times.txt <i>[https://developers.google.com/transit/gtfs/reference]</i><br/>
-	 * Times that a vehicle arrives at and departs from individual gtfsStops for each trip.
+	 * Times that a vehicle arrives at and departs from individual stops for each trip.
 	 *
 	 * @throws IOException
 	 */
@@ -429,13 +429,20 @@ public class GtfsFeedImpl implements GtfsFeed {
 					Trip trip = currentGtfsRoute.getTrips().get(line[col.get(GtfsDefinitions.TRIP_ID)]);
 					if(trip != null) {
 						try {
+							String stopId = line[col.get(GtfsDefinitions.STOP_ID)];
+							String tripId = line[col.get(GtfsDefinitions.TRIP_ID)];
 							if(!line[col.get(GtfsDefinitions.ARRIVAL_TIME)].equals("")) {
+
 								StopTime newStopTime = new StopTimeImpl(Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]),
 										timeFormat.parse(line[col.get(GtfsDefinitions.ARRIVAL_TIME)]),
 										timeFormat.parse(line[col.get(GtfsDefinitions.DEPARTURE_TIME)]),
-										line[col.get(GtfsDefinitions.STOP_ID)],
-										line[col.get(GtfsDefinitions.TRIP_ID)]);
-								trip.addStopTime(newStopTime);
+										stopId,
+										tripId
+								);
+								((TripImpl) trip).addStopTime(newStopTime);
+
+								// add trip to stop
+								((StopImpl) stops.get(stopId)).addTrip(trips.get(tripId));
 							}
 							/** GTFS Reference: If this stop isn't a time point, use an empty string value for the
 							 * arrival_time and departure_time fields.
@@ -447,10 +454,14 @@ public class GtfsFeedImpl implements GtfsFeed {
 								StopTime newStopTime = new StopTimeImpl(currentStopSequencePosition,
 										previousStopTime.getArrivalTime(),
 										previousStopTime.getDepartureTime(),
-										line[col.get(GtfsDefinitions.STOP_ID)],
-										line[col.get(GtfsDefinitions.TRIP_ID)]);
+										stopId,
+										tripId);
 
-								trip.addStopTime(newStopTime);
+								((TripImpl) trip).addStopTime(newStopTime);
+
+								// add trip to stop
+								((StopImpl) stops.get(stopId)).addTrip(trips.get(tripId));
+
 								if(warnStopTimes) {
 									log.warn("No arrival time set! Stops without arrival times will be scheduled based on the " +
 											"nearest preceding timed stop. This message is only given once.");
@@ -496,7 +507,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 					Trip trip = actualGtfsRoute.getTrips().get(line[col.get(GtfsDefinitions.TRIP_ID)]);
 					if(trip != null) {
 						try {
-							trip.addFrequency(new FrequencyImpl(timeFormat.parse(line[col.get(GtfsDefinitions.START_TIME)]), timeFormat.parse(line[col.get(GtfsDefinitions.END_TIME)]), Integer.parseInt(line[col.get(GtfsDefinitions.HEADWAY_SECS)])));
+							((TripImpl) trip).addFrequency(new FrequencyImpl(timeFormat.parse(line[col.get(GtfsDefinitions.START_TIME)]), timeFormat.parse(line[col.get(GtfsDefinitions.END_TIME)]), Integer.parseInt(line[col.get(GtfsDefinitions.HEADWAY_SECS)])));
 						} catch (NumberFormatException | ParseException e) {
 							e.printStackTrace();
 						}
@@ -520,8 +531,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 */
 	private void calcDateStats() {
 		for(Service service : services.values()) {
-			Set<LocalDate> days = service.getCoveredDays();
-			for(LocalDate day : days) {
+			for(LocalDate day : service.getCoveredDays()) {
 				MapUtils.getSet(day, serviceDateStat).add(service);
 				MapUtils.getSet(day, tripDateStat).addAll(service.getTrips().values());
 			}
@@ -540,7 +550,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 	@Override
 	public Map<String, Stop> getStops() {
-		return gtfsStops;
+		return stops;
 	}
 
 	@Override

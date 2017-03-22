@@ -48,12 +48,10 @@ public class TripImpl implements Trip {
 		frequencies = new ArrayList<>();
 	}
 
-	@Override
 	public void addStopTime(StopTime stopTime) {
 		stopTimes.put(stopTime.getSequencePosition(), stopTime);
 	}
 
-	@Override
 	public void addFrequency(Frequency frequency) {
 		frequencies.add(frequency);
 	}
