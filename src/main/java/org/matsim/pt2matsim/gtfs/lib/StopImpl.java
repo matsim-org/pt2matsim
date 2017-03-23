@@ -94,4 +94,9 @@ public class StopImpl implements Stop {
 	public int hashCode() {
 		return hash;
 	}
+
+	@Override
+	public String toString() {
+		return "[stop:" + id + ", \"" + name + "\"]";
+	}
 }

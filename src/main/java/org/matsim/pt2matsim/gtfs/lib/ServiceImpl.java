@@ -185,4 +185,9 @@ public class ServiceImpl implements Service {
 	public int hashCode() {
 		return id.hashCode();
 	}
+
+	@Override
+	public String toString() {
+		return "[service:" + id + ", startDate:" + startDate + ", endDate:" + endDate + "]";
+	}
 }

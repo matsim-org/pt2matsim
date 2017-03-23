@@ -20,15 +20,15 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
-import java.util.Date;
+import org.matsim.core.utils.misc.Time;
 
 public class FrequencyImpl implements Frequency {
-	
-	private final Date startTime;
-	private final Date endTime;
+
+	private final int startTime;
+	private final int endTime;
 	private final int headwaySecs;
-	
-	public FrequencyImpl(Date startTime, Date endTime, int headwaySecs) {
+
+	public FrequencyImpl(int startTime, int endTime, int headwaySecs) {
 		this.startTime = startTime;
 		this.endTime = endTime;
 		this.headwaySecs = headwaySecs;
@@ -38,7 +38,7 @@ public class FrequencyImpl implements Frequency {
 	 * required attribute
 	 */
 	@Override
-	public Date getStartTime() {
+	public int getStartTime() {
 		return startTime;
 	}
 
@@ -46,7 +46,7 @@ public class FrequencyImpl implements Frequency {
 	 * required attribute
 	 */
 	@Override
-	public Date getEndTime() {
+	public int getEndTime() {
 		return endTime;
 	}
 
@@ -68,14 +68,19 @@ public class FrequencyImpl implements Frequency {
 			return false;
 
 		Frequency other = (Frequency) obj;
-		return (other.getStartTime().equals(startTime) &&
-				other.getEndTime().equals(endTime) &&
+		return (other.getStartTime() == startTime &&
+				other.getEndTime() == endTime &&
 				other.getHeadWaySecs() == headwaySecs);
 	}
 
 	@Override
 	public int hashCode() {
-		return startTime.hashCode() + endTime.hashCode() + headwaySecs;
+		return startTime * 17 + endTime * 31 + headwaySecs;
+	}
+
+	@Override
+	public String toString() {
+		return "[startTime:" + Time.writeTime(startTime) + ", endTime:" + Time.writeTime(endTime) + ", headwaySecs:" + headwaySecs + "]";
 	}
 
 }
