@@ -152,13 +152,13 @@ public class GtfsConverter {
 					 * Get the stop sequence (with arrivalOffset and departureOffset) of the trip.
 					 */
 					List<TransitRouteStop> transitRouteStops = new ArrayList<>();
-					Date startTime = trip.getStopTimes().get(trip.getStopTimes().firstKey()).getArrivalTime();
+					int startTime = trip.getStopTimes().get(trip.getStopTimes().firstKey()).getArrivalTime();
 					for(StopTime stopTime : trip.getStopTimes().values()) {
 						double arrival = Time.UNDEFINED_TIME, departure = Time.UNDEFINED_TIME;
 
 						// add arrival time if current stopTime is not on the first stop of the route
 						if(!stopTime.getSequencePosition().equals(trip.getStopTimes().firstKey())) {
-							long difference = stopTime.getArrivalTime().getTime() - startTime.getTime();
+							int difference = stopTime.getArrivalTime() - startTime;
 							try {
 								arrival = Time.parseTime(timeFormat.format(new Date(timeFormat.parse("00:00:00").getTime() + difference)));
 							} catch (ParseException e) {
@@ -168,7 +168,7 @@ public class GtfsConverter {
 
 						// add departure time if current stopTime is not on the last stop of the route
 						if(!stopTime.getSequencePosition().equals(trip.getStopTimes().lastKey())) {
-							long difference = stopTime.getDepartureTime().getTime() - startTime.getTime();
+							int difference = stopTime.getArrivalTime() - startTime;
 							try {
 								departure = Time.parseTime(timeFormat.format(new Date(timeFormat.parse("00:00:00").getTime() + difference)));
 							} catch (ParseException e) {
@@ -210,7 +210,7 @@ public class GtfsConverter {
 						for(TransitRoute currentTransitRoute : transitLine.getRoutes().values()) {
 							if(currentTransitRoute.getStops().equals(transitRouteStops)) {
 								if(routeShapeAssignment.get(currentTransitRoute.getId()) == shapeId) {
-									currentTransitRoute.addDeparture(scheduleFactory.createDeparture(Id.create(departureIds.getNext(currentTransitRoute.getId()), Departure.class), Time.parseTime(timeFormat.format(startTime))));
+									currentTransitRoute.addDeparture(scheduleFactory.createDeparture(Id.create(departureIds.getNext(currentTransitRoute.getId()), Departure.class), startTime));
 									createNewTransitRoute = false;
 									break;
 								}
@@ -222,7 +222,7 @@ public class GtfsConverter {
 						 */
 						if(createNewTransitRoute) {
 							transitRoute = scheduleFactory.createTransitRoute(Id.create(trip.getId(), TransitRoute.class), null, transitRouteStops, gtfsRoute.getRouteType().name);
-							transitRoute.addDeparture(scheduleFactory.createDeparture(Id.create(departureIds.getNext(transitRoute.getId()), Departure.class), Time.parseTime(timeFormat.format(startTime))));
+							transitRoute.addDeparture(scheduleFactory.createDeparture(Id.create(departureIds.getNext(transitRoute.getId()), Departure.class), startTime));
 
 							if(shapeId != null) ScheduleTools.setShapeId(transitRoute, trip.getShape().getId());
 							routeShapeAssignment.put(transitRoute.getId(), shapeId);

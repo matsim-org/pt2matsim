@@ -20,27 +20,25 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
-import java.util.Date;
-
 /**
  * Container for GTFS StopTime. Contains stopId, arrivalTime and departureTime
  */
 public class StopTimeImpl implements StopTime {
 
 	private final Integer sequencePosition;
-	private final Date arrivalTime;
-	private final Date departureTime;
+	private final int arrivalTime;
+	private final int departureTime;
 	private final Stop stop;
 	private final Trip trip;
 	private final int hash;
 
-	public StopTimeImpl(Integer sequencePosition, Date arrivalTime, Date departureTime, Stop stop, Trip trip) {
+	public StopTimeImpl(Integer sequencePosition, int arrivalTime, int departureTime, Stop stop, Trip trip) {
 		this.sequencePosition = sequencePosition;
 		this.arrivalTime = arrivalTime;
 		this.departureTime = departureTime;
 		this.stop = stop;
 		this.trip = trip;
-		this.hash = (sequencePosition.toString() + stop.getId() + trip.getId() + arrivalTime.toString() + departureTime.toString()).hashCode();
+		this.hash = (sequencePosition.toString() + stop.getId() + trip.getId()).hashCode() + arrivalTime + departureTime;
 	}
 
 
@@ -58,7 +56,7 @@ public class StopTimeImpl implements StopTime {
 	 * required attribute
 	 */
 	@Override
-	public Date getArrivalTime() {
+	public int getArrivalTime() {
 		return arrivalTime;
 	}
 
@@ -66,7 +64,7 @@ public class StopTimeImpl implements StopTime {
 	 * required attribute
 	 */
 	@Override
-	public Date getDepartureTime() {
+	public int getDepartureTime() {
 		return departureTime;
 	}
 
@@ -92,8 +90,8 @@ public class StopTimeImpl implements StopTime {
 		StopTime other = (StopTime) obj;
 		return (other.getStop().getId().equals(stop.getId()) &&
 				other.getSequencePosition().equals(sequencePosition) &&
-				other.getArrivalTime().equals(arrivalTime) &&
-				other.getDepartureTime().equals(departureTime));
+				other.getArrivalTime() == arrivalTime &&
+				other.getDepartureTime() == departureTime);
 
 	}
 

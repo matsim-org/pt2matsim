@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.collections.MapUtils;
+import org.matsim.core.utils.misc.Time;
 import org.matsim.pt2matsim.gtfs.lib.*;
 import org.matsim.pt2matsim.lib.RouteShape;
 
@@ -423,7 +424,11 @@ public class GtfsFeedImpl implements GtfsFeed {
 			String[] line = reader.readNext();
 			int i = 1, c = 1;
 			while(line != null) {
-				if(i == Math.pow(2, c)) { log.info("        # " + i); c++; } i++; // just for logging so something happens in the console
+				if(i == Math.pow(2, c)) {
+					log.info("        # " + i);
+					c++;
+				}
+				i++; // logging
 
 				for(Route currentGtfsRoute : routes.values()) {
 					Trip trip = currentGtfsRoute.getTrips().get(line[col.get(GtfsDefinitions.TRIP_ID)]);
@@ -432,10 +437,15 @@ public class GtfsFeedImpl implements GtfsFeed {
 					if(trip != null) {
 						try {
 							if(!line[col.get(GtfsDefinitions.ARRIVAL_TIME)].equals("")) {
+								// get position and times
+								int sequencePosition = Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]);
+								int arrivalTime = (int) Time.parseTime(line[col.get(GtfsDefinitions.ARRIVAL_TIME)]);
+								int departureTime = (int) Time.parseTime(line[col.get(GtfsDefinitions.DEPARTURE_TIME)]);
 
-								StopTime newStopTime = new StopTimeImpl(Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]),
-										timeFormat.parse(line[col.get(GtfsDefinitions.ARRIVAL_TIME)]),
-										timeFormat.parse(line[col.get(GtfsDefinitions.DEPARTURE_TIME)]),
+								// create StopTime
+								StopTime newStopTime = new StopTimeImpl(sequencePosition,
+										arrivalTime,
+										departureTime,
 										stop,
 										trip
 								);
@@ -451,6 +461,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 								Integer currentStopSequencePosition = Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]);
 								StopTime previousStopTime = trip.getStopTimes().get(currentStopSequencePosition-1);
 
+								// create StopTime
 								StopTime newStopTime = new StopTimeImpl(currentStopSequencePosition,
 										previousStopTime.getArrivalTime(),
 										previousStopTime.getDepartureTime(),
@@ -468,20 +479,20 @@ public class GtfsFeedImpl implements GtfsFeed {
 									warnStopTimes = false;
 								}
 							}
-						} catch (NumberFormatException | ParseException e) {
+						} catch (NumberFormatException e) {
 							e.printStackTrace();
 						}
 					}
 				}
 				line = reader.readNext();
 			}
-
 			reader.close();
 		} catch (ArrayIndexOutOfBoundsException i) {
 			throw new RuntimeException("Emtpy line found in stop_times.txt");
 		}
 		log.info("...     stop_times.txt loaded");
 	}
+
 
 	/**
 	 * Loads the frequencies (if available) and adds them to their respective trips in {@link #routes}.
@@ -575,6 +586,11 @@ public class GtfsFeedImpl implements GtfsFeed {
 	@Override
 	public Map<String, Service> getServices() {
 		return services;
+	}
+
+	@Override
+	public Map<String, Trip> getTrips() {
+		return trips;
 	}
 
 

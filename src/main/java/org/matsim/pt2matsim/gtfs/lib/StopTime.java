@@ -18,8 +18,6 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
-import java.util.Date;
-
 /**
  * @author polettif
  */
@@ -29,9 +27,9 @@ public interface StopTime {
 
 	Trip getTrip();
 
-	Date getArrivalTime();
+	int getArrivalTime();
 
-	Date getDepartureTime();
+	int getDepartureTime();
 
 	Integer getSequencePosition();
 }
