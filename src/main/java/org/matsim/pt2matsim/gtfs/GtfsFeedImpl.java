@@ -516,9 +516,13 @@ public class GtfsFeedImpl implements GtfsFeed {
 				line = reader.readNext();
 			}
 			reader.close();
-			log.info("...     frequencies.txt loaded");
+			if(usesFrequencies) {
+				log.info("...     frequencies.txt loaded");
+			} else {
+				log.info("...     frequencies.txt has no entries");
+			}
 		} catch (FileNotFoundException e) {
-			log.info("...     no frequencies file found.");
+			log.info("...     no frequencies file found");
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ArrayIndexOutOfBoundsException e) {
