@@ -32,7 +32,6 @@ import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
@@ -152,30 +151,37 @@ public class GtfsConverter {
 					 * Get the stop sequence (with arrivalOffset and departureOffset) of the trip.
 					 */
 					List<TransitRouteStop> transitRouteStops = new ArrayList<>();
-					int startTime = trip.getStopTimes().get(trip.getStopTimes().firstKey()).getArrivalTime();
-					for(StopTime stopTime : trip.getStopTimes().values()) {
-						double arrival = Time.UNDEFINED_TIME, departure = Time.UNDEFINED_TIME;
+					int startTime = trip.getStopTimes().first().getArrivalTime();
+					int firstSequencePos = trip.getStopTimes().first().getSequencePosition();
+					int lastSequencePos = trip.getStopTimes().last().getSequencePosition();
 
-						// add arrival time if current stopTime is not on the first stop of the route
-						if(!stopTime.getSequencePosition().equals(trip.getStopTimes().firstKey())) {
-							int difference = stopTime.getArrivalTime() - startTime;
-							try {
-								arrival = Time.parseTime(timeFormat.format(new Date(timeFormat.parse("00:00:00").getTime() + difference)));
+					for(StopTime stopTime : trip.getStopTimes()) {
+						double arrivalOffset = Time.UNDEFINED_TIME, departureOffset = Time.UNDEFINED_TIME;
+
+						// add arrivalOffset time if current stopTime is not on the first stop of the route
+						if(!stopTime.getSequencePosition().equals(firstSequencePos)) {
+							arrivalOffset = stopTime.getArrivalTime() - startTime;
+							/*
+ 							try {
+								arrivalOffset = Time.parseTime(timeFormat.format(new Date(timeFormat.parse("00:00:00").getTime() + difference)));
 							} catch (ParseException e) {
 								e.printStackTrace();
 							}
+							*/
 						}
 
 						// add departure time if current stopTime is not on the last stop of the route
-						if(!stopTime.getSequencePosition().equals(trip.getStopTimes().lastKey())) {
-							int difference = stopTime.getArrivalTime() - startTime;
+						if(!stopTime.getSequencePosition().equals(lastSequencePos)) {
+							departureOffset = stopTime.getArrivalTime() - startTime;
+							/*
 							try {
 								departure = Time.parseTime(timeFormat.format(new Date(timeFormat.parse("00:00:00").getTime() + difference)));
 							} catch (ParseException e) {
 								e.printStackTrace();
 							}
+							*/
 						}
-						TransitRouteStop newTRS = scheduleFactory.createTransitRouteStop(schedule.getFacilities().get(Id.create(stopTime.getStop().getId(), TransitStopFacility.class)), arrival, departure);
+						TransitRouteStop newTRS = scheduleFactory.createTransitRouteStop(schedule.getFacilities().get(Id.create(stopTime.getStop().getId(), TransitStopFacility.class)), arrivalOffset, departureOffset);
 						newTRS.setAwaitDepartureTime(defaultAwaitDepartureTime);
 						transitRouteStops.add(newTRS);
 					}
