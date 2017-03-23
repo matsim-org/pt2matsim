@@ -20,7 +20,11 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
+import java.time.format.DateTimeFormatter;
+
 public final class GtfsDefinitions {
+
+	public static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ISO_LOCAL_TIME;
 
 	// column names
 	public static final String SHAPE_ID = "shape_id";

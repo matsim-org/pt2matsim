@@ -50,4 +50,5 @@ public interface GtfsFeed {
 
 	Map<String, Service> getServices();
 
+	Map<String, Trip> getTrips();
 }
