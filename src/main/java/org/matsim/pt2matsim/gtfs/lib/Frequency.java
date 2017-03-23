@@ -18,16 +18,14 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
-import java.util.Date;
-
 /**
  * @author polettif
  */
 public interface Frequency {
 
-	Date getStartTime();
+	int getStartTime();
 
-	Date getEndTime();
+	int getEndTime();
 
 	int getHeadWaySecs();
 

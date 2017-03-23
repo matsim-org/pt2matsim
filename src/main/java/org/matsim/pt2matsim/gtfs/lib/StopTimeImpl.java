@@ -20,6 +20,8 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
+import org.matsim.core.utils.misc.Time;
+
 /**
  * Container for GTFS StopTime. Contains stopId, arrivalTime and departureTime
  */
@@ -104,5 +106,10 @@ public class StopTimeImpl implements StopTime {
 			throw new IllegalAccessError("StopTimes do not belong to the same trip");
 		}
 		return this.getSequencePosition() - o.getSequencePosition();
+	}
+
+	@Override
+	public String toString() {
+		return " [pos:" + sequencePosition + ", arrivalTime:" + Time.writeTime(arrivalTime) + ", departureTime" + Time.writeTime(departureTime) + " " + stop + " " + trip;
 	}
 }

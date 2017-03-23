@@ -194,10 +194,10 @@ public class GtfsConverter {
 						transitRoute = scheduleFactory.createTransitRoute(Id.create(trip.getId(), TransitRoute.class), null, transitRouteStops, gtfsRoute.getRouteType().name);
 
 						for(Frequency frequency : trip.getFrequencies()) {
-							for(Date actualTime = (Date) frequency.getStartTime().clone(); actualTime.before(frequency.getEndTime()); actualTime.setTime(actualTime.getTime() + frequency.getHeadWaySecs() * 1000)) {
+							for(int t = frequency.getStartTime(); t < frequency.getEndTime(); t += frequency.getHeadWaySecs()) {
 								transitRoute.addDeparture(scheduleFactory.createDeparture(
 										Id.create(departureIds.getNext(transitRoute.getId()), Departure.class),
-										Time.parseTime(timeFormat.format(actualTime))));
+										t));
 							}
 						}
 						transitLine.addRoute(transitRoute);

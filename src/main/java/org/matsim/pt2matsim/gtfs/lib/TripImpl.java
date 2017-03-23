@@ -126,4 +126,9 @@ public class TripImpl implements Trip {
 	public int hashCode() {
 		return tripId.hashCode();
 	}
+
+	@Override
+	public String toString() {
+		return "[trip:" + tripId + "]";
+	}
 }

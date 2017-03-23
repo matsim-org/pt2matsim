@@ -97,4 +97,9 @@ public class RouteImpl implements Route {
 	public int hashCode() {
 		return (routeId + routeType.toString() + trips.keySet().toString()).hashCode();
 	}
+
+	@Override
+	public String toString() {
+		return "[route:" + routeId + ", \"" + shortName + "\"]";
+	}
 }

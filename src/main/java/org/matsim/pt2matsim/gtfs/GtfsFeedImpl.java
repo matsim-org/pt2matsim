@@ -32,7 +32,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
@@ -518,8 +517,12 @@ public class GtfsFeedImpl implements GtfsFeed {
 					Trip trip = actualGtfsRoute.getTrips().get(line[col.get(GtfsDefinitions.TRIP_ID)]);
 					if(trip != null) {
 						try {
-							((TripImpl) trip).addFrequency(new FrequencyImpl(timeFormat.parse(line[col.get(GtfsDefinitions.START_TIME)]), timeFormat.parse(line[col.get(GtfsDefinitions.END_TIME)]), Integer.parseInt(line[col.get(GtfsDefinitions.HEADWAY_SECS)])));
-						} catch (NumberFormatException | ParseException e) {
+							Frequency newFreq = new FrequencyImpl(
+									(int) Time.parseTime(line[col.get(GtfsDefinitions.START_TIME)]),
+									(int) Time.parseTime(line[col.get(GtfsDefinitions.END_TIME)]),
+									Integer.parseInt(line[col.get(GtfsDefinitions.HEADWAY_SECS)]));
+							((TripImpl) trip).addFrequency(newFreq);
+						} catch (NumberFormatException e) {
 							e.printStackTrace();
 						}
 					}
