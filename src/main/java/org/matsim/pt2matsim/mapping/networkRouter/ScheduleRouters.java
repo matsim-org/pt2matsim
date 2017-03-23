@@ -47,4 +47,21 @@ public interface ScheduleRouters extends MapperModule {
 	double getMinimalTravelCost(TransitRouteStop fromTransitRouteStop, TransitRouteStop toTransitRouteStop, TransitLine transitLine, TransitRoute transitRoute);
 
 	double getLinkCandidateTravelCost(TransitLine transitLine, TransitRoute transitRoute, LinkCandidate linkCandidateCurrent);
+
+	/**
+	 * Wrapper class to enable synchronised access to least cost path calculators
+	 */
+	class PathCalculator {
+
+		private final LeastCostPathCalculator leastCostPathCalculator;
+
+		PathCalculator(LeastCostPathCalculator leastCostPathCalculator) {
+			this.leastCostPathCalculator = leastCostPathCalculator;
+		}
+
+		synchronized LeastCostPathCalculator.Path calcPath(Node fromNode, Node toNode) {
+			return leastCostPathCalculator.calcLeastCostPath(fromNode, toNode, 0, null, null);
+		}
+
+	}
 }

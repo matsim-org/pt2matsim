@@ -37,7 +37,7 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 	private final Network network;
 
 	// path calculators
-	private final Map<String, LeastCostPathCalculator> pathCalculatorsByMode = new HashMap<>();
+	private final Map<String, PathCalculator> pathCalculatorsByMode = new HashMap<>();
 	private final Map<String, Network> networksByMode = new HashMap<>();
 
 	public ScheduleRoutersTransportMode(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network) {
@@ -57,7 +57,7 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				String scheduleMode = transitRoute.getTransportMode();
-				LeastCostPathCalculator tmpRouter = pathCalculatorsByMode.get(scheduleMode);
+				PathCalculator tmpRouter = pathCalculatorsByMode.get(scheduleMode);
 				if(tmpRouter == null) {
 					log.info("New router for schedule mode " + scheduleMode);
 					Set<String> networkTransportModes = modeRoutingAssignment.get(scheduleMode);
@@ -67,7 +67,7 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 					LocalRouter r = new LocalRouter();
 
 					LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory(filteredNetwork, r);
-					tmpRouter = factory.createPathCalculator(filteredNetwork, r, r);
+					tmpRouter = new PathCalculator(factory.createPathCalculator(filteredNetwork, r, r));
 
 					pathCalculatorsByMode.put(scheduleMode, tmpRouter);
 					networksByMode.put(scheduleMode, filteredNetwork);
@@ -83,14 +83,14 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 	}
 
 	@Override
-	public synchronized LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNodeId, Id<Node> toNodeId, TransitLine transitLine, TransitRoute transitRoute) {
+	public LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNodeId, Id<Node> toNodeId, TransitLine transitLine, TransitRoute transitRoute) {
 		// Synchronized since the used Dijkstra algorithm is not thread safe
 		Network n = networksByMode.get(transitRoute.getTransportMode());
 		Node fromNode = n.getNodes().get(fromNodeId);
 		Node toNode = n.getNodes().get(toNodeId);
 
 		if(fromNode != null && toNode != null) {
-			return pathCalculatorsByMode.get(transitRoute.getTransportMode()).calcLeastCostPath(fromNode, toNode, 0, null, null);
+			return pathCalculatorsByMode.get(transitRoute.getTransportMode()).calcPath(fromNode, toNode);
 		} else {
 			return null;
 		}
@@ -126,4 +126,5 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 			return link.getLength() / link.getFreespeed();
 		}
 	}
+
 }

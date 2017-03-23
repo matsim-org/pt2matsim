@@ -25,24 +25,18 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.router.util.*;
-import org.matsim.core.utils.collections.MapUtils;
-import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
-import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.PTMapperTools;
-import org.matsim.pt2matsim.tools.ScheduleTools;
-import org.matsim.pt2matsim.tools.ShapeTools;
 import org.matsim.utils.objectattributes.attributable.Attributes;
 import org.matsim.vehicles.Vehicle;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -61,7 +55,7 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 	private final Network network;
 
 	// path calculators
-	private final Map<String, LeastCostPathCalculator> pathCalculatorsByMode = new HashMap<>();
+	private final Map<String, PathCalculator> pathCalculatorsByMode = new HashMap<>();
 	private final Map<String, Network> networksByMode = new HashMap<>();
 	private Map<TransitLine, Map<TransitRoute, OsmRouter>> osmRouters = new HashMap<>();
 
@@ -82,7 +76,7 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				String scheduleMode = transitRoute.getTransportMode();
-				LeastCostPathCalculator tmpRouter = pathCalculatorsByMode.get(scheduleMode);
+				PathCalculator tmpRouter = pathCalculatorsByMode.get(scheduleMode);
 				if(tmpRouter == null) {
 					log.info("New router for schedule mode " + scheduleMode);
 					Set<String> networkTransportModes = modeRoutingAssignment.get(scheduleMode);
@@ -92,7 +86,7 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 					OsmRouter r = new OsmRouter();
 
 					LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory(filteredNetwork, r);
-					tmpRouter = factory.createPathCalculator(filteredNetwork, r, r);
+					tmpRouter = new PathCalculator(factory.createPathCalculator(filteredNetwork, r, r));
 
 					pathCalculatorsByMode.put(scheduleMode, tmpRouter);
 					networksByMode.put(scheduleMode, filteredNetwork);
@@ -114,7 +108,7 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 		Node toNode = n.getNodes().get(toNodeId);
 
 		if(fromNode != null && toNode != null) {
-			return pathCalculatorsByMode.get(transitRoute.getTransportMode()).calcLeastCostPath(fromNode, toNode, 0, null, null);
+			return pathCalculatorsByMode.get(transitRoute.getTransportMode()).calcPath(fromNode, toNode);
 		} else {
 			return null;
 		}
@@ -160,4 +154,5 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 			return link.getLength() / link.getFreespeed();
 		}
 	}
+
 }
