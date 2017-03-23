@@ -21,7 +21,7 @@ package org.matsim.pt2matsim.gtfs.lib;
 import org.matsim.pt2matsim.lib.RouteShape;
 
 import java.util.List;
-import java.util.SortedMap;
+import java.util.NavigableSet;
 
 /**
  * @author polettif
@@ -38,7 +38,7 @@ public interface Trip {
 
 	String getName();
 
-	SortedMap<Integer, StopTime> getStopTimes();
+	NavigableSet<StopTime> getStopTimes();
 
 	List<Frequency> getFrequencies();
 }

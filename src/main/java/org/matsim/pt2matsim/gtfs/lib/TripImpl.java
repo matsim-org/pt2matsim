@@ -24,8 +24,8 @@ import org.matsim.pt2matsim.lib.RouteShape;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.NavigableSet;
+import java.util.TreeSet;
 
 /**
  * Container for a GTFS Trip
@@ -36,7 +36,7 @@ public class TripImpl implements Trip {
 	private final Service service;
 	private final RouteShape shape;
 	private final String name;
-	private final SortedMap<Integer, StopTime> stopTimes;
+	private final NavigableSet<StopTime> stopTimes;
 	private final List<Frequency> frequencies;
 
 	public TripImpl(String tripId, Service service, RouteShape shape, String name) {
@@ -44,12 +44,12 @@ public class TripImpl implements Trip {
 		this.service = service;
 		this.shape = shape;
 		this.name = name;
-		stopTimes = new TreeMap<>();
+		stopTimes = new TreeSet<>();
 		frequencies = new ArrayList<>();
 	}
 
 	public void addStopTime(StopTime stopTime) {
-		stopTimes.put(stopTime.getSequencePosition(), stopTime);
+		stopTimes.add(stopTime);
 	}
 
 	public void addFrequency(Frequency frequency) {
@@ -97,7 +97,7 @@ public class TripImpl implements Trip {
 	 * required attribute
 	 */
 	@Override
-	public SortedMap<Integer, StopTime> getStopTimes() {
+	public NavigableSet<StopTime> getStopTimes() {
 		return stopTimes;
 	}
 

@@ -459,7 +459,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 							 */
 							else {
 								Integer currentStopSequencePosition = Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]);
-								StopTime previousStopTime = trip.getStopTimes().get(currentStopSequencePosition-1);
+								StopTime previousStopTime = trip.getStopTimes().last();
 
 								// create StopTime
 								StopTime newStopTime = new StopTimeImpl(currentStopSequencePosition,

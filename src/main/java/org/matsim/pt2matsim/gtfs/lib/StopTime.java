@@ -21,7 +21,7 @@ package org.matsim.pt2matsim.gtfs.lib;
 /**
  * @author polettif
  */
-public interface StopTime {
+public interface StopTime extends Comparable<StopTime> {
 
 	Stop getStop();
 

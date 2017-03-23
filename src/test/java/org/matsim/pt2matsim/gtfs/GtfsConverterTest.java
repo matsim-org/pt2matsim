@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.pt.utils.TransitScheduleValidator;
 
 /**
  * @author polettif
@@ -47,6 +48,13 @@ public class GtfsConverterTest {
 	}
 
 	@Test
+	public void validUnmappedSchedule() {
+		Assert.assertTrue(TransitScheduleValidator.validateAllStopsExist(scheduleAddison).isValid());
+		Assert.assertTrue(TransitScheduleValidator.validateOffsets(scheduleAddison).isValid());
+	}
+
+
+	@Test
 	public void testSecondFeed() {
 		String coordinateSystem = "WGS84";
 
@@ -58,5 +66,6 @@ public class GtfsConverterTest {
 
 		Assert.assertEquals(scheduleServices, scheduleDay);
 	}
+
 
 }

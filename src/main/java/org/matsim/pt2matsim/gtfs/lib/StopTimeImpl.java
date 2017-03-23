@@ -38,7 +38,7 @@ public class StopTimeImpl implements StopTime {
 		this.departureTime = departureTime;
 		this.stop = stop;
 		this.trip = trip;
-		this.hash = (sequencePosition.toString() + stop.getId() + trip.getId()).hashCode() + arrivalTime + departureTime;
+		this.hash = (stop.getId() + trip.getId()).hashCode() + sequencePosition * 32;
 	}
 
 
@@ -90,9 +90,7 @@ public class StopTimeImpl implements StopTime {
 		StopTime other = (StopTime) obj;
 		return (other.getStop().getId().equals(stop.getId()) &&
 				other.getSequencePosition().equals(sequencePosition) &&
-				other.getArrivalTime() == arrivalTime &&
-				other.getDepartureTime() == departureTime);
-
+				other.getTrip().getId().equals(trip.getId()));
 	}
 
 	@Override
@@ -100,4 +98,11 @@ public class StopTimeImpl implements StopTime {
 		return hash;
 	}
 
+	@Override
+	public int compareTo(StopTime o) {
+		if(!o.getTrip().getId().equals(trip.getId())) {
+			throw new IllegalAccessError("StopTimes do not belong to the same trip");
+		}
+		return this.getSequencePosition() - o.getSequencePosition();
+	}
 }
