@@ -31,8 +31,6 @@ import org.matsim.pt2matsim.lib.RouteShape;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -68,17 +66,14 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 */
 	private Set<String> serviceIdsNotInCalendarTxt = new HashSet<>();
 
-	private DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-
 	// containers for storing gtfs data
 	private Map<String, Stop> stops = new HashMap<>();
 	private Map<String, Route> routes = new TreeMap<>();
 	private Map<String, Service> services = new HashMap<>();
-	private Map<LocalDate, Set<Service>> serviceDateStat = new HashMap<>();
-	private Map<LocalDate, Set<Trip>> tripDateStat = new HashMap<>();
+	private Map<LocalDate, Set<Service>> servicesOnDate = new HashMap<>();
+	private Map<LocalDate, Set<Trip>> tripsOnDate = new HashMap<>();
 	private Map<String, Trip> trips = new HashMap<>();
 	private Map<Id<RouteShape>, RouteShape> shapes = new HashMap<>();
-	private boolean warnStopTimes = true;
 
 	public GtfsFeedImpl(String gtfsFolder) {
 		loadFiles(gtfsFolder);
@@ -416,6 +411,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	private void loadStopTimes() throws IOException {
 		log.info("Loading stop_times.txt");
 		try {
+			boolean warnStopTimes = true;
 			CSVReader reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.STOP_TIMES.fileName));
 			String[] header = reader.readNext();
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.STOP_TIMES.columns, GtfsDefinitions.Files.STOP_TIMES.optionalColumns);
@@ -550,20 +546,20 @@ public class GtfsFeedImpl implements GtfsFeed {
 	private void calcDateStats() {
 		for(Service service : services.values()) {
 			for(LocalDate day : service.getCoveredDays()) {
-				MapUtils.getSet(day, serviceDateStat).add(service);
-				MapUtils.getSet(day, tripDateStat).addAll(service.getTrips().values());
+				MapUtils.getSet(day, servicesOnDate).add(service);
+				MapUtils.getSet(day, tripsOnDate).addAll(service.getTrips().values());
 			}
 		}
 	}
 
 	@Override
 	public Map<LocalDate, Set<Service>> getServicesOnDates() {
-		return serviceDateStat;
+		return servicesOnDate;
 	}
 
 	@Override
 	public Map<LocalDate, Set<Trip>> getTripsOnDates() {
-		return tripDateStat;
+		return tripsOnDate;
 	}
 
 	@Override

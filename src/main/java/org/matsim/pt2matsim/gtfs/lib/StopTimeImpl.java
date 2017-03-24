@@ -110,6 +110,6 @@ public class StopTimeImpl implements StopTime {
 
 	@Override
 	public String toString() {
-		return " [pos:" + sequencePosition + ", arrivalTime:" + Time.writeTime(arrivalTime) + ", departureTime" + Time.writeTime(departureTime) + " " + stop + " " + trip;
+		return stop + "[pos:" + sequencePosition + ", arrivalTime:" + Time.writeTime(arrivalTime) + ", departureTime:" + Time.writeTime(departureTime) + "]" + trip;
 	}
 }
