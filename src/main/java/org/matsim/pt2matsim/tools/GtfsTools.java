@@ -110,6 +110,7 @@ public final class GtfsTools {
 				stopTimesWriter.writeNext(line);
 			}
 		}
+		stopTimesWriter.close();
 	}
 
 	/**
