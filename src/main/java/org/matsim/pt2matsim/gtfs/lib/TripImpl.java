@@ -31,15 +31,17 @@ import java.util.TreeSet;
  * Container for a GTFS Trip
  */
 public class TripImpl implements Trip {
-	
-	private final String tripId;
+
+	private final String id;
 	private final Service service;
 	private final RouteShape shape;
 	private final NavigableSet<StopTime> stopTimes;
 	private final List<Frequency> frequencies;
+	private final Route route;
 
-	public TripImpl(String tripId, Service service, RouteShape shape) {
-		this.tripId = tripId;
+	public TripImpl(String id, Route route, Service service, RouteShape shape) {
+		this.route = route;
+		this.id = id;
 		this.service = service;
 		this.shape = shape;
 		stopTimes = new TreeSet<>();
@@ -64,7 +66,7 @@ public class TripImpl implements Trip {
 	 */
 	@Override
 	public String getId() {
-		return tripId;
+		return id;
 	}
 
 	/**
@@ -100,6 +102,11 @@ public class TripImpl implements Trip {
 	}
 
 	@Override
+	public Route getRoute() {
+		return route;
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if(this == obj)
 			return true;
@@ -109,16 +116,16 @@ public class TripImpl implements Trip {
 			return false;
 
 		Trip other = (Trip) obj;
-		return (other.getId().equals(tripId));
+		return (other.getId().equals(id));
 	}
 
 	@Override
 	public int hashCode() {
-		return tripId.hashCode();
+		return id.hashCode();
 	}
 
 	@Override
 	public String toString() {
-		return "[trip:" + tripId + "]";
+		return "[trip:" + id + "]";
 	}
 }

@@ -39,4 +39,6 @@ public interface Trip {
 	NavigableSet<StopTime> getStopTimes();
 
 	List<Frequency> getFrequencies();
+
+	Route getRoute();
 }

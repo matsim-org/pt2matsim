@@ -18,12 +18,17 @@
 
 package org.matsim.pt2matsim.tools;
 
+import com.opencsv.CSVWriter;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.core.utils.collections.MapUtils;
+import org.matsim.core.utils.misc.Time;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
-import org.matsim.pt2matsim.gtfs.lib.Service;
-import org.matsim.pt2matsim.gtfs.lib.Trip;
+import org.matsim.pt2matsim.gtfs.lib.*;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +39,34 @@ import java.util.Set;
 public final class GtfsTools {
 
 	private GtfsTools() {
+	}
+
+	/**
+	 * @return Array of Coords with the minimal South-West and the
+	 * maximal North-East Coordinates (WGS84!)
+	 */
+	public static Coord[] getExtent(GtfsFeed feed) {
+		double maxE = 0;
+		double maxN = 0;
+		double minS = Double.MAX_VALUE;
+		double minW = Double.MAX_VALUE;
+
+		for(Stop stop : feed.getStops().values()) {
+			if(stop.getCoord().getX() > maxE) {
+				maxE = stop.getCoord().getX();
+			}
+			if(stop.getCoord().getY() > maxN) {
+				maxN = stop.getCoord().getY();
+			}
+			if(stop.getCoord().getX() < minW) {
+				minW = stop.getCoord().getX();
+			}
+			if(stop.getCoord().getY() < minS) {
+				minS = stop.getCoord().getY();
+			}
+		}
+
+		return new Coord[]{new Coord(minW, minS), new Coord(maxE, maxN)};
 	}
 
 	public static LocalDate getDayWithMostTrips(GtfsFeed feed) {
@@ -81,5 +114,56 @@ public final class GtfsTools {
 			}
 		}
 		return tripsOnDate;
+	}
+
+	public static void writeStopTimes(Collection<Trip> trips, String folder) throws IOException {
+		CSVWriter stopTimesWriter = new CSVWriter(new FileWriter(folder + GtfsDefinitions.Files.STOP_TIMES.fileName), ',');
+		String[] header = GtfsDefinitions.Files.STOP_TIMES.columns;
+		stopTimesWriter.writeNext(header, true);
+
+		for(Trip trip : trips) {
+			for(StopTime stopTime : trip.getStopTimes()) {
+				// TRIP_ID, STOP_SEQUENCE, ARRIVAL_TIME, DEPARTURE_TIME, STOP_ID
+				String[] line = new String[header.length];
+				line[0] = stopTime.getTrip().getId();
+				line[1] = String.valueOf(stopTime.getSequencePosition());
+				line[2] = Time.writeTime(stopTime.getArrivalTime());
+				line[3] = Time.writeTime(stopTime.getDepartureTime());
+				line[4] = stopTime.getStop().getId();
+
+				stopTimesWriter.writeNext(line);
+			}
+		}
+	}
+
+	private static void writeStops(Collection<Stop> stops, String folder) throws IOException {
+		CSVWriter stopsWriter = new CSVWriter(new FileWriter(folder + GtfsDefinitions.Files.STOPS.fileName), ',');
+		String[] header = GtfsDefinitions.Files.STOPS.columns;
+		stopsWriter.writeNext(header, true);
+		for(Stop stop : stops) {
+			// STOP_ID, STOP_LON, STOP_LAT, STOP_NAME
+			String[] line = new String[header.length];
+			line[0] = stop.getId();
+			line[1] = String.valueOf(stop.getCoord().getX());
+			line[2] = String.valueOf(stop.getCoord().getY());
+			line[3] = stop.getName();
+			stopsWriter.writeNext(line);
+		}
+		stopsWriter.close();
+	}
+
+	private static void writeTrips(Collection<Trip> trips, String folder) throws IOException {
+		CSVWriter tripsWriter = new CSVWriter(new FileWriter(folder + GtfsDefinitions.Files.TRIPS.fileName), ',');
+		String[] header = GtfsDefinitions.Files.TRIPS.columns;
+		tripsWriter.writeNext(header, true);
+		for(Trip trip : trips) {
+			// ROUTE_ID, TRIP_ID, SERVICE_ID
+			String[] line = new String[header.length];
+			line[0] = trip.getRoute().getId();
+			line[1] = trip.getId();
+			line[2] = trip.getService().getId();
+			tripsWriter.writeNext(line);
+		}
+		tripsWriter.close();
 	}
 }

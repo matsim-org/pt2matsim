@@ -40,7 +40,7 @@ public class StopTimeImpl implements StopTime {
 		this.departureTime = departureTime;
 		this.stop = stop;
 		this.trip = trip;
-		this.hash = (stop.getId() + trip.getId()).hashCode() + sequencePosition * 32;
+		this.hash = (stop.getId() + trip.getId()).hashCode() + sequencePosition * 31;
 	}
 
 
