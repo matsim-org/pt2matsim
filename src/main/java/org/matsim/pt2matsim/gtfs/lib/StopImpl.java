@@ -21,19 +21,21 @@
 package org.matsim.pt2matsim.gtfs.lib;
 
 import org.matsim.api.core.v01.Coord;
+import org.matsim.core.utils.collections.MapUtils;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.time.LocalDate;
+import java.util.*;
 
 public class StopImpl implements Stop {
+
+	// todo implement optional parent stops
 
 	private final String id;
 	private final Coord coord;
 	private final String name;
 	private final int hash;
 	private final Set<Trip> trips = new HashSet<>();
+	private Map<LocalDate, Set<Trip>> tripsByDate = new HashMap<>();
 
 	public StopImpl(String id, String name, Coord coord) {
 		this.id = id;
@@ -71,8 +73,16 @@ public class StopImpl implements Stop {
 		return Collections.unmodifiableCollection(trips);
 	}
 
+	@Override
+	public Collection<Trip> getTrips(LocalDate date) {
+		return Collections.unmodifiableCollection(tripsByDate.get(date));
+	}
+
 	public void addTrip(Trip trip) {
 		trips.add(trip);
+		for(LocalDate date : trip.getService().getCoveredDays()) {
+			MapUtils.getSet(date, tripsByDate).add(trip);
+		}
 	}
 
 	@Override

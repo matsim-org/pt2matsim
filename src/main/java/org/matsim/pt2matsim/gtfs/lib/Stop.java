@@ -20,6 +20,7 @@ package org.matsim.pt2matsim.gtfs.lib;
 
 import org.matsim.api.core.v01.Coord;
 
+import java.time.LocalDate;
 import java.util.Collection;
 
 /**
@@ -33,4 +34,6 @@ public interface Stop {
 	String getName();
 
 	Collection<Trip> getTrips();
+
+	Collection<Trip> getTrips(LocalDate date);
 }
