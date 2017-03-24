@@ -27,6 +27,7 @@ import org.matsim.core.utils.misc.Time;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.gtfs.lib.*;
 import org.matsim.pt2matsim.lib.RouteShape;
+import org.matsim.pt2matsim.tools.GtfsTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
@@ -34,7 +35,10 @@ import org.matsim.vehicles.Vehicles;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Converts a GTFS feed to a MATSim transit schedule
@@ -47,8 +51,8 @@ public class GtfsConverter {
 	public static final String DAY_WITH_MOST_TRIPS = "dayWithMostTrips";
 	public static final String DAY_WITH_MOST_SERVICES = "dayWithMostServices";
 	protected static Logger log = Logger.getLogger(GtfsConverter.class);
-	private final boolean defaultAwaitDepartureTime = true;
-	private final boolean defaultBlocks = false;
+	private final boolean AWAIT_DEPARTURE_TIME_DEFAULT = true;
+	private final boolean BLOCKS_DEFAULT = false;
 	private final GtfsFeed feed;
 
 	private LocalDate dateUsed = null;
@@ -117,7 +121,7 @@ public class GtfsConverter {
 		 */
 		for(Map.Entry<String, Stop> stopEntry : feed.getStops().entrySet()) {
 			Coord stopFacilityCoord = transformation.transform(stopEntry.getValue().getCoord());
-			TransitStopFacility stopFacility = scheduleFactory.createTransitStopFacility(Id.create(stopEntry.getKey(), TransitStopFacility.class), stopFacilityCoord, defaultBlocks);
+			TransitStopFacility stopFacility = scheduleFactory.createTransitStopFacility(Id.create(stopEntry.getKey(), TransitStopFacility.class), stopFacilityCoord, BLOCKS_DEFAULT);
 			stopFacility.setName(stopEntry.getValue().getName());
 			schedule.addStopFacility(stopFacility);
 		}
@@ -161,28 +165,14 @@ public class GtfsConverter {
 						// add arrivalOffset time if current stopTime is not on the first stop of the route
 						if(!stopTime.getSequencePosition().equals(firstSequencePos)) {
 							arrivalOffset = stopTime.getArrivalTime() - startTime;
-							/*
- 							try {
-								arrivalOffset = Time.parseTime(timeFormat.format(new Date(timeFormat.parse("00:00:00").getTime() + difference)));
-							} catch (ParseException e) {
-								e.printStackTrace();
-							}
-							*/
 						}
 
 						// add departure time if current stopTime is not on the last stop of the route
 						if(!stopTime.getSequencePosition().equals(lastSequencePos)) {
 							departureOffset = stopTime.getArrivalTime() - startTime;
-							/*
-							try {
-								departure = Time.parseTime(timeFormat.format(new Date(timeFormat.parse("00:00:00").getTime() + difference)));
-							} catch (ParseException e) {
-								e.printStackTrace();
-							}
-							*/
 						}
 						TransitRouteStop newTRS = scheduleFactory.createTransitRouteStop(schedule.getFacilities().get(Id.create(stopTime.getStop().getId(), TransitStopFacility.class)), arrivalOffset, departureOffset);
-						newTRS.setAwaitDepartureTime(defaultAwaitDepartureTime);
+						newTRS.setAwaitDepartureTime(AWAIT_DEPARTURE_TIME_DEFAULT);
 						transitRouteStops.add(newTRS);
 					}
 
@@ -257,7 +247,7 @@ public class GtfsConverter {
 	 * @return The date from which services and thus trips should be extracted
 	 */
 	private LocalDate getExtractDate(String param) {
-		switch (param) {
+		switch(param) {
 			case ALL_SERVICE_IDS: {
 				log.warn("    Using all trips is not recommended");
 				log.info("... Using all service IDs");
@@ -266,29 +256,12 @@ public class GtfsConverter {
 
 			case DAY_WITH_MOST_SERVICES: {
 				log.info("    Using service IDs of the day with the most services (" + DAY_WITH_MOST_SERVICES + ").");
-				LocalDate date = null;
-				int maxNServiceIds = 0;
-				for(Map.Entry<LocalDate, Set<Service>> servicesOnDayEntry : feed.getServicesOnDates().entrySet()) {
-					LocalDate currentDate = servicesOnDayEntry.getKey();
-					if(servicesOnDayEntry.getValue().size() > maxNServiceIds) {
-						maxNServiceIds = servicesOnDayEntry.getValue().size();
-						date = currentDate;
-					}
-				}
-				return date;
+				return GtfsTools.getDayWithMostServices(feed);
 			}
 
 			case DAY_WITH_MOST_TRIPS: {
 				log.info("    Using service IDs of the day with the most trips (" + DAY_WITH_MOST_TRIPS + ").");
-				LocalDate date = null;
-				int maxTrips = 0;
-				for(Map.Entry<LocalDate, Set<Trip>> tripsOnDayEntry : feed.getTripsOnDates().entrySet()) {
-					if(tripsOnDayEntry.getValue().size() > maxTrips) {
-						maxTrips = tripsOnDayEntry.getValue().size();
-						date = tripsOnDayEntry.getKey();
-					}
-				}
-				return date;
+				return GtfsTools.getDayWithMostTrips(feed);
 			}
 
 			default: {
@@ -321,4 +294,4 @@ public class GtfsConverter {
 
 		}
 	}
-	}
+}
