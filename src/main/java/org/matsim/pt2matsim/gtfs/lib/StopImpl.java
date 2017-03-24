@@ -21,10 +21,11 @@
 package org.matsim.pt2matsim.gtfs.lib;
 
 import org.matsim.api.core.v01.Coord;
-import org.matsim.core.utils.collections.MapUtils;
 
-import java.time.LocalDate;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class StopImpl implements Stop {
 
@@ -35,7 +36,7 @@ public class StopImpl implements Stop {
 	private final String name;
 	private final int hash;
 	private final Set<Trip> trips = new HashSet<>();
-	private Map<LocalDate, Set<Trip>> tripsByDate = new HashMap<>();
+	private String parentStationId = null;
 
 	public StopImpl(String id, String name, Coord coord) {
 		this.id = id;
@@ -43,6 +44,7 @@ public class StopImpl implements Stop {
 		this.name = name;
 		this.hash = (id + name + coord.toString()).hashCode();
 	}
+
 
 	/**
 	 * required attribute
@@ -73,16 +75,19 @@ public class StopImpl implements Stop {
 		return Collections.unmodifiableCollection(trips);
 	}
 
-	@Override
-	public Collection<Trip> getTrips(LocalDate date) {
-		return Collections.unmodifiableCollection(tripsByDate.get(date));
+	/**
+	 * optional
+	 */
+	public String getParentStationId() {
+		return parentStationId;
+	}
+
+	public void setParentStation(String id) {
+		this.parentStationId = id;
 	}
 
 	public void addTrip(Trip trip) {
 		trips.add(trip);
-		for(LocalDate date : trip.getService().getCoveredDays()) {
-			MapUtils.getSet(date, tripsByDate).add(trip);
-		}
 	}
 
 	@Override
@@ -109,4 +114,5 @@ public class StopImpl implements Stop {
 	public String toString() {
 		return "[stop:" + id + ", \"" + name + "\"]";
 	}
+
 }
