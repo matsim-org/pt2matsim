@@ -171,6 +171,11 @@ public class GtfsFeedImpl implements GtfsFeed {
 				Stop stop = new StopImpl(stopId, line[col.get(GtfsDefinitions.STOP_NAME)], coord);
 				stops.put(stopId, stop);
 
+				// parent station
+				if(col.get(GtfsDefinitions.PARENT_STATION) != null) {
+					((StopImpl) stop).setParentStation(line[col.get(GtfsDefinitions.PARENT_STATION)]);
+				}
+
 				line = reader.readNext();
 			}
 

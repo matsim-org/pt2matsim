@@ -136,7 +136,7 @@ public final class GtfsTools {
 		}
 	}
 
-	private static void writeStops(Collection<Stop> stops, String folder) throws IOException {
+	public static void writeStops(Collection<Stop> stops, String folder) throws IOException {
 		CSVWriter stopsWriter = new CSVWriter(new FileWriter(folder + GtfsDefinitions.Files.STOPS.fileName), ',');
 		String[] header = GtfsDefinitions.Files.STOPS.columns;
 		stopsWriter.writeNext(header, true);
@@ -152,7 +152,7 @@ public final class GtfsTools {
 		stopsWriter.close();
 	}
 
-	private static void writeTrips(Collection<Trip> trips, String folder) throws IOException {
+	public static void writeTrips(Collection<Trip> trips, String folder) throws IOException {
 		CSVWriter tripsWriter = new CSVWriter(new FileWriter(folder + GtfsDefinitions.Files.TRIPS.fileName), ',');
 		String[] header = GtfsDefinitions.Files.TRIPS.columns;
 		tripsWriter.writeNext(header, true);
@@ -165,5 +165,17 @@ public final class GtfsTools {
 			tripsWriter.writeNext(line);
 		}
 		tripsWriter.close();
+	}
+
+	public Map<Stop, Set<Trip>> getTripsForStops(GtfsFeed feed, LocalDate extractDate) {
+		Map<Stop, Set<Trip>> tripsForStop = new HashMap<>();
+		for(Trip trip : feed.getTrips().values()) {
+			if(trip.getService().runsOnDate(extractDate)) {
+				for(StopTime stop : trip.getStopTimes()) {
+					MapUtils.getSet(stop.getStop(), tripsForStop).add(trip);
+				}
+			}
+		}
+		return tripsForStop;
 	}
 }
