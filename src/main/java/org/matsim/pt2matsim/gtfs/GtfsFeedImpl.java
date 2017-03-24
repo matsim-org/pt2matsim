@@ -370,18 +370,18 @@ public class GtfsFeedImpl implements GtfsFeed {
 			String[] line = reader.readNext();
 			while(line != null) {
 				Trip newTrip;
-				Route gtfsRoute = routes.get(line[col.get(GtfsDefinitions.ROUTE_ID)]);
+				Route route = routes.get(line[col.get(GtfsDefinitions.ROUTE_ID)]);
 				Service service = services.get(line[col.get(GtfsDefinitions.SERVICE_ID)]);
 
 				if(usesShapes) {
 					Id<RouteShape> shapeId = Id.create(line[col.get(GtfsDefinitions.SHAPE_ID)], RouteShape.class); // column might not be available
-					newTrip = new TripImpl(line[col.get(GtfsDefinitions.TRIP_ID)], service, shapes.get(shapeId));
+					newTrip = new TripImpl(line[col.get(GtfsDefinitions.TRIP_ID)], route, service, shapes.get(shapeId));
 				} else {
-					newTrip = new TripImpl(line[col.get(GtfsDefinitions.TRIP_ID)], service, null);
+					newTrip = new TripImpl(line[col.get(GtfsDefinitions.TRIP_ID)], route, service, null);
 				}
 
 				// store Trip
-				((RouteImpl) gtfsRoute).addTrip(newTrip);
+				((RouteImpl) route).addTrip(newTrip);
 				((ServiceImpl) service).addTrip(newTrip);
 				trips.put(newTrip.getId(), newTrip);
 
