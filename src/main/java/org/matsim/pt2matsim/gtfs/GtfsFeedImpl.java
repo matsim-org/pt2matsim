@@ -23,7 +23,6 @@ import com.opencsv.CSVReader;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
-import org.matsim.core.utils.misc.Counter;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt2matsim.gtfs.lib.*;
 import org.matsim.pt2matsim.lib.RouteShape;
@@ -204,16 +203,11 @@ public class GtfsFeedImpl implements GtfsFeed {
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.CALENDAR.columns, GtfsDefinitions.Files.CALENDAR.optionalColumns);
 
 			// assuming all days really do follow monday in the file
-			int indexMonday = col.get("monday");
+			int indexMonday = col.get(GtfsDefinitions.MONDAY);
 
 			String[] line = reader.readNext();
-			int i = 1, c = 1;
 			while(line != null) {
-				if(i == Math.pow(2, c)) {
-					log.info("        # " + i);
-					c++;
-				}
-				i++;
+				// if(i == Math.pow(2, c)) { log.info("        # " + i); c++; } i++;
 
 				boolean[] days = new boolean[7];
 				for(int d = 0; d < 7; d++) {
@@ -418,9 +412,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.STOP_TIMES.columns, GtfsDefinitions.Files.STOP_TIMES.optionalColumns);
 
 			String[] line = reader.readNext();
-			Counter c = new Counter(" stop_time # ");
 			while(line != null) {
-				c.incCounter();
 
 				Trip trip = trips.get(line[col.get(GtfsDefinitions.TRIP_ID)]);
 				Stop stop = stops.get(line[col.get(GtfsDefinitions.STOP_ID)]);

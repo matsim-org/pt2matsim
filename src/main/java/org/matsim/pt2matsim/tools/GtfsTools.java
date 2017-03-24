@@ -41,34 +41,6 @@ public final class GtfsTools {
 	private GtfsTools() {
 	}
 
-	/**
-	 * @return Array of Coords with the minimal South-West and the
-	 * maximal North-East Coordinates (WGS84!)
-	 */
-	public static Coord[] getExtent(GtfsFeed feed) {
-		double maxE = 0;
-		double maxN = 0;
-		double minS = Double.MAX_VALUE;
-		double minW = Double.MAX_VALUE;
-
-		for(Stop stop : feed.getStops().values()) {
-			if(stop.getCoord().getX() > maxE) {
-				maxE = stop.getCoord().getX();
-			}
-			if(stop.getCoord().getY() > maxN) {
-				maxN = stop.getCoord().getY();
-			}
-			if(stop.getCoord().getX() < minW) {
-				minW = stop.getCoord().getX();
-			}
-			if(stop.getCoord().getY() < minS) {
-				minS = stop.getCoord().getY();
-			}
-		}
-
-		return new Coord[]{new Coord(minW, minS), new Coord(maxE, maxN)};
-	}
-
 	public static LocalDate getDayWithMostTrips(GtfsFeed feed) {
 		LocalDate busiestDate = null;
 		int maxTrips = 0;
@@ -116,6 +88,10 @@ public final class GtfsTools {
 		return tripsOnDate;
 	}
 
+	/**
+	 * Experimental class to write stop_times.txt from a (filtered) collection of trips. stop_times.txt is
+	 * usually the largest file.
+	 */
 	public static void writeStopTimes(Collection<Trip> trips, String folder) throws IOException {
 		CSVWriter stopTimesWriter = new CSVWriter(new FileWriter(folder + GtfsDefinitions.Files.STOP_TIMES.fileName), ',');
 		String[] header = GtfsDefinitions.Files.STOP_TIMES.columns;
@@ -136,6 +112,9 @@ public final class GtfsTools {
 		}
 	}
 
+	/**
+	 * Experimental class to write stops.txt (i.e. after filtering for one date)
+	 */
 	public static void writeStops(Collection<Stop> stops, String folder) throws IOException {
 		CSVWriter stopsWriter = new CSVWriter(new FileWriter(folder + GtfsDefinitions.Files.STOPS.fileName), ',');
 		String[] header = GtfsDefinitions.Files.STOPS.columns;
@@ -152,6 +131,9 @@ public final class GtfsTools {
 		stopsWriter.close();
 	}
 
+	/**
+	 * Experimental class to write trips.txt (i.e. after filtering for one date)
+	 */
 	public static void writeTrips(Collection<Trip> trips, String folder) throws IOException {
 		CSVWriter tripsWriter = new CSVWriter(new FileWriter(folder + GtfsDefinitions.Files.TRIPS.fileName), ',');
 		String[] header = GtfsDefinitions.Files.TRIPS.columns;
@@ -167,6 +149,37 @@ public final class GtfsTools {
 		tripsWriter.close();
 	}
 
+	/**
+	 * @return Array of Coords with the minimal South-West and the
+	 * maximal North-East Coordinates (WGS84!)
+	 */
+	public static Coord[] getExtent(GtfsFeed feed) {
+		double maxE = 0;
+		double maxN = 0;
+		double minS = Double.MAX_VALUE;
+		double minW = Double.MAX_VALUE;
+
+		for(Stop stop : feed.getStops().values()) {
+			if(stop.getCoord().getX() > maxE) {
+				maxE = stop.getCoord().getX();
+			}
+			if(stop.getCoord().getY() > maxN) {
+				maxN = stop.getCoord().getY();
+			}
+			if(stop.getCoord().getX() < minW) {
+				minW = stop.getCoord().getX();
+			}
+			if(stop.getCoord().getY() < minS) {
+				minS = stop.getCoord().getY();
+			}
+		}
+
+		return new Coord[]{new Coord(minW, minS), new Coord(maxE, maxN)};
+	}
+
+	/**
+	 * @return a map that stores all trips for each stop on the given date
+	 */
 	public Map<Stop, Set<Trip>> getTripsForStops(GtfsFeed feed, LocalDate extractDate) {
 		Map<Stop, Set<Trip>> tripsForStop = new HashMap<>();
 		for(Trip trip : feed.getTrips().values()) {
