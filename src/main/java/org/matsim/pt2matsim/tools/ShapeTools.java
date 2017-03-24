@@ -184,7 +184,6 @@ public final class ShapeTools {
 				.setCrs(MGC.getCRS(outputCoordinateSystem))
 				.addAttribute("shape_id", String.class)
 				.addAttribute("trip_id", String.class)
-				.addAttribute("trip_name", String.class)
 				.addAttribute("route_id", String.class)
 				.addAttribute("route_name", String.class)
 				.create();
@@ -220,7 +219,6 @@ public final class ShapeTools {
 						SimpleFeature f = ff.createPolyline(coordinates);
 						f.setAttribute("shape_id", shape.getId());
 						f.setAttribute("trip_id", trip.getId());
-						f.setAttribute("trip_name", trip.getName());
 						f.setAttribute("route_id", gtfsRoute.getId());
 						f.setAttribute("route_name", gtfsRoute.getShortName());
 						features.add(f);

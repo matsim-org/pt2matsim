@@ -35,15 +35,13 @@ public class TripImpl implements Trip {
 	private final String tripId;
 	private final Service service;
 	private final RouteShape shape;
-	private final String name;
 	private final NavigableSet<StopTime> stopTimes;
 	private final List<Frequency> frequencies;
 
-	public TripImpl(String tripId, Service service, RouteShape shape, String name) {
+	public TripImpl(String tripId, Service service, RouteShape shape) {
 		this.tripId = tripId;
 		this.service = service;
 		this.shape = shape;
-		this.name = name;
 		stopTimes = new TreeSet<>();
 		frequencies = new ArrayList<>();
 	}
@@ -83,14 +81,6 @@ public class TripImpl implements Trip {
 	@Override
 	public RouteShape getShape() {
 		return shape;
-	}
-
-	/**
-	 * required attribute
-	 */
-	@Override
-	public String getName() {
-		return name;
 	}
 
 	/**

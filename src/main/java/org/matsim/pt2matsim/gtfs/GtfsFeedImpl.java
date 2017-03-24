@@ -23,6 +23,7 @@ import com.opencsv.CSVReader;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
+import org.matsim.core.utils.misc.Counter;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt2matsim.gtfs.lib.*;
 import org.matsim.pt2matsim.lib.RouteShape;
@@ -369,14 +370,14 @@ public class GtfsFeedImpl implements GtfsFeed {
 			String[] line = reader.readNext();
 			while(line != null) {
 				Trip newTrip;
-				Route gtfsRoute = routes.get(line[col.get("route_id")]);
+				Route gtfsRoute = routes.get(line[col.get(GtfsDefinitions.ROUTE_ID)]);
 				Service service = services.get(line[col.get(GtfsDefinitions.SERVICE_ID)]);
 
 				if(usesShapes) {
 					Id<RouteShape> shapeId = Id.create(line[col.get(GtfsDefinitions.SHAPE_ID)], RouteShape.class); // column might not be available
-					newTrip = new TripImpl(line[col.get(GtfsDefinitions.TRIP_ID)], service, shapes.get(shapeId), line[col.get(GtfsDefinitions.TRIP_ID)]);
+					newTrip = new TripImpl(line[col.get(GtfsDefinitions.TRIP_ID)], service, shapes.get(shapeId));
 				} else {
-					newTrip = new TripImpl(line[col.get(GtfsDefinitions.TRIP_ID)], service, null, line[col.get(GtfsDefinitions.TRIP_ID)]);
+					newTrip = new TripImpl(line[col.get(GtfsDefinitions.TRIP_ID)], service, null);
 				}
 
 				// store Trip
@@ -412,66 +413,54 @@ public class GtfsFeedImpl implements GtfsFeed {
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.STOP_TIMES.columns, GtfsDefinitions.Files.STOP_TIMES.optionalColumns);
 
 			String[] line = reader.readNext();
-			int i = 1, c = 1;
+			Counter c = new Counter(" stop_time # ");
 			while(line != null) {
-				if(i == Math.pow(2, c)) {
-					log.info("        # " + i);
-					c++;
+				c.incCounter();
+
+				Trip trip = trips.get(line[col.get(GtfsDefinitions.TRIP_ID)]);
+				Stop stop = stops.get(line[col.get(GtfsDefinitions.STOP_ID)]);
+
+				if(!line[col.get(GtfsDefinitions.ARRIVAL_TIME)].equals("")) {
+					// get position and times
+					int sequencePosition = Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]);
+					int arrivalTime = (int) Time.parseTime(line[col.get(GtfsDefinitions.ARRIVAL_TIME)]);
+					int departureTime = (int) Time.parseTime(line[col.get(GtfsDefinitions.DEPARTURE_TIME)]);
+
+					// create StopTime
+					StopTime newStopTime = new StopTimeImpl(sequencePosition,
+							arrivalTime,
+							departureTime,
+							stop,
+							trip
+					);
+					((TripImpl) trip).addStopTime(newStopTime);
+
+					// add trip to stop
+					((StopImpl) stop).addTrip(trip);
 				}
-				i++; // logging
+				/** GTFS Reference: If this stop isn't a time point, use an empty string value for the
+				 * arrival_time and departure_time fields.
+				 */
+				else {
+					Integer currentStopSequencePosition = Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]);
+					StopTime previousStopTime = trip.getStopTimes().last();
 
-				for(Route currentGtfsRoute : routes.values()) {
-					Trip trip = currentGtfsRoute.getTrips().get(line[col.get(GtfsDefinitions.TRIP_ID)]);
-					Stop stop = stops.get(line[col.get(GtfsDefinitions.STOP_ID)]);
+					// create StopTime
+					StopTime newStopTime = new StopTimeImpl(currentStopSequencePosition,
+							previousStopTime.getArrivalTime(),
+							previousStopTime.getDepartureTime(),
+							stop,
+							trip);
 
-					if(trip != null) {
-						try {
-							if(!line[col.get(GtfsDefinitions.ARRIVAL_TIME)].equals("")) {
-								// get position and times
-								int sequencePosition = Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]);
-								int arrivalTime = (int) Time.parseTime(line[col.get(GtfsDefinitions.ARRIVAL_TIME)]);
-								int departureTime = (int) Time.parseTime(line[col.get(GtfsDefinitions.DEPARTURE_TIME)]);
+					((TripImpl) trip).addStopTime(newStopTime);
 
-								// create StopTime
-								StopTime newStopTime = new StopTimeImpl(sequencePosition,
-										arrivalTime,
-										departureTime,
-										stop,
-										trip
-								);
-								((TripImpl) trip).addStopTime(newStopTime);
+					// add trip to stop
+					((StopImpl) stop).addTrip(trip);
 
-								// add trip to stop
-								((StopImpl) stop).addTrip(trip);
-							}
-							/** GTFS Reference: If this stop isn't a time point, use an empty string value for the
-							 * arrival_time and departure_time fields.
-							 */
-							else {
-								Integer currentStopSequencePosition = Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]);
-								StopTime previousStopTime = trip.getStopTimes().last();
-
-								// create StopTime
-								StopTime newStopTime = new StopTimeImpl(currentStopSequencePosition,
-										previousStopTime.getArrivalTime(),
-										previousStopTime.getDepartureTime(),
-										stop,
-										trip);
-
-								((TripImpl) trip).addStopTime(newStopTime);
-
-								// add trip to stop
-								((StopImpl) stop).addTrip(trip);
-
-								if(warnStopTimes) {
-									log.warn("No arrival time set! Stops without arrival times will be scheduled based on the " +
-											"nearest preceding timed stop. This message is only given once.");
-									warnStopTimes = false;
-								}
-							}
-						} catch (NumberFormatException e) {
-							e.printStackTrace();
-						}
+					if(warnStopTimes) {
+						log.warn("No arrival time set! Stops without arrival times will be scheduled based on the " +
+								"nearest preceding timed stop. This message is only given once.");
+						warnStopTimes = false;
 					}
 				}
 				line = reader.readNext();
@@ -482,7 +471,6 @@ public class GtfsFeedImpl implements GtfsFeed {
 		}
 		log.info("...     stop_times.txt loaded");
 	}
-
 
 	/**
 	 * Loads the frequencies (if available) and adds them to their respective trips in {@link #routes}.
@@ -534,7 +522,6 @@ public class GtfsFeedImpl implements GtfsFeed {
 			throw new RuntimeException("Emtpy line found in frequencies.txt");
 		}
 	}
-
 
 	@Override
 	public Map<String, Stop> getStops() {

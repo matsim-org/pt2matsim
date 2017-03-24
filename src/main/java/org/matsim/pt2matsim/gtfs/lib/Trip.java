@@ -36,8 +36,6 @@ public interface Trip {
 
 	RouteShape getShape();
 
-	String getName();
-
 	NavigableSet<StopTime> getStopTimes();
 
 	List<Frequency> getFrequencies();
