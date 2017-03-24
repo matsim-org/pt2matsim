@@ -23,7 +23,6 @@ import com.opencsv.CSVReader;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
-import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt2matsim.gtfs.lib.*;
 import org.matsim.pt2matsim.lib.RouteShape;
@@ -31,7 +30,6 @@ import org.matsim.pt2matsim.lib.RouteShape;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.*;
 
 
@@ -70,8 +68,6 @@ public class GtfsFeedImpl implements GtfsFeed {
 	private Map<String, Stop> stops = new HashMap<>();
 	private Map<String, Route> routes = new TreeMap<>();
 	private Map<String, Service> services = new HashMap<>();
-	private Map<LocalDate, Set<Service>> servicesOnDate = new HashMap<>();
-	private Map<LocalDate, Set<Trip>> tripsOnDate = new HashMap<>();
 	private Map<String, Trip> trips = new HashMap<>();
 	private Map<Id<RouteShape>, RouteShape> shapes = new HashMap<>();
 
@@ -146,7 +142,6 @@ public class GtfsFeedImpl implements GtfsFeed {
 			throw new RuntimeException("File stop_times.txt not found!");
 		}
 		loadFrequencies();
-		calcDateStats();
 		log.info("All files loaded");
 	}
 
@@ -540,27 +535,6 @@ public class GtfsFeedImpl implements GtfsFeed {
 		}
 	}
 
-	/**
-	 * @return a map which stores the service ids that run on each day
-	 */
-	private void calcDateStats() {
-		for(Service service : services.values()) {
-			for(LocalDate day : service.getCoveredDays()) {
-				MapUtils.getSet(day, servicesOnDate).add(service);
-				MapUtils.getSet(day, tripsOnDate).addAll(service.getTrips().values());
-			}
-		}
-	}
-
-	@Override
-	public Map<LocalDate, Set<Service>> getServicesOnDates() {
-		return servicesOnDate;
-	}
-
-	@Override
-	public Map<LocalDate, Set<Trip>> getTripsOnDates() {
-		return tripsOnDate;
-	}
 
 	@Override
 	public Map<String, Stop> getStops() {

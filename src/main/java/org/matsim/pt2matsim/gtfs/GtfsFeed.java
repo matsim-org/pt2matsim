@@ -25,9 +25,7 @@ import org.matsim.pt2matsim.gtfs.lib.Stop;
 import org.matsim.pt2matsim.gtfs.lib.Trip;
 import org.matsim.pt2matsim.lib.RouteShape;
 
-import java.time.LocalDate;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * An interface to load and convert GTFS feeds
@@ -36,19 +34,15 @@ import java.util.Set;
  */
 public interface GtfsFeed {
 
-	Map<LocalDate, Set<Service>> getServicesOnDates();
-
-	Map<LocalDate, Set<Trip>> getTripsOnDates();
-
 	Map<String, Stop> getStops();
 
 	Map<String, Route> getRoutes();
 
-	Map<Id<RouteShape>, RouteShape> getShapes();
-
-	boolean usesFrequencies();
-
 	Map<String, Service> getServices();
 
 	Map<String, Trip> getTrips();
+
+	Map<Id<RouteShape>, RouteShape> getShapes();
+
+	boolean usesFrequencies();
 }
