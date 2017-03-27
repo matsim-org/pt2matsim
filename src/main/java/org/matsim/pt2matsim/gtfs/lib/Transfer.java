@@ -19,6 +19,7 @@
 package org.matsim.pt2matsim.gtfs.lib;
 
 /**
+ * Not implemented in GtfsFeed
  * @author polettif
  */
 public interface Transfer {
@@ -28,4 +29,9 @@ public interface Transfer {
 	String getToStopId();
 
 	GtfsDefinitions.TransferType getTransferType();
+
+	/**
+	 * optional, necessary if transferType is MIN_TRANSFER_TIME
+	 */
+	Integer minTransferTime();
 }

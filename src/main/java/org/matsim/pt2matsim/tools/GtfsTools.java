@@ -41,6 +41,9 @@ public final class GtfsTools {
 	private GtfsTools() {
 	}
 
+	/**
+	 * @return the day of the feed on which the most trips occur
+	 */
 	public static LocalDate getDayWithMostTrips(GtfsFeed feed) {
 		LocalDate busiestDate = null;
 		int maxTrips = 0;
@@ -53,6 +56,9 @@ public final class GtfsTools {
 		return busiestDate;
 	}
 
+	/**
+	 * @return the day of the feed on which the most services occur
+	 */
 	public static LocalDate getDayWithMostServices(GtfsFeed feed) {
 		LocalDate busiestDate = null;
 		int maxService = 0;
@@ -66,6 +72,9 @@ public final class GtfsTools {
 
 	}
 
+	/**
+	 * @return a map that stores the services occuring on each date of the feed
+	 */
 	public static Map<LocalDate, Set<Service>> getServicesOnDates(GtfsFeed feed) {
 		Map<LocalDate, Set<Service>> servicesOnDate = new HashMap<>();
 
@@ -77,6 +86,9 @@ public final class GtfsTools {
 		return servicesOnDate;
 	}
 
+	/**
+	 * @return a map that stores the trips occuring on each date of the feed
+	 */
 	public static Map<LocalDate, Set<Trip>> getTripsOndates(GtfsFeed feed) {
 		Map<LocalDate, Set<Trip>> tripsOnDate = new HashMap<>();
 
@@ -124,8 +136,8 @@ public final class GtfsTools {
 			// STOP_ID, STOP_LON, STOP_LAT, STOP_NAME
 			String[] line = new String[header.length];
 			line[0] = stop.getId();
-			line[1] = String.valueOf(stop.getCoord().getX());
-			line[2] = String.valueOf(stop.getCoord().getY());
+			line[1] = String.valueOf(stop.getLon());
+			line[2] = String.valueOf(stop.getLat());
 			line[3] = stop.getName();
 			stopsWriter.writeNext(line);
 		}
@@ -161,17 +173,17 @@ public final class GtfsTools {
 		double minW = Double.MAX_VALUE;
 
 		for(Stop stop : feed.getStops().values()) {
-			if(stop.getCoord().getX() > maxE) {
-				maxE = stop.getCoord().getX();
+			if(stop.getLon() > maxE) {
+				maxE = stop.getLon();
 			}
-			if(stop.getCoord().getY() > maxN) {
-				maxN = stop.getCoord().getY();
+			if(stop.getLat() > maxN) {
+				maxN = stop.getLat();
 			}
-			if(stop.getCoord().getX() < minW) {
-				minW = stop.getCoord().getX();
+			if(stop.getLon() < minW) {
+				minW = stop.getLon();
 			}
-			if(stop.getCoord().getY() < minS) {
-				minS = stop.getCoord().getY();
+			if(stop.getLat() < minS) {
+				minS = stop.getLat();
 			}
 		}
 

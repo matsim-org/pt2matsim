@@ -20,8 +20,6 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
-import org.matsim.api.core.v01.Coord;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -29,20 +27,23 @@ import java.util.Set;
 
 public class StopImpl implements Stop {
 
-	// todo implement optional parent stops
-
 	private final String id;
-	private final Coord coord;
 	private final String name;
 	private final int hash;
 	private final Set<Trip> trips = new HashSet<>();
-	private String parentStationId = null;
 
-	public StopImpl(String id, String name, Coord coord) {
+	// optional
+	private GtfsDefinitions.LocationType locationType = null;
+	private String parentStationId = null;
+	private double lon; // West-East
+	private double lat; // Sout-North
+
+	public StopImpl(String id, String name, double lon, double lat) {
 		this.id = id;
-		this.coord = coord;
+		this.lon = lon;
+		this.lat = lat;
 		this.name = name;
-		this.hash = (id + name + coord.toString()).hashCode();
+		this.hash = (id + name).hashCode() + (int) lon * 1000 + (int) lat * 1000;
 	}
 
 
@@ -54,12 +55,14 @@ public class StopImpl implements Stop {
 		return id;
 	}
 
-	/**
-	 * required attribute
-	 */
 	@Override
-	public Coord getCoord() {
-		return coord;
+	public double getLon() {
+		return lon;
+	}
+
+	@Override
+	public double getLat() {
+		return lat;
 	}
 
 	/**
@@ -73,6 +76,15 @@ public class StopImpl implements Stop {
 	@Override
 	public Collection<Trip> getTrips() {
 		return Collections.unmodifiableCollection(trips);
+	}
+
+	@Override
+	public GtfsDefinitions.LocationType getLocationType() {
+		return locationType;
+	}
+
+	public void setLocationType(GtfsDefinitions.LocationType type) {
+		this.locationType = type;
 	}
 
 	/**
@@ -101,7 +113,8 @@ public class StopImpl implements Stop {
 
 		Stop other = (Stop) obj;
 		return (other.getId().equals(id) &&
-				other.getCoord().equals(coord) &&
+				other.getLon() == lon &&
+				other.getLat() == lat &&
 				other.getName().equals(name));
 	}
 

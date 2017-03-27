@@ -166,12 +166,21 @@ public class GtfsFeedImpl implements GtfsFeed {
 			String[] line = reader.readNext();
 			while(line != null) {
 				String stopId = line[col.get(GtfsDefinitions.STOP_ID)];
-				Coord coord = new Coord(Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LON)]), Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LAT)]));
-				Stop stop = new StopImpl(stopId, line[col.get(GtfsDefinitions.STOP_NAME)], coord);
+				Stop stop = new StopImpl(stopId, line[col.get(GtfsDefinitions.STOP_NAME)], Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LON)]), Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LAT)]));
 				stops.put(stopId, stop);
 
+				// location type
+				if(col.get(GtfsDefinitions.LOCATION_TYPE) != null) {
+					if(line[col.get(GtfsDefinitions.LOCATION_TYPE)].equals("0")) {
+						((StopImpl) stop).setLocationType(GtfsDefinitions.LocationType.STOP);
+					}
+					if(line[col.get(GtfsDefinitions.LOCATION_TYPE)].equals("1")) {
+						((StopImpl) stop).setLocationType(GtfsDefinitions.LocationType.STATION);
+					}
+				}
+
 				// parent station
-				if(col.get(GtfsDefinitions.PARENT_STATION) != null) {
+				if(col.get(GtfsDefinitions.PARENT_STATION) != null && !line[col.get(GtfsDefinitions.PARENT_STATION)].isEmpty()) {
 					((StopImpl) stop).setParentStation(line[col.get(GtfsDefinitions.PARENT_STATION)]);
 				}
 
