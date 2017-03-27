@@ -23,6 +23,8 @@ import com.opencsv.CSVReader;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
+import org.matsim.core.utils.geometry.CoordinateTransformation;
+import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt2matsim.gtfs.lib.*;
 import org.matsim.pt2matsim.lib.RouteShape;
@@ -70,6 +72,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	private Map<String, Service> services = new HashMap<>();
 	private Map<String, Trip> trips = new HashMap<>();
 	private Map<Id<RouteShape>, RouteShape> shapes = new HashMap<>();
+	private String coordSys = TransformationFactory.WGS84;
 
 	public GtfsFeedImpl(String gtfsFolder) {
 		loadFiles(gtfsFolder);
@@ -547,6 +550,20 @@ public class GtfsFeedImpl implements GtfsFeed {
 	@Override
 	public boolean usesFrequencies() {
 		return usesFrequencies;
+	}
+
+	@Override
+	public void transform(String targetCoordinateSystem) {
+		CoordinateTransformation transformation = TransformationFactory.getCoordinateTransformation(coordSys, targetCoordinateSystem);
+		for(Stop stop : stops.values()) {
+			((StopImpl) stop).setCoord(transformation.transform(stop.getCoord()));
+		}
+		this.coordSys = targetCoordinateSystem;
+	}
+
+	@Override
+	public String getCurrentCoordSystem() {
+		return coordSys;
 	}
 
 	@Override

@@ -45,4 +45,8 @@ public interface GtfsFeed {
 	Map<Id<RouteShape>, RouteShape> getShapes();
 
 	boolean usesFrequencies();
+
+	void transform(String targetCoordinateSystem);
+
+	String getCurrentCoordSystem();
 }

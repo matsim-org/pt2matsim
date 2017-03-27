@@ -20,6 +20,8 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
+import org.matsim.api.core.v01.Coord;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -37,11 +39,13 @@ public class StopImpl implements Stop {
 	private String parentStationId = null;
 	private double lon; // West-East
 	private double lat; // Sout-North
+	private Coord coord;
 
 	public StopImpl(String id, String name, double lon, double lat) {
 		this.id = id;
 		this.lon = lon;
 		this.lat = lat;
+		this.coord = new Coord(lon, lat);
 		this.name = name;
 		this.hash = (id + name).hashCode() + (int) lon * 1000 + (int) lat * 1000;
 	}
@@ -94,6 +98,15 @@ public class StopImpl implements Stop {
 		return parentStationId;
 	}
 
+	@Override
+	public Coord getCoord() {
+		return coord;
+	}
+
+	public void setCoord(Coord coord) {
+		this.coord = coord;
+	}
+
 	public void setParentStation(String id) {
 		this.parentStationId = id;
 	}
@@ -127,5 +140,4 @@ public class StopImpl implements Stop {
 	public String toString() {
 		return "[stop:" + id + ", \"" + name + "\"]";
 	}
-
 }

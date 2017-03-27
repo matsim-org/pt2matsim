@@ -25,4 +25,9 @@ public class GtfsFeedImplTest {
 		Assert.assertFalse(feed.usesFrequencies());
 	}
 
+	@Test
+	public void transform() {
+		feed.transform("EPSG:2032");
+	}
+
 }

@@ -19,10 +19,7 @@
 package org.matsim.pt2matsim.gtfs;
 
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
-import org.matsim.core.utils.geometry.CoordinateTransformation;
-import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.gtfs.lib.*;
@@ -32,8 +29,6 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,25 +55,16 @@ public class GtfsConverter {
 	private TransitSchedule schedule;
 	private Vehicles vhcls;
 
-	/**
-	 * The time format used in the output MATSim transit schedule
-	 */
-	private DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-
-
 	public GtfsConverter(GtfsFeed gtfsFeed) {
 		this.feed = gtfsFeed;
 	}
 
 	public TransitSchedule convert(String serviceIdsParam, String outputCoordinateSystem) {
 		TransitSchedule schedule = ScheduleTools.createSchedule();
-		convert(serviceIdsParam, TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem), schedule, VehicleUtils.createVehiclesContainer());
+		convert(serviceIdsParam, outputCoordinateSystem, schedule, VehicleUtils.createVehiclesContainer());
 		return schedule;
 	}
 
-	public void convert(String serviceIdsParam, String outputCoordinateSystem, TransitSchedule transitSchedule, Vehicles vehicles) {
-		convert(serviceIdsParam, TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem), transitSchedule, vehicles);
-	}
 
 	public TransitSchedule getSchedule() {
 		return schedule;
@@ -99,7 +85,7 @@ public class GtfsConverter {
 	 * <li>add transitRoute to the transitLine and thus to the schedule</li>
 	 * </ol>
 	 */
-	public void convert(String serviceIdsParam, CoordinateTransformation transformation, TransitSchedule transitSchedule, Vehicles vehicles) {
+	public void convert(String serviceIdsParam, String transformation, TransitSchedule transitSchedule, Vehicles vehicles) {
 		log.info("#####################################");
 		log.info("Converting to MATSim transit schedule");
 
@@ -115,14 +101,14 @@ public class GtfsConverter {
 		int counterLines = 0;
 		int counterRoutes = 0;
 
+		feed.transform(transformation);
+
 		/** [1]
 		 * generating transitStopFacilities (mts) from gtfsStops and add them to the schedule.
 		 * Coordinates are transformed here.
 		 */
 		for(Map.Entry<String, Stop> stopEntry : feed.getStops().entrySet()) {
-			Coord coordWGS84 = new Coord(stopEntry.getValue().getLon(), stopEntry.getValue().getLat());
-			Coord stopFacilityCoord = transformation.transform(coordWGS84);
-			TransitStopFacility stopFacility = scheduleFactory.createTransitStopFacility(Id.create(stopEntry.getKey(), TransitStopFacility.class), stopFacilityCoord, BLOCKS_DEFAULT);
+			TransitStopFacility stopFacility = scheduleFactory.createTransitStopFacility(Id.create(stopEntry.getKey(), TransitStopFacility.class), stopEntry.getValue().getCoord(), BLOCKS_DEFAULT);
 			stopFacility.setName(stopEntry.getValue().getName());
 			schedule.addStopFacility(stopFacility);
 		}
