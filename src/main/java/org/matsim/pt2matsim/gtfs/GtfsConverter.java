@@ -120,7 +120,8 @@ public class GtfsConverter {
 		 * Coordinates are transformed here.
 		 */
 		for(Map.Entry<String, Stop> stopEntry : feed.getStops().entrySet()) {
-			Coord stopFacilityCoord = transformation.transform(stopEntry.getValue().getCoord());
+			Coord coordWGS84 = new Coord(stopEntry.getValue().getLon(), stopEntry.getValue().getLat());
+			Coord stopFacilityCoord = transformation.transform(coordWGS84);
 			TransitStopFacility stopFacility = scheduleFactory.createTransitStopFacility(Id.create(stopEntry.getKey(), TransitStopFacility.class), stopFacilityCoord, BLOCKS_DEFAULT);
 			stopFacility.setName(stopEntry.getValue().getName());
 			schedule.addStopFacility(stopFacility);

@@ -175,15 +175,30 @@ public final class GtfsDefinitions {
 		}
 	}
 
+	/**
+	 * <i>[https://developers.google.com/transit/gtfs/reference/stops-file]</i><br/>
+	 * Identifies whether this stop ID represents a stop or station. If no location type is specified, or the
+	 * location_type is blank, stop IDs are treated as stops. Stations can have different properties from stops when
+	 * they are represented on a map or used in trip planning.<br/><br/>
+	 * <p>
+	 * The location type field can have the following values:<br/>
+	 * 0 or blank: Stop. A location where passengers board or disembark from a transit vehicle<br/>
+	 * 1: Station. A physical structure or area that contains one or more stop<br/>
+	 */
+	public enum LocationType {
+		STOP, STATION
+	}
+
 	public enum FareTransferType {
 		NO_TRANSFER_PERMITTED, TRANSFER_ONCE, TRANSFER_TWICE, UNLIMITED
-	}
 
+	}
 	public enum PaymentMethod {
 		ON_BOARD, BEFORE_BOARDING
-	}
 
+	}
 	public enum TransferType {
 		RECOMMENDED, TIMED_TRANSFER_POINT, MIN_TRANSFER_TIME, NOT_POSSIBLE
+
 	}
 }

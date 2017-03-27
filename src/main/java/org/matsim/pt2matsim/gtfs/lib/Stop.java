@@ -18,22 +18,39 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
-import org.matsim.api.core.v01.Coord;
-
 import java.util.Collection;
 
 /**
  * @author polettif
  */
 public interface Stop {
+
+	/**
+	 * ID that uniquely identifies a stop or station. Multiple routes may use the same stop. The stop_id is dataset unique.
+	 */
 	String getId();
 
-	Coord getCoord();
+	double getLon();
 
+	double getLat();
+
+	/**
+	 * Name of a stop or station
+	 */
 	String getName();
 
 	Collection<Trip> getTrips();
 
+	/**
+	 * [optional] Identifies whether this stop represents a stop or station.
+	 */
+	GtfsDefinitions.LocationType getLocationType();
+
+	/**
+	 * [optional] For stops that are physically located inside stations, this field identifies the station associated
+	 * with the stop. To use this field, stops.txt must also contain a row where this stop ID is assigned
+	 * location type=1.
+	 */
 	String getParentStationId();
 
 }
