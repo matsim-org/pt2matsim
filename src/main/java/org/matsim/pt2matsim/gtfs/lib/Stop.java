@@ -18,6 +18,8 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
+import org.matsim.api.core.v01.Coord;
+
 import java.util.Collection;
 
 /**
@@ -53,4 +55,5 @@ public interface Stop {
 	 */
 	String getParentStationId();
 
+	Coord getCoord();
 }

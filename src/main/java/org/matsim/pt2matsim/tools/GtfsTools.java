@@ -19,7 +19,6 @@
 package org.matsim.pt2matsim.tools;
 
 import com.opencsv.CSVWriter;
-import org.matsim.api.core.v01.Coord;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
@@ -163,14 +162,13 @@ public final class GtfsTools {
 	}
 
 	/**
-	 * @return Array of Coords with the minimal South-West and the
-	 * maximal North-East Coordinates (WGS84!)
+	 * @return Array of minW, minS, maxE, maxN (WGS84)
 	 */
-	public static Coord[] getExtent(GtfsFeed feed) {
-		double maxE = 0;
-		double maxN = 0;
-		double minS = Double.MAX_VALUE;
-		double minW = Double.MAX_VALUE;
+	public static double[] getExtent(GtfsFeed feed) {
+		double maxE = Double.MIN_VALUE;
+		double maxN = Double.MIN_VALUE;
+		double minN = Double.MAX_VALUE;
+		double minE = Double.MAX_VALUE;
 
 		for(Stop stop : feed.getStops().values()) {
 			if(stop.getLon() > maxE) {
@@ -179,15 +177,15 @@ public final class GtfsTools {
 			if(stop.getLat() > maxN) {
 				maxN = stop.getLat();
 			}
-			if(stop.getLon() < minW) {
-				minW = stop.getLon();
+			if(stop.getLon() < minE) {
+				minE = stop.getLon();
 			}
-			if(stop.getLat() < minS) {
-				minS = stop.getLat();
+			if(stop.getLat() < minN) {
+				minN = stop.getLat();
 			}
 		}
 
-		return new Coord[]{new Coord(minW, minS), new Coord(maxE, maxN)};
+		return new double[]{minE, minN, maxE, maxN};
 	}
 
 	/**
