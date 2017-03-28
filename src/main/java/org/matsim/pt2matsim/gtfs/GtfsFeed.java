@@ -46,7 +46,12 @@ public interface GtfsFeed {
 
 	boolean usesFrequencies();
 
-	void transform(String targetCoordinateSystem);
+	/**
+	 * transforms all stops to the target coordinate system
+	 *
+	 * @return the extent of the new stops as array (minE, minN, maxE, maxN)
+	 */
+	double[] transform(String targetCoordinateSystem);
 
 	String getCurrentCoordSystem();
 }
