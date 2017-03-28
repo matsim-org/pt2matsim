@@ -553,12 +553,20 @@ public class GtfsFeedImpl implements GtfsFeed {
 	}
 
 	@Override
-	public void transform(String targetCoordinateSystem) {
+	public double[] transform(String targetCoordinateSystem) {
+		double minE = Double.MAX_VALUE, minN = Double.MAX_VALUE, maxE = Double.MIN_VALUE, maxN = Double.MIN_VALUE;
+
 		CoordinateTransformation transformation = TransformationFactory.getCoordinateTransformation(coordSys, targetCoordinateSystem);
 		for(Stop stop : stops.values()) {
 			((StopImpl) stop).setCoord(transformation.transform(stop.getCoord()));
+
+			if(stop.getCoord().getX() > maxE) maxE = stop.getCoord().getX();
+			if(stop.getCoord().getY() > maxN) maxN = stop.getCoord().getY();
+			if(stop.getCoord().getX() < minE) minE = stop.getCoord().getX();
+			if(stop.getCoord().getY() < minN) minN = stop.getCoord().getY();
 		}
 		this.coordSys = targetCoordinateSystem;
+		return new double[]{minE, minN, maxE, maxN};
 	}
 
 	@Override
