@@ -49,7 +49,6 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 	private final String facilityName;
 	private final String stopPostAreaId;
 	private final Id<TransitStopFacility> parentStopFacilityId;
-	private final double stopFacilityDistance;
 	public double travelCostToSource = Double.MAX_VALUE;
 	public PseudoRouteStop previous = null;
 
@@ -60,7 +59,6 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 	/*package*/ PseudoRouteStopImpl(int order, TransitRouteStop routeStop, LinkCandidate linkCandidate) {
 		this.id = Id.create("[" + Integer.toString(order) + "]" + linkCandidate.getId(), PseudoRouteStop.class);
 		this.linkId = linkCandidate.getLinkId();
-		this.stopFacilityDistance = linkCandidate.getStopFacilityDistance();
 
 		// stop facility values
 		this.coord = routeStop.getStopFacility().getCoord();
@@ -92,7 +90,6 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 		previous = null;
 
 		this.linkId = null;
-		this.stopFacilityDistance = 0.0;
 
 		// stop facility values
 		this.coord = null;

@@ -103,9 +103,9 @@ public class GtfsConverter {
 
 		feed.transform(transformation);
 
-		/** [1]
-		 * generating transitStopFacilities (mts) from gtfsStops and add them to the schedule.
-		 * Coordinates are transformed here.
+		/* [1]
+		  generating transitStopFacilities (mts) from gtfsStops and add them to the schedule.
+		  Coordinates are transformed here.
 		 */
 		for(Map.Entry<String, Stop> stopEntry : feed.getStops().entrySet()) {
 			TransitStopFacility stopFacility = scheduleFactory.createTransitStopFacility(Id.create(stopEntry.getKey(), TransitStopFacility.class), stopEntry.getValue().getCoord(), BLOCKS_DEFAULT);
@@ -122,8 +122,8 @@ public class GtfsConverter {
 		DepartureIds departureIds = new DepartureIds();
 
 		for(Route gtfsRoute : feed.getRoutes().values()) {
-			/** [2]
-			 * Create a MTS transitLine for each Route
+			/* [2]
+			  Create a MTS transitLine for each Route
 			 */
 			TransitLine transitLine = scheduleFactory.createTransitLine(Id.create(gtfsRoute.getShortName() + "_" + gtfsRoute.getId(), TransitLine.class));
 			schedule.addTransitLine(transitLine);
@@ -131,15 +131,15 @@ public class GtfsConverter {
 
 			Map<Id<TransitRoute>, Id<RouteShape>> routeShapeAssignment = new HashMap<>();
 
-			/** [3]
-			 * loop through each trip for the gtfsRoute and generate transitRoute (if the serviceId is correct)
+			/* [3]
+			  loop through each trip for the gtfsRoute and generate transitRoute (if the serviceId is correct)
 			 */
 			for(Trip trip : gtfsRoute.getTrips().values()) {
 				Id<RouteShape> shapeId = trip.hasShape() ? trip.getShape().getId() : null;
 
 				if(trip.getService().runsOnDate(extractDate)) {
-					/** [4]
-					 * Get the stop sequence (with arrivalOffset and departureOffset) of the trip.
+					/* [4]
+					  Get the stop sequence (with arrivalOffset and departureOffset) of the trip.
 					 */
 					List<TransitRouteStop> transitRouteStops = new ArrayList<>();
 					int startTime = trip.getStopTimes().first().getArrivalTime();
@@ -163,10 +163,10 @@ public class GtfsConverter {
 						transitRouteStops.add(newTRS);
 					}
 
-					/** [5.1]
-					 * Calculate departures from frequencies (if available)
+					/* [5.1]
+					  Calculate departures from frequencies (if available)
 					 */
-					TransitRoute transitRoute = null;
+					TransitRoute transitRoute;
 					if(feed.usesFrequencies()) {
 						transitRoute = scheduleFactory.createTransitRoute(Id.create(trip.getId(), TransitRoute.class), null, transitRouteStops, gtfsRoute.getRouteType().name);
 
@@ -181,8 +181,8 @@ public class GtfsConverter {
 						counterRoutes++;
 					} else {
 
-						/** [5.2]
-						 * Calculate departures from stopTimes
+						/* [5.2]
+						  Calculate departures from stopTimes
 						 */
 
 						/* if stop sequence is already used in the same transitLine: just add new departure for the
@@ -218,8 +218,8 @@ public class GtfsConverter {
 			} // foreach trip
 		} // foreach route
 
-		/**
-		 * Create default vehicles.
+		/*
+		  Create default vehicles.
 		 */
 		ScheduleTools.createVehicles(schedule, vhcls);
 

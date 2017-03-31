@@ -48,8 +48,9 @@ import java.util.*;
  */
 public class MappingAnalysis {
 
+	private static final double MEASURE_INTERVAL = 1;
+
 	private static final Logger log = Logger.getLogger(MappingAnalysis.class);
-	private final double measureInterval = 1;
 	private final TransitSchedule schedule;
 	private final Map<Id<RouteShape>, RouteShape> shapes;
 	private final Network network;
@@ -126,7 +127,7 @@ public class MappingAnalysis {
 				// look for shortest distance to shape
 				double minDistanceToShape = ShapeTools.calcMinDistanceToShape(currentPoint, shape);
 				MapUtils.getList(transitRoute.getId(), MapUtils.getMap(transitLine.getId(), routeDistances)).add(minDistanceToShape);
-				lengthOnLink += measureInterval;
+				lengthOnLink += MEASURE_INTERVAL;
 			}
 			lengthOnLink = lengthOnLink - linkLength;
 		}

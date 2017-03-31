@@ -88,8 +88,8 @@ public class ScheduleRoutersGtfsShapes implements ScheduleRouters {
 				Id<RouteShape> shapeId = ScheduleTools.getShapeId(transitRoute);
 				RouteShape shape = shapes.get(shapeId);
 
-				PathCalculator pathCalculator = null;
-				Network cutNetwork = null;
+				PathCalculator pathCalculator;
+				Network cutNetwork;
 
 				if(shape == null) {
 					MapUtils.getMap(transitLine, mapArtificial).put(transitRoute, true);

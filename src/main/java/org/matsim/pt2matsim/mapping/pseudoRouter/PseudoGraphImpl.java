@@ -84,8 +84,8 @@ public class PseudoGraphImpl implements PseudoGraph {
 		}
 		dijkstraComplete = true;
 
-		/**
-		 * returns a leastCostPath from the source to the destination
+		/*
+		  returns a leastCostPath from the source to the destination
 		 */
 		if(!graph.containsKey(DESTINATION_ID)) {
 			System.err.printf("Graph doesn't contain end PseudoRouteStop \"%s\"\n", DESTINATION_ID);
@@ -110,8 +110,8 @@ public class PseudoGraphImpl implements PseudoGraph {
 		leastCostPath.removeFirst();
 		leastCostPath.removeLast();
 
-		/**
-		 * Fetch network links for least cost path
+		/*
+		  Fetch network links for least cost path
 		 */
 		networkLinkIds.add(leastCostPath.get(0).getLinkId());
 		for(int i = 0; i < leastCostPath.size() - 1; i++) {

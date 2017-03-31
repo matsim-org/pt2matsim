@@ -139,15 +139,6 @@ public class PTMapperShapesExample {
 		analysis.writeQuantileDistancesCsv(base + "/output/Shapes_DistancesQuantile.csv");
 		System.out.println("Q8585 with shapes: " + analysis.getQ8585());
 		System.out.println("Length diff. shapes: " + Math.sqrt(analysis.getAverageSquaredLengthRatio()) * 100 + " %");
-
-		/*
-		PlausibilityCheck.run(
-				base + "shape/output/shapes_schedule.xml.gz",
-				base + "shape/output/shapes_network.xml.gz",
-				"EPSG:2032",
-				base + "shape/output/check/"
-		);
-		*/
 	}
 
 	public void writeShapes() {

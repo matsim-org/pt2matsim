@@ -55,7 +55,6 @@ public class PseudoScheduleImpl implements PseudoSchedule {
 	@Override
 	public void createFacilitiesAndLinkSequences(TransitSchedule schedule) {
 		TransitScheduleFactory scheduleFactory = schedule.getFactory();
-		List<Tuple<Id<TransitLine>, TransitRoute>> newRoutes = new ArrayList<>();
 
 		for(PseudoTransitRoute pseudoTransitRoute : pseudoSchedule) {
 			List<PseudoRouteStop> pseudoStopSequence = pseudoTransitRoute.getPseudoStops();

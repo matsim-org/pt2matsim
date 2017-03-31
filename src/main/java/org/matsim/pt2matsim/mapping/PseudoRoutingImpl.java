@@ -77,19 +77,19 @@ public class PseudoRoutingImpl implements PseudoRouting {
 		for(TransitLine transitLine : queue) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 
-				/** [1]
-				 * Initiate pseudoGraph and Dijkstra algorithm for the current transitRoute.
-				 *
-				 * In the pseudoGraph, all link candidates are represented as nodes and the
-				 * network paths between link candidates are reduced to a representation edge
-				 * only storing the travel cost. With the pseudoGraph, the best linkCandidate
-				 * sequence can be calculated (using Dijkstra). From this sequence, the actual
-				 * path on the network can be routed later on.
+				/* [1]
+				  Initiate pseudoGraph and Dijkstra algorithm for the current transitRoute.
+
+				  In the pseudoGraph, all link candidates are represented as nodes and the
+				  network paths between link candidates are reduced to a representation edge
+				  only storing the travel cost. With the pseudoGraph, the best linkCandidate
+				  sequence can be calculated (using Dijkstra). From this sequence, the actual
+				  path on the network can be routed later on.
 				 */
 				PseudoGraph pseudoGraph = new PseudoGraphImpl();
 
-				/** [2]
-				 * Calculate the shortest paths between each pair of routeStops/ParentStopFacility
+				/* [2]
+				  Calculate the shortest paths between each pair of routeStops/ParentStopFacility
 				 */
 				List<TransitRouteStop> routeStops = transitRoute.getStops();
 				for(int i = 0; i < routeStops.size() - 1; i++) {
@@ -104,8 +104,8 @@ public class PseudoRoutingImpl implements PseudoRouting {
 						warnMinTravelCost = false;
 					}
 
-					/** [3]
-					 * Calculate the shortest path between all link candidates.
+					/* [3]
+					  Calculate the shortest path between all link candidates.
 					 */
 					for(LinkCandidate linkCandidateCurrent : linkCandidatesCurrent) {
 						for(LinkCandidate linkCandidateNext : linkCandidatesNext) {
@@ -114,13 +114,13 @@ public class PseudoRoutingImpl implements PseudoRouting {
 							double pathCost = 2 * maxAllowedTravelCost;
 							List<Link> pathLinks = null;
 
-							/** [3.1]
-							 * If one or both link candidates are loop links we don't have
-							 * to search a least cost path on the network.
+							/* [3.1]
+							  If one or both link candidates are loop links we don't have
+							  to search a least cost path on the network.
 							 */
 							if(!linkCandidateCurrent.isLoopLink() && !linkCandidateNext.isLoopLink()) {
-								/**
-								 * Calculate the least cost path on the network
+								/*
+								  Calculate the least cost path on the network
 								 */
 								LeastCostPathCalculator.Path leastCostPath = scheduleRouters.calcLeastCostPath(linkCandidateCurrent, linkCandidateNext, transitLine, transitRoute);
 
@@ -135,9 +135,9 @@ public class PseudoRoutingImpl implements PseudoRouting {
 								useExistingNetworkLinks = pathCost < maxAllowedTravelCost;
 							}
 
-							/** [3.2]
-							 * If a path on the network could be found and its travel cost are
-							 * below maxAllowedTravelCost, a normal edge is added to the pseudoGraph
+							/* [3.2]
+							  If a path on the network could be found and its travel cost are
+							  below maxAllowedTravelCost, a normal edge is added to the pseudoGraph
 							 */
 							if(useExistingNetworkLinks) {
 								double currentCandidateTravelCost = scheduleRouters.getLinkCandidateTravelCost(transitLine, transitRoute, linkCandidateCurrent);
@@ -146,14 +146,14 @@ public class PseudoRoutingImpl implements PseudoRouting {
 
 								pseudoGraph.addEdge(i, routeStops.get(i), linkCandidateCurrent, routeStops.get(i + 1), linkCandidateNext, edgeWeight, pathLinks);
 							}
-							/** [3.2]
-							 * Create artificial links between two routeStops if:
-							 * 	 - no path on the network could be found
-							 *   - the travel cost of the path are greater than maxAllowedTravelCost
-							 *
-							 * Artificial links are created between all LinkCandidates
-							 * (usually this means between one dummy link for the stop
-							 * facility and the other linkCandidates).
+							/* [3.2]
+							  Create artificial links between two routeStops if:
+							  	 - no path on the network could be found
+							    - the travel cost of the path are greater than maxAllowedTravelCost
+
+							  Artificial links are created between all LinkCandidates
+							  (usually this means between one dummy link for the stop
+							  facility and the other linkCandidates).
 							 */
 							else {
 								double currentCandidateTravelCost = scheduleRouters.getLinkCandidateTravelCost(transitLine, transitRoute, linkCandidateCurrent);
@@ -166,15 +166,15 @@ public class PseudoRoutingImpl implements PseudoRouting {
 					}
 				} // - routeStop loop
 
-				/** [4]
-				 * Finish the pseudoGraph by adding dummy nodes.
+				/* [4]
+				  Finish the pseudoGraph by adding dummy nodes.
 				 */
 				pseudoGraph.addDummyEdges(routeStops,
 						linkCandidates.getLinkCandidates(routeStops.get(0), transitLine, transitRoute),
 						linkCandidates.getLinkCandidates(routeStops.get(routeStops.size() - 1), transitLine, transitRoute));
 
-				/** [5]
-				 * Find the least cost path i.e. the PseudoRouteStop sequence
+				/* [5]
+				  Find the least cost path i.e. the PseudoRouteStop sequence
 				 */
 				List<PseudoRouteStop> pseudoPath = pseudoGraph.getLeastCostStopSequence();
 

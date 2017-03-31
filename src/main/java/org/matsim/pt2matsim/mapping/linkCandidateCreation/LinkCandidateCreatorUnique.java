@@ -67,8 +67,8 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 
 		Map<CandidateKey, Set<Link>> candidates = new HashMap<>();
 
-		/**
-		 * get closest links for each stop facility (separated by mode)
+		/*
+		  get closest links for each stop facility (separated by mode)
 		 */
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
@@ -92,8 +92,8 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 
 					Set<Link> currentLinks = new HashSet<>();
 
-					/**
-					 * if stop facility already has a referenced link
+					/*
+					  if stop facility already has a referenced link
 					 */
 					if(currentStopFacility.getLinkId() != null) {
 						currentLinks.add(network.getLinks().get(currentStopFacility.getLinkId()));
@@ -101,8 +101,8 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 							previousLinks.remove(network.getLinks().get(currentStopFacility.getLinkId()));
 						}
 					}
-					/**
-					 * look for links close to stop facility
+					/*
+					  look for links close to stop facility
 					 */
 					else {
 						Set<Link> closeLinks = MapUtils.getSet(getCloseLinksKey(transitRoute, currentRouteStop), closeLinksMap);
@@ -115,8 +115,8 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 						currentLinks.addAll(closeLinks);
 					}
 
-					/**
-					 * Separate links that belong to two subsequent stops
+					/*
+					  Separate links that belong to two subsequent stops
 					 */
 					PTMapperTools.separateLinks(currentStopFacility.getCoord(), currentLinks, previousStopFacility.getCoord(), previousLinks);
 
@@ -131,8 +131,8 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 
 		Map<String, LinkCandidate> allCandidates = new HashMap<>();
 
-		/**
-		 * create and store link candidates
+		/*
+		  create and store link candidates
 		 */
 		for(Map.Entry<CandidateKey, Set<Link>> c : candidates.entrySet()) {
 			CandidateKey key = c.getKey();
@@ -154,8 +154,8 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 			}
 		}
 
-		/**
-		 * Add manually set link candidates from config
+		/*
+		  Add manually set link candidates from config
 		 */
 		addManualLinkCandidates(config.getManualLinkCandidates());
 	}

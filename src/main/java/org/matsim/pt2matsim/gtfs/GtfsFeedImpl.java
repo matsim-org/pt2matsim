@@ -447,8 +447,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 					// add trip to stop
 					((StopImpl) stop).addTrip(trip);
 				}
-				/** GTFS Reference: If this stop isn't a time point, use an empty string value for the
-				 * arrival_time and departure_time fields.
+				/* GTFS Reference: If this stop isn't a time point, use an empty string value for the
+				  arrival_time and departure_time fields.
 				 */
 				else {
 					Integer currentStopSequencePosition = Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]);

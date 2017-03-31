@@ -112,9 +112,9 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	 */
 	@Override
 	public void executeCmdLine(String[] cmd) {
-		/**
-		 * Reroute TransitRoute via new Link
-		 * ["rerouteViaLink"] [TransitLineId] [TransitRouteId] [oldLinkId] [newLinkId]
+		/*
+		  Reroute TransitRoute via new Link
+		  ["rerouteViaLink"] [TransitLineId] [TransitRouteId] [oldLinkId] [newLinkId]
 		 */
 		if(RR_VIA_LINK.equals(cmd[0])) {
 			if(cmd.length == 5) {
@@ -124,9 +124,9 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			}
 		}
 
-		/**
-		 * Reroute TransitRoute from a given stop facility
-		 * ["rerouteFromStop"] [TransitLineId] [TransitRouteId] [fromStopId] [newLinkId]
+		/*
+		  Reroute TransitRoute from a given stop facility
+		  ["rerouteFromStop"] [TransitLineId] [TransitRouteId] [fromStopId] [newLinkId]
 		 */
 		else if(RR_FROM_STOP.equals(cmd[0])) {
 			if(cmd.length == 5) {
@@ -135,11 +135,11 @@ public class BasicScheduleEditor implements ScheduleEditor {
 				throw new IllegalArgumentException("Incorrect number of arguments for " + cmd[0] + "! 5 needed, " + cmd.length + " given");
 			}
 		}
-		/**
-		 * Change the referenced link of a stopfacility. Effectively creates a new child stop facility.
-		 * ["changeRefLink"] [StopFacilityId] [newlinkId]
-		 * ["changeRefLink"] [TransitLineId] [TransitRouteId] [ParentId] [newlinkId]
-		 * ["changeRefLink"] ["allTransitRoutesOnLink"] [linkId] [ParentId] [newlinkId]
+		/*
+		  Change the referenced link of a stopfacility. Effectively creates a new child stop facility.
+		  ["changeRefLink"] [StopFacilityId] [newlinkId]
+		  ["changeRefLink"] [TransitLineId] [TransitRouteId] [ParentId] [newlinkId]
+		  ["changeRefLink"] ["allTransitRoutesOnLink"] [linkId] [ParentId] [newlinkId]
 		 */
 		else if(CHANGE_REF_LINK.equals(cmd[0])) {
 			if(cmd.length == 3 || "".equals(cmd[3])) {
@@ -160,10 +160,10 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			}
 		}
 
-		/**
-		 * Adds a link to the network. Uses the attributes (freespeed, nr of lanes, transportModes)
-		 * of the attributeLink.
-		 * [addLink] [linkId] [fromNodeId] [toNodeId] [attributeLinkId]
+		/*
+		  Adds a link to the network. Uses the attributes (freespeed, nr of lanes, transportModes)
+		  of the attributeLink.
+		  [addLink] [linkId] [fromNodeId] [toNodeId] [attributeLinkId]
 		 */
 		 else if(ADD_LINK.equals(cmd[0])) {
 			if(cmd.length == 5) {
@@ -174,9 +174,9 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			}
 		}
 
-		/**
-		 * Refreshes the given transit route (reroute all paths between referenced stop facility links)
-		 * [refreshTransitRoute] [transitLineId] [transitRouteId]
+		/*
+		  Refreshes the given transit route (reroute all paths between referenced stop facility links)
+		  [refreshTransitRoute] [transitLineId] [transitRouteId]
 		 */
 		else if(REFRESH_TRANSIT_ROUTE.equals(cmd[0])) {
 			if(cmd.length >= 3) {
@@ -186,8 +186,8 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			}
 		}
 
-		/**
-		 * comment
+		/*
+		  comment
 		 */
 		else if(COMMENT_START.equals(cmd[0].substring(0, 2))) {
 			// comment

@@ -234,8 +234,7 @@ public final class MiscUtils {
 	public static <K, V> SortedSet<V> getSortedSet(
 			final K key,
 			final Map<K, SortedSet<V>> map) {
-		SortedSet<V> coll = map.computeIfAbsent(key, k -> new TreeSet<>());
 
-		return coll;
+		return map.computeIfAbsent(key, k -> new TreeSet<>());
 	}
 }

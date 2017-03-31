@@ -67,7 +67,7 @@ public class StopReader {
 			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToBFKOORD_GEOFile), "latin1"));
 			String newLine = readsLines.readLine();
 			while (newLine != null) {
-				/**
+				/*
 				1−7 INT32 Nummer der Haltestelle
 				9−18 FLOAT X-Koordinate
 				20−29 FLOAT Y-Koordinate

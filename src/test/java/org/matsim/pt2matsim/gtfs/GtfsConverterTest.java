@@ -14,7 +14,6 @@ import org.matsim.pt.utils.TransitScheduleValidator;
 public class GtfsConverterTest {
 
 	private GtfsFeed gtfsFeed;
-	private GtfsConverter gtfsConverter;
 	private TransitSchedule scheduleAddison;
 
 	@Before
@@ -23,7 +22,7 @@ public class GtfsConverterTest {
 
 		gtfsFeed = new GtfsFeedImpl("test/Addisoncounty-GTFS/");
 
-		gtfsConverter = new GtfsConverter(gtfsFeed);
+		GtfsConverter gtfsConverter = new GtfsConverter(gtfsFeed);
 		scheduleAddison = gtfsConverter.convert(GtfsConverter.ALL_SERVICE_IDS, coordinateSystem);
 		gtfsConverter.convert(GtfsConverter.DAY_WITH_MOST_SERVICES, coordinateSystem);
 		gtfsConverter.convert(GtfsConverter.DAY_WITH_MOST_TRIPS, coordinateSystem);

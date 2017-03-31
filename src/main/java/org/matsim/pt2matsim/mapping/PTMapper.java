@@ -127,9 +127,9 @@ public class PTMapper {
 		log.info("======================================");
 		log.info("Mapping transit schedule to network...");
 
-		/**
-		 * Some schedule statistics
-		 * Check link candidate params and mode routing assignment
+		/*
+		  Some schedule statistics
+		  Check link candidate params and mode routing assignment
 		 */
 		int nStopFacilities = schedule.getFacilities().size();
 		int nTransitRoutes = 0;
@@ -146,30 +146,30 @@ public class PTMapper {
 			}
 		}
 
-		/** [1]
-		 * Create a separate network for all schedule modes and
-		 * initiate routers.
+		/* [1]
+		  Create a separate network for all schedule modes and
+		  initiate routers.
 		 */
 		log.info("==============================================");
 		log.info("Creating network routers for transit routes...");
 		scheduleRouters.load();
 
 
-		/** [2]
-		 * Load the closest links and create LinkCandidates. StopFacilities
-		 * with no links within search radius are given a dummy loop link right
-		 * on their coordinates. Each Link Candidate is a possible new stop facility
-		 * after PseudoRouting.
+		/* [2]
+		  Load the closest links and create LinkCandidates. StopFacilities
+		  with no links within search radius are given a dummy loop link right
+		  on their coordinates. Each Link Candidate is a possible new stop facility
+		  after PseudoRouting.
 		 */
 		log.info("===========================");
 		log.info("Creating link candidates...");
 		linkCandidates.load();
 
 
-		/** [3]
-		 * PseudoRouting
-		 * Initiate and start threads, calculate PseudoTransitRoutes
-		 * for all transit routes.
+		/* [3]
+		  PseudoRouting
+		  Initiate and start threads, calculate PseudoTransitRoutes
+		  for all transit routes.
 		 */
 		log.info("==================================");
 		log.info("Calculating pseudoTransitRoutes... ("+nTransitRoutes+" transit routes in "+schedule.getTransitLines().size()+" transit lines)");
@@ -201,9 +201,9 @@ public class PTMapper {
 		}
 
 
-		/** [4]
-		 * Collect artificial links from threads and add them to network.
-		 * Collect pseudoSchedules from threads.
+		/* [4]
+		  Collect artificial links from threads and add them to network.
+		  Collect pseudoSchedules from threads.
 		 */
 		log.info("=====================================");
 		log.info("Adding artificial links to network...");
@@ -213,17 +213,17 @@ public class PTMapper {
 		}
 
 
-		/** [5]
-		 * Replace the parent stop facilities in each transitRoute's routeProfile
-		 * with child StopFacilities. Add the new transitRoutes to the schedule.
+		/* [5]
+		  Replace the parent stop facilities in each transitRoute's routeProfile
+		  with child StopFacilities. Add the new transitRoutes to the schedule.
 		 */
 		log.info("==========================================================================================");
 		log.info("Replacing parent StopFacilities in schedule, creating link sequences for transit routes...");
 		pseudoSchedule.createFacilitiesAndLinkSequences(schedule);
 
-		/** [6]
-		 * Now that all lines have been routed, it is possible that a route passes
-		 * a link closer to a stop facility than its referenced link.
+		/* [6]
+		  Now that all lines have been routed, it is possible that a route passes
+		  a link closer to a stop facility than its referenced link.
 		 */
 		log.info("================================");
 		log.info("Pulling child stop facilities...");
@@ -232,17 +232,17 @@ public class PTMapper {
 			nPulled = PTMapperTools.pullChildStopFacilitiesTogether(this.schedule, this.network);
 		}
 
-		/** [7]
-		 * After all lines are created, clean the schedule and network. Removing
-		 * not used transit links includes removing artificial links that
-		 * needed to be added to the network for routing purposes.
+		/* [7]
+		  After all lines are created, clean the schedule and network. Removing
+		  not used transit links includes removing artificial links that
+		  needed to be added to the network for routing purposes.
 		 */
 		log.info("=============================");
 		log.info("Clean schedule and network...");
 		cleanScheduleAndNetwork();
 
-		/** [8]
-		 * Validate the schedule
+		/* [8]
+		  Validate the schedule
 		 */
 		log.info("======================");
 		log.info("Validating schedule...");
@@ -252,8 +252,8 @@ public class PTMapper {
 		log.info("= Mapping transit schedule to network completed! =");
 		log.info("==================================================");
 
-		/**
-		 * Statistics
+		/*
+		  Statistics
 		 */
 		printStatistics(nStopFacilities);
 	}

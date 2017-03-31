@@ -60,7 +60,7 @@ public class FPLANReader {
 			while(newLine != null) {
 				if(newLine.charAt(0) == '*') {
 
-					/**
+					/*
 					 Initialzeile neue Fahrt
 					 1−2 	CHAR 	*Z
 					 4−8 	INT32 	Fahrtnummer
@@ -87,7 +87,7 @@ public class FPLANReader {
 						hafasRoutes.add(currentFPLANRoute);
 					}
 
-					/**
+					/*
 					 Verkehrsmittelzeile
 					 1−2 	CHAR 		*G
 					 4−6 	CHAR 		Verkehrsmittel bzw. Gattung
@@ -111,7 +111,7 @@ public class FPLANReader {
 						}
 					}
 
-					/**
+					/*
 					 1-5 	CHAR 		*A VE
 					 7-13 	[#]INT32 	(optional) Laufwegsindex oder Haltestellennummer, ab der die Verkehrstage im Laufweg gelten.
 					 15-21 	[#]INT32 	(optional) Laufwegsindex oder Haltestellennummer, bis zu der die Verkehrstage im Laufweg gelten.
@@ -133,7 +133,7 @@ public class FPLANReader {
 						}
 					}
 
-					/**
+					/*
 					 1-2 CHAR *L
 					 4-11 CHAR Liniennummer
 					 */
@@ -143,7 +143,7 @@ public class FPLANReader {
 						}
 					}
 
-					/**
+					/*
 					 Initialzeile neue freie Fahrt (Linien welche nicht nach Taktfahrplan fahren)
 					 */
 					else if(newLine.charAt(1) == 'T') {
@@ -151,7 +151,7 @@ public class FPLANReader {
 					}
 				}
 
-				/**
+				/*
 				 Regionszeile (Bedarfsfahrten)
 				 We don't have this transport mode in  MATSim (yet). => Delete Route and if Line now empty, delete Line.
 				 */
@@ -159,7 +159,7 @@ public class FPLANReader {
 					log.error("+-Line in HRDF discovered. Please implement appropriate read out.");
 				}
 
-				/**
+				/*
 				 Laufwegzeile
 				 1−7 	INT32 Haltestellennummer
 				 9−29 	CHAR (optional zur Lesbarkeit) Haltestellenname

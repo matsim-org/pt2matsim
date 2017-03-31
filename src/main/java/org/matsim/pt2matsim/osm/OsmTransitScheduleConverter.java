@@ -92,8 +92,8 @@ public class OsmTransitScheduleConverter {
 		ptRoute.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.MONORAIL);
 		ptRoute.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.SUBWAY);
 
-		/**
-		 * Create TransitStopFacilities from public_transport=stop_position
+		/*
+		  Create TransitStopFacilities from public_transport=stop_position
 		 */
 		Map<Id<TransitStopFacility>, TransitStopFacility> stopFacilities = this.transitSchedule.getFacilities();
 
@@ -125,13 +125,13 @@ public class OsmTransitScheduleConverter {
 			}
 		}
 
-		/**
-		 * https://wiki.openstreetmap.org/wiki/Relation:route_master
+		/*
+		  https://wiki.openstreetmap.org/wiki/Relation:route_master
 		 */
 		Set<Osm.Relation> routesWithMaster = new HashSet<>();
 
-		/**
-		 * Create transitLines via route_masters
+		/*
+		  Create transitLines via route_masters
 		 */
 		for(Osm.Relation relation : osmData.getRelations().values()) {
 			// if relation is a route master
@@ -154,8 +154,8 @@ public class OsmTransitScheduleConverter {
 			}
 		}
 
-		/**
-		 * Create transitRoutes without route_masters
+		/*
+		  Create transitRoutes without route_masters
 		 */
 		for(Osm.Relation relation : osmData.getRelations().values()) {
 			if(ptRoute.matches(relation) && !routesWithMaster.contains(relation)) {

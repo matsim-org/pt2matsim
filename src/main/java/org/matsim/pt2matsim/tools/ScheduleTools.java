@@ -402,14 +402,14 @@ public final class ScheduleTools {
 
 		List<Id<Link>> linkIdList = getTransitRouteLinkIds(transitRoute);
 
-		/**
-		 * the index where the link after fromLinkId can be found in the route:
-		 * fromIndex==0 --> fromLinkId == startLinkId,
-		 * fromIndex==1 --> fromLinkId == first link in the route, etc.
+		/*
+		  the index where the link after fromLinkId can be found in the route:
+		  fromIndex==0 --> fromLinkId == startLinkId,
+		  fromIndex==1 --> fromLinkId == first link in the route, etc.
 		 */
 		int fromIndex = -1;
-		/**
-		 * the index where toLinkId can be found in the route
+		/*
+		  the index where toLinkId can be found in the route
 		 */
 		int toIndex = -1;
 
