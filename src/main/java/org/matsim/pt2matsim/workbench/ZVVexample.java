@@ -60,9 +60,9 @@ public class ZVVexample {
 
 	public static void main(String[] args) throws Exception {
 		ZVVexample obj = new ZVVexample();
-		obj.convert();
+//		obj.convert();
 //		obj.runMappingStandard();
-//		obj.runMappingShapes();
+		obj.runMappingShapes();
 //		obj.runMappingOsm();
 	}
 

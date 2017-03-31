@@ -25,6 +25,7 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.router.util.*;
+import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
@@ -47,6 +48,13 @@ import java.util.Set;
 public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 
 
+	/**
+	 * If a link has a route with the same transport mode as the transit route,
+	 * the link's travel cost is multiplied by this factor.
+	 */
+	private static final double OSM_PT_LINK_TRAVEL_COST_FACTOR = 0.7;
+
+
 	protected static Logger log = Logger.getLogger(ScheduleRoutersWithShapes.class);
 
 	// standard fields
@@ -57,7 +65,8 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 	// path calculators
 	private final Map<String, PathCalculator> pathCalculatorsByMode = new HashMap<>();
 	private final Map<String, Network> networksByMode = new HashMap<>();
-	private Map<TransitLine, Map<TransitRoute, OsmRouter>> osmRouters = new HashMap<>();
+	private final Map<String, OsmRouter> osmRouters = new HashMap<>();
+
 
 
 	public ScheduleRoutersOsmAttributes(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network) {
@@ -83,13 +92,14 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 
 					Network filteredNetwork = NetworkTools.createFilteredNetworkByLinkMode(this.network, networkTransportModes);
 
-					OsmRouter r = new OsmRouter();
+					OsmRouter r = new OsmRouter(scheduleMode);
 
 					LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory(filteredNetwork, r);
 					tmpRouter = new PathCalculator(factory.createPathCalculator(filteredNetwork, r, r));
 
 					pathCalculatorsByMode.put(scheduleMode, tmpRouter);
 					networksByMode.put(scheduleMode, filteredNetwork);
+					osmRouters.put(scheduleMode, r);
 				}
 			}
 		}
@@ -116,25 +126,35 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 
 	@Override
 	public double getMinimalTravelCost(TransitRouteStop fromTransitRouteStop, TransitRouteStop toTransitRouteStop, TransitLine transitLine, TransitRoute transitRoute) {
-		return PTMapperTools.calcTravelCost(fromTransitRouteStop, toTransitRouteStop, config.getTravelCostType());
+		return PTMapperTools.calcMinTravelCost(fromTransitRouteStop, toTransitRouteStop, config.getTravelCostType());
 	}
 
 	@Override
 	public double getLinkCandidateTravelCost(TransitLine transitLine, TransitRoute transitRoute, LinkCandidate linkCandidateCurrent) {
-		return PTMapperTools.calcTravelCost(linkCandidateCurrent.getLink(), config.getTravelCostType());
+		return osmRouters.get(transitRoute.getTransportMode()).calcLinkTravelCost(linkCandidateCurrent.getLink());
 	}
 
 	/**
 	 * Class is sent to path calculator factory
 	 */
-	private class OsmRouter implements TravelDisutility, TravelTime{
+	private class OsmRouter implements TravelDisutility, TravelTime {
+
+		private final String scheduleMode;
+
+		public OsmRouter(String scheduleMode) {
+			this.scheduleMode = scheduleMode;
+		}
 
 		private double calcLinkTravelCost(Link link) {
 			double travelCost = PTMapperTools.calcTravelCost(link, config.getTravelCostType());
 
 			Attributes attributes = network.getLinks().get(link.getId()).getAttributes();
+			Set<String> routeMaster = CollectionUtils.stringToSet((String) attributes.getAttribute(OsmConverterConfigGroup.LINK_ATTRIBUTE_RELATION_ROUTE_MASTER));
+			Set<String> route = CollectionUtils.stringToSet((String) attributes.getAttribute(OsmConverterConfigGroup.LINK_ATTRIBUTE_RELATION_ROUTE));
 
-			Object a = attributes.getAttribute(OsmConverterConfigGroup.LINK_ATTRIBUTE_RELATION_ROUTE_MASTER);
+			if(route.contains(scheduleMode) || routeMaster.contains(scheduleMode)) {
+				travelCost *= OSM_PT_LINK_TRAVEL_COST_FACTOR;
+			}
 
 			return travelCost;
 		}
