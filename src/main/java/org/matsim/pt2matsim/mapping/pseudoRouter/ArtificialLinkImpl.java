@@ -37,14 +37,15 @@ public class ArtificialLinkImpl implements ArtificialLink {
 	private final Id<Link> id;
 	private final Id<Node> fromNodeId;
 	private final Id<Node> toNodeId;
+	private final int hash;
 	private final Node fromNode;
 	private final Node toNode;
 	private double freespeed;
 	private double linkLength;
 	private double numberOfLanes;
 	private double capacity = 9999;
-	private Set<String> transportModes = PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE_AS_SET;
 
+	private Set<String> transportModes = PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE_AS_SET;
 	private Attributes attributes = new Attributes();
 
 	public ArtificialLinkImpl(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, double freespeed, double linklength) {
@@ -58,20 +59,27 @@ public class ArtificialLinkImpl implements ArtificialLink {
 		this.toNode = toLinkCandidate.getLink().getFromNode();
 
 		this.numberOfLanes = 1.0;
+
+		int result = getId().hashCode();
+		result = 31 * result + getFromNodeId().hashCode();
+		result = 31 * result + getToNodeId().hashCode();
+		this.hash = result;
+
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if(this == obj)
-			return true;
-		if(obj == null)
-			return false;
-		if(getClass() != obj.getClass())
-			return false;
+	public boolean equals(Object o) {
+		if(this == o) return true;
+		if(o == null || getClass() != o.getClass()) return false;
 
-		ArtificialLinkImpl other = (ArtificialLinkImpl) obj;
-		return (fromNodeId.equals(other.getFromNodeId()) &&
-				toNodeId.equals(other.getToNodeId()));
+		ArtificialLinkImpl that = (ArtificialLinkImpl) o;
+
+		return getId().equals(that.getId()) && getFromNodeId().equals(that.getFromNodeId()) && getToNodeId().equals(that.getToNodeId());
+	}
+
+	@Override
+	public int hashCode() {
+		return hash;
 	}
 
 	@Override
@@ -196,10 +204,6 @@ public class ArtificialLinkImpl implements ArtificialLink {
 		return numberOfLanes;
 	}
 
-	@Override
-	public int hashCode() {
-		return (fromNodeId.toString() + toNodeId.toString() + freespeed + linkLength).hashCode();
-	}
 
 	@Override
 	public Coord getCoord() {

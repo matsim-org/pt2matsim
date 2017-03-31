@@ -107,21 +107,17 @@ public class TripImpl implements Trip {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if(this == obj)
-			return true;
-		if(obj == null)
-			return false;
-		if(getClass() != obj.getClass())
-			return false;
+	public boolean equals(Object o) {
+		if(this == o) return true;
+		if(o == null || getClass() != o.getClass()) return false;
 
-		Trip other = (Trip) obj;
-		return (other.getId().equals(id));
+		TripImpl trip = (TripImpl) o;
+		return getId().equals(trip.getId());
 	}
 
 	@Override
 	public int hashCode() {
-		return id.hashCode();
+		return getId().hashCode();
 	}
 
 	@Override

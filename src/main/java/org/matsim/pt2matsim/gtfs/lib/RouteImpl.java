@@ -78,24 +78,17 @@ public class RouteImpl implements Route {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if(this == obj)
-			return true;
-		if(obj == null)
-			return false;
-		if(getClass() != obj.getClass())
-			return false;
+	public boolean equals(Object o) {
+		if(this == o) return true;
+		if(o == null || getClass() != o.getClass()) return false;
 
-		Route other = (Route) obj;
-		return (other.getId().equals(routeId) &&
-				other.getRouteType().equals(routeType) &&
-				other.getTrips().keySet().equals(trips.keySet()));
-
+		RouteImpl route = (RouteImpl) o;
+		return routeId.equals(route.routeId);
 	}
 
 	@Override
 	public int hashCode() {
-		return (routeId + routeType.toString() + trips.keySet().toString()).hashCode();
+		return routeId.hashCode();
 	}
 
 	@Override

@@ -40,7 +40,11 @@ public class StopTimeImpl implements StopTime {
 		this.departureTime = departureTime;
 		this.stop = stop;
 		this.trip = trip;
-		this.hash = (stop.getId() + trip.getId()).hashCode() + sequencePosition * 31;
+
+		int result = getSequencePosition().hashCode();
+		result = 31 * result + getStop().hashCode();
+		result = 31 * result + getTrip().hashCode();
+		this.hash = result;
 	}
 
 
@@ -81,18 +85,13 @@ public class StopTimeImpl implements StopTime {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if(this == obj)
-			return true;
-		if(obj == null)
-			return false;
-		if(getClass() != obj.getClass())
-			return false;
+	public boolean equals(Object o) {
+		if(this == o) return true;
+		if(o == null || getClass() != o.getClass()) return false;
 
-		StopTime other = (StopTime) obj;
-		return (other.getStop().getId().equals(stop.getId()) &&
-				other.getSequencePosition().equals(sequencePosition) &&
-				other.getTrip().getId().equals(trip.getId()));
+		StopTimeImpl stopTime = (StopTimeImpl) o;
+
+		return getSequencePosition().equals(stopTime.getSequencePosition()) && getStop().equals(stopTime.getStop()) && getTrip().equals(stopTime.getTrip());
 	}
 
 	@Override
