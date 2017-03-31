@@ -41,7 +41,7 @@ public class GtfsShape implements RouteShape {
 
 	private Id<RouteShape> id;
 
-	private SortedMap<Integer, Coord> points = new TreeMap<>();
+	private SortedMap<Integer, Coord> coordSorted = new TreeMap<>();
 
 	private double extentSWx = Double.MAX_VALUE;
 	private double extentSWy = Double.MAX_VALUE;
@@ -63,11 +63,11 @@ public class GtfsShape implements RouteShape {
 	}
 
 	public SortedMap<Integer, Coord> getCoordsSorted() {
-		return points;
+		return coordSorted;
 	}
 
 	public List<Coord> getCoords() {
-		return new ArrayList<>(points.values());
+		return new ArrayList<>(coordSorted.values());
 	}
 
 	/**
@@ -75,7 +75,7 @@ public class GtfsShape implements RouteShape {
 	 */
 	@Override
 	public void addPoint(Coord point, int pos) {
-		Coord check = points.put(pos, point);
+		Coord check = coordSorted.put(pos, point);
 
 		if(check != null && (check.getX() != point.getX() || check.getY() != point.getY())) {
 			throw new IllegalArgumentException("Sequence position " + pos + " already defined in shape " + id);
@@ -96,12 +96,12 @@ public class GtfsShape implements RouteShape {
 	}
 
 	public Coordinate[] getCoordinates() {
-		if(points.size() == 0) {
+		if(coordSorted.size() == 0) {
 			return null;
 		} else {
 			int i = 0;
-			Coordinate[] coordinates = new Coordinate[points.values().size()];
-			for(Coord coord : points.values()) {
+			Coordinate[] coordinates = new Coordinate[coordSorted.values().size()];
+			for(Coord coord : coordSorted.values()) {
 				coordinates[i++] = MGC.coord2Coordinate(coord);
 			}
 			return coordinates;
@@ -118,25 +118,23 @@ public class GtfsShape implements RouteShape {
 
 	@Override
 	public String toString() {
-		return id.toString() + " [" + points.size() + " points]";
+		return id.toString() + " [" + coordSorted.size() + " coordSorted]";
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if(this == obj)
-			return true;
-		if(obj == null)
-			return false;
-		if(getClass() != obj.getClass())
-			return false;
+	public boolean equals(Object o) {
+		if(this == o) return true;
+		if(o == null || getClass() != o.getClass()) return false;
 
-		RouteShape other = (RouteShape) obj;
-		return (other.getId().equals(id) &&
-				other.getCoordsSorted().equals(points));
+		RouteShape gtfsShape = (RouteShape) o;
+
+		return getId().equals(gtfsShape.getId()) && coordSorted.equals(gtfsShape.getCoordsSorted());
 	}
 
 	@Override
 	public int hashCode() {
-		return (id + points.values().toString()).hashCode();
+		int result = getId().hashCode();
+		result = 31 * result + coordSorted.hashCode();
+		return result;
 	}
 }

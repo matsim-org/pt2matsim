@@ -36,9 +36,9 @@ import java.util.Set;
  *
  * @author polettif
  */
-public class ScheduleRoutersWithShapes implements ScheduleRouters {
+public class ScheduleRoutersGtfsShapes implements ScheduleRouters {
 
-	protected static Logger log = Logger.getLogger(ScheduleRoutersWithShapes.class);
+	protected static Logger log = Logger.getLogger(ScheduleRoutersGtfsShapes.class);
 
 	// standard fields
 	private final PublicTransitMappingConfigGroup config;
@@ -47,6 +47,8 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 
 	// path calculators
 	private final Map<Id<RouteShape>, PathCalculator> pathCalculatorsByShape = new HashMap<>();
+	private final Map<Id<RouteShape>, ShapeRouter> shapeRoutersByShape = new HashMap<>();
+	private final Map<Id<RouteShape>, Network> networksByShape = new HashMap<>();
 	// shape fields
 	private final Map<Id<RouteShape>, RouteShape> shapes;
 	private final double maxWeightDistance;
@@ -57,7 +59,7 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 	private final Map<TransitLine, Map<TransitRoute, ShapeRouter>> shapeRouters = new HashMap<>();
 
 
-	public ScheduleRoutersWithShapes(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network, Map<Id<RouteShape>, RouteShape> shapes, double maxWeightDistance, double cutBuffer) {
+	public ScheduleRoutersGtfsShapes(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network, Map<Id<RouteShape>, RouteShape> shapes, double maxWeightDistance, double cutBuffer) {
 		this.config = config;
 		this.schedule = schedule;
 		this.network = network;
@@ -67,7 +69,7 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 
 	}
 
-	public ScheduleRoutersWithShapes(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network, Map<Id<RouteShape>, RouteShape> shapes, double maxWeightDistance) {
+	public ScheduleRoutersGtfsShapes(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network, Map<Id<RouteShape>, RouteShape> shapes, double maxWeightDistance) {
 		this(config, schedule, network, shapes, maxWeightDistance, 5 * maxWeightDistance);
 	}
 
@@ -86,9 +88,8 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 				Id<RouteShape> shapeId = ScheduleTools.getShapeId(transitRoute);
 				RouteShape shape = shapes.get(shapeId);
 
-				PathCalculator tmpRouter = null;
+				PathCalculator pathCalculator = null;
 				Network cutNetwork = null;
-				ShapeRouter r = null;
 
 				if(shape == null) {
 					MapUtils.getMap(transitLine, mapArtificial).put(transitRoute, true);
@@ -96,8 +97,8 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 				}
 				else {
 					MapUtils.getMap(transitLine, mapArtificial).put(transitRoute, false);
-					tmpRouter = pathCalculatorsByShape.get(shapeId);
-					if(tmpRouter == null) {
+					pathCalculator = pathCalculatorsByShape.get(shapeId);
+					if(pathCalculator == null) {
 						Set<String> networkTransportModes = config.getModeRoutingAssignment().get(transitRoute.getTransportMode());
 
 						// todo this setup could be improved (i.e. don't recreate/filter networks all over again)
@@ -105,17 +106,17 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 						Collection<Node> nodesWithinBuffer = ShapeTools.getNodesWithinBuffer(cutNetwork, shape, cutBuffer);
 						NetworkTools.cutNetwork(cutNetwork, nodesWithinBuffer);
 
-						r = new ShapeRouter(shape);
+						ShapeRouter r = new ShapeRouter(shape);
+						pathCalculator = new PathCalculator(new FastAStarEuclideanFactory(cutNetwork, r).createPathCalculator(cutNetwork, r, r));
 
-						FastAStarEuclideanFactory factory = new FastAStarEuclideanFactory(cutNetwork, r);
-						tmpRouter = new PathCalculator(factory.createPathCalculator(cutNetwork, r, r));
-
-						pathCalculatorsByShape.put(shapeId, tmpRouter);
+						pathCalculatorsByShape.put(shapeId, pathCalculator);
+						networksByShape.put(shapeId, cutNetwork);
+						shapeRoutersByShape.put(shapeId, r);
 					}
 				}
-				MapUtils.getMap(transitLine, networks).put(transitRoute, cutNetwork);
-				MapUtils.getMap(transitLine, pathCalculators).put(transitRoute, tmpRouter);
-				MapUtils.getMap(transitLine, shapeRouters).put(transitRoute, r);
+				MapUtils.getMap(transitLine, networks).put(transitRoute, networksByShape.get(shapeId));
+				MapUtils.getMap(transitLine, pathCalculators).put(transitRoute, pathCalculatorsByShape.get(shapeId));
+				MapUtils.getMap(transitLine, shapeRouters).put(transitRoute, shapeRoutersByShape.get(shapeId));
 			}
 		}
 	}
@@ -128,14 +129,13 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 	@Override
 	public LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNodeId, Id<Node> toNodeId, TransitLine transitLine, TransitRoute transitRoute) {
 		Network n = networks.get(transitLine).get(transitRoute);
+		if(n == null) return null;
+
 		Node fromNode = n.getNodes().get(fromNodeId);
 		Node toNode = n.getNodes().get(toNodeId);
+		if(fromNode == null || toNode == null) return null;
 
-		if(fromNode != null && toNode != null) {
-			return pathCalculators.get(transitLine).get(transitRoute).calcPath(fromNode, toNode);
-		} else {
-			return null;
-		}
+		return pathCalculators.get(transitLine).get(transitRoute).calcPath(fromNode, toNode);
 	}
 
 	@Override
@@ -189,31 +189,4 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 		}
 	}
 
-	/**
-	 * Class is sent to path calculator factory
-	 */
-	private class EmptyRouter implements TravelDisutility, TravelTime {
-
-		/**
-		 * Calculates the travel cost and change it based on distance to path
-		 */
-		private double calcLinkTravelCost(Link link) {
-			return PTMapperTools.calcTravelCost(link, config.getTravelCostType());
-		}
-
-		@Override
-		public double getLinkTravelDisutility(Link link, double time, Person person, Vehicle vehicle) {
-			return this.calcLinkTravelCost(link);
-		}
-
-		@Override
-		public double getLinkMinimumTravelDisutility(Link link) {
-			return this.calcLinkTravelCost(link);
-		}
-
-		@Override
-		public double getLinkTravelTime(Link link, double time, Person person, Vehicle vehicle) {
-			return link.getLength() / link.getFreespeed();
-		}
-	}
 }
