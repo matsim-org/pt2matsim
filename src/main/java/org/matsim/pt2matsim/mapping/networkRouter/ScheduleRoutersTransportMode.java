@@ -84,7 +84,6 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 
 	@Override
 	public LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNodeId, Id<Node> toNodeId, TransitLine transitLine, TransitRoute transitRoute) {
-		// Synchronized since the used Dijkstra algorithm is not thread safe
 		Network n = networksByMode.get(transitRoute.getTransportMode());
 		Node fromNode = n.getNodes().get(fromNodeId);
 		Node toNode = n.getNodes().get(toNodeId);
@@ -98,7 +97,7 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 
 	@Override
 	public double getMinimalTravelCost(TransitRouteStop fromTransitRouteStop, TransitRouteStop toTransitRouteStop, TransitLine transitLine, TransitRoute transitRoute) {
-		return PTMapperTools.calcTravelCost(fromTransitRouteStop, toTransitRouteStop, config.getTravelCostType());
+		return PTMapperTools.calcMinTravelCost(fromTransitRouteStop, toTransitRouteStop, config.getTravelCostType());
 	}
 
 	@Override

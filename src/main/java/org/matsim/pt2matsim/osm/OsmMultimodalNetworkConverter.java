@@ -469,26 +469,18 @@ public class OsmMultimodalNetworkConverter {
 				String route = rel.getTags().get(Osm.Key.ROUTE);
 				if(route != null) {
 					String osmRouteKey = OsmConverterConfigGroup.LINK_ATTRIBUTE_RELATION_ROUTE;
-					String attr = (String) link.getAttributes().getAttribute(osmRouteKey);
-					if(attr != null) {
-						attr += "," + route;
-					} else {
-						attr = route;
-					}
-					link.getAttributes().putAttribute(osmRouteKey, attr);
+					Set<String> attr = new HashSet<>(CollectionUtils.stringToSet((String) link.getAttributes().getAttribute(osmRouteKey)));
+					attr.add(route);
+					link.getAttributes().putAttribute(osmRouteKey, CollectionUtils.setToString(attr));
 				}
 
 				// route master
 				String route_master = rel.getTags().get(Osm.Key.ROUTE_MASTER);
 				if(route_master != null) {
 					String osmRouteMasterKey = OsmConverterConfigGroup.LINK_ATTRIBUTE_RELATION_ROUTE_MASTER;
-					String attr = (String) link.getAttributes().getAttribute(osmRouteMasterKey);
-					if(attr != null) {
-						attr += "," + route_master;
-					} else {
-						attr = route_master;
-					}
-					link.getAttributes().putAttribute(osmRouteMasterKey, attr);
+					Set<String> attr = new HashSet<>(CollectionUtils.stringToSet((String) link.getAttributes().getAttribute(osmRouteMasterKey)));
+					attr.add(route_master);
+					link.getAttributes().putAttribute(osmRouteMasterKey, CollectionUtils.setToString(attr));
 				}
 			}
 		}

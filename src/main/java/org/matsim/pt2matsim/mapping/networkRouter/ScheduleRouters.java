@@ -49,7 +49,7 @@ public interface ScheduleRouters extends MapperModule {
 	double getLinkCandidateTravelCost(TransitLine transitLine, TransitRoute transitRoute, LinkCandidate linkCandidateCurrent);
 
 	/**
-	 * Wrapper class to enable synchronised access to least cost path calculators
+	 * Wrapper class to enable synchronized access to least cost path calculators
 	 */
 	class PathCalculator {
 

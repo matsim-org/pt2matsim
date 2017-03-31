@@ -224,7 +224,11 @@ public class MappingAnalysis {
 
 				if(!noAnalysis.contains(new Tuple<>(transitLine.getId(), transitRoute.getId()))) {
 					List<Double> values = routeDistances.get(transitLineId).get(transitRouteId);
-					values.sort(Double::compareTo);
+					try {
+						values.sort(Double::compareTo);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 					int n = values.size();
 					q85.add(values.get((int) Math.round(n * 0.85) - 1));
 				}

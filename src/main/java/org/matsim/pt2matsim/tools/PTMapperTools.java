@@ -221,7 +221,7 @@ public final class PTMapperTools {
 	/**
 	 * Calculates the travel cost (distance or time based on travelCostType)
 	 */
-	public static double calcTravelCost(TransitRouteStop fromTransitRouteStop, TransitRouteStop toTransitRouteStop, PublicTransitMappingConfigGroup.TravelCostType travelCostType) {
+	public static double calcMinTravelCost(TransitRouteStop fromTransitRouteStop, TransitRouteStop toTransitRouteStop, PublicTransitMappingConfigGroup.TravelCostType travelCostType) {
 		double travelTime = (toTransitRouteStop.getArrivalOffset() - fromTransitRouteStop.getDepartureOffset());
 		double beelineDistance = CoordUtils.calcEuclideanDistance(fromTransitRouteStop.getStopFacility().getCoord(), toTransitRouteStop.getStopFacility().getCoord());
 

@@ -51,10 +51,10 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 	private final Map<Id<RouteShape>, RouteShape> shapes;
 	private final double maxWeightDistance;
 	private final double cutBuffer;
-	private Map<TransitLine, Map<TransitRoute, PathCalculator>> pathCalculators = new HashMap<>();
-	private Map<TransitLine, Map<TransitRoute, Boolean>> mapArtificial = new HashMap<>();
-	private Map<TransitLine, Map<TransitRoute, Network>> networks = new HashMap<>();
-	private Map<TransitLine, Map<TransitRoute, ShapeRouter>> shapeRouters = new HashMap<>();
+	private final Map<TransitLine, Map<TransitRoute, PathCalculator>> pathCalculators = new HashMap<>();
+	private final Map<TransitLine, Map<TransitRoute, Boolean>> mapArtificial = new HashMap<>();
+	private final Map<TransitLine, Map<TransitRoute, Network>> networks = new HashMap<>();
+	private final Map<TransitLine, Map<TransitRoute, ShapeRouter>> shapeRouters = new HashMap<>();
 
 
 	public ScheduleRoutersWithShapes(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network, Map<Id<RouteShape>, RouteShape> shapes, double maxWeightDistance, double cutBuffer) {
@@ -140,7 +140,7 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 
 	@Override
 	public double getMinimalTravelCost(TransitRouteStop fromTransitRouteStop, TransitRouteStop toTransitRouteStop, TransitLine transitLine, TransitRoute transitRoute) {
-		return PTMapperTools.calcTravelCost(fromTransitRouteStop, toTransitRouteStop, config.getTravelCostType());
+		return PTMapperTools.calcMinTravelCost(fromTransitRouteStop, toTransitRouteStop, config.getTravelCostType());
 	}
 
 	@Override
@@ -189,4 +189,31 @@ public class ScheduleRoutersWithShapes implements ScheduleRouters {
 		}
 	}
 
+	/**
+	 * Class is sent to path calculator factory
+	 */
+	private class EmptyRouter implements TravelDisutility, TravelTime {
+
+		/**
+		 * Calculates the travel cost and change it based on distance to path
+		 */
+		private double calcLinkTravelCost(Link link) {
+			return PTMapperTools.calcTravelCost(link, config.getTravelCostType());
+		}
+
+		@Override
+		public double getLinkTravelDisutility(Link link, double time, Person person, Vehicle vehicle) {
+			return this.calcLinkTravelCost(link);
+		}
+
+		@Override
+		public double getLinkMinimumTravelDisutility(Link link) {
+			return this.calcLinkTravelCost(link);
+		}
+
+		@Override
+		public double getLinkTravelTime(Link link, double time, Person person, Vehicle vehicle) {
+			return link.getLength() / link.getFreespeed();
+		}
+	}
 }
