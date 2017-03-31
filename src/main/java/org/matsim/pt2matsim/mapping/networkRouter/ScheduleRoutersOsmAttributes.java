@@ -48,15 +48,12 @@ import java.util.Set;
 public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 
 
+	protected static Logger log = Logger.getLogger(ScheduleRoutersGtfsShapes.class);
 	/**
 	 * If a link has a route with the same transport mode as the transit route,
 	 * the link's travel cost is multiplied by this factor.
 	 */
-	private static final double OSM_PT_LINK_TRAVEL_COST_FACTOR = 0.7;
-
-
-	protected static Logger log = Logger.getLogger(ScheduleRoutersWithShapes.class);
-
+	private final double osmPtLinkTravelCostFactor;
 	// standard fields
 	private final PublicTransitMappingConfigGroup config;
 	private final TransitSchedule schedule;
@@ -68,11 +65,11 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 	private final Map<String, OsmRouter> osmRouters = new HashMap<>();
 
 
-
-	public ScheduleRoutersOsmAttributes(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network) {
+	public ScheduleRoutersOsmAttributes(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network, double osmPtLinkTravelCostFactor) {
 		this.config = config;
 		this.schedule = schedule;
 		this.network = network;
+		this.osmPtLinkTravelCostFactor = osmPtLinkTravelCostFactor;
 	}
 	/**
 	 * Load path calculators for all transit routes
@@ -153,7 +150,7 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 			Set<String> route = CollectionUtils.stringToSet((String) attributes.getAttribute(OsmConverterConfigGroup.LINK_ATTRIBUTE_RELATION_ROUTE));
 
 			if(route.contains(scheduleMode) || routeMaster.contains(scheduleMode)) {
-				travelCost *= OSM_PT_LINK_TRAVEL_COST_FACTOR;
+				travelCost *= osmPtLinkTravelCostFactor;
 			}
 
 			return travelCost;

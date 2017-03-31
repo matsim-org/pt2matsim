@@ -13,7 +13,7 @@ import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
-import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWithShapes;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersGtfsShapes;
 import org.matsim.pt2matsim.tools.NetworkToolsTest;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ScheduleToolsTest;
@@ -43,7 +43,7 @@ public class PTMapperShapesTest {
 		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
 
 		Map<Id<RouteShape>, RouteShape> shapes = ShapeToolsTest.initShapes();
-		ScheduleRouters scheduleRouters = new ScheduleRoutersWithShapes(ptmConfig, schedule, network, shapes, 10.0, 99);
+		ScheduleRouters scheduleRouters = new ScheduleRoutersGtfsShapes(ptmConfig, schedule, network, shapes, 10.0, 99);
 
 		new PTMapper(ptmConfig, schedule, network, scheduleRouters).run();
 

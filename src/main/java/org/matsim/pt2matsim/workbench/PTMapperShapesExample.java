@@ -12,7 +12,7 @@ import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.PTMapper;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
-import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWithShapes;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersGtfsShapes;
 import org.matsim.pt2matsim.plausibility.MappingAnalysis;
 import org.matsim.pt2matsim.run.shp.Schedule2ShapeFile;
 import org.matsim.pt2matsim.tools.NetworkTools;
@@ -100,7 +100,7 @@ public class PTMapperShapesExample {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(unmappedScheduleFile);
 		Network network = NetworkTools.readNetwork(networkInput);
 
-		ScheduleRouters routers = new ScheduleRoutersWithShapes(config, schedule, network, ShapeTools.readShapesFile(gtfsFolder + "shapes.txt", coordSys), 50);
+		ScheduleRouters routers = new ScheduleRoutersGtfsShapes(config, schedule, network, ShapeTools.readShapesFile(gtfsFolder + "shapes.txt", coordSys), 50);
 
 		PTMapper ptMapper = new PTMapper(config, schedule, network, routers);
 //		ExtractDebugSchedule.run(schedule, debugLineId.toString(), debugRouteId.toString());
