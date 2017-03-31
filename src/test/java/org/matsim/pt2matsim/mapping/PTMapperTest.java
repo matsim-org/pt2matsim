@@ -20,6 +20,8 @@ import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 import java.util.Collection;
 import java.util.List;
 
+import static org.matsim.pt2matsim.tools.ScheduleToolsTest.ROUTE_B;
+
 /**
  * @author polettif
  */
@@ -84,7 +86,7 @@ public class PTMapperTest {
 				TransitRoute initRoute = initSchedule.getTransitLines().get(l.getId()).getRoutes().get(r.getId());
 				List<Id<Link>> initLinkIds = ScheduleTools.getTransitRouteLinkIds(initRoute);
 				List<Id<Link>> linkIds = ScheduleTools.getTransitRouteLinkIds(r);
-				if(!r.getId().toString().equals("routeB")) { // route B cantt be guessed by the mapper because there's not enough information
+				if(!r.getId().equals(ROUTE_B)) { // route B cantt be guessed by the mapper because there's not enough information
 					Assert.assertEquals(initLinkIds, linkIds);
 				}
 			}

@@ -85,14 +85,13 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 	@Override
 	public LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNodeId, Id<Node> toNodeId, TransitLine transitLine, TransitRoute transitRoute) {
 		Network n = networksByMode.get(transitRoute.getTransportMode());
+		if(n == null) return null;
+
 		Node fromNode = n.getNodes().get(fromNodeId);
 		Node toNode = n.getNodes().get(toNodeId);
+		if(fromNode == null || toNode == null) return null;
 
-		if(fromNode != null && toNode != null) {
-			return pathCalculatorsByMode.get(transitRoute.getTransportMode()).calcPath(fromNode, toNode);
-		} else {
-			return null;
-		}
+		return pathCalculatorsByMode.get(transitRoute.getTransportMode()).calcPath(fromNode, toNode);
 	}
 
 	@Override

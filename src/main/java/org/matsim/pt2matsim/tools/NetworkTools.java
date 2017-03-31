@@ -541,7 +541,10 @@ public final class NetworkTools {
 			config.addParameterSet(mra);
 		}
 
-		return new ScheduleRoutersTransportMode(config, schedule, network);
+		ScheduleRouters scheduleRouters = new ScheduleRoutersTransportMode(config, schedule, network);
+		scheduleRouters.load();
+
+		return scheduleRouters;
 	}
 
 	/**

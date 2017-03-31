@@ -66,9 +66,9 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private static final String REMOVE_NOT_USED_STOP_FACILITIES = "removeNotUsedStopFacilities";
 
 	// default values
-	private Map<String, Set<String>> modeRoutingAssignment = null;
-	private Map<String, LinkCandidateCreatorParams> linkCandidateParams = null;
-	private Set<ManualLinkCandidates> manualLinkCandidates = null;
+	private Map<String, Set<String>> modeRoutingAssignment = new HashMap<>();
+	private Map<String, LinkCandidateCreatorParams> linkCandidateParams = new HashMap<>();
+	private Set<ManualLinkCandidates> manualLinkCandidates = new HashSet<>();
 
 	private Set<String> scheduleFreespeedModes = PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE_AS_SET;
 	private Set<String> modesToKeepOnCleanUp = new HashSet<>();
@@ -85,7 +85,10 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private String outputStreetNetworkFile = null;
 	private String outputScheduleFile = null;
 	private TravelCostType travelCostType = TravelCostType.linkLength;
-	public PublicTransitMappingConfigGroup() {	super(GROUP_NAME); }
+
+	public PublicTransitMappingConfigGroup() {
+		super(GROUP_NAME);
+	}
 
 	/**
 	 * @return a new default public transit mapping config
@@ -125,26 +128,26 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 						"\t\tlisted in this set (typically only car). Separated by comma.");
 		map.put(COMBINE_PT_MODES,
 				"Defines whether at the end of mapping, all non-car link modes (bus, rail, etc) \n" +
-						"\t\tshould be replaced with pt (true) or not. Default: "+combinePtModes);
+						"\t\tshould be replaced with pt (true) or not. Default: " + combinePtModes);
 		map.put(ADD_PT_MODE,
 				"The mode \"pt\" is added to all links used by public transit after mapping if true. \n" +
-						"\t\tIs not executed if "+COMBINE_PT_MODES+" is true. Default: "+addPtMode);
+						"\t\tIs not executed if " + COMBINE_PT_MODES + " is true. Default: " + addPtMode);
 		map.put(TRAVEL_COST_TYPE,
-				"Defines which link attribute should be used for routing. Possible values \""+ TravelCostType.linkLength+"\" (default) \n" +
-						"\t\tand \""+ TravelCostType.travelTime+"\".");
+				"Defines which link attribute should be used for routing. Possible values \"" + TravelCostType.linkLength + "\" (default) \n" +
+						"\t\tand \"" + TravelCostType.travelTime + "\".");
 		map.put(NODE_SEARCH_RADIUS,
 				"Defines the radius [meter] from a stop facility within nodes are searched. Values up to 2000 don't \n" +
 						"\t\thave any significant impact on performance.");
 		map.put(SCHEDULE_FREESPEED_MODES,
 				"After the schedule has been mapped, the free speed of links can be set according to the necessary travel \n" +
 						"\t\ttimes given by the transit schedule. The freespeed of a link is set to the minimal value needed by all \n" +
-						"\t\ttransit routes passing using it. This is performed for \""+ PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE + "\" automatically, additional \n" +
+						"\t\ttransit routes passing using it. This is performed for \"" + PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE + "\" automatically, additional \n" +
 						"\t\tmodes (rail is recommended) can be added, separated by commas.");
 		map.put(MAX_TRAVEL_COST_FACTOR,
-				"If all paths between two stops have a [travelCost] > ["+MAX_TRAVEL_COST_FACTOR+"] * [minTravelCost], \n" +
-						"\t\tan artificial link is created. If "+ TRAVEL_COST_TYPE +" is " + TravelCostType.travelTime + "\n" +
-						"\t\tminTravelCost is the travelTime between stops from schedule. If "+ TRAVEL_COST_TYPE +" is \n" +
-						"\t\t"+ TravelCostType.linkLength + " minTravel cost is the beeline distance.");
+				"If all paths between two stops have a [travelCost] > [" + MAX_TRAVEL_COST_FACTOR + "] * [minTravelCost], \n" +
+						"\t\tan artificial link is created. If " + TRAVEL_COST_TYPE + " is " + TravelCostType.travelTime + "\n" +
+						"\t\tminTravelCost is the travelTime between stops from schedule. If " + TRAVEL_COST_TYPE + " is \n" +
+						"\t\t" + TravelCostType.linkLength + " minTravel cost is the beeline distance.");
 		map.put(NUM_OF_THREADS,
 				"Defines the number of numOfThreads that should be used for pseudoRouting. Default: 2.");
 		map.put(NETWORK_FILE, "Path to the input network file. Not needed if PTMapper is called within another class.");
@@ -157,36 +160,40 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 				"If true, stop facilities that are not used by any transit route are removed from the schedule. Default: true");
 		map.put(MANUAL_LINK_CANDIDATE_CSV_FILE,
 				"Manual link candidates can be defined in a csv file. Each line contains stopFacilityId, modes and linkIds. Separator is \";\"\n" +
-				"\t\tExample line: 879843;bus,tram;565,566,5489,5488,321,45");
+						"\t\tExample line: 879843;bus,tram;565,566,5489,5488,321,45");
 		return map;
 	}
 
 	@Override
 	public ConfigGroup createParameterSet(final String type) {
 		switch(type) {
-			case LinkCandidateCreatorParams.SET_NAME :
+			case LinkCandidateCreatorParams.SET_NAME:
 				return new LinkCandidateCreatorParams();
-			case ModeRoutingAssignment.SET_NAME :
+			case ModeRoutingAssignment.SET_NAME:
 				return new ModeRoutingAssignment();
-			case ManualLinkCandidates.SET_NAME :
+			case ManualLinkCandidates.SET_NAME:
 				return new ManualLinkCandidates();
 			default:
 				throw new IllegalArgumentException("Unknown parameterset name!");
 		}
 	}
 
+	@Override
+	public void addParameterSet(final ConfigGroup set) {
+		super.addParameterSet(set);
+		loadParameterSets();
+	}
+
 	/**
 	 * Loads the parameter sets for ModeRoutingAssignment, LinkCandidateCreator and ManualLinkCandidates for
 	 * easier access
 	 */
-	public void loadParameterSets() {
-		modeRoutingAssignment = new HashMap<>();
+	private void loadParameterSets() {
 		for(ConfigGroup e : this.getParameterSets(PublicTransitMappingConfigGroup.ModeRoutingAssignment.SET_NAME)) {
 			ModeRoutingAssignment mra = (ModeRoutingAssignment) e;
 			modeRoutingAssignment.put(mra.getScheduleMode(), mra.getNetworkModes());
 		}
 
-		linkCandidateParams = new HashMap<>();
 		for(ConfigGroup e : this.getParameterSets(LinkCandidateCreatorParams.SET_NAME)) {
 			LinkCandidateCreatorParams lcp = (LinkCandidateCreatorParams) e;
 			linkCandidateParams.put(lcp.getScheduleMode(), lcp);
@@ -196,13 +203,12 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 			loadManualLinkCandidatesCsv();
 		}
 
-		manualLinkCandidates = new HashSet<>();
-			for(ConfigGroup e : this.getParameterSets(PublicTransitMappingConfigGroup.ManualLinkCandidates.SET_NAME)) {
-				PublicTransitMappingConfigGroup.ManualLinkCandidates f = (PublicTransitMappingConfigGroup.ManualLinkCandidates) e;
-				if(f.getStopFacilityId() != null) {
-					manualLinkCandidates.add(f);
-				}
+		for(ConfigGroup e : this.getParameterSets(PublicTransitMappingConfigGroup.ManualLinkCandidates.SET_NAME)) {
+			PublicTransitMappingConfigGroup.ManualLinkCandidates f = (PublicTransitMappingConfigGroup.ManualLinkCandidates) e;
+			if(f.getStopFacilityId() != null) {
+				manualLinkCandidates.add(f);
 			}
+		}
 	}
 
 	/**
@@ -306,10 +312,14 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	 * should be replaced with pt (true) or not. Default: false.
 	 */
 	@StringGetter(COMBINE_PT_MODES)
-	public boolean getCombinePtModes() { return combinePtModes; }
+	public boolean getCombinePtModes() {
+		return combinePtModes;
+	}
 
 	@StringSetter(COMBINE_PT_MODES)
-	public void setCombinePtModes(boolean v) { this.combinePtModes = v; }
+	public void setCombinePtModes(boolean v) {
+		this.combinePtModes = v;
+	}
 
 	/**
 	 *
@@ -421,7 +431,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	 */
 	@StringGetter(MANUAL_LINK_CANDIDATE_CSV_FILE)
 	public String getManualLinkCandidateCsvFileStr() {
-		return this.manualLinkCandidateCsvFile== null ? "" : this.manualLinkCandidateCsvFile;
+		return this.manualLinkCandidateCsvFile == null ? "" : this.manualLinkCandidateCsvFile;
 	}
 
 	public String getManualLinkCandidateCsvFile() {
@@ -430,7 +440,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 
 	@StringSetter(MANUAL_LINK_CANDIDATE_CSV_FILE)
 	public void setManualLinkCandidateCsvFile(String file) {
-		this.manualLinkCandidateCsvFile = file.equals("") ? null :file;
+		this.manualLinkCandidateCsvFile = file.equals("") ? null : file;
 	}
 
 	/**
@@ -545,21 +555,21 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 					"For which schedule mode these settings apply.");
 			map.put(NETWORK_MODES,
 					"Only links with at least one of these modes are considered as link candidate for this schedule mode.\n" +
-					"\t\t\tSeparate more than one stop with comma.");
+							"\t\t\tSeparate more than one stop with comma.");
 			map.put(LINK_DISTANCE_TOLERANCE,
-					"After " +MAX_NCLOSEST_LINKS +" link candidates have been found, additional link \n" +
-					"\t\t\tcandidates within ["+LINK_DISTANCE_TOLERANCE+"] * [distance to the Nth link] are added to the set.\n" +
-					"\t\t\tMust be >= 1.");
+					"After " + MAX_NCLOSEST_LINKS + " link candidates have been found, additional link \n" +
+							"\t\t\tcandidates within [" + LINK_DISTANCE_TOLERANCE + "] * [distance to the Nth link] are added to the set.\n" +
+							"\t\t\tMust be >= 1.");
 			map.put(MAX_NCLOSEST_LINKS,
 					"Number of link candidates considered for all stops, depends on accuracy of stops and desired \n" +
-					"\t\t\tperformance. Somewhere between 4 and 10 seems reasonable for bus stops, depending on the accuracy of the stop \n" +
-					"\t\t\tfacility coordinates and performance desires. Default: " + maxNClosestLinks);
+							"\t\t\tperformance. Somewhere between 4 and 10 seems reasonable for bus stops, depending on the accuracy of the stop \n" +
+							"\t\t\tfacility coordinates and performance desires. Default: " + maxNClosestLinks);
 			map.put(MAX_LINK_CANDIDATE_DISTANCE,
 					"The maximal distance [meter] a link candidate is allowed to have from the stop facility. No link candidate\n" +
-					"\t\t\tbeyond this distance are added.");
+							"\t\t\tbeyond this distance are added.");
 			map.put(USE_ARTIFICIAL_LOOP_LINK,
-					"Define if a loop link for all stop facilities for the schedule mode should be created. All other parameters \n"+
-					"\t\t\tare ignored if true. The node for the loop link is set on the coordinate of the stop facility.");
+					"Define if a loop link for all stop facilities for the schedule mode should be created. All other parameters \n" +
+							"\t\t\tare ignored if true. The node for the loop link is set on the coordinate of the stop facility.");
 			return map;
 		}
 
@@ -581,6 +591,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		public String getModesStr() {
 			return CollectionUtils.setToString(this.networkModes);
 		}
+
 		public Set<String> getNetworkModes() {
 			return this.networkModes;
 		}
@@ -653,7 +664,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	/**
 	 * Parameterset that define which network transport modes the router
 	 * can use for each schedule transport mode.<p/>
-	 *
+	 * <p>
 	 * Network transport modes are the ones in {@link Link#getAllowedModes()}, schedule
 	 * transport modes are from {@link TransitRoute#getTransportMode()}.
 	 */
@@ -681,8 +692,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 			Map<String, String> map = super.getComments();
 			map.put(NETWORK_MODES,
 					"Transit Routes with the given scheduleMode can only use links with at least one of the network modes\n" +
-					"\t\t\tdefined here. Separate multiple modes by comma. If no network modes are defined, the transit route will\n" +
-					"\t\t\tuse artificial links.");
+							"\t\t\tdefined here. Separate multiple modes by comma. If no network modes are defined, the transit route will\n" +
+							"\t\t\tuse artificial links.");
 			return map;
 		}
 
@@ -690,6 +701,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		public String getScheduleMode() {
 			return scheduleMode;
 		}
+
 		@StringSetter(SCHEDULE_MODE)
 		public void setScheduleMode(String scheduleMode) {
 			this.scheduleMode = scheduleMode;
@@ -754,7 +766,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 					"The links, comma separated");
 			map.put(REPLACE,
 					"If true, the link candidates found by the the link candidate creator are replaced with the links\n" +
-					"\t\t\tdefined here. If false, the manual links are added to the set.");
+							"\t\t\tdefined here. If false, the manual links are added to the set.");
 			return map;
 		}
 
@@ -832,6 +844,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		public boolean doesReplaceCandidates() {
 			return replace;
 		}
+
 		@StringSetter(REPLACE)
 		public void setReplaceCandidates(boolean v) {
 			this.replace = v;

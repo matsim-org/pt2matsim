@@ -123,7 +123,6 @@ public class PTMapper {
 		}
 
 		PTMapperTools.setLogLevels();
-		config.loadParameterSets();
 
 		log.info("======================================");
 		log.info("Mapping transit schedule to network...");

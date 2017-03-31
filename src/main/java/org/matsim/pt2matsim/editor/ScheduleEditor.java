@@ -36,6 +36,15 @@ import java.io.IOException;
  */
 public interface ScheduleEditor {
 
+	// commands
+	String RR_VIA_LINK = "rerouteViaLink";
+	String RR_FROM_STOP = "rerouteFromStop";
+	String REFRESH_TRANSIT_ROUTE = "refreshTransitRoute";
+	String ALL_TRANSIT_ROUTES_ON_LINK = "allTransitRoutesOnLink";
+	String CHANGE_REF_LINK = "changeRefLink";
+	String ADD_LINK = "addLink";
+	String COMMENT_START = "//";
+
 	/**
 	 * Parses and executes the given csv file
 	 */
