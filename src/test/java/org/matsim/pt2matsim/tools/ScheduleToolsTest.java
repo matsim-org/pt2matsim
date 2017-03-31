@@ -21,6 +21,12 @@ import java.util.List;
  */
 public class ScheduleToolsTest {
 
+	public static final Id<TransitLine> LINE_A = Id.create("lineA", TransitLine.class);
+	public static final Id<TransitLine> LINE_B = Id.create("lineB", TransitLine.class);
+	public static final Id<TransitRoute> ROUTE_A1 = Id.create("routeA1", TransitRoute.class);
+	public static final Id<TransitRoute> ROUTE_A2 = Id.create("routeA2", TransitRoute.class);
+	public static final Id<TransitRoute> ROUTE_B = Id.create("routeB", TransitRoute.class);
+
 	private String input = "test/analysis/";
 
 	private Network network;
@@ -70,9 +76,9 @@ public class ScheduleToolsTest {
 
 
 		// create lines
-		TransitLine lineA = fac.createTransitLine(Id.create("lineA", TransitLine.class));
+		TransitLine lineA = fac.createTransitLine(LINE_A);
 		transitSchedule.addTransitLine(lineA);
-		TransitLine lineB = fac.createTransitLine(Id.create("lineB", TransitLine.class));
+		TransitLine lineB = fac.createTransitLine(LINE_B);
 		transitSchedule.addTransitLine(lineB);
 
 		// route A1
@@ -88,7 +94,7 @@ public class ScheduleToolsTest {
 		a1stops.add(fac.createTransitRouteStop(stop2DA, 60.0, 60.0));
 		a1stops.add(fac.createTransitRouteStop(stop3AX, 120.0, 120.0));
 		a1stops.add(fac.createTransitRouteStop(stop4BI, 180.0, 180.0));
-		TransitRoute routeA1 = fac.createTransitRoute(Id.create("routeA1", TransitRoute.class), networkRouteA1, a1stops, "bus");
+		TransitRoute routeA1 = fac.createTransitRoute(ROUTE_A1, networkRouteA1, a1stops, "bus");
 		routeA1.addDeparture(fac.createDeparture(Id.create("a1_1", Departure.class), 8 * 3600));
 		routeA1.addDeparture(fac.createDeparture(Id.create("a1_2", Departure.class), 11 * 3600));
 		routeA1.addDeparture(fac.createDeparture(Id.create("a1_3", Departure.class), 14 * 3600));
@@ -108,7 +114,7 @@ public class ScheduleToolsTest {
 		a2stops.add(fac.createTransitRouteStop(stop3XA, 60.0, 60.0));
 		a2stops.add(fac.createTransitRouteStop(stop2AD, 120.0, 120.0));
 		a2stops.add(fac.createTransitRouteStop(stop1DE, 180.0, 180.0));
-		TransitRoute routeA2 = fac.createTransitRoute(Id.create("routeA2", TransitRoute.class), networkRouteA2, a2stops, "bus");
+		TransitRoute routeA2 = fac.createTransitRoute(ROUTE_A2, networkRouteA2, a2stops, "bus");
 		routeA2.addDeparture(fac.createDeparture(Id.create("a2_1", Departure.class), 9 * 3600));
 		routeA2.addDeparture(fac.createDeparture(Id.create("a2_2", Departure.class), 12 * 3600));
 		routeA2.addDeparture(fac.createDeparture(Id.create("a2_3", Departure.class), 15 * 3600));
@@ -133,7 +139,7 @@ public class ScheduleToolsTest {
 		bStops.add(fac.createTransitRouteStop(stop5AH, 120.0, 120.0));
 		bStops.add(fac.createTransitRouteStop(stop6ZI, 180.0, 180.0));
 		bStops.add(fac.createTransitRouteStop(stop4IB, 240.0, 240.0));
-		TransitRoute routeB = fac.createTransitRoute(Id.create("routeB", TransitRoute.class), networkRouteB, bStops, "bus");
+		TransitRoute routeB = fac.createTransitRoute(ROUTE_B, networkRouteB, bStops, "bus");
 		routeB.addDeparture(fac.createDeparture(Id.create("b_1", Departure.class), 7 * 3600));
 		routeB.addDeparture(fac.createDeparture(Id.create("b_2", Departure.class), 10 * 3600));
 		routeB.addDeparture(fac.createDeparture(Id.create("b_3", Departure.class), 13 * 3600));

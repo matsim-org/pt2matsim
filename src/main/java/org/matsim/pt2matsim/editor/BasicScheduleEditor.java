@@ -51,14 +51,6 @@ import java.util.stream.Collectors;
  */
 public class BasicScheduleEditor implements ScheduleEditor {
 
-	// commands
-	public static final String RR_VIA_LINK = "rerouteViaLink";
-	public static final String RR_FROM_STOP = "rerouteFromStop";
-	public static final String REFRESH_TRANSIT_ROUTE = "refreshTransitRoute";
-	public static final String ALL_TRANSIT_ROUTES_ON_LINK = "allTransitRoutesOnLink";
-	public static final String CHANGE_REF_LINK = "changeRefLink";
-	public static final String ADD_LINK = "addLink";
-	public static final String COMMENT_START = "//";
 	private static final String SUFFIX_PATTERN = PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES_REGEX;
 	private static final String SUFFIX = PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES;
 	protected static Logger log = Logger.getLogger(RunScheduleEditor.class);
@@ -126,7 +118,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 		 */
 		if(RR_VIA_LINK.equals(cmd[0])) {
 			if(cmd.length == 5) {
-				rerouteViaLink(getTransitLine(cmd[1]), getTransitRoute(cmd[1], cmd[2]), cmd[3], cmd[4]);
+				rerouteViaLink(getTransitLine(cmd[1]), getTransitRoute(cmd[1], cmd[2]), Id.createLinkId(cmd[3]), Id.createLinkId(cmd[4]));
 			} else {
 				throw new IllegalArgumentException("Incorrect number of arguments for " + cmd[0] + "! 5 needed, " + cmd.length + " given");
 			}
@@ -150,7 +142,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 		 * ["changeRefLink"] ["allTransitRoutesOnLink"] [linkId] [ParentId] [newlinkId]
 		 */
 		else if(CHANGE_REF_LINK.equals(cmd[0])) {
-			if("".equals(cmd[3])) {
+			if(cmd.length == 3 || "".equals(cmd[3])) {
 				changeRefLink(cmd[1], cmd[2]);
 			} else if(cmd.length == 5) {
 				switch (cmd[1]) {
@@ -261,9 +253,6 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			}
 		}
 	}
-	public void rerouteViaLink(TransitLine transitLine, TransitRoute transitRoute, String oldLinkId, String newLinkId) {
-		rerouteViaLink(transitLine, transitRoute, Id.createLinkId(oldLinkId), Id.createLinkId(newLinkId));
-	}
 
 	/**
 	 *
@@ -291,7 +280,6 @@ public class BasicScheduleEditor implements ScheduleEditor {
 
 		List<Id<Link>> newLinkSequence = new ArrayList<>();
 		if(path1 != null && path2 != null) {
-			newLinkSequence.add(routeBeforeCut.getStartLinkId());
 			newLinkSequence.addAll(routeBeforeCut.getLinkIds());
 			newLinkSequence.add(routeBeforeCut.getEndLinkId());
 			newLinkSequence.addAll(PTMapperTools.getLinkIdsFromPath(path1));
@@ -300,7 +288,6 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			newLinkSequence.add(routeAfterCut.getStartLinkId());
 			newLinkSequence.addAll(routeAfterCut.getLinkIds());
 			newLinkSequence.add(routeAfterCut.getEndLinkId());
-			newLinkSequence.add(transitRoute.getRoute().getEndLinkId());
 			transitRoute.setRoute(RouteUtils.createNetworkRoute(newLinkSequence, network));
 		}
 	}
@@ -567,7 +554,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	}
 
 	/**
-	 * Container class for parent a stop facility (are most likely
+	 * Container class for a parent stop facility (most likely
 	 * not actual facilities in the schedule)
 	 */
 	private class ParentStopFacility {
