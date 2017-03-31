@@ -171,22 +171,17 @@ public class LinkCandidateImpl implements LinkCandidate {
 		}
 	}
 
-
 	@Override
-	public boolean equals(Object obj) {
-		if(this == obj)
-			return true;
-		if(obj == null)
-			return false;
-		if(!(obj instanceof LinkCandidate))
-			return false;
+	public boolean equals(Object o) {
+		if(this == o) return true;
+		if(o == null || getClass() != o.getClass()) return false;
 
-		LinkCandidate other = (LinkCandidate) obj;
-		return id.equals(other.getId());
+		LinkCandidateImpl that = (LinkCandidateImpl) o;
+		return getId().equals(that.getId());
 	}
 
 	@Override
 	public int hashCode() {
-		return id.hashCode();
+		return getId().hashCode();
 	}
 }

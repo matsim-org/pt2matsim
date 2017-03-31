@@ -39,7 +39,7 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 	// schedule values
 	public final Id<PseudoRouteStop> id;
 	private final LinkCandidate linkCandidate;
-	private final String name;
+
 	private final Id<Link> linkId;
 	private final double departureOffset;
 	private final double arrivalOffset;
@@ -50,7 +50,7 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 	private final String stopPostAreaId;
 	private final Id<TransitStopFacility> parentStopFacilityId;
 	private final double stopFacilityDistance;
-	public double travelCostToSource = Double.MAX_VALUE; // MAX_VALUE assumed to be infinity
+	public double travelCostToSource = Double.MAX_VALUE;
 	public PseudoRouteStop previous = null;
 
 	/**
@@ -59,7 +59,6 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 	 */
 	/*package*/ PseudoRouteStopImpl(int order, TransitRouteStop routeStop, LinkCandidate linkCandidate) {
 		this.id = Id.create("[" + Integer.toString(order) + "]" + linkCandidate.getId(), PseudoRouteStop.class);
-		this.name = routeStop.getStopFacility().getName() + " (" + linkCandidate.getLinkId() + ")";
 		this.linkId = linkCandidate.getLinkId();
 		this.stopFacilityDistance = linkCandidate.getStopFacilityDistance();
 
@@ -89,7 +88,6 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 		} else {
 			this.id = Id.create(PseudoGraphImpl.DESTINATION, PseudoRouteStop.class);
 		}
-		this.name = id;
 
 		previous = null;
 
@@ -206,27 +204,16 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if(this == obj)
-			return true;
-		if(obj == null)
-			return false;
+	public boolean equals(Object o) {
+		if(this == o) return true;
+		if(o == null || getClass() != o.getClass()) return false;
 
-		if(obj instanceof PseudoRouteStop) {
-			PseudoRouteStop other = (PseudoRouteStop) obj;
-			return id.equals(other.getId());
-		} else {
-			return false;
-		}
-	}
-
-	public double getStopFacilityDistance() {
-		return stopFacilityDistance;
+		PseudoRouteStopImpl that = (PseudoRouteStopImpl) o;
+		return getId().equals(that.getId());
 	}
 
 	@Override
 	public int hashCode() {
-		return id.toString().hashCode();
+		return getId().hashCode();
 	}
-
 }

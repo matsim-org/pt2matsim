@@ -47,7 +47,16 @@ public class StopImpl implements Stop {
 		this.lat = lat;
 		this.coord = new Coord(lon, lat);
 		this.name = name;
-		this.hash = (id + name).hashCode() + (int) lon * 1000 + (int) lat * 1000;
+
+		int result;
+		long temp;
+		result = getId().hashCode();
+		result = 31 * result + getName().hashCode();
+		temp = Double.doubleToLongBits(getLon());
+		result = 31 * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(getLat());
+		result = 31 * result + (int) (temp ^ (temp >>> 32));
+		this.hash = result;
 	}
 
 
@@ -116,19 +125,12 @@ public class StopImpl implements Stop {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if(this == obj)
-			return true;
-		if(obj == null)
-			return false;
-		if(getClass() != obj.getClass())
-			return false;
+	public boolean equals(Object o) {
+		if(this == o) return true;
+		if(o == null || getClass() != o.getClass()) return false;
 
-		Stop other = (Stop) obj;
-		return (other.getId().equals(id) &&
-				other.getLon() == lon &&
-				other.getLat() == lat &&
-				other.getName().equals(name));
+		StopImpl stop = (StopImpl) o;
+		return Double.compare(stop.getLon(), getLon()) == 0 && Double.compare(stop.getLat(), getLat()) == 0 && getId().equals(stop.getId()) && getName().equals(stop.getName());
 	}
 
 	@Override

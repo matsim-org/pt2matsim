@@ -169,16 +169,12 @@ public class ServiceImpl implements Service {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if(this == obj)
-			return true;
-		if(obj == null)
-			return false;
-		if(getClass() != obj.getClass())
-			return false;
+	public boolean equals(Object o) {
+		if(this == o) return true;
+		if(o == null || getClass() != o.getClass()) return false;
 
-		Service other = (Service) obj;
-		return (other.getId().equals(id));
+		Service that = (Service) o;
+		return (that.getId().equals(id));
 	}
 
 	@Override

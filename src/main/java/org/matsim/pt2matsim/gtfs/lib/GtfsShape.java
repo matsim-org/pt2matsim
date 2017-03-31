@@ -126,8 +126,7 @@ public class GtfsShape implements RouteShape {
 		if(this == o) return true;
 		if(o == null || getClass() != o.getClass()) return false;
 
-		RouteShape gtfsShape = (RouteShape) o;
-
+		GtfsShape gtfsShape = (GtfsShape) o;
 		return getId().equals(gtfsShape.getId()) && coordSorted.equals(gtfsShape.getCoordsSorted());
 	}
 

@@ -41,32 +41,31 @@ import static org.matsim.pt2matsim.workbench.PTMapperShapesExample.createPTMConf
  */
 public class ZVVexample {
 
-	private String base = "zvv/";
-	private String osmName = base + "osm/zurich.osm";
-	private String gtfsFolder = base + "gtfs/";
-	private String gtfsShapeFile = gtfsFolder + GtfsDefinitions.Files.SHAPES.fileName;
-	private String inputNetworkFile = base + "network/network_unmapped.xml.gz";
-	private String fullScheduleFileUM = base + "mts/schedule_unmapped_full.xml.gz";
-	private String inputScheduleFile = base + "mts/schedule_unmapped.xml.gz";
+	private static String base = "zvv/";
+	private static String osmName = base + "osm/zurich.osm";
+	private static String gtfsFolder = base + "gtfs/";
+	private static String gtfsShapeFile = gtfsFolder + GtfsDefinitions.Files.SHAPES.fileName;
+	private static String inputNetworkFile = base + "network/network_unmapped.xml.gz";
+	private static String fullScheduleFileUM = base + "mts/schedule_unmapped_full.xml.gz";
+	private static String inputScheduleFile = base + "mts/schedule_unmapped.xml.gz";
 
-	private String coordSys = "EPSG:2056";
-	private String outputNetwork1 = base + "output/standard_network.xml.gz";
-	private String outputSchedule1 = base + "output/standard_schedule.xml.gz";
-	private String outputNetwork2 = base + "output/shapes_network.xml.gz";
-	private String outputSchedule2 = base + "output/shapes_schedule.xml.gz";
-	private String outputNetwork3 = base + "output/osm_network.xml.gz";
-	private String outputSchedule3 = base + "output/osm_schedule.xml.gz";
-	private OsmData osmData;
+	private static String coordSys = "EPSG:2056";
+	private static String outputNetwork1 = base + "output/standard_network.xml.gz";
+	private static String outputSchedule1 = base + "output/standard_schedule.xml.gz";
+	private static String outputNetwork2 = base + "output/shapes_network.xml.gz";
+	private static String outputSchedule2 = base + "output/shapes_schedule.xml.gz";
+	private static String outputNetwork3 = base + "output/osm_network.xml.gz";
+	private static String outputSchedule3 = base + "output/osm_schedule.xml.gz";
+	private static OsmData osmData;
 
 	public static void main(String[] args) throws Exception {
-		ZVVexample obj = new ZVVexample();
-//		obj.convert();
-//		obj.runMappingStandard();
-		obj.runMappingShapes();
-//		obj.runMappingOsm();
+		convert();
+		runMappingStandard();
+		runMappingShapes();
+		runMappingOsm();
 	}
 
-	private void convert() {
+	private static void convert() {
 		// 1. 	convert OSM
 		// 1.1. setup config
 		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.createDefaultConfig();
@@ -112,7 +111,7 @@ public class ZVVexample {
 	/**
 	 * Runs a standard mapping
 	 */
-	public void runMappingStandard() {
+	public static void runMappingStandard() {
 		// Load schedule and network
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
@@ -135,7 +134,7 @@ public class ZVVexample {
 	/**
 	 * Maps a schedule with gtfs shape information to the network
 	 */
-	public void runMappingShapes() {
+	public static void runMappingShapes() {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
 
@@ -155,7 +154,7 @@ public class ZVVexample {
 	/**
 	 * Analyses the mapping result
 	 */
-	private void runAnalysis(String scheduleFile, String networkFile) {
+	private static void runAnalysis(String scheduleFile, String networkFile) {
 		MappingAnalysis analysis = new MappingAnalysis(
 				ScheduleTools.readTransitSchedule(scheduleFile),
 				NetworkTools.readNetwork(networkFile),
@@ -169,7 +168,7 @@ public class ZVVexample {
 	/**
 	 * Maps a schedule using osm pt information of the network
 	 */
-	public void runMappingOsm() {
+	public static void runMappingOsm() {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
 
