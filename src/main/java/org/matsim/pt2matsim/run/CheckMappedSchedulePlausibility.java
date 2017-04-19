@@ -107,7 +107,7 @@ public final class CheckMappedSchedulePlausibility {
 		check.writeResultShapeFiles(outputFolder+"shp/warnings/");
 
 		Schedule2ShapeFile schedule2shp = new Schedule2ShapeFile(coordinateSystem, schedule, network);
-		schedule2shp.routes2Polylines(outputFolder+"shp/schedule/TransitRoutes.shp");
+		schedule2shp.routes2Polylines(outputFolder+"shp/schedule/TransitRoutes.shp", true);
 		schedule2shp.stopFacilities2Points(outputFolder+"shp/schedule/StopFacilities.shp");
 		schedule2shp.stopRefLinks2Polylines(outputFolder+"shp/schedule/StopFacilities_refLinks.shp");
 

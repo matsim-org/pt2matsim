@@ -47,14 +47,12 @@ public class Schedule2ShapeFile {
 	private final TransitSchedule schedule;
 	private final Network network;
 	private final String crs;
-	private final boolean useNetworkLinks;
 	private Map<TransitStopFacility, Set<Id<TransitRoute>>> routesOnStopFacility = new HashMap<>();
 
 	public Schedule2ShapeFile(String crs, final TransitSchedule schedule, final Network network) {
 		this.schedule = schedule;
 		this.network = network;
 		this.crs = crs;
-		this.useNetworkLinks = network != null;
 	}
 
 	/**
@@ -91,7 +89,7 @@ public class Schedule2ShapeFile {
 
 		Schedule2ShapeFile s2s = new Schedule2ShapeFile(crs, schedule, network);
 
-		s2s.routes2Polylines(outputFolder + "transitRoutes.shp");
+		s2s.routes2Polylines(outputFolder + "transitRoutes.shp", network != null);
 		s2s.stopFacilities2Points(outputFolder + "stopFacilities.shp");
 		s2s.stopRefLinks2Polylines(outputFolder + "refLinks.shp");
 		s2s.convertNetwork(outputFolder);
@@ -100,7 +98,7 @@ public class Schedule2ShapeFile {
 	public static void run(String crs, String outputFolder, TransitSchedule schedule, Network network) {
 		Schedule2ShapeFile s2s = new Schedule2ShapeFile(crs, schedule, network);
 
-		s2s.routes2Polylines(outputFolder + "transitRoutes.shp");
+		s2s.routes2Polylines(outputFolder + "transitRoutes.shp", network != null);
 		s2s.stopFacilities2Points(outputFolder + "stopFacilities.shp");
 		s2s.stopRefLinks2Polylines(outputFolder + "refLinks.shp");
 		s2s.convertNetwork(outputFolder);
@@ -110,21 +108,21 @@ public class Schedule2ShapeFile {
 	 * Converts reference links to polylines.
 	 */
 	public void stopRefLinks2Polylines(String outputFile) {
-		if(useNetworkLinks) {
-			Collection<SimpleFeature> lineFeatures = new ArrayList<>();
+		Collection<SimpleFeature> lineFeatures = new ArrayList<>();
 
-			PolylineFeatureFactory polylineFeatureFactory = new PolylineFeatureFactory.Builder()
-					.setName("StopFacilities")
-					.setCrs(MGC.getCRS(crs))
-					.addAttribute("id", String.class)
-					.addAttribute("name", String.class)
-					.addAttribute("linkId", String.class)
-					.addAttribute("postAreaId", String.class)
-					.addAttribute("isBlocking", Boolean.class)
-					.addAttribute("routes", String.class)
-					.create();
+		PolylineFeatureFactory polylineFeatureFactory = new PolylineFeatureFactory.Builder()
+				.setName("StopFacilities")
+				.setCrs(MGC.getCRS(crs))
+				.addAttribute("id", String.class)
+				.addAttribute("name", String.class)
+				.addAttribute("linkId", String.class)
+				.addAttribute("postAreaId", String.class)
+				.addAttribute("isBlocking", Boolean.class)
+				.addAttribute("routes", String.class)
+				.create();
 
-			for(TransitStopFacility stopFacility : schedule.getFacilities().values()) {
+		for(TransitStopFacility stopFacility : schedule.getFacilities().values()) {
+			if(stopFacility.getLinkId() != null) {
 				Link refLink = network.getLinks().get(stopFacility.getLinkId());
 
 				Coordinate[] coordinates = new Coordinate[2];
@@ -143,9 +141,9 @@ public class Schedule2ShapeFile {
 				lf.setAttribute("isBlocking", stopFacility.getIsBlockingLane());
 				lineFeatures.add(lf);
 			}
-
-			ShapeFileWriter.writeGeometries(lineFeatures, outputFile);
 		}
+
+		ShapeFileWriter.writeGeometries(lineFeatures, outputFile);
 	}
 
 
@@ -174,7 +172,7 @@ public class Schedule2ShapeFile {
 			pf.setAttribute("postAreaId", stopFacility.getStopPostAreaId());
 			pf.setAttribute("isBlocking", stopFacility.getIsBlockingLane());
 
-			if(useNetworkLinks) pf.setAttribute("linkId", stopFacility.getLinkId().toString());
+			if(stopFacility.getLinkId() != null) pf.setAttribute("linkId", stopFacility.getLinkId().toString());
 
 			if(routesOnStopFacility.get(stopFacility) != null) {
 				pf.setAttribute("routes", CollectionUtils.idSetToString(routesOnStopFacility.get(stopFacility)));
@@ -188,7 +186,7 @@ public class Schedule2ShapeFile {
 	/**
 	 * Converts the transit routes to polylines
 	 */
-	public void routes2Polylines(String outputFile) {
+	public void routes2Polylines(String outputFile, boolean useNetworkLinks) {
 		Collection<SimpleFeature> features = new ArrayList<>();
 
 		PolylineFeatureFactory ff = new PolylineFeatureFactory.Builder()
@@ -207,26 +205,24 @@ public class Schedule2ShapeFile {
 					MapUtils.getSet(stop.getStopFacility(), routesOnStopFacility).add(transitRoute.getId());
 				}
 
-				Coordinate[] coordinates = getCoordinatesFromRoute(transitRoute);
-
-				if(coordinates == null) {
-					if(useNetworkLinks)
+				Coordinate[] coordinates;
+				double simLength = 0.0;
+				if(useNetworkLinks) {
+					coordinates = getCoordinatesFromRoute(transitRoute);
+					if(coordinates == null) {
 						log.warn("No links found for route " + transitRoute.getId() + " on line " + transitLine.getId());
-					Coordinate[] stopFacilitiesCoordinates = getCoordinatesFromStopFacilities(transitRoute);
-					SimpleFeature f = ff.createPolyline(stopFacilitiesCoordinates);
-					f.setAttribute("line", transitLine.getId().toString());
-					f.setAttribute("route", transitRoute.getId().toString());
-					f.setAttribute("mode", transitRoute.getTransportMode());
-					f.setAttribute("simLength", "0");
-					features.add(f);
+					}
+					simLength = getRouteLength(transitRoute);
 				} else {
-					SimpleFeature f = ff.createPolyline(coordinates);
-					f.setAttribute("line", transitLine.getId().toString());
-					f.setAttribute("route", transitRoute.getId().toString());
-					f.setAttribute("mode", transitRoute.getTransportMode());
-					f.setAttribute("simLength", getRouteLength(transitRoute));
-					features.add(f);
+					coordinates = getCoordinatesFromStopFacilities(transitRoute);
 				}
+
+				SimpleFeature f = ff.createPolyline(coordinates);
+				f.setAttribute("line", transitLine.getId().toString());
+				f.setAttribute("route", transitRoute.getId().toString());
+				f.setAttribute("mode", transitRoute.getTransportMode());
+				f.setAttribute("simLength", simLength);
+				features.add(f);
 			}
 		}
 
