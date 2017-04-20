@@ -101,8 +101,10 @@ public class StopTimeImpl implements StopTime {
 
 	@Override
 	public int compareTo(StopTime o) {
-		if(!o.getTrip().getId().equals(trip.getId())) {
-			throw new IllegalAccessError("StopTimes do not belong to the same trip");
+		if(this.equals(o)) {
+			return 0;
+		} else if(!o.getTrip().getId().equals(trip.getId())) {
+			return this.getDepartureTime() - o.getDepartureTime();
 		}
 		return this.getSequencePosition() - o.getSequencePosition();
 	}
