@@ -138,8 +138,8 @@ public class MappingAnalysis {
 	 */
 	public void writeQuantileDistancesCsv(String filename) {
 		Map<Tuple<Integer, Integer>, String> keyTable = new HashMap<>();
-		keyTable.put(new Tuple<>(1, 1), "transitRoute");
-		keyTable.put(new Tuple<>(1, 2), "transitLine");
+		keyTable.put(new Tuple<>(1, 1), "transitLine");
+		keyTable.put(new Tuple<>(1, 2), "transitRoute");
 		keyTable.put(new Tuple<>(1, 3), "lengthRatio");
 		keyTable.put(new Tuple<>(1, 4), "Q25");
 		keyTable.put(new Tuple<>(1, 5), "Q50");
@@ -163,11 +163,11 @@ public class MappingAnalysis {
 					keyTable.put(new Tuple<>(line, 1), transitLineId.toString());
 					keyTable.put(new Tuple<>(line, 2), transitRouteId.toString());
 					keyTable.put(new Tuple<>(line, 3), lengthRatio.toString());
-					keyTable.put(new Tuple<>(line, 4), values.get((int) Math.round(n * 0.25) - 1).toString());
-					keyTable.put(new Tuple<>(line, 5), values.get((int) Math.round(n * 0.50) - 1).toString());
-					keyTable.put(new Tuple<>(line, 6), values.get((int) Math.round(n * 0.75) - 1).toString());
-					keyTable.put(new Tuple<>(line, 7), values.get((int) Math.round(n * 0.85) - 1).toString());
-					keyTable.put(new Tuple<>(line, 8), values.get((int) Math.round(n * 0.95) - 1).toString());
+					keyTable.put(new Tuple<>(line, 4), values.get((int) (n * 0.25)).toString());
+					keyTable.put(new Tuple<>(line, 5), values.get((int) (n * 0.50)).toString());
+					keyTable.put(new Tuple<>(line, 6), values.get((int) (n * 0.75)).toString());
+					keyTable.put(new Tuple<>(line, 7), values.get((int) (n * 0.85)).toString());
+					keyTable.put(new Tuple<>(line, 8), values.get((int) (n * 0.95)).toString());
 					keyTable.put(new Tuple<>(line, 9), values.get(n - 1).toString());
 					line++;
 				}
@@ -184,7 +184,8 @@ public class MappingAnalysis {
 	}
 
 	/**
-	 *
+	 * Writes all measured distances for all transit route to a csv file. Each measured distance is written to a new file
+	 * which tends to inflate files considarbly.
 	 */
 	public void writeAllDistancesCsv(String filename) {
 		Map<Tuple<Integer, Integer>, String> keyTable = new HashMap<>();
@@ -213,7 +214,9 @@ public class MappingAnalysis {
 	}
 
 	/**
-	 * 85%-quantiles are calculated for all transit routes. The 85%-quantile of these quantiles is returned.
+	 * 85%-quantile distances are calculated for all transit routes.
+	 * The 85%-quantile of these quantiles is returned. This value can be used
+	 * to quickly compare different config parameters or algorithms.
 	 */
 	public double getQ8585() {
 		List<Double> q85 = new ArrayList<>();
@@ -255,25 +258,21 @@ public class MappingAnalysis {
 		return sum / n;
 	}
 
-	public List<Double> getRouteShapeDistances(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId) {
-		return routeDistances.get(transitLineId).get(transitRouteId);
-	}
-
 	/**
 	 * @return the quantiles for the distance between route and shape for the given transit route
 	 */
-	public TreeMap<Integer, Double> getQuantiles(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId) {
+	TreeMap<Integer, Double> getQuantiles(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId) {
 		List<Double> values = routeDistances.get(transitLineId).get(transitRouteId);
 		values.sort(Double::compareTo);
 		int n = values.size();
 
 		TreeMap<Integer, Double> quantiles = new TreeMap<>();
 		quantiles.put(0, values.get(0));
-		quantiles.put(25, values.get((int) Math.round(n * 0.25) - 1));
-		quantiles.put(50, values.get((int) Math.round(n * 0.50) - 1));
-		quantiles.put(75, values.get((int) Math.round(n * 0.75) - 1));
-		quantiles.put(85, values.get((int) Math.round(n * 0.85) - 1));
-		quantiles.put(95, values.get((int) Math.round(n * 0.95) - 1));
+		quantiles.put(25, values.get((int) (n * 0.25)));
+		quantiles.put(50, values.get((int) (n * 0.50)));
+		quantiles.put(75, values.get((int) (n * 0.75)));
+		quantiles.put(85, values.get((int) (n * 0.85)));
+		quantiles.put(95, values.get((int) (n * 0.95)));
 		quantiles.put(100, values.get(n - 1));
 
 		return quantiles;
@@ -282,7 +281,7 @@ public class MappingAnalysis {
 	/**
 	 * @return the ratio of the mapped path length and the shape length
 	 */
-	public double getLengthRatio(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId) {
+	double getLengthRatio(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId) {
 		return lengthRatios.get(transitLineId).get(transitRouteId);
 	}
 }
