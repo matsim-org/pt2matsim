@@ -25,8 +25,6 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
-import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateImpl;
-import org.matsim.pt2matsim.mapping.linkCandidateCreation.PTLinkCandidate;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -36,12 +34,14 @@ import java.util.TreeSet;
  */
 public class PTStop implements PublicTransitStop {
 
+	private final Id<PublicTransitStop> id;
 	private final TransitLine transitLine;
 	private final TransitRoute transitRoute;
 	private final TransitRouteStop transitRouteStop;
 	private final SortedSet<LinkCandidate> linkCandidates = new TreeSet<>();
 
 	public PTStop(TransitLine transitLine, TransitRoute transitRoute, TransitRouteStop transitRouteStop) {
+		this.id = PublicTransitStop.createId(transitLine, transitRoute, transitRouteStop);
 		this.transitLine = transitLine;
 		this.transitRoute = transitRoute;
 		this.transitRouteStop = transitRouteStop;
@@ -84,7 +84,7 @@ public class PTStop implements PublicTransitStop {
 
 	@Override
 	public Id<PublicTransitStop> getId() {
-		return PublicTransitStop.createId(transitLine, transitRoute, transitRouteStop);
+		return id;
 	}
 
 	@Override

@@ -26,6 +26,7 @@ import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.PTMapper;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWeightedCandidates;
 import org.matsim.pt2matsim.plausibility.MappingAnalysis;
 import org.matsim.pt2matsim.run.Gtfs2TransitSchedule;
 import org.matsim.pt2matsim.run.Osm2MultimodalNetwork;
@@ -76,19 +77,20 @@ public class Asheville {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
 
-		PTMapper.run(config, schedule, network);
+		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersWeightedCandidates(config, schedule, network));
+		ptMapper.run();
 
 		ScheduleTools.writeTransitSchedule(schedule, outputScheduleFile);
 		NetworkTools.writeNetwork(network, outputNetworkFile);
 
-		Schedule2ShapeFile.run(EPSG, "output/shp/", schedule, network);
+//		Schedule2ShapeFile.run(EPSG, "output/shp/", schedule, network);
 	}
 
 	private static void analysis() {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(outputScheduleFile);
 		Network network = NetworkTools.readNetwork(outputNetworkFile);
 		Map<Id<RouteShape>, RouteShape> shapes = ShapeTools.readShapesFile("gtfs/shapes.txt", EPSG);
-		ShapeTools.writeESRIShapeFile(shapes.values(), EPSG, "output/shp/gtfs.shp");
+//		ShapeTools.writeESRIShapeFile(shapes.values(), EPSG, "output/shp/gtfs.shp");
 
 		MappingAnalysis analysis = new MappingAnalysis(schedule, network, shapes);
 		analysis.run();
