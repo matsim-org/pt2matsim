@@ -20,15 +20,10 @@ package org.matsim.pt2matsim.mapping.lib;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Identifiable;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
-import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
-
-import java.util.Collection;
-import java.util.SortedSet;
 
 /**
  * Unique transitRouteStop
@@ -44,8 +39,6 @@ public interface PublicTransitStop extends Identifiable<PublicTransitStop> {
 	TransitRouteStop getTransitRouteStop();
 
 	TransitStopFacility getStopFacility();
-
-	SortedSet<LinkCandidate> getLinkCandidates();
 
 	static Id<PublicTransitStop> createId(TransitLine transitLine, TransitRoute transitRoute, TransitRouteStop transitRouteStop) {
 		return Id.create("[line:" + transitLine.getId() +

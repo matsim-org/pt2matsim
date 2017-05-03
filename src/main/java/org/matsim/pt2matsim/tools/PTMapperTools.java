@@ -30,6 +30,8 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
+import org.matsim.pt2matsim.mapping.pseudoRouter.ArtificialLink;
+import org.matsim.pt2matsim.mapping.pseudoRouter.ArtificialLinkImpl;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -137,9 +139,10 @@ public final class PTMapperTools {
 					for(int i = 1; i < linkList.size() - 1; i++) {
 						if(linkList.get(i).getId().equals(currentStop.getStopFacility().getLinkId())) {
 							Set<Link> testSet = new HashSet<>();
-							testSet.add(linkList.get(i));
-							testSet.add(linkList.get(i - 1));
-							testSet.add(linkList.get(i + 1));
+							if(!(linkList.get(i) instanceof ArtificialLinkImpl)) testSet.add(linkList.get(i));
+							if(!(linkList.get(i - 1) instanceof ArtificialLinkImpl)) testSet.add(linkList.get(i - 1));
+							if(!(linkList.get(i + 1) instanceof ArtificialLinkImpl)) testSet.add(linkList.get(i + 1));
+
 							Id<Link> check = useCloserRefLinkForChildStopFacility(schedule, network, transitRoute, currentStop.getStopFacility(), testSet);
 
 							if(check != null) nPulled++;

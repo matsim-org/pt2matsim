@@ -77,7 +77,7 @@ public class Asheville {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
 
-		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersWeightedCandidates(config, schedule, network));
+		PTMapper ptMapper = new PTMapper(config, schedule, network); //, new ScheduleRoutersWeightedCandidates(config, schedule, network));
 		ptMapper.run();
 
 		ScheduleTools.writeTransitSchedule(schedule, outputScheduleFile);
