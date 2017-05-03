@@ -15,6 +15,7 @@ import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.PTMapper;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersGtfsShapes;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersOsmAttributes;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWeightedCandidates;
 import org.matsim.pt2matsim.osm.OsmMultimodalNetworkConverter;
 import org.matsim.pt2matsim.osm.lib.AllowedTagsFilter;
 import org.matsim.pt2matsim.osm.lib.OsmData;
@@ -59,13 +60,15 @@ public class ZVVexample {
 	private static OsmData osmData;
 
 	public static void main(String[] args) throws Exception {
-//		convert();
+//		convertOsm();
+//		convertSchedule();
 		runMappingStandard();
+//		runMappingWeighted();
 //		runMappingShapes();
 //		runMappingOsm();
 	}
 
-	private static void convert() {
+	private static void convertOsm() {
 		// 1. 	convert OSM
 		// 1.1. setup config
 		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.createDefaultConfig();
@@ -82,7 +85,9 @@ public class ZVVexample {
 
 		// 1.4 write converted network
 		NetworkTools.writeNetwork(osmConverter.getNetwork(), inputNetworkFile);
+	}
 
+	public static void convertSchedule() {
 		// 2. create schedule
 		// 2.1 Load gtfs feed
 		GtfsFeed gtfsFeed = new GtfsFeedImpl(gtfsFolder);
@@ -103,7 +108,7 @@ public class ZVVexample {
 				}
 			}
 		}
-		ExtractDebugSchedule.removeRand(schedule, 100);
+//		ExtractDebugSchedule.removeRand(schedule, 100);
 		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
 		ScheduleTools.writeTransitSchedule(schedule, inputScheduleFile);
 	}
@@ -121,6 +126,29 @@ public class ZVVexample {
 
 		// run PTMapepr
 		PTMapper ptMapper = new PTMapper(config, schedule, network);
+		ptMapper.run();
+
+		//
+		NetworkTools.writeNetwork(network, outputNetwork1);
+		ScheduleTools.writeTransitSchedule(schedule, outputSchedule1);
+
+		// analyse result
+		runAnalysis(outputSchedule1, outputNetwork1);
+	}
+
+	/**
+	 * Runs a mapping with weighted links
+	 */
+	public static void runMappingWeighted() {
+		// Load schedule and network
+		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
+		Network network = NetworkTools.readNetwork(inputNetworkFile);
+
+		// create PTM config
+		PublicTransitMappingConfigGroup config = createPTMConfig();
+
+		// run PTMapepr
+		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersWeightedCandidates(config, schedule, network));
 		ptMapper.run();
 
 		//
