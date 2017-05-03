@@ -54,7 +54,7 @@ public class PTMapperShapesExample {
 		obj.writeShapes();
 	}
 
-	public static PublicTransitMappingConfigGroup createPTMConfig() {
+	public static PublicTransitMappingConfigGroup createTestPTMConfig() {
 		PublicTransitMappingConfigGroup config = new PublicTransitMappingConfigGroup();
 		config.getModesToKeepOnCleanUp().add("car");
 		PublicTransitMappingConfigGroup.LinkCandidateCreatorParams lccParamsBus = new PublicTransitMappingConfigGroup.LinkCandidateCreatorParams("bus");
@@ -84,7 +84,7 @@ public class PTMapperShapesExample {
 	}
 
 	private void runNormalMapping() {
-		PublicTransitMappingConfigGroup config = createPTMConfig();
+		PublicTransitMappingConfigGroup config = createTestPTMConfig();
 
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(unmappedScheduleFile);
 		Network network = NetworkTools.readNetwork(networkInput);
@@ -96,7 +96,7 @@ public class PTMapperShapesExample {
 	}
 
 	private void runMappingWithShapes() {
-		PublicTransitMappingConfigGroup config = createPTMConfig();
+		PublicTransitMappingConfigGroup config = createTestPTMConfig();
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(unmappedScheduleFile);
 		Network network = NetworkTools.readNetwork(networkInput);
 

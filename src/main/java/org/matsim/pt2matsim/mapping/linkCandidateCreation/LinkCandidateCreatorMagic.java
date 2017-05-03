@@ -19,6 +19,7 @@
 package org.matsim.pt2matsim.mapping.linkCandidateCreation;
 
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -40,10 +41,10 @@ import java.util.*;
 /**
  * @author polettif
  */
-public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
+public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 
 	private static final Set<String> loopLinkModes = CollectionUtils.stringToSet(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE + "," + PublicTransitMappingStrings.STOP_FACILITY_LOOP_LINK);
-	protected static Logger log = Logger.getLogger(LinkCandidateCreatorUnique.class);
+	protected static Logger log = Logger.getLogger(LinkCandidateCreatorMagic.class);
 	private final TransitSchedule schedule;
 	private final Network network;
 	private final PublicTransitMappingConfigGroup config;
@@ -53,7 +54,7 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 	private final Set<String> scheduleTransportModes = new HashSet<>();
 
 
-	public LinkCandidateCreatorUnique(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
+	public LinkCandidateCreatorMagic(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
 		this.schedule = schedule;
 		this.network = network;
 		this.config = config;
@@ -190,7 +191,7 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 		/*
 		  Add manually set link candidates from config
 		 */
-		addManualLinkCandidates(config.getManualLinkCandidates());
+			addManualLinkCandidates(config.getManualLinkCandidates());
 	}
 
 	private String getCloseLinksKey(TransitRoute transitRoute, TransitRouteStop routeStop) {
@@ -244,6 +245,37 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 
 			// check if distance is greater than soft constraint distance
 			if(nLink + entry.getValue().size() > param.getMaxNClosestLinks() && entry.getKey() > maxSoftConstraintDistance) {
+				break;
+			}
+
+			// if no loop break has been reached, add link to list
+			closestLinks.addAll(entry.getValue());
+			nLink += entry.getValue().size();
+		}
+		return closestLinks;
+	}
+
+	private List<Link> findClosestLinks(Coord coord, Set<String> networkModes, int maxLinks, double maxDistance, double tolFactor) {
+		List<Link> closestLinks = new ArrayList<>();
+		Map<Double, Set<Link>> sortedLinks = NetworkTools.findClosestLinks(network, coord, config.getNodeSearchRadius(), networkModes);
+
+		// calculate lineSegmentDistance for all links
+		double maxSoftConstraintDistance = 0.0;
+
+		int nLink = 0;
+		for(Map.Entry<Double, Set<Link>> entry : sortedLinks.entrySet()) {
+			// if the distance is greate than the maximum distance
+			if(entry.getKey() > maxDistance) {
+				break;
+			}
+
+			// when the link count limit is reached, set the soft constraint distance
+			if(nLink < maxLinks && nLink + nLink + entry.getValue().size() >= maxLinks) {
+				maxSoftConstraintDistance = entry.getKey() * tolFactor;
+			}
+
+			// check if distance is greater than soft constraint distance
+			if(nLink + entry.getValue().size() > maxLinks && entry.getKey() > maxSoftConstraintDistance) {
 				break;
 			}
 

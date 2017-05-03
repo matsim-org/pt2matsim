@@ -481,12 +481,16 @@ public final class ScheduleTools {
 
 	public static Id<Link> createArtificialLinkId(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate) {
 		if(fromLinkCandidate.isLoopLink()) {
-			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getStop().getStopFacility().getId() + "_" + toLinkCandidate.getLink().getFromNode().getId());
+			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getStop().getStopFacility().getId() + "_" + toLinkCandidate.getLink().getId());
 		} else if(toLinkCandidate.isLoopLink()) {
-			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getLink().getToNode().getId() + "_" + toLinkCandidate.getStop().getStopFacility().getId());
+			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getLink().getId() + "_" + toLinkCandidate.getStop().getStopFacility().getId());
 		} else {
-			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getLink().getToNode().getId() + "_" + toLinkCandidate.getLink().getFromNode().getId());
+			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getLink().getId() + "_" + toLinkCandidate.getLink().getId());
 		}
+	}
+
+	public static Id<Link> createArtificialLinkId(TransitStopFacility stopFacility) {
+		return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + stopFacility.getId());
 	}
 
 	/**
@@ -590,5 +594,4 @@ public final class ScheduleTools {
 			return Id.create(shapeIdSplit[1], RouteShape.class);
 		}
 	}
-
 }

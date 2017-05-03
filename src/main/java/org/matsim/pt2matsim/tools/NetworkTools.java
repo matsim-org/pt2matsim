@@ -305,7 +305,7 @@ public final class NetworkTools {
 		Coord coord = stopFacility.getCoord();
 
 		Node dummyNode = networkFactory.createNode(Id.createNodeId(prefix + stopFacility.getId()), coord);
-		Link dummyLink = networkFactory.createLink(Id.createLinkId(prefix + stopFacility.getId()), dummyNode, dummyNode);
+		Link dummyLink = networkFactory.createLink(ScheduleTools.createArtificialLinkId(stopFacility), dummyNode, dummyNode);
 
 		dummyLink.setAllowedModes(transportModes);
 		dummyLink.setLength(5);

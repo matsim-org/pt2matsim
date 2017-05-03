@@ -22,16 +22,16 @@ import org.matsim.pt2matsim.osm.lib.OsmData;
 import org.matsim.pt2matsim.osm.lib.OsmDataImpl;
 import org.matsim.pt2matsim.osm.lib.OsmFileReader;
 import org.matsim.pt2matsim.plausibility.MappingAnalysis;
+import org.matsim.pt2matsim.run.shp.Schedule2ShapeFile;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ShapeTools;
-import org.matsim.pt2matsim.tools.debug.ExtractDebugSchedule;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 
 import java.util.HashSet;
 import java.util.Map;
 
-import static org.matsim.pt2matsim.workbench.PTMapperShapesExample.createPTMConfig;
+import static org.matsim.pt2matsim.workbench.PTMapperShapesExample.createTestPTMConfig;
 
 /**
  * Mapping example for public transit in the zurich area (agency: ZVV).
@@ -57,15 +57,20 @@ public class ZVVexample {
 	private static String outputSchedule2 = base + "output/shapes_schedule.xml.gz";
 	private static String outputNetwork3 = base + "output/osm_network.xml.gz";
 	private static String outputSchedule3 = base + "output/osm_schedule.xml.gz";
+	private static String outputNetwork4 = base + "output/weight_network.xml.gz";
+	private static String outputSchedule4 = base + "output/weight_schedule.xml.gz";
 	private static OsmData osmData;
 
 	public static void main(String[] args) throws Exception {
 //		convertOsm();
 //		convertSchedule();
-		runMappingStandard();
-//		runMappingWeighted();
+//		runMappingStandard();
+		runMappingWeighted();
 //		runMappingShapes();
 //		runMappingOsm();
+//		System.out.println("\n--- Q8585 ---");
+//		System.out.format("Standard %.1f", q8585standard);
+//		System.out.format("Gewicht  %.1f", q8585w);
 	}
 
 	private static void convertOsm() {
@@ -116,13 +121,13 @@ public class ZVVexample {
 	/**
 	 * Runs a standard mapping
 	 */
-	public static void runMappingStandard() {
+	public static double runMappingStandard() {
 		// Load schedule and network
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
 
 		// create PTM config
-		PublicTransitMappingConfigGroup config = createPTMConfig();
+		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
 
 		// run PTMapepr
 		PTMapper ptMapper = new PTMapper(config, schedule, network);
@@ -133,30 +138,32 @@ public class ZVVexample {
 		ScheduleTools.writeTransitSchedule(schedule, outputSchedule1);
 
 		// analyse result
-		runAnalysis(outputSchedule1, outputNetwork1);
+		return runAnalysis(outputSchedule1, outputNetwork1);
 	}
 
 	/**
 	 * Runs a mapping with weighted links
 	 */
-	public static void runMappingWeighted() {
+	public static double runMappingWeighted() {
 		// Load schedule and network
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
 
 		// create PTM config
-		PublicTransitMappingConfigGroup config = createPTMConfig();
+		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
 
 		// run PTMapepr
 		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersWeightedCandidates(config, schedule, network));
 		ptMapper.run();
 
 		//
-		NetworkTools.writeNetwork(network, outputNetwork1);
-		ScheduleTools.writeTransitSchedule(schedule, outputSchedule1);
+		NetworkTools.writeNetwork(network, outputNetwork4);
+		ScheduleTools.writeTransitSchedule(schedule, outputSchedule4);
+
+		Schedule2ShapeFile.run(coordSys, base + "output/shp/", schedule, network);
 
 		// analyse result
-		runAnalysis(outputSchedule1, outputNetwork1);
+		return runAnalysis(outputSchedule4, outputNetwork4);
 	}
 
 	/**
@@ -166,7 +173,7 @@ public class ZVVexample {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
 
-		PublicTransitMappingConfigGroup config = createPTMConfig();
+		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
 		Map<Id<RouteShape>, RouteShape> shapes = ShapeTools.readShapesFile(gtfsShapeFile, coordSys);
 
 		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersGtfsShapes(config, schedule, network, shapes, 50));
@@ -182,7 +189,7 @@ public class ZVVexample {
 	/**
 	 * Analyses the mapping result
 	 */
-	private static void runAnalysis(String scheduleFile, String networkFile) {
+	private static double runAnalysis(String scheduleFile, String networkFile) {
 		MappingAnalysis analysis = new MappingAnalysis(
 				ScheduleTools.readTransitSchedule(scheduleFile),
 				NetworkTools.readNetwork(networkFile),
@@ -191,6 +198,8 @@ public class ZVVexample {
 		analysis.run();
 		System.out.println("Q8585: " + analysis.getQ8585());
 		System.out.println("Length diff: " + Math.sqrt(analysis.getAverageSquaredLengthRatio()) * 100 + " %");
+
+		return analysis.getQ8585();
 	}
 
 	/**
@@ -200,7 +209,7 @@ public class ZVVexample {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
 
-		PublicTransitMappingConfigGroup config = createPTMConfig();
+		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
 
 		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersOsmAttributes(config, schedule, network, 0.7));
 		ptMapper.run();
