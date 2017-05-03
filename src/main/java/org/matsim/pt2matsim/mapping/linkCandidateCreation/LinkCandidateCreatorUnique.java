@@ -183,7 +183,6 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 				} else {
 					candidate.setPriority(1);
 				}
-
 			}
 		}
 

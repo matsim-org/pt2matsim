@@ -78,7 +78,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private double nodeSearchRadius = 500;
 	private boolean removeNotUsedStopFacilities = true;
 	private boolean combinePtModes = false;
-	private boolean addPtMode = true;
+	private boolean addPtMode = false;
 	private String networkFile = null;
 	private String scheduleFile = null;
 	private String outputNetworkFile = null;
