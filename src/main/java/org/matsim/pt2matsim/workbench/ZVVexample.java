@@ -59,10 +59,10 @@ public class ZVVexample {
 	private static OsmData osmData;
 
 	public static void main(String[] args) throws Exception {
-		convert();
+//		convert();
 		runMappingStandard();
-		runMappingShapes();
-		runMappingOsm();
+//		runMappingShapes();
+//		runMappingOsm();
 	}
 
 	private static void convert() {

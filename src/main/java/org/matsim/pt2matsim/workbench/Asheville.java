@@ -92,6 +92,7 @@ public class Asheville {
 
 		MappingAnalysis analysis = new MappingAnalysis(schedule, network, shapes);
 		analysis.run();
+		System.out.format("\n>>> Q8585: %.3f\n", analysis.getQ8585());
 
 		analysis.writeQuantileDistancesCsv("output/analysis/quantiles.csv");
 	}

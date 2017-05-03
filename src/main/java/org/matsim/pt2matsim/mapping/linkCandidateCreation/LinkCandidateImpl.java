@@ -24,6 +24,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
+import org.matsim.pt2matsim.mapping.lib.PublicTransitStop;
 import org.matsim.pt2matsim.tools.CoordTools;
 
 /**
@@ -31,84 +32,29 @@ import org.matsim.pt2matsim.tools.CoordTools;
  */
 public class LinkCandidateImpl implements LinkCandidate {
 
-	private final String id;
-	private final Id<TransitStopFacility> parentStopFacilityId;
 	private final Link link;
+	private final PublicTransitStop stop;
+
+	// helper fields
 	private final double stopFacilityDistance;
-	private final Id<Link> linkId;
-	private final Id<Node> fromNodeId;
-	private final Id<Node> toNodeId;
 	private final Coord stopFacilityCoord;
 	private final Coord fromNodeCoord;
 	private final Coord toNodeCoord;
 	private final boolean loopLink;
 	private double priority;
 
-	public LinkCandidateImpl(Link link, TransitStopFacility parentStopFacility) {
-		this.id = parentStopFacility.getId().toString() + ".link:" + link.getId().toString();
-		this.parentStopFacilityId = parentStopFacility.getId();
-
-		this.linkId = link.getId();
-
-		this.fromNodeId = link.getFromNode().getId();
-		this.toNodeId = link.getToNode().getId();
-		this.stopFacilityCoord = parentStopFacility.getCoord();
+	public LinkCandidateImpl(Link link, PublicTransitStop publicTransitStop) {
+		this.stop = publicTransitStop;
+		this.stopFacilityCoord = publicTransitStop.getStopFacility().getCoord();
 
 		this.fromNodeCoord = link.getFromNode().getCoord();
 		this.toNodeCoord = link.getToNode().getCoord();
 
 		this.stopFacilityDistance = CoordUtils.distancePointLinesegment(fromNodeCoord, toNodeCoord, stopFacilityCoord);
-		this.priority = 1/stopFacilityDistance;
 
 		this.loopLink = link.getFromNode().getId().toString().equals(link.getToNode().getId().toString());
 
 		this.link = link;
-	}
-
-	public LinkCandidateImpl() {
-		this.id = "dummy";
-		this.parentStopFacilityId = null;
-
-		this.linkId = null;
-
-		this.fromNodeId = null;
-		this.toNodeId = null;
-		this.stopFacilityCoord = null;
-
-		this.fromNodeCoord = null;
-		this.toNodeCoord = null;
-
-		this.stopFacilityDistance = 0.0;
-		this.priority = 0.0;
-
-		this.loopLink = true;
-
-		this.link = null;
-	}
-
-	@Override
-	public String getId() {
-		return id;
-	}
-
-	@Override
-	public Id<TransitStopFacility> getStopFacilityId() {
-		return parentStopFacilityId;
-	}
-
-	@Override
-	public Id<Link> getLinkId() {
-		return linkId;
-	}
-
-	@Override
-	public Id<Node> getToNodeId() {
-		return toNodeId;
-	}
-
-	@Override
-	public Id<Node> getFromNodeId() {
-		return fromNodeId;
 	}
 
 	@Override
@@ -127,23 +73,28 @@ public class LinkCandidateImpl implements LinkCandidate {
 	}
 
 	@Override
+	public PublicTransitStop getStop() {
+		return stop;
+	}
+
+	@Override
 	public Link getLink() {
 		return link;
 	}
 
 	@Override
-	public Coord getFromNodeCoord() {
+	public Coord getToCoord() {
 		return fromNodeCoord;
 	}
 
 	@Override
-	public Coord getToNodeCoord() {
+	public Coord getFromCoord() {
 		return toNodeCoord;
 	}
 
 	@Override
 	public String toString() {
-		return id;
+		return "[LinkCandidate link=" + link.getId() + " stop=" + stop + "]";
 	}
 
 	@Override
@@ -171,17 +122,4 @@ public class LinkCandidateImpl implements LinkCandidate {
 		}
 	}
 
-	@Override
-	public boolean equals(Object o) {
-		if(this == o) return true;
-		if(o == null || getClass() != o.getClass()) return false;
-
-		LinkCandidateImpl that = (LinkCandidateImpl) o;
-		return getId().equals(that.getId());
-	}
-
-	@Override
-	public int hashCode() {
-		return getId().hashCode();
-	}
 }

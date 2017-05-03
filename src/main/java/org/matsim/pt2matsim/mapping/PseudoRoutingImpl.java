@@ -128,7 +128,7 @@ public class PseudoRoutingImpl implements PseudoRouting {
 									pathCost = leastCostPath.travelCost;
 									pathLinks = leastCostPath.links;
 									// if both link candidates are the same, cost should get higher
-									if(linkCandidateCurrent.getLinkId().equals(linkCandidateNext.getLinkId())) {
+									if(linkCandidateCurrent.getLink().getId().equals(linkCandidateNext.getLink().getId())) {
 										pathCost *= 4;
 									}
 								}

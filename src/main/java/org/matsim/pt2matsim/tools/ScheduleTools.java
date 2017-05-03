@@ -481,11 +481,11 @@ public final class ScheduleTools {
 
 	public static Id<Link> createArtificialLinkId(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate) {
 		if(fromLinkCandidate.isLoopLink()) {
-			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getStopFacilityId() + "_" + toLinkCandidate.getFromNodeId());
+			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getStop().getStopFacility().getId() + "_" + toLinkCandidate.getLink().getFromNode().getId());
 		} else if(toLinkCandidate.isLoopLink()) {
-			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getToNodeId() + "_" + toLinkCandidate.getStopFacilityId());
+			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getLink().getToNode().getId() + "_" + toLinkCandidate.getStop().getStopFacility().getId());
 		} else {
-			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getToNodeId() + "_" + toLinkCandidate.getFromNodeId());
+			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getLink().getToNode().getId() + "_" + toLinkCandidate.getLink().getFromNode().getId());
 		}
 	}
 
