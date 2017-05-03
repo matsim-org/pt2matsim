@@ -177,7 +177,7 @@ public class PseudoGraphImpl implements PseudoGraph {
 		if(!dummy) {
 			List<Link> links = new ArrayList<>();
 			if(networkLinks == null) {
-				ArtificialLink artificialLink = new ArtificialLinkImpl(from.getLinkCandidate(), to.getLinkCandidate(), 1, CoordUtils.calcEuclideanDistance(from.getLinkCandidate().getToNodeCoord(), to.getLinkCandidate().getFromNodeCoord()));
+				ArtificialLink artificialLink = new ArtificialLinkImpl(from.getLinkCandidate(), to.getLinkCandidate(), 1, CoordUtils.calcEuclideanDistance(from.getLinkCandidate().getFromCoord(), to.getLinkCandidate().getToCoord()));
 				links.add(artificialLink);
 			} else {
 				for(Link l : networkLinks) {

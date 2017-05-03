@@ -29,6 +29,8 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
+import org.matsim.pt2matsim.mapping.lib.PTStop;
+import org.matsim.pt2matsim.mapping.lib.PublicTransitStop;
 import org.matsim.pt2matsim.tools.MiscUtils;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.PTMapperTools;
@@ -147,9 +149,10 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 			}
 
 			for(Link link : links) {
-				LinkCandidate linkCandidate =
-						allCandidates.computeIfAbsent(c.getKey().getTransitRouteStop().getStopFacility().getId().toString() + ":" + link.getId().toString(),
-								k -> new LinkCandidateImpl(link, c.getKey().getTransitRouteStop().getStopFacility()));
+				PublicTransitStop publicTransitStop = new PTStop(key.getTransitLine(), key.getTransitRoute(), key.getTransitRouteStop());
+				LinkCandidate linkCandidate = new LinkCandidateImpl(link, publicTransitStop);
+//						allCandidates.computeIfAbsent(c.getKey().getTransitRouteStop().getStopFacility().getId().toString() + ":" + link.getId().toString(),
+//								k -> );
 				MiscUtils.getSortedSet(getKey(key.getTransitLine(), key.getTransitRoute(), key.getTransitRouteStop()), linkCandidates).add(linkCandidate);
 			}
 		}
@@ -282,7 +285,8 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 										log.info("Manual link candidate will still be used");
 									}
 
-									lcSet.add(new LinkCandidateImpl(link, parentStopFacility));
+									// todo reimplement
+//									lcSet.add(new LinkCandidateImpl(link, parentStopFacility));
 								}
 							}
 							linkCandidates.put(getKey(transitLine, transitRoute, routeStop), lcSet);

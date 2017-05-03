@@ -16,52 +16,47 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.mapping.linkCandidateCreation;
+package org.matsim.pt2matsim.mapping.lib;
 
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.Identifiable;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.network.Node;
+import org.matsim.pt.transitSchedule.api.TransitLine;
+import org.matsim.pt.transitSchedule.api.TransitRoute;
+import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
-import org.matsim.pt2matsim.mapping.lib.PublicTransitStop;
+import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
+
+import java.util.Collection;
+import java.util.SortedSet;
 
 /**
- * A possible link for a TransitStopFacility. A LinkCandidate contains
- * theoretically a link and the parent StopFacility. However, all
- * values besides Coord should be stored as primitive/Id since one might
- * be working with multiple separated networks.
+ * Unique transitRouteStop
  *
  * @author polettif
  */
-public interface LinkCandidate extends Comparable<LinkCandidate> {
+public interface PublicTransitStop extends Identifiable<PublicTransitStop> {
 
-	Link getLink();
+	TransitLine getTransitLine();
 
-	Coord getFromCoord();
+	TransitRoute getTransitRoute();
 
-	Coord getToCoord();
+	TransitRouteStop getTransitRouteStop();
 
-	double getStopFacilityDistance();
+	TransitStopFacility getStopFacility();
 
-	/**
-	 * @return true if the link candidate is an artificial loop link
-	 */
-	boolean isLoopLink();
+	SortedSet<LinkCandidate> getLinkCandidates();
 
-	/**
-	 * Should return a value greater than 1 if the other LinkCandidate
-	 * has a lower priority.
-	 */
-	int compareTo(LinkCandidate other);
+	static Id<PublicTransitStop> createId(TransitLine transitLine, TransitRoute transitRoute, TransitRouteStop transitRouteStop) {
+		return Id.create("[line:" + transitLine.getId() +
+				"][route:" + transitRoute.getId() +
+				"[stop:" + transitRouteStop.getStopFacility().getId() +
+				" arr:" + transitRouteStop.getArrivalOffset() +
+				" dep:" + transitRouteStop.getDepartureOffset() + " ]",
+				PublicTransitStop.class);
+	}
 
-	/**
-	 * @return the link candidates priority compared to all other
-	 * link candidates for the same stop and transit route. The priority
-	 * is scaled 0..1 (1 being high priority).
-	 */
-	double getPriority();
+	void addLinkCandidate(Link key);
 
-	void setPriority(double priority);
-
-	PublicTransitStop getStop();
+	void addLinkCandidate(LinkCandidate linkCandidate);
 }

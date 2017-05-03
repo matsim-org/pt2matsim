@@ -50,8 +50,8 @@ public class ArtificialLinkImpl implements ArtificialLink {
 
 	public ArtificialLinkImpl(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, double freespeed, double linklength) {
 		this.id = ScheduleTools.createArtificialLinkId(fromLinkCandidate, toLinkCandidate);
-		this.fromNodeId = fromLinkCandidate.getToNodeId();
-		this.toNodeId = toLinkCandidate.getFromNodeId();
+		this.fromNodeId = fromLinkCandidate.getLink().getToNode().getId();
+		this.toNodeId = toLinkCandidate.getLink().getFromNode().getId();
 		this.freespeed = freespeed;
 		this.linkLength = linklength;
 
