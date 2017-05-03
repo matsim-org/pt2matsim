@@ -56,7 +56,4 @@ public interface PublicTransitStop extends Identifiable<PublicTransitStop> {
 				PublicTransitStop.class);
 	}
 
-	void addLinkCandidate(Link key);
-
-	void addLinkCandidate(LinkCandidate linkCandidate);
 }

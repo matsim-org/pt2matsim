@@ -19,7 +19,6 @@
 package org.matsim.pt2matsim.mapping.lib;
 
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
@@ -32,7 +31,7 @@ import java.util.TreeSet;
 /**
  * @author polettif
  */
-public class PTStop implements PublicTransitStop {
+public class PublicTransitStopImpl implements PublicTransitStop {
 
 	private final Id<PublicTransitStop> id;
 	private final TransitLine transitLine;
@@ -40,7 +39,7 @@ public class PTStop implements PublicTransitStop {
 	private final TransitRouteStop transitRouteStop;
 	private final SortedSet<LinkCandidate> linkCandidates = new TreeSet<>();
 
-	public PTStop(TransitLine transitLine, TransitRoute transitRoute, TransitRouteStop transitRouteStop) {
+	public PublicTransitStopImpl(TransitLine transitLine, TransitRoute transitRoute, TransitRouteStop transitRouteStop) {
 		this.id = PublicTransitStop.createId(transitLine, transitRoute, transitRouteStop);
 		this.transitLine = transitLine;
 		this.transitRoute = transitRoute;
@@ -73,16 +72,6 @@ public class PTStop implements PublicTransitStop {
 	}
 
 	@Override
-	public void addLinkCandidate(Link key) {
-
-	}
-
-	@Override
-	public void addLinkCandidate(LinkCandidate linkCandidate) {
-		this.linkCandidates.add(linkCandidate);
-	}
-
-	@Override
 	public Id<PublicTransitStop> getId() {
 		return id;
 	}
@@ -94,5 +83,20 @@ public class PTStop implements PublicTransitStop {
 				"[stop:" + transitRouteStop.getStopFacility().getId() +
 				" arr:" + transitRouteStop.getArrivalOffset() +
 				" dep:" + transitRouteStop.getDepartureOffset() + " ]";
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if(this == o) return true;
+		if(o == null || getClass() != o.getClass()) return false;
+
+		PublicTransitStopImpl ptStop = (PublicTransitStopImpl) o;
+
+		return id.equals(ptStop.id);
+	}
+
+	@Override
+	public int hashCode() {
+		return id.hashCode();
 	}
 }

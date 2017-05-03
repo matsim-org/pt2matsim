@@ -204,7 +204,6 @@ public class ArtificialLinkImpl implements ArtificialLink {
 		return numberOfLanes;
 	}
 
-
 	@Override
 	public Coord getCoord() {
 		throw new IllegalAccessError();

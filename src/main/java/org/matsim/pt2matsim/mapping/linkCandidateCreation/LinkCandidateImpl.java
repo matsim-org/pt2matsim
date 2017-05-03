@@ -122,4 +122,26 @@ public class LinkCandidateImpl implements LinkCandidate {
 		}
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if(this == o) return true;
+		if(o == null || getClass() != o.getClass()) return false;
+
+		LinkCandidateImpl that = (LinkCandidateImpl) o;
+
+		if(Double.compare(that.priority, priority) != 0) return false;
+		if(link != null ? !link.equals(that.link) : that.link != null) return false;
+		return stop != null ? stop.equals(that.stop) : that.stop == null;
+	}
+
+	@Override
+	public int hashCode() {
+		int result;
+		long temp;
+		result = link != null ? link.hashCode() : 0;
+		result = 31 * result + (stop != null ? stop.hashCode() : 0);
+		temp = Double.doubleToLongBits(priority);
+		result = 31 * result + (int) (temp ^ (temp >>> 32));
+		return result;
+	}
 }
