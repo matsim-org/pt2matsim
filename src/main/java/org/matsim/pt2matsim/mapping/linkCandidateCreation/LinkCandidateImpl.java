@@ -106,8 +106,11 @@ public class LinkCandidateImpl implements LinkCandidate {
 	public int compareTo(LinkCandidate other) {
 		if(this.equals(other)) {
 			return 0;
+		} else {
+			return priority > other.getPriority() ? -1 : 1;
 		}
 
+		/*
 		if(other instanceof LinkCandidateImpl) {
 			LinkCandidateImpl o = (LinkCandidateImpl) other;
 			int dCompare = Double.compare(stopFacilityDistance, o.getStopFacilityDistance());
@@ -120,8 +123,33 @@ public class LinkCandidateImpl implements LinkCandidate {
 			int dCompare = -Double.compare(priority, other.getPriority());
 			return dCompare == 0 ? 1 : dCompare;
 		}
+		*/
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if(this == o) return true;
+		if(o == null || getClass() != o.getClass()) return false;
+
+		LinkCandidateImpl that = (LinkCandidateImpl) o;
+
+		if(Double.compare(that.priority, priority) != 0) return false;
+		if(!link.equals(that.link)) return false;
+		return stop.equals(that.stop);
+	}
+
+	@Override
+	public int hashCode() {
+		int result;
+		long temp;
+		result = link.hashCode();
+		result = 31 * result + stop.hashCode();
+		temp = Double.doubleToLongBits(priority);
+		result = 31 * result + (int) (temp ^ (temp >>> 32));
+		return result;
+	}
+
+	/*
 	@Override
 	public boolean equals(Object o) {
 		if(this == o) return true;
@@ -144,4 +172,5 @@ public class LinkCandidateImpl implements LinkCandidate {
 		result = 31 * result + (int) (temp ^ (temp >>> 32));
 		return result;
 	}
+	*/
 }

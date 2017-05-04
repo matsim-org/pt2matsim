@@ -294,34 +294,6 @@ public final class NetworkTools {
 
 
 	/**
-	 * Creates a node and dummy/loop link on the coordinate of the stop facility and
-	 * adds both to the network. The stop facility is NOT referenced.
-	 *
-	 * @return the new Link.
-	 */
-	public static Link createArtificialStopFacilityLink(TransitStopFacility stopFacility, Network network, String prefix, double freespeed, Set<String> transportModes) {
-		NetworkFactory networkFactory = network.getFactory();
-
-		Coord coord = stopFacility.getCoord();
-
-		Node dummyNode = networkFactory.createNode(Id.createNodeId(prefix + stopFacility.getId()), coord);
-		Link dummyLink = networkFactory.createLink(ScheduleTools.createArtificialLinkId(stopFacility), dummyNode, dummyNode);
-
-		dummyLink.setAllowedModes(transportModes);
-		dummyLink.setLength(5);
-		dummyLink.setFreespeed(freespeed);
-		dummyLink.setCapacity(9999);
-
-		if(!network.getNodes().containsKey(dummyNode.getId())) {
-			network.addNode(dummyNode);
-			network.addLink(dummyLink);
-		}
-
-		return dummyLink;
-	}
-
-
-	/**
 	 * Creates and returns a mode filtered network.
 	 *
 	 * @param network        the input network, is not modified
