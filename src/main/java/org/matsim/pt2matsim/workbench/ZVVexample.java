@@ -13,6 +13,7 @@ import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.PTMapper;
+import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorMagic;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorWeighted;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersGtfsShapes;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersOsmAttributes;
@@ -65,7 +66,7 @@ public class ZVVexample {
 	public static void main(String[] args) throws Exception {
 //		convertOsm();
 //		convertSchedule();
-		runMappingStandard();
+//		runMappingStandard();
 		runMappingWeighted();
 //		runMappingShapes();
 //		runMappingOsm();
@@ -156,9 +157,14 @@ public class ZVVexample {
 
 		// create PTM config
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
+		int nLinks = 6;
+		double distanceMultiplier = 1.1;
+		double maxDistance = 70;
 
 		// run PTMapepr
-		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersWeightedCandidates(config, schedule, network));
+		PTMapper ptMapper = new PTMapper(config, schedule, network,
+				new LinkCandidateCreatorMagic(schedule, network, nLinks, distanceMultiplier, maxDistance, config.getModeRoutingAssignment()),
+				new ScheduleRoutersWeightedCandidates(config, schedule, network));
 		ptMapper.run();
 
 		//

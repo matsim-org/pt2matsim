@@ -72,7 +72,7 @@ public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 
 	@Override
 	public void load() {
-		this.nodeSearchRadius = maxDistance*3;
+		this.nodeSearchRadius = maxDistance*6;
 
 		log.info("   search radius: " + nodeSearchRadius);
 		log.info("   Note: loop links for stop facilities are created if no link candidate can be found.");
@@ -182,6 +182,7 @@ public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 		/*
 		Set priorities
 		 */
+		int nLC = 0;
 		for(Map.Entry<Id<PublicTransitStop>, SortedSet<LinkCandidate>> entry : linkCandidates.entrySet()) {
 			double minDist = minStopDist.get(entry.getKey());
 			double maxDist = maxStopDist.get(entry.getKey());
@@ -194,9 +195,10 @@ public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 				} else {
 					candidate.setPriority(1);
 				}
-
 			}
+			nLC += entry.getValue().size();
 		}
+		log.info("Average number of link candidates: " + nLC / linkCandidates.size());
 	}
 
 	private String getCloseLinksKey(TransitRoute transitRoute, TransitRouteStop routeStop) {
@@ -232,23 +234,25 @@ public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 		List<Link> closestLinks = new ArrayList<>();
 		Map<Double, Set<Link>> sortedLinks = NetworkTools.findClosestLinks(network, coord, nodeSearchRadius, networkModes);
 
-		// calculate lineSegmentDistance for all links
-		double maxSoftConstraintDistance = 0.0;
-
+		double distanceThreshold = this.maxDistance;
 		int nLink = 0;
+
 		for(Map.Entry<Double, Set<Link>> entry : sortedLinks.entrySet()) {
+			double currentDistance = entry.getKey();
+			double currentNLinks = entry.getValue().size();
+
 			// if the distance is greate than the maximum distance
-			if(entry.getKey() > maxDistance) {
+			if(currentDistance > maxDistance) {
 				break;
 			}
 
 			// when the link count limit is reached, set the soft constraint distance
-			if(nLink < this.nLinks && nLink + nLink + entry.getValue().size() >= this.nLinks) {
-				maxSoftConstraintDistance = entry.getKey() * this.distanceMultiplier;
+			if(nLink < this.nLinks && nLink + currentNLinks >= this.nLinks) {
+				distanceThreshold = currentDistance * this.distanceMultiplier;
 			}
 
 			// check if distance is greater than soft constraint distance
-			if(nLink + entry.getValue().size() > this.maxDistance && entry.getKey() > maxSoftConstraintDistance) {
+			if(nLink + currentNLinks > this.nLinks && currentDistance > distanceThreshold) {
 				break;
 			}
 
@@ -263,6 +267,5 @@ public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 	public SortedSet<LinkCandidate> getLinkCandidates(TransitRouteStop transitRouteStop, TransitLine transitLine, TransitRoute transitRoute) {
 		return linkCandidates.get(PublicTransitStop.createId(transitLine, transitRoute, transitRouteStop));
 	}
-
 
 }

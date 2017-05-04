@@ -520,6 +520,10 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		travelTime, linkLength
 	}
 
+	/**
+	 * Use universal parameters
+	 */
+	@Deprecated
 	public static class LinkCandidateCreatorParams extends ReflectiveConfigGroup implements MatsimParameters {
 
 		public final static String SET_NAME = "linkCandidateCreator";
