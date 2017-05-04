@@ -46,7 +46,7 @@ public interface ScheduleRouters extends MapperModule {
 
 	double getMinimalTravelCost(TransitRouteStop fromTransitRouteStop, TransitRouteStop toTransitRouteStop, TransitLine transitLine, TransitRoute transitRoute);
 
-	double getLinkCandidateTravelCost(TransitLine transitLine, TransitRoute transitRoute, LinkCandidate linkCandidateCurrent);
+	double getLinkCandidateTravelCost(LinkCandidate linkCandidateCurrent);
 
 	/**
 	 * Wrapper class to enable synchronized access to least cost path calculators

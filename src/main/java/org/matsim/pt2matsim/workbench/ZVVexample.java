@@ -13,6 +13,7 @@ import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.PTMapper;
+import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorWeighted;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersGtfsShapes;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersOsmAttributes;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWeightedCandidates;
@@ -63,9 +64,9 @@ public class ZVVexample {
 
 	public static void main(String[] args) throws Exception {
 //		convertOsm();
-//		convertSchedule();
-		runMappingStandard();
-//		runMappingWeighted();
+		convertSchedule();
+//		runMappingStandard();
+		runMappingWeighted();
 //		runMappingShapes();
 //		runMappingOsm();
 //		System.out.println("\n--- Q8585 ---");
