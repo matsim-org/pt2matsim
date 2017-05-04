@@ -37,11 +37,9 @@ import org.matsim.pt2matsim.tools.PTMapperTools;
 import java.util.*;
 
 /**
- * Default LinkCandidateCreator
- *
  * @author polettif
  *
- * @deprecated
+ * @deprecated default is LinkCandidateCreatorWeighted
  */
 @Deprecated
 public class LinkCandidateCreatorUnique implements LinkCandidateCreator {

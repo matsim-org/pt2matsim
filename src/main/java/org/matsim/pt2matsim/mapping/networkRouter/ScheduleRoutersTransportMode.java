@@ -102,7 +102,7 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 	}
 
 	@Override
-	public double getLinkCandidateTravelCost(TransitLine transitLine, TransitRoute transitRoute, LinkCandidate linkCandidateCurrent) {
+	public double getLinkCandidateTravelCost(LinkCandidate linkCandidateCurrent) {
 		return PTMapperTools.calcTravelCost(linkCandidateCurrent.getLink(), config.getTravelCostType());
 	}
 

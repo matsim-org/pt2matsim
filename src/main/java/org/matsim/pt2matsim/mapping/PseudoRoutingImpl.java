@@ -140,8 +140,8 @@ public class PseudoRoutingImpl implements PseudoRouting {
 							  below maxAllowedTravelCost, a normal edge is added to the pseudoGraph
 							 */
 							if(useExistingNetworkLinks) {
-								double currentCandidateTravelCost = scheduleRouters.getLinkCandidateTravelCost(transitLine, transitRoute, linkCandidateCurrent);
-								double nextCandidateTravelCost = scheduleRouters.getLinkCandidateTravelCost(transitLine, transitRoute, linkCandidateNext);
+								double currentCandidateTravelCost = scheduleRouters.getLinkCandidateTravelCost(linkCandidateCurrent);
+								double nextCandidateTravelCost = scheduleRouters.getLinkCandidateTravelCost(linkCandidateNext);
 								double edgeWeight = pathCost + 0.5 * currentCandidateTravelCost + 0.5 * nextCandidateTravelCost;
 
 								pseudoGraph.addEdge(i, routeStops.get(i), linkCandidateCurrent, routeStops.get(i + 1), linkCandidateNext, edgeWeight, pathLinks);
@@ -156,8 +156,8 @@ public class PseudoRoutingImpl implements PseudoRouting {
 							  facility and the other linkCandidates).
 							 */
 							else {
-								double currentCandidateTravelCost = scheduleRouters.getLinkCandidateTravelCost(transitLine, transitRoute, linkCandidateCurrent);
-								double nextCandidateTravelCost = scheduleRouters.getLinkCandidateTravelCost(transitLine, transitRoute, linkCandidateNext);
+								double currentCandidateTravelCost = scheduleRouters.getLinkCandidateTravelCost(linkCandidateCurrent);
+								double nextCandidateTravelCost = scheduleRouters.getLinkCandidateTravelCost(linkCandidateNext);
 								double artificialEdgeWeight = maxAllowedTravelCost - 0.5 * currentCandidateTravelCost - 0.5 * nextCandidateTravelCost;
 
 								pseudoGraph.addEdge(i, routeStops.get(i), linkCandidateCurrent, routeStops.get(i + 1), linkCandidateNext, artificialEdgeWeight, null);

@@ -144,9 +144,10 @@ public class ScheduleRoutersGtfsShapes implements ScheduleRouters {
 	}
 
 	@Override
-	public double getLinkCandidateTravelCost(TransitLine transitLine, TransitRoute transitRoute, LinkCandidate linkCandidateCurrent) {
-		return shapeRouters.get(transitLine).get(transitRoute).calcLinkTravelCost(linkCandidateCurrent.getLink());
+	public double getLinkCandidateTravelCost(LinkCandidate candidate) {
+		return shapeRouters.get(candidate.getStop().getTransitLine()).get(candidate.getStop().getTransitRoute()).calcLinkTravelCost(candidate.getLink());
 	}
+
 	/**
 	 * Class is sent to path calculator factory
 	 */

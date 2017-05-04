@@ -127,8 +127,8 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 	}
 
 	@Override
-	public double getLinkCandidateTravelCost(TransitLine transitLine, TransitRoute transitRoute, LinkCandidate linkCandidateCurrent) {
-		return osmRouters.get(transitRoute.getTransportMode()).calcLinkTravelCost(linkCandidateCurrent.getLink());
+	public double getLinkCandidateTravelCost(LinkCandidate candidate) {
+		return osmRouters.get(candidate.getStop().getTransitRoute().getTransportMode()).calcLinkTravelCost(candidate.getLink());
 	}
 
 	/**

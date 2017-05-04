@@ -35,6 +35,7 @@ import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorUnique;
+import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorWeighted;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersTransportMode;
 import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoSchedule;
@@ -95,7 +96,7 @@ public class PTMapper {
 
 		// assign defaults
 		if(this.linkCandidates == null) {
-			this.linkCandidates = new LinkCandidateCreatorUnique(schedule, network, this.config);
+			this.linkCandidates = new LinkCandidateCreatorWeighted(schedule, network, this.config);
 		}
 		if(this.scheduleRouters == null) {
 			this.scheduleRouters = new ScheduleRoutersTransportMode(this.config, schedule, network);

@@ -19,11 +19,8 @@
 package org.matsim.pt2matsim.mapping.linkCandidateCreation;
 
 import org.matsim.api.core.v01.Coord;
-import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.utils.geometry.CoordUtils;
-import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.pt2matsim.mapping.lib.PublicTransitStop;
 import org.matsim.pt2matsim.tools.CoordTools;
 
@@ -37,24 +34,20 @@ public class LinkCandidateImpl implements LinkCandidate {
 
 	// helper fields
 	private final double stopFacilityDistance;
-	private final Coord stopFacilityCoord;
 	private final Coord fromNodeCoord;
 	private final Coord toNodeCoord;
-	private final boolean loopLink;
+	private final boolean isLoopLink;
 	private double priority;
 
 	public LinkCandidateImpl(Link link, PublicTransitStop publicTransitStop) {
+		this.link = link;
 		this.stop = publicTransitStop;
-		this.stopFacilityCoord = publicTransitStop.getStopFacility().getCoord();
 
 		this.fromNodeCoord = link.getFromNode().getCoord();
 		this.toNodeCoord = link.getToNode().getCoord();
-
-		this.stopFacilityDistance = CoordUtils.distancePointLinesegment(fromNodeCoord, toNodeCoord, stopFacilityCoord);
-
-		this.loopLink = link.getFromNode().getId().toString().equals(link.getToNode().getId().toString());
-
-		this.link = link;
+		this.stopFacilityDistance = CoordUtils.distancePointLinesegment(fromNodeCoord, toNodeCoord, publicTransitStop.getStopFacility().getCoord());
+		this.isLoopLink = link.getFromNode().getId().toString().equals(link.getToNode().getId().toString());
+		this.priority = 1;
 	}
 
 	@Override
@@ -99,7 +92,7 @@ public class LinkCandidateImpl implements LinkCandidate {
 
 	@Override
 	public boolean isLoopLink() {
-		return loopLink;
+		return isLoopLink;
 	}
 
 	@Override
@@ -107,23 +100,12 @@ public class LinkCandidateImpl implements LinkCandidate {
 		if(this.equals(other)) {
 			return 0;
 		} else {
-			return priority > other.getPriority() ? -1 : 1;
-		}
-
-		/*
-		if(other instanceof LinkCandidateImpl) {
-			LinkCandidateImpl o = (LinkCandidateImpl) other;
-			int dCompare = Double.compare(stopFacilityDistance, o.getStopFacilityDistance());
-			if(dCompare == 0) {
-				return CoordTools.coordIsOnRightSideOfLine(stopFacilityCoord, fromNodeCoord, toNodeCoord) ? 1 : -1;
+			if(priority == other.getPriority()) {
+				return CoordTools.coordIsOnRightSideOfLine(stop.getStopFacility().getCoord(), fromNodeCoord, toNodeCoord) ? -1 : 1;
 			} else {
-				return dCompare;
+				return priority > other.getPriority() ? -1 : 1;
 			}
-		} else {
-			int dCompare = -Double.compare(priority, other.getPriority());
-			return dCompare == 0 ? 1 : dCompare;
 		}
-		*/
 	}
 
 	@Override
@@ -148,29 +130,4 @@ public class LinkCandidateImpl implements LinkCandidate {
 		result = 31 * result + (int) (temp ^ (temp >>> 32));
 		return result;
 	}
-
-	/*
-	@Override
-	public boolean equals(Object o) {
-		if(this == o) return true;
-		if(o == null || getClass() != o.getClass()) return false;
-
-		LinkCandidateImpl that = (LinkCandidateImpl) o;
-
-		if(Double.compare(that.priority, priority) != 0) return false;
-		if(link != null ? !link.equals(that.link) : that.link != null) return false;
-		return stop != null ? stop.equals(that.stop) : that.stop == null;
-	}
-
-	@Override
-	public int hashCode() {
-		int result;
-		long temp;
-		result = link != null ? link.hashCode() : 0;
-		result = 31 * result + (stop != null ? stop.hashCode() : 0);
-		temp = Double.doubleToLongBits(priority);
-		result = 31 * result + (int) (temp ^ (temp >>> 32));
-		return result;
-	}
-	*/
 }

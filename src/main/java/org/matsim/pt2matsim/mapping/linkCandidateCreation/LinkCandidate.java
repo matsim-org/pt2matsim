@@ -37,6 +37,8 @@ public interface LinkCandidate extends Comparable<LinkCandidate> {
 
 	Link getLink();
 
+	PublicTransitStop getStop();
+
 	Coord getFromCoord();
 
 	Coord getToCoord();
@@ -62,6 +64,4 @@ public interface LinkCandidate extends Comparable<LinkCandidate> {
 	double getPriority();
 
 	void setPriority(double priority);
-
-	PublicTransitStop getStop();
 }
