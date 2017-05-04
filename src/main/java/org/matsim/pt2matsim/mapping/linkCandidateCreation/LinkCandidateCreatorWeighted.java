@@ -29,6 +29,7 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
+import org.matsim.pt2matsim.mapping.lib.PublicTransitStop;
 import org.matsim.pt2matsim.mapping.lib.PublicTransitStopImpl;
 import org.matsim.pt2matsim.tools.MiscUtils;
 import org.matsim.pt2matsim.tools.NetworkTools;
@@ -37,23 +38,22 @@ import org.matsim.pt2matsim.tools.PTMapperTools;
 import java.util.*;
 
 /**
- * Default LinkCandidateCreator
- *
  * @author polettif
  */
-public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
+public class LinkCandidateCreatorWeighted implements LinkCandidateCreator {
 
 	private static final Set<String> loopLinkModes = CollectionUtils.stringToSet(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE + "," + PublicTransitMappingStrings.STOP_FACILITY_LOOP_LINK);
-	protected static Logger log = Logger.getLogger(LinkCandidateCreatorUnique.class);
+	protected static Logger log = Logger.getLogger(LinkCandidateCreatorWeighted.class);
 	private final TransitSchedule schedule;
 	private final Network network;
 	private final PublicTransitMappingConfigGroup config;
 
-	private final Map<CandidateKey, SortedSet<LinkCandidate>> linkCandidates = new HashMap<>();
+	private final Map<Id<PublicTransitStop>, SortedSet<LinkCandidate>> linkCandidates = new HashMap<>();
+	private final Map<Id<PublicTransitStop>, PublicTransitStop> stops = new HashMap<>();
 	private final Set<String> scheduleTransportModes = new HashSet<>();
 
 
-	public LinkCandidateCreatorUnique(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
+	public LinkCandidateCreatorWeighted(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
 		this.schedule = schedule;
 		this.network = network;
 		this.config = config;
@@ -68,7 +68,7 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 
 		Map<String, Set<Link>> closeLinksMap = new HashMap<>();
 
-		Map<CandidateKey, Set<Link>> candidates = new HashMap<>();
+		Map<Id<PublicTransitStop>, Set<Link>> candidates = new HashMap<>();
 
 		/*
 		  get closest links for each stop facility (separated by mode)
@@ -81,6 +81,8 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 
 				TransitRouteStop previousRouteStop = transitRoute.getStops().get(0);
 
+				stops.put(PublicTransitStop.createId(transitLine, transitRoute, previousRouteStop), new PublicTransitStopImpl(transitLine, transitRoute, previousRouteStop));
+
 				Set<Link> tmpCloseLinks = MapUtils.getSet(getCloseLinksKey(transitRoute, previousRouteStop), closeLinksMap);
 				if(tmpCloseLinks.size() == 0) {
 					tmpCloseLinks.addAll(findClosestLinks(param, previousRouteStop));
@@ -92,6 +94,7 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 					TransitStopFacility previousStopFacility = previousRouteStop.getStopFacility();
 					TransitRouteStop currentRouteStop = transitRoute.getStops().get(i);
 					TransitStopFacility currentStopFacility = currentRouteStop.getStopFacility();
+					stops.put(PublicTransitStop.createId(transitLine, transitRoute, currentRouteStop), new PublicTransitStopImpl(transitLine, transitRoute, currentRouteStop));
 
 					Set<Link> currentLinks = new HashSet<>();
 
@@ -123,8 +126,8 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 					 */
 					PTMapperTools.separateLinks(currentStopFacility.getCoord(), currentLinks, previousStopFacility.getCoord(), previousLinks);
 
-					candidates.put(getKey(transitLine, transitRoute, previousRouteStop), previousLinks);
-					candidates.put(getKey(transitLine, transitRoute, currentRouteStop), currentLinks);
+					candidates.put(PublicTransitStop.createId(transitLine, transitRoute, previousRouteStop), previousLinks);
+					candidates.put(PublicTransitStop.createId(transitLine, transitRoute, currentRouteStop), currentLinks);
 
 					previousLinks = currentLinks;
 					previousRouteStop = currentRouteStop;
@@ -132,43 +135,60 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 			}
 		}
 
-		Map<String, LinkCandidate> allCandidates = new HashMap<>();
+		Map<Id<PublicTransitStop>, Double> maxStopDist = new HashMap<>();
+		Map<Id<PublicTransitStop>, Double> minStopDist = new HashMap<>();
 
 		/*
 		  create and store link candidates
 		 */
-		for(Map.Entry<CandidateKey, Set<Link>> c : candidates.entrySet()) {
-			CandidateKey key = c.getKey();
+		for(Map.Entry<Id<PublicTransitStop>, Set<Link>> c : candidates.entrySet()) {
+			PublicTransitStop stop = stops.get(c.getKey());
 			Set<Link> links = c.getValue();
 
 			if(links.size() > 0) {
-				NetworkTools.reduceSequencedLinks(links, c.getKey().getTransitRouteStop().getStopFacility().getCoord());
+				NetworkTools.reduceSequencedLinks(links, stop.getStopFacility().getCoord());
 			} else {
 				// no links for this stop, create artificial loop link
 				links = new HashSet<>();
-				links.add(createLoopLink(c.getKey().getTransitRouteStop().getStopFacility()));
+				links.add(createLoopLink(stop.getStopFacility()));
 			}
 
+			double minDist = Double.MAX_VALUE;
+			double maxDist = 0.0;
+
 			for(Link link : links) {
-				LinkCandidate linkCandidate =
-						allCandidates.computeIfAbsent(c.getKey().getTransitRouteStop().getStopFacility().getId().toString() + ":" + link.getId().toString(),
-								k -> new LinkCandidateImpl(link, new PublicTransitStopImpl(key.getTransitLine(), key.getTransitRoute(), key.getTransitRouteStop())));
-				MiscUtils.getSortedSet(getKey(key.getTransitLine(), key.getTransitRoute(), key.getTransitRouteStop()), linkCandidates).add(linkCandidate);
+				LinkCandidate linkCandidate = new LinkCandidateImpl(link, stop);
+				MiscUtils.getSortedSet(stop.getId(), linkCandidates).add(linkCandidate);
+
+				if(linkCandidate.getStopFacilityDistance() > maxDist) maxDist = linkCandidate.getStopFacilityDistance();
+				if(linkCandidate.getStopFacilityDistance() < minDist) minDist = linkCandidate.getStopFacilityDistance();
 			}
+
+			maxStopDist.put(stop.getId(), maxDist);
+			minStopDist.put(stop.getId(), minDist);
 		}
 
 		/*
-		  Add manually set link candidates from config
+		Set priorities
 		 */
-		addManualLinkCandidates(config.getManualLinkCandidates());
+		for(Map.Entry<Id<PublicTransitStop>, SortedSet<LinkCandidate>> entry : linkCandidates.entrySet()) {
+			double minDist = minStopDist.get(entry.getKey());
+			double maxDist = maxStopDist.get(entry.getKey());
+			double delta = maxDist - minDist;
+
+			for(LinkCandidate candidate : entry.getValue()) {
+				double d = candidate.getStopFacilityDistance();
+				if(delta > 0) {
+					candidate.setPriority(1 - ((d - minDist) / (maxDist - minDist)));
+				} else {
+					candidate.setPriority(1);
+				}
+			}
+		}
 	}
 
 	private String getCloseLinksKey(TransitRoute transitRoute, TransitRouteStop routeStop) {
 		return transitRoute.getTransportMode() + ":" + routeStop.getStopFacility().getId();
-	}
-
-	private CandidateKey getKey(TransitLine transitLine, TransitRoute transitRoute, TransitRouteStop transitRouteStop) {
-		return new CandidateKey(transitLine, transitRoute, transitRouteStop);
 	}
 
 	private Link createLoopLink(TransitStopFacility stopFacility) {
@@ -228,81 +248,9 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 		return closestLinks;
 	}
 
-	/**
-	 * Adds the manually set link candidates
-	 */
-	private void addManualLinkCandidates(Set<PublicTransitMappingConfigGroup.ManualLinkCandidates> manualLinkCandidatesSet) {
-
-		Map<String, Set<PublicTransitMappingConfigGroup.ManualLinkCandidates>> manualCandidatesByMode = new HashMap<>();
-		Map<Id<TransitStopFacility>, Set<PublicTransitMappingConfigGroup.ManualLinkCandidates>> manualCandidatesByFacility = new HashMap<>();
-
-		for(PublicTransitMappingConfigGroup.ManualLinkCandidates manualCandidates : manualLinkCandidatesSet) {
-			Set<String> scheduleModes = manualCandidates.getScheduleModes();
-			if(scheduleModes.size() == 0) {
-				scheduleModes = scheduleTransportModes;
-			}
-			for(String mode : scheduleModes) {
-				MapUtils.getSet(mode, manualCandidatesByMode).add(manualCandidates);
-			}
-
-			MapUtils.getSet(manualCandidates.getStopFacilityId(), manualCandidatesByFacility).add(manualCandidates);
-
-			// check
-			TransitStopFacility parentStopFacility = manualCandidates.getStopFacilityId() != null ? schedule.getFacilities().get(manualCandidates.getStopFacilityId()) : null;
-			if(parentStopFacility == null && manualCandidates.getStopFacilityId() != null) {
-				log.warn("stopFacility id " + manualCandidates.getStopFacilityId() + " not available in schedule. Manual link candidates for this facility are ignored.");
-			}
-
-		}
-
-		if(manualCandidatesByFacility.size() == 0) {
-			return;
-		}
-
-
-		for(TransitLine transitLine : schedule.getTransitLines().values()) {
-			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
-				for(TransitRouteStop routeStop : transitRoute.getStops()) {
-					String routeScheduleMode = transitRoute.getTransportMode();
-					Set<PublicTransitMappingConfigGroup.ManualLinkCandidates> candidates = manualCandidatesByFacility.get(routeStop.getStopFacility().getId());
-					for(PublicTransitMappingConfigGroup.ManualLinkCandidates manualCandidates : candidates) {
-						if(manualCandidates.getScheduleModes().contains(routeScheduleMode)) {
-
-							PublicTransitMappingConfigGroup.LinkCandidateCreatorParams lccParams = config.getLinkCandidateCreatorParams().get(routeScheduleMode);
-
-							TransitStopFacility parentStopFacility = schedule.getFacilities().get(manualCandidates.getStopFacilityId());
-
-							SortedSet<LinkCandidate> lcSet = (manualCandidates.doesReplaceCandidates() ? new TreeSet<>() : MiscUtils.getSortedSet(getKey(transitLine, transitRoute, routeStop), linkCandidates));
-							for(Id<Link> linkId : manualCandidates.getLinkIds()) {
-								Link link = network.getLinks().get(linkId);
-								if(link == null) {
-									log.warn("link " + linkId + " not found in network.");
-								} else {
-									if(CoordUtils.calcEuclideanDistance(link.getCoord(), parentStopFacility.getCoord()) > lccParams.getMaxLinkCandidateDistance()) {
-										log.warn("Distance from manual link candidate " + link.getId() + " to stop facility " +
-												manualCandidates.getStopFacilityIdStr() + " is more than " + lccParams.getMaxLinkCandidateDistance() +
-												"(" + CoordUtils.calcEuclideanDistance(link.getCoord(), parentStopFacility.getCoord()) + ")");
-										log.info("Manual link candidate will still be used");
-									}
-
-									lcSet.add(new LinkCandidateImpl(link, new PublicTransitStopImpl(transitLine, transitRoute, routeStop)));
-								}
-							}
-							linkCandidates.put(getKey(transitLine, transitRoute, routeStop), lcSet);
-						}
-					}
-				}
-			}
-		}
-	}
-
 	@Override
 	public SortedSet<LinkCandidate> getLinkCandidates(TransitRouteStop transitRouteStop, TransitLine transitLine, TransitRoute transitRoute) {
-		return linkCandidates.get(getKey(transitLine, transitRoute, transitRouteStop));
-	}
-
-	private double getLinkTravelCost(Link link) {
-		return (config.getTravelCostType().equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
+		return linkCandidates.get(PublicTransitStop.createId(transitLine, transitRoute, transitRouteStop));
 	}
 
 	private class CandidateKey {

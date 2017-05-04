@@ -25,6 +25,8 @@ import java.util.Set;
 /**
  * Creates a Router for each transportMode of a schedule.
  *
+ * Default ScheduleRouters
+ *
  * @author polettif
  */
 public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModule {
