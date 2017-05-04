@@ -68,11 +68,7 @@ public class PublicTransitStopImpl implements PublicTransitStop {
 
 	@Override
 	public String toString() {
-		return "[line:" + transitLine.getId() +
-				"][route:" + transitRoute.getId() +
-				"[stop:" + transitRouteStop.getStopFacility().getId() +
-				" arr:" + transitRouteStop.getArrivalOffset() +
-				" dep:" + transitRouteStop.getDepartureOffset() + " ]";
+		return id.toString();
 	}
 
 	@Override
@@ -80,13 +76,18 @@ public class PublicTransitStopImpl implements PublicTransitStop {
 		if(this == o) return true;
 		if(o == null || getClass() != o.getClass()) return false;
 
-		PublicTransitStopImpl ptStop = (PublicTransitStopImpl) o;
+		PublicTransitStopImpl that = (PublicTransitStopImpl) o;
 
-		return id.equals(ptStop.id);
+		if(transitLine != null ? !transitLine.equals(that.transitLine) : that.transitLine != null) return false;
+		if(transitRoute != null ? !transitRoute.equals(that.transitRoute) : that.transitRoute != null) return false;
+		return transitRouteStop != null ? transitRouteStop.equals(that.transitRouteStop) : that.transitRouteStop == null;
 	}
 
 	@Override
 	public int hashCode() {
-		return id.hashCode();
+		int result = transitLine != null ? transitLine.hashCode() : 0;
+		result = 31 * result + (transitRoute != null ? transitRoute.hashCode() : 0);
+		result = 31 * result + (transitRouteStop != null ? transitRouteStop.hashCode() : 0);
+		return result;
 	}
 }

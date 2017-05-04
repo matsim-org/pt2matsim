@@ -40,7 +40,10 @@ import java.util.*;
  * Default LinkCandidateCreator
  *
  * @author polettif
+ *
+ * @deprecated
  */
+@Deprecated
 public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 
 	private static final Set<String> loopLinkModes = CollectionUtils.stringToSet(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE + "," + PublicTransitMappingStrings.STOP_FACILITY_LOOP_LINK);
@@ -172,7 +175,7 @@ public class LinkCandidateCreatorUnique implements LinkCandidateCreator {
 	}
 
 	private Link createLoopLink(TransitStopFacility stopFacility) {
-		return NetworkTools.createArtificialStopFacilityLink(stopFacility, network, PublicTransitMappingStrings.PREFIX_ARTIFICIAL, 20, loopLinkModes);
+		return PTMapperTools.createArtificialStopFacilityLink(stopFacility, network, PublicTransitMappingStrings.PREFIX_ARTIFICIAL, 20, loopLinkModes);
 	}
 
 	/**

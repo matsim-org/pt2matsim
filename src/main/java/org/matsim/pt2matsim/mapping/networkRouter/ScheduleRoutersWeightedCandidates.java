@@ -23,106 +23,24 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Creates a Router for each transportMode of a schedule.
+ * Link candidates are weighted according to their priority, travel costs are reduced for
+ * high priority candidates.
  *
  * @author polettif
  */
-public class ScheduleRoutersWeightedCandidates implements ScheduleRouters, MapperModule {
+public class ScheduleRoutersWeightedCandidates extends ScheduleRoutersTransportMode {
 
 	protected static Logger log = Logger.getLogger(ScheduleRoutersWeightedCandidates.class);
-
-	// standard fields
 	private final PublicTransitMappingConfigGroup config;
-	private final TransitSchedule schedule;
-	private final Network network;
-
-	// path calculators
-	private final Map<String, PathCalculator> pathCalculatorsByMode = new HashMap<>();
-	private final Map<String, Network> networksByMode = new HashMap<>();
 
 	public ScheduleRoutersWeightedCandidates(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network) {
+		super(config, schedule, network);
 		this.config = config;
-		this.schedule = schedule;
-		this.network = network;
-	}
-
-	/**
-	 * Load path calculators for all transit routes
-	 */
-	@Override
-	public void load() {
-		Map<String, Set<String>> modeRoutingAssignment = config.getModeRoutingAssignment();
-
-		log.info("Initiating network and router for transit routes...");
-		for(TransitLine transitLine : schedule.getTransitLines().values()) {
-			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
-				String scheduleMode = transitRoute.getTransportMode();
-				PathCalculator tmpRouter = pathCalculatorsByMode.get(scheduleMode);
-				if(tmpRouter == null) {
-					log.info("New router for schedule mode " + scheduleMode);
-					Set<String> networkTransportModes = modeRoutingAssignment.get(scheduleMode);
-
-					Network filteredNetwork = NetworkTools.createFilteredNetworkByLinkMode(this.network, networkTransportModes);
-
-					LocalRouter r = new LocalRouter();
-
-					LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory(filteredNetwork, r);
-					tmpRouter = new PathCalculator(factory.createPathCalculator(filteredNetwork, r, r));
-
-					pathCalculatorsByMode.put(scheduleMode, tmpRouter);
-					networksByMode.put(scheduleMode, filteredNetwork);
-				}
-			}
-		}
-	}
-
-
-	@Override
-	public LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, TransitLine transitLine, TransitRoute transitRoute) {
-		return this.calcLeastCostPath(fromLinkCandidate.getLink().getToNode().getId(), toLinkCandidate.getLink().getFromNode().getId(), transitLine, transitRoute);
-	}
-
-	@Override
-	public LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNodeId, Id<Node> toNodeId, TransitLine transitLine, TransitRoute transitRoute) {
-		Network n = networksByMode.get(transitRoute.getTransportMode());
-		if(n == null) return null;
-
-		Node fromNode = n.getNodes().get(fromNodeId);
-		Node toNode = n.getNodes().get(toNodeId);
-		if(fromNode == null || toNode == null) return null;
-
-		return pathCalculatorsByMode.get(transitRoute.getTransportMode()).calcPath(fromNode, toNode);
-	}
-
-	@Override
-	public double getMinimalTravelCost(TransitRouteStop fromTransitRouteStop, TransitRouteStop toTransitRouteStop, TransitLine transitLine, TransitRoute transitRoute) {
-		return PTMapperTools.calcMinTravelCost(fromTransitRouteStop, toTransitRouteStop, config.getTravelCostType());
 	}
 
 	@Override
 	public double getLinkCandidateTravelCost(TransitLine transitLine, TransitRoute transitRoute, LinkCandidate linkCandidateCurrent) {
 		return (1 - linkCandidateCurrent.getPriority()) * PTMapperTools.calcTravelCost(linkCandidateCurrent.getLink(), config.getTravelCostType());
-	}
-
-	/**
-	 * Class is sent to path calculator factory
-	 */
-	private class LocalRouter implements TravelDisutility, TravelTime{
-
-		@Override
-		public double getLinkTravelDisutility(Link link, double time, Person person, Vehicle vehicle) {
-			return this.getLinkMinimumTravelDisutility(link);
-		}
-
-		@Override
-		public double getLinkMinimumTravelDisutility(Link link) {
-			return PTMapperTools.calcTravelCost(link, config.getTravelCostType());
-		}
-
-		@Override
-		public double getLinkTravelTime(Link link, double time, Person person, Vehicle vehicle) {
-			return link.getLength() / link.getFreespeed();
-		}
 	}
 
 }

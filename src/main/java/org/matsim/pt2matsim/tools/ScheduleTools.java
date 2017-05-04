@@ -479,20 +479,6 @@ public final class ScheduleTools {
 		return childStopSplit[0];
 	}
 
-	public static Id<Link> createArtificialLinkId(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate) {
-		if(fromLinkCandidate.isLoopLink()) {
-			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getStop().getStopFacility().getId() + "_" + toLinkCandidate.getLink().getId());
-		} else if(toLinkCandidate.isLoopLink()) {
-			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getLink().getId() + "_" + toLinkCandidate.getStop().getStopFacility().getId());
-		} else {
-			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getLink().getId() + "_" + toLinkCandidate.getLink().getId());
-		}
-	}
-
-	public static Id<Link> createArtificialLinkId(TransitStopFacility stopFacility) {
-		return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + stopFacility.getId());
-	}
-
 	/**
 	 * Changes the free speed of links based on the necessary travel times
 	 * given by the schedule. Rather experimental and only recommended for

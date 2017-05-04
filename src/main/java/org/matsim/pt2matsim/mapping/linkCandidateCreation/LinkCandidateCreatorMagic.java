@@ -39,6 +39,8 @@ import org.matsim.pt2matsim.tools.PTMapperTools;
 import java.util.*;
 
 /**
+ * Creates link candidates without mode separated config. Uses more "heuristics".
+ *
  * @author polettif
  */
 public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
@@ -191,7 +193,7 @@ public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 		/*
 		  Add manually set link candidates from config
 		 */
-			addManualLinkCandidates(config.getManualLinkCandidates());
+		addManualLinkCandidates(config.getManualLinkCandidates());
 	}
 
 	private String getCloseLinksKey(TransitRoute transitRoute, TransitRouteStop routeStop) {
@@ -199,7 +201,7 @@ public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 	}
 
 	private Link createLoopLink(TransitStopFacility stopFacility) {
-		return NetworkTools.createArtificialStopFacilityLink(stopFacility, network, PublicTransitMappingStrings.PREFIX_ARTIFICIAL, 20, loopLinkModes);
+		return PTMapperTools.createArtificialStopFacilityLink(stopFacility, network, PublicTransitMappingStrings.PREFIX_ARTIFICIAL, 20, loopLinkModes);
 	}
 
 	/**
@@ -290,7 +292,6 @@ public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 	 * Adds the manually set link candidates
 	 */
 	private void addManualLinkCandidates(Set<PublicTransitMappingConfigGroup.ManualLinkCandidates> manualLinkCandidatesSet) {
-/*
 		Map<String, Set<PublicTransitMappingConfigGroup.ManualLinkCandidates>> manualCandidatesByMode = new HashMap<>();
 		Map<Id<TransitStopFacility>, Set<PublicTransitMappingConfigGroup.ManualLinkCandidates>> manualCandidatesByFacility = new HashMap<>();
 
@@ -326,11 +327,13 @@ public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 					for(PublicTransitMappingConfigGroup.ManualLinkCandidates manualCandidates : candidates) {
 						if(manualCandidates.getScheduleModes().contains(routeScheduleMode)) {
 
+							PublicTransitStop ptstop = new PublicTransitStopImpl(transitLine, transitRoute, routeStop);
+
 							PublicTransitMappingConfigGroup.LinkCandidateCreatorParams lccParams = config.getLinkCandidateCreatorParams().get(routeScheduleMode);
 
 							TransitStopFacility parentStopFacility = schedule.getFacilities().get(manualCandidates.getStopFacilityId());
 
-							SortedSet<LinkCandidate> lcSet = (manualCandidates.doesReplaceCandidates() ? new TreeSet<>() : MiscUtils.getSortedSet(getKey(transitLine, transitRoute, routeStop), linkCandidates));
+							SortedSet<LinkCandidate> lcSet = (manualCandidates.doesReplaceCandidates() ? new TreeSet<>() : MiscUtils.getSortedSet(ptstop.getId(), linkCandidates));
 							for(Id<Link> linkId : manualCandidates.getLinkIds()) {
 								Link link = network.getLinks().get(linkId);
 								if(link == null) {
@@ -343,17 +346,15 @@ public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 										log.info("Manual link candidate will still be used");
 									}
 
-									// todo reimplement
-//									lcSet.add(new LinkCandidateImpl(link, parentStopFacility));
+									lcSet.add(new LinkCandidateImpl(link, ptstop));
 								}
 							}
-							linkCandidates.put(getKey(transitLine, transitRoute, routeStop), lcSet);
+							linkCandidates.put(ptstop.getId(), lcSet);
 						}
 					}
 				}
 			}
 		}
-		*/
 	}
 
 	@Override
@@ -361,59 +362,5 @@ public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 		return linkCandidates.get(PublicTransitStop.createId(transitLine, transitRoute, transitRouteStop));
 	}
 
-	private class CandidateKey {
 
-		private final String key;
-		private final TransitLine transitLine;
-		private final TransitRoute transitRoute;
-		private final TransitRouteStop transitRouteStop;
-
-		public CandidateKey(TransitLine transitLine, TransitRoute transitRoute, TransitRouteStop transitRouteStop) {
-			this.key = "line:" + transitLine.getId() +
-					".route:" + transitRoute.getId() +
-					".time:" + transitRouteStop.getArrivalOffset() +
-					".stop:" + transitRouteStop.getStopFacility().getId();
-
-			this.transitLine = transitLine;
-			this.transitRoute = transitRoute;
-			this.transitRouteStop = transitRouteStop;
-		}
-
-		public String getKey() {
-			return key;
-		}
-
-		public TransitLine getTransitLine() {
-			return transitLine;
-		}
-
-		public TransitRoute getTransitRoute() {
-			return transitRoute;
-		}
-
-		public TransitRouteStop getTransitRouteStop() {
-			return transitRouteStop;
-		}
-
-		public boolean equals(Object obj) {
-			if(this == obj)
-				return true;
-			if(obj == null)
-				return false;
-			if(obj.getClass() != this.getClass())
-				return false;
-
-			CandidateKey other = (CandidateKey) obj;
-			return this.getKey().equals(other.getKey());
-		}
-
-		public int hashCode() {
-			return key.hashCode();
-		}
-
-		public String toString() {
-			return key;
-		}
-
-	}
 }

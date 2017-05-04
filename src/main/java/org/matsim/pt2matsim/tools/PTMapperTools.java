@@ -24,12 +24,15 @@ import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.NetworkFactory;
+import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
+import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.mapping.pseudoRouter.ArtificialLink;
 import org.matsim.pt2matsim.mapping.pseudoRouter.ArtificialLinkImpl;
 
@@ -237,5 +240,51 @@ public final class PTMapperTools {
 
 	public static double calcTravelCost(Link link, PublicTransitMappingConfigGroup.TravelCostType travelCostType) {
 		return (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
+	}
+
+	public static Id<Link> createArtificialLinkId(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate) {
+		if(fromLinkCandidate.isLoopLink()) {
+			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getStop().getStopFacility().getId() + "_" + toLinkCandidate.getLink().getId());
+		} else if(toLinkCandidate.isLoopLink()) {
+			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getLink().getId() + "_" + toLinkCandidate.getStop().getStopFacility().getId());
+		} else {
+			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getLink().getId() + "_" + toLinkCandidate.getLink().getId());
+		}
+	}
+
+	public static Id<Link> createArtificialLinkId(TransitStopFacility stopFacility) {
+		return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + stopFacility.getId());
+	}
+
+	/**
+	 * Creates a node and dummy/loop link on the coordinate of the stop facility and
+	 * adds both to the network. The stop facility is NOT referenced.
+	 *
+	 * @return the new link or the existing link if it's already present in the network
+	 */
+	public static Link createArtificialStopFacilityLink(TransitStopFacility stopFacility, Network network, String prefix, double freespeed, Set<String> transportModes) {
+		Id<Link> dummyLinkId = createArtificialLinkId(stopFacility);
+
+		Link dummyLink = network.getLinks().get(dummyLinkId);
+		if(dummyLink != null) {
+			return dummyLink;
+		} else {
+			NetworkFactory networkFactory = network.getFactory();
+
+			Coord coord = stopFacility.getCoord();
+
+			Node dummyNode = networkFactory.createNode(Id.createNodeId(prefix + stopFacility.getId()), coord);
+			dummyLink = networkFactory.createLink(dummyLinkId, dummyNode, dummyNode);
+
+			dummyLink.setAllowedModes(transportModes);
+			dummyLink.setLength(10);
+			dummyLink.setFreespeed(freespeed);
+			dummyLink.setCapacity(9999);
+
+			network.addNode(dummyNode);
+			network.addLink(dummyLink);
+
+			return dummyLink;
+		}
 	}
 }

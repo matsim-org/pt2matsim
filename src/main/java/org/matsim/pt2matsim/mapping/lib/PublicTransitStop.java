@@ -43,9 +43,9 @@ public interface PublicTransitStop extends Identifiable<PublicTransitStop> {
 	static Id<PublicTransitStop> createId(TransitLine transitLine, TransitRoute transitRoute, TransitRouteStop transitRouteStop) {
 		return Id.create("[line:" + transitLine.getId() +
 				"][route:" + transitRoute.getId() +
-				"[stop:" + transitRouteStop.getStopFacility().getId() +
+				"][stop:" + transitRouteStop.getStopFacility().getId() +
 				" arr:" + transitRouteStop.getArrivalOffset() +
-				" dep:" + transitRouteStop.getDepartureOffset() + " ]",
+				" dep:" + transitRouteStop.getDepartureOffset() + "]",
 				PublicTransitStop.class);
 	}
 

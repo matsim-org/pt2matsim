@@ -179,7 +179,7 @@ public class LinkCandidateCreatorWeighted implements LinkCandidateCreator {
 			for(LinkCandidate candidate : entry.getValue()) {
 				double d = candidate.getStopFacilityDistance();
 				if(delta > 0) {
-					candidate.setPriority(1 - ((d - minDist) / (maxDist - minDist)));
+					candidate.setPriority((d - minDist) / (maxDist - minDist));
 				} else {
 					candidate.setPriority(1);
 				}
@@ -192,7 +192,7 @@ public class LinkCandidateCreatorWeighted implements LinkCandidateCreator {
 	}
 
 	private Link createLoopLink(TransitStopFacility stopFacility) {
-		return NetworkTools.createArtificialStopFacilityLink(stopFacility, network, PublicTransitMappingStrings.PREFIX_ARTIFICIAL, 20, loopLinkModes);
+		return PTMapperTools.createArtificialStopFacilityLink(stopFacility, network, PublicTransitMappingStrings.PREFIX_ARTIFICIAL, 20, loopLinkModes);
 	}
 
 	/**
@@ -253,59 +253,4 @@ public class LinkCandidateCreatorWeighted implements LinkCandidateCreator {
 		return linkCandidates.get(PublicTransitStop.createId(transitLine, transitRoute, transitRouteStop));
 	}
 
-	private class CandidateKey {
-
-		private final String key;
-		private final TransitLine transitLine;
-		private final TransitRoute transitRoute;
-		private final TransitRouteStop transitRouteStop;
-
-		public CandidateKey(TransitLine transitLine, TransitRoute transitRoute, TransitRouteStop transitRouteStop) {
-			this.key = "line:" + transitLine.getId() +
-					".route:" + transitRoute.getId() +
-					".time:" + transitRouteStop.getArrivalOffset() +
-					".stop:" + transitRouteStop.getStopFacility().getId();
-
-			this.transitLine = transitLine;
-			this.transitRoute = transitRoute;
-			this.transitRouteStop = transitRouteStop;
-		}
-
-		public String getKey() {
-			return key;
-		}
-
-		public TransitLine getTransitLine() {
-			return transitLine;
-		}
-
-		public TransitRoute getTransitRoute() {
-			return transitRoute;
-		}
-
-		public TransitRouteStop getTransitRouteStop() {
-			return transitRouteStop;
-		}
-
-		public boolean equals(Object obj) {
-			if(this == obj)
-				return true;
-			if(obj == null)
-				return false;
-			if(obj.getClass() != this.getClass())
-				return false;
-
-			CandidateKey other = (CandidateKey) obj;
-			return this.getKey().equals(other.getKey());
-		}
-
-		public int hashCode() {
-			return key.hashCode();
-		}
-
-		public String toString() {
-			return key;
-		}
-
-	}
 }
