@@ -534,9 +534,9 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		private String scheduleMode;
 		private Set<String> networkModes = new HashSet<>();
 
-		private int maxNClosestLinks = 8;
-		private double maxLinkCandidateDistance = 80;
-		private double linkDistanceTolerance = 1.0;
+		private int maxNClosestLinks = 6;
+		private double maxLinkCandidateDistance = 90;
+		private double linkDistanceTolerance = 1.6;
 		private boolean useLoopLink = false;
 
 		public LinkCandidateCreatorParams() {
