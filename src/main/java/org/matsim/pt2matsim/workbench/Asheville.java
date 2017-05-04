@@ -28,6 +28,7 @@ import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.PTMapper;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorWeighted;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWeightedCandidates;
+import org.matsim.pt2matsim.osm.lib.Osm;
 import org.matsim.pt2matsim.plausibility.MappingAnalysis;
 import org.matsim.pt2matsim.run.Gtfs2TransitSchedule;
 import org.matsim.pt2matsim.run.Osm2MultimodalNetwork;
@@ -37,7 +38,9 @@ import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ShapeTools;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author polettif
@@ -51,20 +54,10 @@ public class Asheville {
 	public static final String outputScheduleFile = "output/asheville_schedule.xml.gz";
 
 	public static void main(String[] args) {
-//		convertOsm();
+		convertOsm();
 //		convertGtfs();
 		runMapping();
 		analysis();
-	}
-
-	public static void convertOsm() {
-		OsmConverterConfigGroup config = OsmConverterConfigGroup.createDefaultConfig();
-		config.setKeepPaths(true);
-		config.setOsmFile("network/asheville.osm");
-		config.setOutputCoordinateSystem(EPSG);
-		config.setOutputNetworkFile(inputNetworkFile);
-
-		Osm2MultimodalNetwork.run(config);
 	}
 
 	public static void convertGtfs() {
@@ -73,12 +66,15 @@ public class Asheville {
 
 	public static void runMapping() {
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
+		config.getLinkCandidateCreatorParams().get("bus").setLinkDistanceTolerance(1.2);
+		config.getLinkCandidateCreatorParams().get("bus").setMaxNClosestLinks(8);
+		config.getLinkCandidateCreatorParams().get("bus").setMaxLinkCandidateDistance(100);
 		config.setNumOfThreads(6);
 
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
 
-		PTMapper ptMapper = new PTMapper(config, schedule, network, new LinkCandidateCreatorWeighted(schedule, network, config));
+		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersWeightedCandidates(config, schedule, network));
 		ptMapper.run();
 
 		ScheduleTools.writeTransitSchedule(schedule, outputScheduleFile);
@@ -98,6 +94,33 @@ public class Asheville {
 		System.out.format("\n>>> Q8585: %.3f\n", analysis.getQ8585());
 
 		analysis.writeQuantileDistancesCsv("output/analysis/quantiles.csv");
+	}
+
+	public static void convertOsm() {
+		Set<String> carSingleton = Collections.singleton("car");
+
+		OsmConverterConfigGroup config = new OsmConverterConfigGroup();
+		config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MOTORWAY, 2, 120.0 / 3.6, 1.0, 2000, true, carSingleton));
+		config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MOTORWAY, 2, 120.0 / 3.6, 1.0, 2000, true, carSingleton));
+		config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MOTORWAY_LINK, 1, 80.0 / 3.6, 1.0, 1500, true, carSingleton));
+		config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.TRUNK, 1, 80.0 / 3.6, 1.0, 2000, false, carSingleton));
+		config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.TRUNK_LINK, 1, 50.0 / 3.6, 1.0, 1500, false, carSingleton));
+		config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.PRIMARY, 1, 80.0 / 3.6, 1.0, 1500, false, carSingleton));
+		config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.PRIMARY_LINK, 1, 60.0 / 3.6, 1.0, 1500, false, carSingleton));
+		config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.SECONDARY, 1, 60.0 / 3.6, 1.0, 1000, false, carSingleton));
+		config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.TERTIARY, 1, 50.0 / 3.6, 1.0, 600, false, carSingleton));
+		config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MINOR, 1, 40.0 / 3.6, 1.0, 600, false, carSingleton));
+		config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.UNCLASSIFIED, 1, 50.0 / 3.6, 1.0, 600, false, carSingleton));
+		config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.RESIDENTIAL, 1, 30.0 / 3.6, 1.0, 600, false, carSingleton));
+		config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.LIVING_STREET, 1, 15.0 / 3.6, 1.0, 300, false, carSingleton));
+		config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.SERVICE, 1, 15.0 / 3.6, 1.0, 200, 	false, carSingleton));
+
+		config.setKeepPaths(true);
+		config.setOsmFile("network/asheville.osm");
+		config.setOutputCoordinateSystem(EPSG);
+		config.setOutputNetworkFile(inputNetworkFile);
+
+		Osm2MultimodalNetwork.run(config);
 	}
 
 }

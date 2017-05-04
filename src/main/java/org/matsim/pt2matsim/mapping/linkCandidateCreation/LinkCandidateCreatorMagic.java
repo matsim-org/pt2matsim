@@ -49,25 +49,33 @@ public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 	protected static Logger log = Logger.getLogger(LinkCandidateCreatorMagic.class);
 	private final TransitSchedule schedule;
 	private final Network network;
-	private final PublicTransitMappingConfigGroup config;
 
 	private final Map<Id<PublicTransitStop>, SortedSet<LinkCandidate>> linkCandidates = new HashMap<>();
 	private final Map<Id<PublicTransitStop>, PublicTransitStop> stops = new HashMap<>();
 	private final Set<String> scheduleTransportModes = new HashSet<>();
 
+	private final int nLinks;
+	private final double distanceMultiplier;
+	private final double maxDistance;
+	private final Map<String, Set<String>> routingAssignment;
+	private double nodeSearchRadius;
 
-	public LinkCandidateCreatorMagic(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
+
+	public LinkCandidateCreatorMagic(TransitSchedule schedule, Network network, int nLinks, double distanceMultiplier, double maxDistance, Map<String, Set<String>> routingAssignment) {
 		this.schedule = schedule;
 		this.network = network;
-		this.config = config;
+		this.nLinks = nLinks;
+		this.distanceMultiplier = distanceMultiplier;
+		this.maxDistance = maxDistance;
+		this.routingAssignment = routingAssignment;
 	}
 
 	@Override
 	public void load() {
-		log.info("   search radius: " + config.getNodeSearchRadius());
-		log.info("   Note: loop links for stop facilities are created if no link candidate can be found.");
+		this.nodeSearchRadius = maxDistance*3;
 
-		Map<String, PublicTransitMappingConfigGroup.LinkCandidateCreatorParams> lccParams = config.getLinkCandidateCreatorParams();
+		log.info("   search radius: " + nodeSearchRadius);
+		log.info("   Note: loop links for stop facilities are created if no link candidate can be found.");
 
 		Map<String, Set<Link>> closeLinksMap = new HashMap<>();
 
@@ -79,8 +87,8 @@ public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				String scheduleTransportMode = transitRoute.getTransportMode();
+				Set<String> networkModes = routingAssignment.get(scheduleTransportMode);
 				scheduleTransportModes.add(scheduleTransportMode);
-				PublicTransitMappingConfigGroup.LinkCandidateCreatorParams param = lccParams.get(scheduleTransportMode);
 
 				TransitRouteStop previousRouteStop = transitRoute.getStops().get(0);
 
@@ -88,7 +96,7 @@ public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 
 				Set<Link> tmpCloseLinks = MapUtils.getSet(getCloseLinksKey(transitRoute, previousRouteStop), closeLinksMap);
 				if(tmpCloseLinks.size() == 0) {
-					tmpCloseLinks.addAll(findClosestLinks(param, previousRouteStop));
+					tmpCloseLinks.addAll(findClosestLinks(previousRouteStop.getStopFacility().getCoord(), networkModes));
 				}
 
 				Set<Link> previousLinks = new HashSet<>(tmpCloseLinks);
@@ -118,7 +126,7 @@ public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 
 						// look for closes links in network
 						if(closeLinks.size() == 0) {
-							closeLinks.addAll(findClosestLinks(param, currentRouteStop));
+							closeLinks.addAll(findClosestLinks(currentRouteStop.getStopFacility().getCoord(), networkModes));
 						}
 
 						currentLinks.addAll(closeLinks);
@@ -189,11 +197,6 @@ public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 
 			}
 		}
-
-		/*
-		  Add manually set link candidates from config
-		 */
-		addManualLinkCandidates(config.getManualLinkCandidates());
 	}
 
 	private String getCloseLinksKey(TransitRoute transitRoute, TransitRouteStop routeStop) {
@@ -225,41 +228,9 @@ public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 	 *
 	 * @return list of the closest links from coordinate <tt>coord</tt>.
 	 */
-	private List<Link> findClosestLinks(PublicTransitMappingConfigGroup.LinkCandidateCreatorParams param, TransitRouteStop routeStop) {
+	private List<Link> findClosestLinks(Coord coord, Set<String> networkModes) {
 		List<Link> closestLinks = new ArrayList<>();
-		Map<Double, Set<Link>> sortedLinks = NetworkTools.findClosestLinks(network, routeStop.getStopFacility().getCoord(), config.getNodeSearchRadius(), param.getNetworkModes());
-
-		// calculate lineSegmentDistance for all links
-		double tolFactor = (param.getLinkDistanceTolerance() < 1 ? 0 : param.getLinkDistanceTolerance());
-		double maxSoftConstraintDistance = 0.0;
-
-		int nLink = 0;
-		for(Map.Entry<Double, Set<Link>> entry : sortedLinks.entrySet()) {
-			// if the distance is greate than the maximum distance
-			if(entry.getKey() > param.getMaxLinkCandidateDistance()) {
-				break;
-			}
-
-			// when the link count limit is reached, set the soft constraint distance
-			if(nLink < param.getMaxNClosestLinks() && nLink + nLink + entry.getValue().size() >= param.getMaxNClosestLinks()) {
-				maxSoftConstraintDistance = entry.getKey() * tolFactor;
-			}
-
-			// check if distance is greater than soft constraint distance
-			if(nLink + entry.getValue().size() > param.getMaxNClosestLinks() && entry.getKey() > maxSoftConstraintDistance) {
-				break;
-			}
-
-			// if no loop break has been reached, add link to list
-			closestLinks.addAll(entry.getValue());
-			nLink += entry.getValue().size();
-		}
-		return closestLinks;
-	}
-
-	private List<Link> findClosestLinks(Coord coord, Set<String> networkModes, int maxLinks, double maxDistance, double tolFactor) {
-		List<Link> closestLinks = new ArrayList<>();
-		Map<Double, Set<Link>> sortedLinks = NetworkTools.findClosestLinks(network, coord, config.getNodeSearchRadius(), networkModes);
+		Map<Double, Set<Link>> sortedLinks = NetworkTools.findClosestLinks(network, coord, nodeSearchRadius, networkModes);
 
 		// calculate lineSegmentDistance for all links
 		double maxSoftConstraintDistance = 0.0;
@@ -272,12 +243,12 @@ public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 			}
 
 			// when the link count limit is reached, set the soft constraint distance
-			if(nLink < maxLinks && nLink + nLink + entry.getValue().size() >= maxLinks) {
-				maxSoftConstraintDistance = entry.getKey() * tolFactor;
+			if(nLink < this.nLinks && nLink + nLink + entry.getValue().size() >= this.nLinks) {
+				maxSoftConstraintDistance = entry.getKey() * this.distanceMultiplier;
 			}
 
 			// check if distance is greater than soft constraint distance
-			if(nLink + entry.getValue().size() > maxLinks && entry.getKey() > maxSoftConstraintDistance) {
+			if(nLink + entry.getValue().size() > this.maxDistance && entry.getKey() > maxSoftConstraintDistance) {
 				break;
 			}
 
@@ -286,75 +257,6 @@ public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 			nLink += entry.getValue().size();
 		}
 		return closestLinks;
-	}
-
-	/**
-	 * Adds the manually set link candidates
-	 */
-	private void addManualLinkCandidates(Set<PublicTransitMappingConfigGroup.ManualLinkCandidates> manualLinkCandidatesSet) {
-		Map<String, Set<PublicTransitMappingConfigGroup.ManualLinkCandidates>> manualCandidatesByMode = new HashMap<>();
-		Map<Id<TransitStopFacility>, Set<PublicTransitMappingConfigGroup.ManualLinkCandidates>> manualCandidatesByFacility = new HashMap<>();
-
-		for(PublicTransitMappingConfigGroup.ManualLinkCandidates manualCandidates : manualLinkCandidatesSet) {
-			Set<String> scheduleModes = manualCandidates.getScheduleModes();
-			if(scheduleModes.size() == 0) {
-				scheduleModes = scheduleTransportModes;
-			}
-			for(String mode : scheduleModes) {
-				MapUtils.getSet(mode, manualCandidatesByMode).add(manualCandidates);
-			}
-
-			MapUtils.getSet(manualCandidates.getStopFacilityId(), manualCandidatesByFacility).add(manualCandidates);
-
-			// check
-			TransitStopFacility parentStopFacility = manualCandidates.getStopFacilityId() != null ? schedule.getFacilities().get(manualCandidates.getStopFacilityId()) : null;
-			if(parentStopFacility == null && manualCandidates.getStopFacilityId() != null) {
-				log.warn("stopFacility id " + manualCandidates.getStopFacilityId() + " not available in schedule. Manual link candidates for this facility are ignored.");
-			}
-
-		}
-
-		if(manualCandidatesByFacility.size() == 0) {
-			return;
-		}
-
-
-		for(TransitLine transitLine : schedule.getTransitLines().values()) {
-			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
-				for(TransitRouteStop routeStop : transitRoute.getStops()) {
-					String routeScheduleMode = transitRoute.getTransportMode();
-					Set<PublicTransitMappingConfigGroup.ManualLinkCandidates> candidates = manualCandidatesByFacility.get(routeStop.getStopFacility().getId());
-					for(PublicTransitMappingConfigGroup.ManualLinkCandidates manualCandidates : candidates) {
-						if(manualCandidates.getScheduleModes().contains(routeScheduleMode)) {
-
-							PublicTransitStop ptstop = new PublicTransitStopImpl(transitLine, transitRoute, routeStop);
-
-							PublicTransitMappingConfigGroup.LinkCandidateCreatorParams lccParams = config.getLinkCandidateCreatorParams().get(routeScheduleMode);
-
-							TransitStopFacility parentStopFacility = schedule.getFacilities().get(manualCandidates.getStopFacilityId());
-
-							SortedSet<LinkCandidate> lcSet = (manualCandidates.doesReplaceCandidates() ? new TreeSet<>() : MiscUtils.getSortedSet(ptstop.getId(), linkCandidates));
-							for(Id<Link> linkId : manualCandidates.getLinkIds()) {
-								Link link = network.getLinks().get(linkId);
-								if(link == null) {
-									log.warn("link " + linkId + " not found in network.");
-								} else {
-									if(CoordUtils.calcEuclideanDistance(link.getCoord(), parentStopFacility.getCoord()) > lccParams.getMaxLinkCandidateDistance()) {
-										log.warn("Distance from manual link candidate " + link.getId() + " to stop facility " +
-												manualCandidates.getStopFacilityIdStr() + " is more than " + lccParams.getMaxLinkCandidateDistance() +
-												"(" + CoordUtils.calcEuclideanDistance(link.getCoord(), parentStopFacility.getCoord()) + ")");
-										log.info("Manual link candidate will still be used");
-									}
-
-									lcSet.add(new LinkCandidateImpl(link, ptstop));
-								}
-							}
-							linkCandidates.put(ptstop.getId(), lcSet);
-						}
-					}
-				}
-			}
-		}
 	}
 
 	@Override

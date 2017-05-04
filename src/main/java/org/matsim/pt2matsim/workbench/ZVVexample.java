@@ -64,8 +64,8 @@ public class ZVVexample {
 
 	public static void main(String[] args) throws Exception {
 //		convertOsm();
-		convertSchedule();
-//		runMappingStandard();
+//		convertSchedule();
+		runMappingStandard();
 		runMappingWeighted();
 //		runMappingShapes();
 //		runMappingOsm();
@@ -146,6 +146,10 @@ public class ZVVexample {
 	 * Runs a mapping with weighted links
 	 */
 	public static double runMappingWeighted() {
+		System.out.println("=====================================");
+		System.out.println("Run mapping: WEIGHTED LINK CANDIDATES");
+		System.out.println("=====================================");
+
 		// Load schedule and network
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
@@ -171,6 +175,10 @@ public class ZVVexample {
 	 * Maps a schedule with gtfs shape information to the network
 	 */
 	public static void runMappingShapes() {
+		System.out.println("===================");
+		System.out.println("Run mapping: SHAPES");
+		System.out.println("===================");
+
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
 
@@ -197,8 +205,8 @@ public class ZVVexample {
 				ShapeTools.readShapesFile(gtfsShapeFile, coordSys)
 		);
 		analysis.run();
-		System.out.println("Q8585: " + analysis.getQ8585());
-		System.out.println("Length diff: " + Math.sqrt(analysis.getAverageSquaredLengthRatio()) * 100 + " %");
+		System.out.format("Q8585:       %.1f\n", analysis.getQ8585());
+		System.out.format("Length diff: %.1f %%\n", Math.sqrt(analysis.getAverageSquaredLengthRatio()) * 100);
 
 		return analysis.getQ8585();
 	}
