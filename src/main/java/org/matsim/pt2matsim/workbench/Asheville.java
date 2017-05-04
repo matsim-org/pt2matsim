@@ -26,6 +26,7 @@ import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.PTMapper;
+import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorMagic;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorWeighted;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWeightedCandidates;
 import org.matsim.pt2matsim.osm.lib.Osm;
@@ -54,7 +55,7 @@ public class Asheville {
 	public static final String outputScheduleFile = "output/asheville_schedule.xml.gz";
 
 	public static void main(String[] args) {
-		convertOsm();
+//		convertOsm();
 //		convertGtfs();
 		runMapping();
 		analysis();
@@ -66,21 +67,21 @@ public class Asheville {
 
 	public static void runMapping() {
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
-		config.getLinkCandidateCreatorParams().get("bus").setLinkDistanceTolerance(1.2);
-		config.getLinkCandidateCreatorParams().get("bus").setMaxNClosestLinks(8);
-		config.getLinkCandidateCreatorParams().get("bus").setMaxLinkCandidateDistance(100);
 		config.setNumOfThreads(6);
+		int nLinks = 6;
+		double distanceMultiplier = 1.1;
+		double maxDistance = 70;
 
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
 
-		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersWeightedCandidates(config, schedule, network));
+		PTMapper ptMapper = new PTMapper(config, schedule, network, new LinkCandidateCreatorMagic(schedule, network, nLinks, distanceMultiplier, maxDistance, config.getModeRoutingAssignment()), new ScheduleRoutersWeightedCandidates(config, schedule, network));
 		ptMapper.run();
 
 		ScheduleTools.writeTransitSchedule(schedule, outputScheduleFile);
 		NetworkTools.writeNetwork(network, outputNetworkFile);
 
-		Schedule2ShapeFile.run(EPSG, "output/shp/", schedule, network);
+//		Schedule2ShapeFile.run(EPSG, "output/shp/", schedule, network);
 	}
 
 	private static void analysis() {
@@ -92,6 +93,7 @@ public class Asheville {
 		MappingAnalysis analysis = new MappingAnalysis(schedule, network, shapes);
 		analysis.run();
 		System.out.format("\n>>> Q8585: %.3f\n", analysis.getQ8585());
+		System.out.format("\n>>> Q9595: %.3f\n", analysis.getQQ(0.95));
 
 		analysis.writeQuantileDistancesCsv("output/analysis/quantiles.csv");
 	}

@@ -232,7 +232,7 @@ public class LinkCandidateCreatorWeighted implements LinkCandidateCreator {
 			}
 
 			// when the link count limit is reached, set the soft constraint distance
-			if(nLink < param.getMaxNClosestLinks() && nLink + nLink + entry.getValue().size() >= param.getMaxNClosestLinks()) {
+			if(nLink < param.getMaxNClosestLinks() && nLink + entry.getValue().size() >= param.getMaxNClosestLinks()) {
 				maxSoftConstraintDistance = entry.getKey() * tolFactor;
 			}
 

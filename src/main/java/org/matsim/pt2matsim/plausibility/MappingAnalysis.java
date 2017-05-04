@@ -219,7 +219,11 @@ public class MappingAnalysis {
 	 * to quickly compare different config parameters or algorithms.
 	 */
 	public double getQ8585() {
-		List<Double> q85 = new ArrayList<>();
+		return getQQ(0.85);
+	}
+
+	public double getQQ(double p) {
+		List<Double> q = new ArrayList<>();
 
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
@@ -228,18 +232,13 @@ public class MappingAnalysis {
 
 				if(!noAnalysis.contains(new Tuple<>(transitLine.getId(), transitRoute.getId()))) {
 					List<Double> values = routeDistances.get(transitLineId).get(transitRouteId);
-					try {
-						values.sort(Double::compareTo);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-					int n = values.size();
-					q85.add(values.get((int) Math.round(n * 0.85) - 1));
+					values.sort(Double::compareTo);
+					q.add(values.get((int) (values.size() * p)));
 				}
 			}
 		}
-		q85.sort(Double::compareTo);
-		return q85.get((int) Math.round(q85.size() * 0.85) - 1);
+		q.sort(Double::compareTo);
+		return q.get((int) (q.size() * p));
 	}
 
 	/**

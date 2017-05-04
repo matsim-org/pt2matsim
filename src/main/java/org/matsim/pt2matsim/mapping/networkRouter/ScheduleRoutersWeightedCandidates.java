@@ -40,7 +40,8 @@ public class ScheduleRoutersWeightedCandidates extends ScheduleRoutersTransportM
 
 	@Override
 	public double getLinkCandidateTravelCost(LinkCandidate linkCandidateCurrent) {
-		return (1 - linkCandidateCurrent.getPriority()) * PTMapperTools.calcTravelCost(linkCandidateCurrent.getLink(), config.getTravelCostType());
+//		return 2 * (1-linkCandidateCurrent.getPriority()) * linkCandidateCurrent.getStopFacilityDistance() + PTMapperTools.calcTravelCost(linkCandidateCurrent.getLink(), config.getTravelCostType());
+		return 2 * linkCandidateCurrent.getStopFacilityDistance() + PTMapperTools.calcTravelCost(linkCandidateCurrent.getLink(), config.getTravelCostType());
 	}
 
 }
