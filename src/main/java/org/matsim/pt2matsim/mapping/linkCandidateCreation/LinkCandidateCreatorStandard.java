@@ -28,10 +28,9 @@ import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.*;
-import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
-import org.matsim.pt2matsim.mapping.lib.PublicTransitStopImpl;
 import org.matsim.pt2matsim.mapping.lib.PublicTransitStop;
+import org.matsim.pt2matsim.mapping.lib.PublicTransitStopImpl;
 import org.matsim.pt2matsim.tools.MiscUtils;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.PTMapperTools;
@@ -43,16 +42,16 @@ import java.util.*;
  *
  * @author polettif
  */
-public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
+public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 	private static final Set<String> loopLinkModes = CollectionUtils.stringToSet(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE + "," + PublicTransitMappingStrings.STOP_FACILITY_LOOP_LINK);
-	protected static Logger log = Logger.getLogger(LinkCandidateCreatorMagic.class);
+	protected static Logger log = Logger.getLogger(LinkCandidateCreatorStandard.class);
+
 	private final TransitSchedule schedule;
 	private final Network network;
 
 	private final Map<Id<PublicTransitStop>, SortedSet<LinkCandidate>> linkCandidates = new HashMap<>();
 	private final Map<Id<PublicTransitStop>, PublicTransitStop> stops = new HashMap<>();
-	private final Set<String> scheduleTransportModes = new HashSet<>();
 
 	private final int nLinks;
 	private final double distanceMultiplier;
@@ -61,7 +60,7 @@ public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 	private double nodeSearchRadius;
 
 
-	public LinkCandidateCreatorMagic(TransitSchedule schedule, Network network, int nLinks, double distanceMultiplier, double maxDistance, Map<String, Set<String>> routingAssignment) {
+	public LinkCandidateCreatorStandard(TransitSchedule schedule, Network network, int nLinks, double distanceMultiplier, double maxDistance, Map<String, Set<String>> routingAssignment) {
 		this.schedule = schedule;
 		this.network = network;
 		this.nLinks = nLinks;
@@ -88,7 +87,6 @@ public class LinkCandidateCreatorMagic implements LinkCandidateCreator {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				String scheduleTransportMode = transitRoute.getTransportMode();
 				Set<String> networkModes = routingAssignment.get(scheduleTransportMode);
-				scheduleTransportModes.add(scheduleTransportMode);
 
 				TransitRouteStop previousRouteStop = transitRoute.getStops().get(0);
 

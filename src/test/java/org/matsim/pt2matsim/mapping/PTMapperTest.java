@@ -35,17 +35,13 @@ public class PTMapperTest {
 		PublicTransitMappingConfigGroup config = new PublicTransitMappingConfigGroup();
 		config.getModesToKeepOnCleanUp().add("car");
 		config.setNumOfThreads(2);
-		PublicTransitMappingConfigGroup.LinkCandidateCreatorParams lccParamsBus = new PublicTransitMappingConfigGroup.LinkCandidateCreatorParams("bus");
-		lccParamsBus.setNetworkModesStr("car");
-		lccParamsBus.setMaxLinkCandidateDistance(99.0);
-		lccParamsBus.setMaxNClosestLinks(4);
-		config.addParameterSet(lccParamsBus);
+		config.setNLinkThreshold(4);
+		config.setMaxLinkCandidateDistance(99.0);
+		config.setCandidateDistanceMultiplier(1.0);
 
 		PublicTransitMappingConfigGroup.ModeRoutingAssignment mraBus = new PublicTransitMappingConfigGroup.ModeRoutingAssignment("bus");
 		mraBus.setNetworkModesStr("car,bus");
 		config.addParameterSet(mraBus);
-
-		config.addParameterSet(new PublicTransitMappingConfigGroup.ManualLinkCandidates());
 
 		return config;
 	}
@@ -96,10 +92,7 @@ public class PTMapperTest {
 	@Test
 	public void artificialLinks() {
 		PublicTransitMappingConfigGroup ptmConfig2 = initPTMConfig();
-		Collection<? extends ConfigGroup> lccParams = ptmConfig2.getParameterSets(PublicTransitMappingConfigGroup.LinkCandidateCreatorParams.SET_NAME);
-		for(ConfigGroup c : lccParams) {
-			((PublicTransitMappingConfigGroup.LinkCandidateCreatorParams) c).setMaxLinkCandidateDistance(3);
-		}
+		ptmConfig2.setMaxLinkCandidateDistance(3);
 
 		TransitSchedule schedule2 = ScheduleToolsTest.initSchedule();
 		Network network2 = NetworkToolsTest.initNetwork();

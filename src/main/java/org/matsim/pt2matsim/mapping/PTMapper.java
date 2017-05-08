@@ -34,8 +34,7 @@ import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
-import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorUnique;
-import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorWeighted;
+import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorStandard;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersTransportMode;
 import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoSchedule;
@@ -96,7 +95,11 @@ public class PTMapper {
 
 		// assign defaults
 		if(this.linkCandidates == null) {
-			this.linkCandidates = new LinkCandidateCreatorWeighted(schedule, network, this.config);
+			this.linkCandidates = new LinkCandidateCreatorStandard(schedule, network,
+					config.getNLinkThreshold(),
+					config.getCandidateDistanceMultiplier(),
+					config.getMaxLinkCandidateDistance(),
+					config.getModeRoutingAssignment());
 		}
 		if(this.scheduleRouters == null) {
 			this.scheduleRouters = new ScheduleRoutersTransportMode(this.config, schedule, network);
@@ -142,9 +145,6 @@ public class PTMapper {
 				String scheduleMode = transitRoute.getTransportMode();
 				if(!config.getModeRoutingAssignment().containsKey(scheduleMode)) {
 					throw new IllegalArgumentException("No mode routing assignment for schedule mode " + scheduleMode);
-				}
-				if(!config.getLinkCandidateCreatorParams().containsKey(scheduleMode)) {
-					throw new IllegalArgumentException("No link candidate creator parameters assignment for schedule mode " + scheduleMode);
 				}
 			}
 		}
@@ -270,15 +270,15 @@ public class PTMapper {
 
 		// Remove unnecessary parts of schedule
 		ScheduleCleaner.removeNotUsedTransitLinks(schedule, network, config.getModesToKeepOnCleanUp(), true);
-		if(config.getRemoveNotUsedStopFacilities()) ScheduleCleaner.removeNotUsedStopFacilities(schedule);
+		if(config.getRemoveNotUsedStopFacilities()) {
+			ScheduleCleaner.removeNotUsedStopFacilities(schedule);
+		}
+
 
 		// change the network transport modes
 		ScheduleTools.assignScheduleModesToLinks(schedule, network);
-		if(config.getCombinePtModes()) {
-			NetworkTools.replaceNonCarModesWithPT(network);
-		} else if(config.getAddPtMode()) {
-			ScheduleTools.addPTModeToNetwork(schedule, network);
-		}
+		// NetworkTools.replaceNonCarModesWithPT(network);
+		// ScheduleTools.addPTModeToNetwork(schedule, network);
 	}
 
 	/**
