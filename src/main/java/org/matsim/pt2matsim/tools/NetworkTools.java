@@ -39,10 +39,9 @@ import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
-import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
-import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersTransportMode;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersStandard;
 
 import java.util.*;
 
@@ -513,8 +512,7 @@ public final class NetworkTools {
 			config.addParameterSet(mra);
 		}
 
-		ScheduleRouters scheduleRouters = new ScheduleRoutersTransportMode(config, schedule, network);
-		scheduleRouters.load();
+		ScheduleRouters scheduleRouters = new ScheduleRoutersStandard(schedule, network, modeAssignments, PublicTransitMappingConfigGroup.TravelCostType.linkLength);
 
 		return scheduleRouters;
 	}

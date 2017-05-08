@@ -29,32 +29,35 @@ import java.util.Set;
  *
  * @author polettif
  */
-public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModule {
+public class ScheduleRoutersStandard implements ScheduleRouters, MapperModule {
 
-	protected static Logger log = Logger.getLogger(ScheduleRoutersTransportMode.class);
+	protected static Logger log = Logger.getLogger(ScheduleRoutersStandard.class);
 
 	// standard fields
-	private final PublicTransitMappingConfigGroup config;
 	private final TransitSchedule schedule;
 	private final Network network;
+	private final Map<String, Set<String>> modeRoutingAssignment;
+	private final PublicTransitMappingConfigGroup.TravelCostType travelCostType;
 
 	// path calculators
 	private final Map<String, PathCalculator> pathCalculatorsByMode = new HashMap<>();
 	private final Map<String, Network> networksByMode = new HashMap<>();
 
-	public ScheduleRoutersTransportMode(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network) {
-		this.config = config;
+	public ScheduleRoutersStandard(TransitSchedule schedule, Network network, Map<String, Set<String>> modeRoutingAssignment, PublicTransitMappingConfigGroup.TravelCostType costType) {
 		this.schedule = schedule;
 		this.network = network;
+		this.modeRoutingAssignment = modeRoutingAssignment;
+		this.travelCostType = costType;
+
+		load();
 	}
 
 	/**
 	 * Load path calculators for all transit routes
 	 */
-	@Override
-	public void load() {
-		Map<String, Set<String>> modeRoutingAssignment = config.getModeRoutingAssignment();
-
+	private void load() {
+		log.info("==============================================");
+		log.info("Creating network routers for transit routes...");
 		log.info("Initiating network and router for transit routes...");
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
@@ -98,12 +101,13 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 
 	@Override
 	public double getMinimalTravelCost(TransitRouteStop fromTransitRouteStop, TransitRouteStop toTransitRouteStop, TransitLine transitLine, TransitRoute transitRoute) {
-		return PTMapperTools.calcMinTravelCost(fromTransitRouteStop, toTransitRouteStop, config.getTravelCostType());
+		return PTMapperTools.calcMinTravelCost(fromTransitRouteStop, toTransitRouteStop, travelCostType);
 	}
 
 	@Override
 	public double getLinkCandidateTravelCost(LinkCandidate linkCandidateCurrent) {
-		return PTMapperTools.calcTravelCost(linkCandidateCurrent.getLink(), config.getTravelCostType());
+//		return 2 * linkCandidateCurrent.getStopFacilityDistance() + PTMapperTools.calcTravelCost(linkCandidateCurrent.getLink(), travelCostType);
+		return PTMapperTools.calcTravelCost(linkCandidateCurrent.getLink(), travelCostType);
 	}
 
 	/**
@@ -118,7 +122,7 @@ public class ScheduleRoutersTransportMode implements ScheduleRouters, MapperModu
 
 		@Override
 		public double getLinkMinimumTravelDisutility(Link link) {
-			return PTMapperTools.calcTravelCost(link, config.getTravelCostType());
+			return PTMapperTools.calcTravelCost(link, travelCostType);
 		}
 
 		@Override

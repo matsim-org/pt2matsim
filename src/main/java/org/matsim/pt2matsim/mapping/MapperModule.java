@@ -23,8 +23,4 @@ package org.matsim.pt2matsim.mapping;
  */
 public interface MapperModule {
 
-	/**
-	 * Loads the necessary data when called in the algorithm.
-	 */
-	void load();
 }
