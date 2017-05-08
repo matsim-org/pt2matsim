@@ -42,19 +42,26 @@ public class ScheduleRoutersStandard implements ScheduleRouters, MapperModule {
 	// path calculators
 	private final Map<String, PathCalculator> pathCalculatorsByMode = new HashMap<>();
 	private final Map<String, Network> networksByMode = new HashMap<>();
+	private final boolean considerCandidateDist;
 
-	public ScheduleRoutersStandard(TransitSchedule schedule, Network network, Map<String, Set<String>> modeRoutingAssignment, PublicTransitMappingConfigGroup.TravelCostType costType) {
+	public ScheduleRoutersStandard(TransitSchedule schedule, Network network, Map<String, Set<String>> modeRoutingAssignment, PublicTransitMappingConfigGroup.TravelCostType costType, boolean routingWithCandidateDistance) {
 		this.schedule = schedule;
 		this.network = network;
 		this.modeRoutingAssignment = modeRoutingAssignment;
 		this.travelCostType = costType;
+		this.considerCandidateDist = routingWithCandidateDistance;
 
 		load();
 	}
 
-	/**
-	 * Load path calculators for all transit routes
-	 */
+	public ScheduleRoutersStandard(TransitSchedule schedule, Network network, Map<String, Set<String>> modeRoutingAssignment) {
+		this(schedule, network, modeRoutingAssignment, PublicTransitMappingConfigGroup.TravelCostType.linkLength, true);
+	}
+
+
+		/**
+		 * Load path calculators for all transit routes
+		 */
 	private void load() {
 		log.info("==============================================");
 		log.info("Creating network routers for transit routes...");
@@ -106,8 +113,12 @@ public class ScheduleRoutersStandard implements ScheduleRouters, MapperModule {
 
 	@Override
 	public double getLinkCandidateTravelCost(LinkCandidate linkCandidateCurrent) {
-//		return 2 * linkCandidateCurrent.getStopFacilityDistance() + PTMapperTools.calcTravelCost(linkCandidateCurrent.getLink(), travelCostType);
-		return PTMapperTools.calcTravelCost(linkCandidateCurrent.getLink(), travelCostType);
+		double dist = 0;
+		if(considerCandidateDist) {
+			dist += (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? linkCandidateCurrent.getStopFacilityDistance() / linkCandidateCurrent.getLink().getFreespeed() : linkCandidateCurrent.getStopFacilityDistance());
+			dist *= 2;
+		}
+		return dist + PTMapperTools.calcTravelCost(linkCandidateCurrent.getLink(), travelCostType);
 	}
 
 	/**
