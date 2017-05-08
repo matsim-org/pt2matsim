@@ -13,16 +13,12 @@ import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.PTMapper;
-import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorMagic;
-import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorWeighted;
+import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorStandard;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersGtfsShapes;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersOsmAttributes;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWeightedCandidates;
 import org.matsim.pt2matsim.osm.OsmMultimodalNetworkConverter;
-import org.matsim.pt2matsim.osm.lib.AllowedTagsFilter;
-import org.matsim.pt2matsim.osm.lib.OsmData;
-import org.matsim.pt2matsim.osm.lib.OsmDataImpl;
-import org.matsim.pt2matsim.osm.lib.OsmFileReader;
+import org.matsim.pt2matsim.osm.lib.*;
 import org.matsim.pt2matsim.plausibility.MappingAnalysis;
 import org.matsim.pt2matsim.run.shp.Schedule2ShapeFile;
 import org.matsim.pt2matsim.tools.NetworkTools;
@@ -30,10 +26,10 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ShapeTools;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
-
-import static org.matsim.pt2matsim.workbench.PTMapperShapesExample.createTestPTMConfig;
+import java.util.Set;
 
 /**
  * Mapping example for public transit in the zurich area (agency: ZVV).
@@ -67,18 +63,34 @@ public class ZVVexample {
 //		convertOsm();
 //		convertSchedule();
 //		runMappingStandard();
-		runMappingWeighted();
+//		runMappingWeighted();
 //		runMappingShapes();
-//		runMappingOsm();
-//		System.out.println("\n--- Q8585 ---");
-//		System.out.format("Standard %.1f", q8585standard);
-//		System.out.format("Gewicht  %.1f", q8585w);
-	}
+		runMappingOsm();
+	//		System.out.println("\n--- Q8585 ---");
+	//		System.out.format("Standard %.1f", q8585standard);
+	//		System.out.format("Gewicht  %.1f", q8585w);
+		}
 
 	private static void convertOsm() {
 		// 1. 	convert OSM
 		// 1.1. setup config
-		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.createDefaultConfig();
+		Set<String> carSingleton = Collections.singleton("car");
+		OsmConverterConfigGroup osmConfig = new OsmConverterConfigGroup();
+		osmConfig.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MOTORWAY, 2, 120.0 / 3.6, 1.0, 2000, true, carSingleton));
+		osmConfig.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MOTORWAY, 2, 120.0 / 3.6, 1.0, 2000, true, carSingleton));
+		osmConfig.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MOTORWAY_LINK, 1, 80.0 / 3.6, 1.0, 1500, true, carSingleton));
+		osmConfig.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.TRUNK, 1, 80.0 / 3.6, 1.0, 2000, false, carSingleton));
+		osmConfig.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.TRUNK_LINK, 1, 50.0 / 3.6, 1.0, 1500, false, carSingleton));
+		osmConfig.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.PRIMARY, 1, 80.0 / 3.6, 1.0, 1500, false, carSingleton));
+		osmConfig.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.PRIMARY_LINK, 1, 60.0 / 3.6, 1.0, 1500, false, carSingleton));
+		osmConfig.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.SECONDARY, 1, 60.0 / 3.6, 1.0, 1000, false, carSingleton));
+		osmConfig.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.TERTIARY, 1, 50.0 / 3.6, 1.0, 600, false, carSingleton));
+		osmConfig.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MINOR, 1, 40.0 / 3.6, 1.0, 600, false, carSingleton));
+		osmConfig.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.UNCLASSIFIED, 1, 50.0 / 3.6, 1.0, 600, false, carSingleton));
+		osmConfig.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.RESIDENTIAL, 1, 30.0 / 3.6, 1.0, 600, false, carSingleton));
+		osmConfig.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.LIVING_STREET, 1, 15.0 / 3.6, 1.0, 300, false, carSingleton));
+//		osmConfig.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.SERVICE, 1, 15.0 / 3.6, 1.0, 200, 	false, carSingleton));
+
 		osmConfig.setKeepPaths(true);
 		osmConfig.setOutputCoordinateSystem(coordSys);
 
@@ -101,7 +113,7 @@ public class ZVVexample {
 
 		// 2. convert gtfs to a unmapped schedule
 		GtfsConverter gtfsConverter = new GtfsConverter(gtfsFeed);
-		gtfsConverter.convert(GtfsConverter.DAY_WITH_MOST_SERVICES, coordSys);
+		gtfsConverter.convert("20160303", coordSys);
 
 		// 3. write the transit schedule
 		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), fullScheduleFileUM);
@@ -163,7 +175,7 @@ public class ZVVexample {
 
 		// run PTMapepr
 		PTMapper ptMapper = new PTMapper(config, schedule, network,
-				new LinkCandidateCreatorMagic(schedule, network, nLinks, distanceMultiplier, maxDistance, config.getModeRoutingAssignment()),
+				new LinkCandidateCreatorStandard(schedule, network, nLinks, distanceMultiplier, maxDistance, config.getModeRoutingAssignment()),
 				new ScheduleRoutersWeightedCandidates(config, schedule, network));
 		ptMapper.run();
 
@@ -211,6 +223,7 @@ public class ZVVexample {
 				ShapeTools.readShapesFile(gtfsShapeFile, coordSys)
 		);
 		analysis.run();
+		analysis.writeQuantileDistancesCsv(base+"output/analysis/quantiles.csv");
 		System.out.format("Q8585:       %.1f\n", analysis.getQ8585());
 		System.out.format("Length diff: %.1f %%\n", Math.sqrt(analysis.getAverageSquaredLengthRatio()) * 100);
 
@@ -226,7 +239,7 @@ public class ZVVexample {
 
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
 
-		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersOsmAttributes(config, schedule, network, 0.7));
+		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersOsmAttributes(config, schedule, network, 0.5));
 		ptMapper.run();
 
 		NetworkTools.writeNetwork(network, outputNetwork3);

@@ -26,15 +26,12 @@ import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.PTMapper;
-import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorMagic;
-import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorWeighted;
+import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorStandard;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWeightedCandidates;
 import org.matsim.pt2matsim.osm.lib.Osm;
 import org.matsim.pt2matsim.plausibility.MappingAnalysis;
 import org.matsim.pt2matsim.run.Gtfs2TransitSchedule;
 import org.matsim.pt2matsim.run.Osm2MultimodalNetwork;
-import org.matsim.pt2matsim.run.PublicTransitMapper;
-import org.matsim.pt2matsim.run.shp.Schedule2ShapeFile;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ShapeTools;
@@ -75,7 +72,7 @@ public class Asheville {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
 
-		PTMapper ptMapper = new PTMapper(config, schedule, network, new LinkCandidateCreatorMagic(schedule, network, nLinks, distanceMultiplier, maxDistance, config.getModeRoutingAssignment()), new ScheduleRoutersWeightedCandidates(config, schedule, network));
+		PTMapper ptMapper = new PTMapper(config, schedule, network, new LinkCandidateCreatorStandard(schedule, network, nLinks, distanceMultiplier, maxDistance, config.getModeRoutingAssignment()), new ScheduleRoutersWeightedCandidates(config, schedule, network));
 		ptMapper.run();
 
 		ScheduleTools.writeTransitSchedule(schedule, outputScheduleFile);

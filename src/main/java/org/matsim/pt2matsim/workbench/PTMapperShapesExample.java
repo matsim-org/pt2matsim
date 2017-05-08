@@ -57,12 +57,10 @@ public class PTMapperShapesExample {
 	public static PublicTransitMappingConfigGroup createTestPTMConfig() {
 		PublicTransitMappingConfigGroup config = new PublicTransitMappingConfigGroup();
 		config.getModesToKeepOnCleanUp().add("car");
-		PublicTransitMappingConfigGroup.LinkCandidateCreatorParams lccParamsBus = new PublicTransitMappingConfigGroup.LinkCandidateCreatorParams("bus");
-		lccParamsBus.setNetworkModesStr("car,bus");
-		lccParamsBus.setMaxNClosestLinks(16);
-		lccParamsBus.setMaxLinkCandidateDistance(100);
-		lccParamsBus.setLinkDistanceTolerance(1.1);
-		config.addParameterSet(lccParamsBus);
+
+		config.setNLinkThreshold(16);
+		config.setMaxLinkCandidateDistance(100);
+		config.setCandidateDistanceMultiplier(1.1);
 
 		PublicTransitMappingConfigGroup.ModeRoutingAssignment mraBus = new PublicTransitMappingConfigGroup.ModeRoutingAssignment("bus");
 		mraBus.setNetworkModesStr("car,bus");
