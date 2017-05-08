@@ -41,9 +41,11 @@ public class ScheduleRoutersGtfsShapes implements ScheduleRouters {
 	protected static Logger log = Logger.getLogger(ScheduleRoutersGtfsShapes.class);
 
 	// standard fields
-	private final PublicTransitMappingConfigGroup config;
 	private final TransitSchedule schedule;
 	private final Network network;
+	private final Map<String, Set<String>> modeRoutingAssignment;
+	private final PublicTransitMappingConfigGroup.TravelCostType travelCostType;
+
 
 	// path calculators
 	private final Map<Id<RouteShape>, PathCalculator> pathCalculatorsByShape = new HashMap<>();
@@ -59,27 +61,23 @@ public class ScheduleRoutersGtfsShapes implements ScheduleRouters {
 	private final Map<TransitLine, Map<TransitRoute, ShapeRouter>> shapeRouters = new HashMap<>();
 
 
-	public ScheduleRoutersGtfsShapes(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network, Map<Id<RouteShape>, RouteShape> shapes, double maxWeightDistance, double cutBuffer) {
-		this.config = config;
+	public ScheduleRoutersGtfsShapes(TransitSchedule schedule, Network network, Map<Id<RouteShape>, RouteShape> shapes, Map<String, Set<String>> modeRoutingAssignment, PublicTransitMappingConfigGroup.TravelCostType travelCostType, double maxWeightDistance, double cutBuffer) {
 		this.schedule = schedule;
 		this.network = network;
+		this.modeRoutingAssignment = modeRoutingAssignment;
+		this.travelCostType = travelCostType;
 		this.shapes = shapes;
 		this.maxWeightDistance = maxWeightDistance;
 		this.cutBuffer = cutBuffer;
 
-	}
-
-	public ScheduleRoutersGtfsShapes(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network, Map<Id<RouteShape>, RouteShape> shapes, double maxWeightDistance) {
-		this(config, schedule, network, shapes, maxWeightDistance, 5 * maxWeightDistance);
+		load();
 	}
 
 
 	/**
 	 * Load path calculators for all transit routes
 	 */
-
-	@Override
-	public void load() {
+	private void load() {
 		Counter c = new Counter(" route # ");
 
 		for(TransitLine transitLine : this.schedule.getTransitLines().values()) {
@@ -99,7 +97,7 @@ public class ScheduleRoutersGtfsShapes implements ScheduleRouters {
 					MapUtils.getMap(transitLine, mapArtificial).put(transitRoute, false);
 					pathCalculator = pathCalculatorsByShape.get(shapeId);
 					if(pathCalculator == null) {
-						Set<String> networkTransportModes = config.getModeRoutingAssignment().get(transitRoute.getTransportMode());
+						Set<String> networkTransportModes = modeRoutingAssignment.get(transitRoute.getTransportMode());
 
 						// todo this setup could be improved (i.e. don't recreate/filter networks all over again)
 						cutNetwork = NetworkTools.createFilteredNetworkByLinkMode(network, networkTransportModes);
@@ -140,7 +138,7 @@ public class ScheduleRoutersGtfsShapes implements ScheduleRouters {
 
 	@Override
 	public double getMinimalTravelCost(TransitRouteStop fromTransitRouteStop, TransitRouteStop toTransitRouteStop, TransitLine transitLine, TransitRoute transitRoute) {
-		return PTMapperTools.calcMinTravelCost(fromTransitRouteStop, toTransitRouteStop, config.getTravelCostType());
+		return PTMapperTools.calcMinTravelCost(fromTransitRouteStop, toTransitRouteStop, travelCostType);
 	}
 
 	@Override
@@ -163,7 +161,7 @@ public class ScheduleRoutersGtfsShapes implements ScheduleRouters {
 		 * Calculates the travel cost and change it based on distance to path
 		 */
 		private double calcLinkTravelCost(Link link) {
-			double travelCost = PTMapperTools.calcTravelCost(link, config.getTravelCostType());
+			double travelCost = PTMapperTools.calcTravelCost(link, travelCostType);
 
 			if(shape != null) {
 				double dist = ShapeTools.calcMinDistanceToShape(link, shape);

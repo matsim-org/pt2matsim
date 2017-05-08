@@ -55,9 +55,11 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 	 */
 	private final double osmPtLinkTravelCostFactor;
 	// standard fields
-	private final PublicTransitMappingConfigGroup config;
 	private final TransitSchedule schedule;
 	private final Network network;
+	private final Map<String, Set<String>> modeRoutingAssignment;
+	private final PublicTransitMappingConfigGroup.TravelCostType travelCostType;
+
 
 	// path calculators
 	private final Map<String, PathCalculator> pathCalculatorsByMode = new HashMap<>();
@@ -65,19 +67,19 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 	private final Map<String, OsmRouter> osmRouters = new HashMap<>();
 
 
-	public ScheduleRoutersOsmAttributes(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network, double osmPtLinkTravelCostFactor) {
-		this.config = config;
+	public ScheduleRoutersOsmAttributes(TransitSchedule schedule, Network network, Map<String, Set<String>> modeRoutingAssignment, PublicTransitMappingConfigGroup.TravelCostType travelCostType, double osmPtLinkTravelCostFactor) {
+		this.modeRoutingAssignment = modeRoutingAssignment;
+		this.travelCostType = travelCostType;
 		this.schedule = schedule;
 		this.network = network;
 		this.osmPtLinkTravelCostFactor = osmPtLinkTravelCostFactor;
+
+		load();
 	}
 	/**
 	 * Load path calculators for all transit routes
 	 */
-	@Override
-	public void load() {
-		Map<String, Set<String>> modeRoutingAssignment = config.getModeRoutingAssignment();
-
+	private void load() {
 		log.info("Initiating network and router for transit routes...");
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
@@ -123,7 +125,7 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 
 	@Override
 	public double getMinimalTravelCost(TransitRouteStop fromTransitRouteStop, TransitRouteStop toTransitRouteStop, TransitLine transitLine, TransitRoute transitRoute) {
-		return PTMapperTools.calcMinTravelCost(fromTransitRouteStop, toTransitRouteStop, config.getTravelCostType());
+		return PTMapperTools.calcMinTravelCost(fromTransitRouteStop, toTransitRouteStop, travelCostType);
 	}
 
 	@Override
@@ -143,7 +145,7 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 		}
 
 		private double calcLinkTravelCost(Link link) {
-			double travelCost = PTMapperTools.calcTravelCost(link, config.getTravelCostType());
+			double travelCost = PTMapperTools.calcTravelCost(link, travelCostType);
 
 			Attributes attributes = network.getLinks().get(link.getId()).getAttributes();
 			Set<String> routeMaster = CollectionUtils.stringToSet((String) attributes.getAttribute(OsmConverterConfigGroup.LINK_ATTRIBUTE_RELATION_ROUTE_MASTER));

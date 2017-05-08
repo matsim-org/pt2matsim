@@ -36,7 +36,7 @@ import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorStandard;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
-import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersTransportMode;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersStandard;
 import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoSchedule;
 import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoScheduleImpl;
 import org.matsim.pt2matsim.plausibility.StopFacilityHistogram;
@@ -102,7 +102,7 @@ public class PTMapper {
 					config.getModeRoutingAssignment());
 		}
 		if(this.scheduleRouters == null) {
-			this.scheduleRouters = new ScheduleRoutersTransportMode(this.config, schedule, network);
+			this.scheduleRouters = new ScheduleRoutersStandard(schedule, network, config.getModeRoutingAssignment(), config.getTravelCostType());
 		}
 	}
 
@@ -150,26 +150,6 @@ public class PTMapper {
 		}
 
 		/* [1]
-		  Create a separate network for all schedule modes and
-		  initiate routers.
-		 */
-		log.info("==============================================");
-		log.info("Creating network routers for transit routes...");
-		scheduleRouters.load();
-
-
-		/* [2]
-		  Load the closest links and create LinkCandidates. StopFacilities
-		  with no links within search radius are given a dummy loop link right
-		  on their coordinates. Each Link Candidate is a possible new stop facility
-		  after PseudoRouting.
-		 */
-		log.info("===========================");
-		log.info("Creating link candidates...");
-		linkCandidates.load();
-
-
-		/* [3]
 		  PseudoRouting
 		  Initiate and start threads, calculate PseudoTransitRoutes
 		  for all transit routes.
@@ -204,7 +184,7 @@ public class PTMapper {
 		}
 
 
-		/* [4]
+		/* [2]
 		  Collect artificial links from threads and add them to network.
 		  Collect pseudoSchedules from threads.
 		 */
@@ -216,7 +196,7 @@ public class PTMapper {
 		}
 
 
-		/* [5]
+		/* [3]
 		  Replace the parent stop facilities in each transitRoute's routeProfile
 		  with child StopFacilities. Add the new transitRoutes to the schedule.
 		 */
@@ -224,7 +204,7 @@ public class PTMapper {
 		log.info("Replacing parent StopFacilities in schedule, creating link sequences for transit routes...");
 		pseudoSchedule.createFacilitiesAndLinkSequences(schedule);
 
-		/* [6]
+		/* [4]
 		  Now that all lines have been routed, it is possible that a route passes
 		  a link closer to a stop facility than its referenced link.
 		 */
@@ -235,7 +215,7 @@ public class PTMapper {
 			nPulled = PTMapperTools.pullChildStopFacilitiesTogether(this.schedule, this.network);
 		}
 
-		/* [7]
+		/* [5]
 		  After all lines are created, clean the schedule and network. Removing
 		  not used transit links includes removing artificial links that
 		  needed to be added to the network for routing purposes.
@@ -244,7 +224,7 @@ public class PTMapper {
 		log.info("Clean schedule and network...");
 		cleanScheduleAndNetwork();
 
-		/* [8]
+		/* [6]
 		  Validate the schedule
 		 */
 		log.info("======================");

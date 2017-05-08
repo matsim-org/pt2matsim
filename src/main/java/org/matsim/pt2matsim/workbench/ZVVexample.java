@@ -16,7 +16,6 @@ import org.matsim.pt2matsim.mapping.PTMapper;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorStandard;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersGtfsShapes;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersOsmAttributes;
-import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersWeightedCandidates;
 import org.matsim.pt2matsim.osm.OsmMultimodalNetworkConverter;
 import org.matsim.pt2matsim.osm.lib.*;
 import org.matsim.pt2matsim.plausibility.MappingAnalysis;
@@ -175,8 +174,7 @@ public class ZVVexample {
 
 		// run PTMapepr
 		PTMapper ptMapper = new PTMapper(config, schedule, network,
-				new LinkCandidateCreatorStandard(schedule, network, nLinks, distanceMultiplier, maxDistance, config.getModeRoutingAssignment()),
-				new ScheduleRoutersWeightedCandidates(config, schedule, network));
+				new LinkCandidateCreatorStandard(schedule, network, nLinks, distanceMultiplier, maxDistance, config.getModeRoutingAssignment()));
 		ptMapper.run();
 
 		//
@@ -203,7 +201,7 @@ public class ZVVexample {
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
 		Map<Id<RouteShape>, RouteShape> shapes = ShapeTools.readShapesFile(gtfsShapeFile, coordSys);
 
-		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersGtfsShapes(config, schedule, network, shapes, 50));
+		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersGtfsShapes(schedule, network, shapes, config.getModeRoutingAssignment(), config.getTravelCostType(), 50, 250));
 		ptMapper.run();
 
 		NetworkTools.writeNetwork(network, outputNetwork2);
@@ -239,7 +237,7 @@ public class ZVVexample {
 
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
 
-		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersOsmAttributes(config, schedule, network, 0.5));
+		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersOsmAttributes(schedule, network, config.getModeRoutingAssignment(), PublicTransitMappingConfigGroup.TravelCostType.linkLength, 0.5));
 		ptMapper.run();
 
 		NetworkTools.writeNetwork(network, outputNetwork3);

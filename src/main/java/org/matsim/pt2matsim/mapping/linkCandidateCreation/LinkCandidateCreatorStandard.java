@@ -67,12 +67,15 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 		this.distanceMultiplier = distanceMultiplier;
 		this.maxDistance = maxDistance;
 		this.routingAssignment = routingAssignment;
+
+		load();
 	}
 
-	@Override
-	public void load() {
+	private void load() {
 		this.nodeSearchRadius = maxDistance*6;
 
+		log.info("===========================");
+		log.info("Creating link candidates...");
 		log.info("   search radius: " + nodeSearchRadius);
 		log.info("   Note: loop links for stop facilities are created if no link candidate can be found.");
 
