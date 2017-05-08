@@ -90,7 +90,7 @@ The converter can be run by calling the main() method of
 with the following arguments:
 
     [0] folder where the gtfs files are located (a single zip file is not supported)
-    [1]	Which service ids should be used. One of the following:
+    [1] Which service ids should be used. One of the following:
     	- date in the format "yyyymmdd"
     	- "dayWithMostServices"
     	- "dayWithMostTrips"
@@ -130,14 +130,14 @@ with the following arguments:
 ### From OSM
 
 OSM offers tags to specify spatial public transit data on stop locations and transit routes. The converter provided as 
-part of the package creates an unmapped transit schedule from OSM data. It creates stop facilities from _OSM_ nodes with 
+part of the package creates an unmapped transit schedule from OSM data. It creates stop facilities from OSM nodes with
 the tag _public\_transport=stop\_position_. Relations with the tag _route=*_ are converted to transit routes. These transit 
 routes contain only stop sequences. Link sequences are not converted even if they are available. The transport mode is set 
 based on the respective _route=*_ tag value of the relation.
 
-The quality of the generated transit schedule for a region depends largely on the accuracy of the data in _OSM_. Often 
+The quality of the generated transit schedule for a region depends largely on the accuracy of the data in OSM. Often
 route data is either inconsistent or not even available. The lack of naming conventions further complicates using the data. 
-In addition, _OSM_ does not offer any tags to store temporal information. Thus, departure times and stop offsets have to be 
+In addition, OSM does not offer any tags to store temporal information. Thus, departure times and stop offsets have to be
 gathered from other sources.
 
 The converter can be run via
@@ -205,25 +205,22 @@ _Steps 4 & 5: Calculate least cost path on the pseudo graph. Use this path to cr
 
 #### Link candidates
 First, a set of link candidates is created for each stop facility and schedule transport mode. For all nodes within 
-_nodeSearchRadius_ the in- and outlinks are fetched and sorted in ascending order by their distance from the stop facility. 
-The other link candidates search parameters are defined for each schedule mode in the respective _linkCandidateCreator_ 
-parameterset. _maxNClosestLinks_ defines how many links should be considered for each stop facility. This limit is not 
-strictly enforced: When the limit is reached, the last link's opposite link is still added to the set. Further, after 
-the limit has been reached, the distance of the farthest link to the stop facility is multiplied by _linkDistanceTolerance_ 
-and all additional links within this distance are added as well. This is used as a soft constraint to include links with 
-almost the same distance from the stop facility. However, no links farther than _maxLinkCandidateDistance_ from the stop 
-facility are used.
+_nodeSearchRadius_ the in- and outlinks are fetched and sorted in ascending order by their distance from the stop facility.
+All links within the the candidate distance are considered as link candidates. The candidate distance is calculated by
+multiplying the distance from stop facility to the n-th link (defined by _nLinkThreshold_) and the _candidateDistanceMultiplier_ factor.
+For example, if the 6th link is located 12 meters from the stop facility, given a multiplier of 1.5, all links within 18 meters
+from the stop facility are considered as link candidates. However, no links farther than _maxLinkCandidateDistance_ from the stop
+facility are used. Stop facilities with no link within _maxLinkCandidateDistance_ are given a dummy loop link at their
+coordinates: A node is added at the coordinate and a dummy loop link is added to the network with the added node as
+source and destination. The loop link is referenced to the stop facility and is set as its only link candidate.
+_useArtificialLoopLink_ defines if such an artificial loop link should be created regardless of the other parameters.
+Tram, subway, ferry, funicular and gondola routes are normally mapped with artificial links.
 
 The implementation allows to manually define link candidate beforehand in the config (in a _manualLinkCandidates_ parameterset 
-or a separate csv file (parameter _manualLinkCandidate_CsvFile_). This helps mapping with complicated rail stations. Stop 
-facilities with no link within _maxLinkCandidateDistance_ are given a dummy loop link at their coordinates: A node is added 
-at the coordinate and a dummy loop link is added to the network with the added node as source and destination. The loop link 
-is referenced to the stop facility and is set as its only link candidate. _useArtificialLoopLink_ defines if such an artificial 
-loop link should be created regardless of the other parameters. Tram, subway, ferry, funicular and gondola routes are normally 
-mapped with artificial links.
+or a separate csv file (parameter _manualLinkCandidate_CsvFile_). This helps mapping with complicated rail stations.
 
 #### Creating mode dependent router
-The config parameterset _modeRoutingAssignment_ defines for a transport mode what links a transit route of this mode is allowed 
+The config parameterset _modeRoutingAssignment_ defines for a transport mode, what links a transit route of this mode is allowed
 to use. For example, transit routes with schedule mode bus can only use links with "bus" or "car" as modes. Similarly, all 
 transit routes with the transport mode rail can only use rail links. If no assignment for a schedule transport mode is given, 
 all transit routes using that mode are mapped with artificial links between stops.
