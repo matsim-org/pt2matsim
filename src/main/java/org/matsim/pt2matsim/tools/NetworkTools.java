@@ -97,7 +97,7 @@ public final class NetworkTools {
 	 * nearest link passing the coordinate from a reasonable set of nearby nodes instead
 	 * of the closest link originating from or ending in the closest node.
 	 *
-	 * @param network (instance of NetworkImpl)
+	 * @param network network
 	 * @param coord   the coordinate
 	 * @param nodeSearchRadius links from/to nodes within this radius are considered
 	 */
@@ -146,7 +146,7 @@ public final class NetworkTools {
 	 * to (1) return the already calculated distance to the coord and (2) store two opposite links under
 	 * the same distance.
 	 *
-	 * @param network               The network (must be instance of {@link Network})
+	 * @param network               The network
 	 * @param coord                 the coordinate from which the closest links are
 	 *                              to be searched
 	 * @param nodeSearchRadius      Only links from and to nodes within this radius are considered.
@@ -177,10 +177,10 @@ public final class NetworkTools {
 	}
 
 	/**
-	 * See {@link #findClosestLinks(Network, Coord, double, Set)}. Returns a list ordered ascending by distance to the coord.
-	 * For opposite links, the link which has the coordinate on its right side is sorted "closer" to the coord.
-	 * If more than two links have the exact same distance, links are sorted by distance to the next node. After that,
-	 * behaviour is undefined.
+	 * See {@link #findClosestLinks}. Returns a list ordered ascending by distance to the coord.
+	 * For opposite links, the link which has the coordinate on its right side is sorted "closer" to the coordinate.
+	 * If more than two links have the exact same distance, links are sorted by distance to their respective closest node.
+	 * After that, behaviour is undefined.
 	 */
 	public static List<Link> findClosestLinksSorted(Network network, Coord coord, double nodeSearchRadius, Set<String> allowedTransportModes) {
 		List<Link> links = new ArrayList<>();
@@ -215,82 +215,6 @@ public final class NetworkTools {
 		}
 		return links;
 	}
-
-	/**
-	 * Looks for nodes within search radius of <tt>coord</tt> (using {@link NetworkUtils#getNearestNodes},
-	 * fetches all in- and outlinks and sorts them ascending by their
-	 * distance to the coordinates given.
-	 * <p/>
-	 * The method then returns <tt>maxNLinks</tt> or all links within <tt>maxLinkDistance</tt>
-	 * (whichever is reached earlier). Note: This method returns more than N links if two links have the same
-	 * distance to the facility.
-	 * <p/>
-	 * Distance Link to Coordinate is calculated using {@link CoordUtils#distancePointLinesegment}).
-	 *
-	 * @param network               The network (must be instance of {@link Network})
-	 * @param coord                 the coordinate from which the closest links are
-	 *                              to be searched
-	 * @param nodeSearchRadius      Only links from and to nodes within this radius are considered.
-	 * @param maxNLinks             How many links should be returned.
-	 * @param toleranceFactor       After maxNLinks links have been found, additional links within
-	 *                              <tt>toleranceFactor</tt>*<tt>distance to the Nth link</tt>
-	 *                              are added to the set. No additional links whatsoever are added if > 1
-	 * @param networkTransportModes Only links with at least one of these transport modes are considered.
-	 *                              All links are considered if <tt>null</tt>.
-	 * @param maxLinkDistance       Only returns links which are closer than
-	 *                              this distance to the coordinate.
-	 * @return list of the closest links from coordinate <tt>coord</tt>.
-	 */
-	@Deprecated
-	public static List<Link> findClosestLinksCutoff(Network network, Coord coord, double nodeSearchRadius, int maxNLinks, double toleranceFactor, Set<String> networkTransportModes, double maxLinkDistance) {
-		List<Link> closestLinks = new ArrayList<>();
-		Collection<Node> nearestNodes = NetworkUtils.getNearestNodes(network, coord, nodeSearchRadius);
-
-		if(nearestNodes.size() != 0) {
-			// fetch every in- and outlink of each node
-			HashSet<Link> links = new HashSet<>();
-			for(Node node : nearestNodes) {
-				links.addAll(node.getOutLinks().values());
-				links.addAll(node.getInLinks().values());
-			}
-
-			SortedMap<Double, Set<Link>> closestLinksSortedByDistance = new TreeMap<>();
-
-			// calculate lineSegmentDistance for all links
-			double tolFactor = (toleranceFactor < 1 ? 0 : toleranceFactor);
-			double maxSoftConstraintDistance = 0.0;
-			for(Link link : links) {
-				// only use links with a viable network transport mode
-				if(networkTransportModes == null || MiscUtils.setsShareMinOneStringEntry(link.getAllowedModes(), networkTransportModes)) {
-					double lineSegmentDistance = CoordUtils.distancePointLinesegment(link.getFromNode().getCoord(), link.getToNode().getCoord(), coord);
-					MapUtils.getSet(lineSegmentDistance, closestLinksSortedByDistance).add(link);
-				}
-			}
-
-			int nLink = 0;
-			for(Map.Entry<Double, Set<Link>> entry : closestLinksSortedByDistance.entrySet()) {
-				if(entry.getKey() > maxLinkDistance) {
-					break;
-				}
-
-				// when the link limit is reached, set the soft constraint distance
-				if(nLink < maxNLinks && nLink + nLink + entry.getValue().size() >= maxNLinks) {
-					maxSoftConstraintDistance = entry.getKey() * tolFactor;
-				}
-
-				// check if distance is greater than soft constraint distance
-				if(nLink + entry.getValue().size() > maxNLinks && entry.getKey() > maxSoftConstraintDistance) {
-					break;
-				}
-
-				// if no loop break has been reached, add link to list
-				closestLinks.addAll(entry.getValue());
-				nLink += entry.getValue().size();
-			}
-		}
-		return closestLinks;
-	}
-
 
 	/**
 	 * Creates and returns a mode filtered network.
@@ -512,7 +436,7 @@ public final class NetworkTools {
 			config.addParameterSet(mra);
 		}
 
-		ScheduleRouters scheduleRouters = new ScheduleRoutersStandard(schedule, network, modeAssignments, PublicTransitMappingConfigGroup.TravelCostType.linkLength);
+		ScheduleRouters scheduleRouters = new ScheduleRoutersStandard(schedule, network, modeAssignments, PublicTransitMappingConfigGroup.TravelCostType.linkLength, true);
 
 		return scheduleRouters;
 	}

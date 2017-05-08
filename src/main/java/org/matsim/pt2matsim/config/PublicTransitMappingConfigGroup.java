@@ -19,23 +19,20 @@
 
 package org.matsim.pt2matsim.config;
 
-import com.opencsv.CSVReader;
-import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.api.internal.MatsimParameters;
 import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.config.ReflectiveConfigGroup;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.pt2matsim.run.PublicTransitMapper;
 
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import static org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup.TravelCostType.travelTime;
 
 
 /**
@@ -47,6 +44,8 @@ import java.util.Set;
 public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 
 	public static final String GROUP_NAME = "PublicTransitMapping";
+
+	public enum TravelCostType { linkLength, travelTime }
 
 	// param names
 	private static final String MODES_TO_KEEP_ON_CLEAN_UP = "modesToKeepOnCleanUp";
@@ -60,23 +59,23 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private static final String OUTPUT_STREET_NETWORK_FILE = "outputStreetNetworkFile";
 	private static final String SCHEDULE_FREESPEED_MODES = "scheduleFreespeedModes";
 	private static final String NUM_OF_THREADS = "numOfThreads";
-	private static final String REMOVE_NOT_USED_STOP_FACILITIES = "removeNotUsedStopFacilities";
 
+	private static final String REMOVE_NOT_USED_STOP_FACILITIES = "removeNotUsedStopFacilities";
 	private static final String N_LINK_THRESHOLD = "nLinkThreshold";
 	private static final String CANDIDATE_DISTANCE_MULTIPLIER = "candidateDistanceMultiplier";
+
 	private static final String MAX_LINK_CANDIDATE_DISTANCE = "maxLinkCandidateDistance";
+
+	private static final String ROUTING_WITH_CANDIDATE_DISTANCE = "routingWithCandidateDistance";
 
 	// default values
 	private Map<String, Set<String>> modeRoutingAssignment = new HashMap<>();
-
 	private Set<String> scheduleFreespeedModes = PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE_AS_SET;
 	private Set<String> modesToKeepOnCleanUp = new HashSet<>();
 	private double maxTravelCostFactor = 5.0;
 	private int numOfThreads = 2;
 	private double nodeSearchRadius = 500;
 	private boolean removeNotUsedStopFacilities = true;
-	private boolean combinePtModes = false;
-	private boolean addPtMode = false;
 	private String networkFile = null;
 	private String scheduleFile = null;
 	private String outputNetworkFile = null;
@@ -84,8 +83,10 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private String outputScheduleFile = null;
 	private TravelCostType travelCostType = TravelCostType.linkLength;
 
+	private boolean routingWithCandidateDistance = true;
 	private int nLinkThreshold = 6;
 	private double maxLinkCandidateDistance = 90;
+
 	private double candiateDistanceMulitplier = 1.6;
 
 	public PublicTransitMappingConfigGroup() {
@@ -117,7 +118,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 				"\t\tlisted in this set (typically only car). Separated by comma.");
 		map.put(TRAVEL_COST_TYPE,
 				"Defines which link attribute should be used for routing. Possible values \"" + TravelCostType.linkLength + "\" (default) \n" +
-				"\t\tand \"" + TravelCostType.travelTime + "\".");
+				"\t\tand \"" + travelTime + "\".");
 		map.put(NODE_SEARCH_RADIUS,
 				"Defines the radius [meter] from a stop facility within nodes are searched. Values up to 2000 don't \n" +
 				"\t\thave any significant impact on performance.");
@@ -128,7 +129,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 				"\t\tmodes (rail is recommended) can be added, separated by commas.");
 		map.put(MAX_TRAVEL_COST_FACTOR,
 				"If all paths between two stops have a [travelCost] > [" + MAX_TRAVEL_COST_FACTOR + "] * [minTravelCost], \n" +
-				"\t\tan artificial link is created. If " + TRAVEL_COST_TYPE + " is " + TravelCostType.travelTime + "\n" +
+				"\t\tan artificial link is created. If " + TRAVEL_COST_TYPE + " is " + travelTime + "\n" +
 				"\t\tminTravelCost is the travelTime between stops from schedule. If " + TRAVEL_COST_TYPE + " is \n" +
 				"\t\t" + TravelCostType.linkLength + " minTravel cost is the beeline distance.");
 		map.put(NUM_OF_THREADS,
@@ -141,6 +142,10 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		map.put(OUTPUT_SCHEDULE_FILE, "Path to the output schedule file. Not needed if PTMapper is used within another class.");
 		map.put(REMOVE_NOT_USED_STOP_FACILITIES,
 				"If true, stop facilities that are not used by any transit route are removed from the schedule. Default: true");
+		map.put(ROUTING_WITH_CANDIDATE_DISTANCE,
+				"The travel cost of a link candidate can be increased according to its distance to the stop facility x2. This" +
+				"\t\t\ttends to give more accurate results. If "+ TRAVEL_COST_TYPE +" is "+ travelTime +", freespeed on" +
+				"\t\t\tthe link is applied to the beeline distance.");
 
 		// link candidates
 		map.put(CANDIDATE_DISTANCE_MULTIPLIER,
@@ -200,7 +205,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	 * <li>7 - Funicular. Any rail system designed for steep inclines.</li>
 	 * </ul>
 	 */
-
 	public Map<String, Set<String>> getModeRoutingAssignment() {
 		return modeRoutingAssignment;
 	}
@@ -223,25 +227,21 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	}
 
 	@StringSetter(MODES_TO_KEEP_ON_CLEAN_UP)
-	private void setModesToKeepOnCleanUp(String modesToKeepOnCleanUp) {
+	private void setModesToKeepOnCleanUpStr(String modesToKeepOnCleanUp) {
 		if(modesToKeepOnCleanUp == null) {
 			this.modesToKeepOnCleanUp = null;
 			return;
 		}
-		for(String mode : modesToKeepOnCleanUp.split(",")) {
-			this.modesToKeepOnCleanUp.add(mode.trim());
-		}
+		this.modesToKeepOnCleanUp = CollectionUtils.stringToSet(modesToKeepOnCleanUp);
 	}
 
 	@StringGetter(MODES_TO_KEEP_ON_CLEAN_UP)
 	private String getModesToKeepOnCleanUpString() {
-		String ret = "";
-		if(modesToKeepOnCleanUp != null) {
-			for(String mode : modesToKeepOnCleanUp) {
-				ret += "," + mode;
-			}
+		if(modesToKeepOnCleanUp == null) {
+			return "";
+		} else {
+			return CollectionUtils.setToString(modesToKeepOnCleanUp);
 		}
-		return this.modesToKeepOnCleanUp == null ? null : ret.substring(1);
 	}
 
 	/**
@@ -297,6 +297,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		this.travelCostType = type;
 	}
 
+
 	/**
 	 * If all paths between two stops have a length > maxTravelCostFactor * beelineDistance,
 	 * an artificial link is created.
@@ -305,7 +306,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	public double getMaxTravelCostFactor() {
 		return maxTravelCostFactor;
 	}
-
 
 	@StringSetter(MAX_TRAVEL_COST_FACTOR)
 	public void setMaxTravelCostFactor(double maxTravelCostFactor) {
@@ -332,10 +332,10 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		return scheduleFreespeedModes;
 	}
 
+
 	public void setScheduleFreespeedModes(Set<String> modes) {
 		this.scheduleFreespeedModes.addAll(modes);
 	}
-
 
 	/**
 	 * Params for filepaths
@@ -410,8 +410,15 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		return old;
 	}
 
-	public enum TravelCostType {
-		travelTime, linkLength
+	@StringGetter(ROUTING_WITH_CANDIDATE_DISTANCE)
+	public boolean getRoutingWithCandidateDistance() {
+		return routingWithCandidateDistance;
+	}
+
+
+	@StringSetter(ROUTING_WITH_CANDIDATE_DISTANCE)
+	public void setRoutingWithCandidateDistance(boolean v) {
+		this.routingWithCandidateDistance = v;
 	}
 
 	/*
@@ -461,7 +468,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 
 	/**
 	 * Parameterset that define which network transport modes the router
-	 * can use for each schedule transport mode.<p/>
+	 * can use for each schedule transport mode. If no networkModes are set, the
+	 * transit route is mapped artificially<p/>
 	 * <p>
 	 * Network transport modes are the ones in {@link Link#getAllowedModes()}, schedule
 	 * transport modes are from {@link TransitRoute#getTransportMode()}.

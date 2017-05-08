@@ -61,10 +61,9 @@ public class ZVVexample {
 	public static void main(String[] args) throws Exception {
 //		convertOsm();
 //		convertSchedule();
-//		runMappingStandard();
-//		runMappingWeighted();
+		runMappingStandard();
 //		runMappingShapes();
-		runMappingOsm();
+//		runMappingOsm();
 	//		System.out.println("\n--- Q8585 ---");
 	//		System.out.format("Standard %.1f", q8585standard);
 	//		System.out.format("Gewicht  %.1f", q8585w);
