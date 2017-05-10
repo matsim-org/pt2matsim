@@ -78,8 +78,8 @@ public final class PublicTransitMapper {
 		// Load config, input schedule and input network
 		Config configAll = ConfigUtils.loadConfig(configFile, new PublicTransitMappingConfigGroup());
 		PublicTransitMappingConfigGroup config = ConfigUtils.addOrGetModule(configAll, PublicTransitMappingConfigGroup.class);
-		TransitSchedule schedule = config.getScheduleFile() == null ? null : ScheduleTools.readTransitSchedule(config.getScheduleFile());
-		Network network = config.getNetworkFile() == null ? null : NetworkTools.readNetwork(config.getNetworkFile());
+		TransitSchedule schedule = config.getInputScheduleFile() == null ? null : ScheduleTools.readTransitSchedule(config.getInputScheduleFile());
+		Network network = config.getInputNetworkFile() == null ? null : NetworkTools.readNetwork(config.getInputNetworkFile());
 
 		// Run PTMapper
 		new PTMapper(config, schedule, network).run();

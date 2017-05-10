@@ -47,23 +47,22 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 
 	public enum TravelCostType { linkLength, travelTime }
 
-	// param names
-	private static final String MODES_TO_KEEP_ON_CLEAN_UP = "modesToKeepOnCleanUp";
-	private static final String NODE_SEARCH_RADIUS = "nodeSearchRadius";
-	private static final String TRAVEL_COST_TYPE = "travelCostType";
-	private static final String MAX_TRAVEL_COST_FACTOR = "maxTravelCostFactor";
-	private static final String NETWORK_FILE = "networkFile";
-	private static final String SCHEDULE_FILE = "scheduleFile";
+	private static final String INPUT_NETWORK_FILE = "inputNetworkFile";
+	private static final String INPUT_SCHEDULE_FILE = "inputScheduleFile";
 	private static final String OUTPUT_NETWORK_FILE = "outputNetworkFile";
 	private static final String OUTPUT_SCHEDULE_FILE = "outputScheduleFile";
 	private static final String OUTPUT_STREET_NETWORK_FILE = "outputStreetNetworkFile";
+
+	private static final String TRAVEL_COST_TYPE = "travelCostType";
+	private static final String MAX_TRAVEL_COST_FACTOR = "maxTravelCostFactor";
 	private static final String SCHEDULE_FREESPEED_MODES = "scheduleFreespeedModes";
 	private static final String NUM_OF_THREADS = "numOfThreads";
 
+	private static final String MODES_TO_KEEP_ON_CLEAN_UP = "modesToKeepOnCleanUp";
 	private static final String REMOVE_NOT_USED_STOP_FACILITIES = "removeNotUsedStopFacilities";
+
 	private static final String N_LINK_THRESHOLD = "nLinkThreshold";
 	private static final String CANDIDATE_DISTANCE_MULTIPLIER = "candidateDistanceMultiplier";
-
 	private static final String MAX_LINK_CANDIDATE_DISTANCE = "maxLinkCandidateDistance";
 
 	private static final String ROUTING_WITH_CANDIDATE_DISTANCE = "routingWithCandidateDistance";
@@ -74,10 +73,10 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private Set<String> modesToKeepOnCleanUp = new HashSet<>();
 	private double maxTravelCostFactor = 5.0;
 	private int numOfThreads = 2;
-	private double nodeSearchRadius = 500;
 	private boolean removeNotUsedStopFacilities = true;
-	private String networkFile = null;
-	private String scheduleFile = null;
+
+	private String inputNetworkFile = null;
+	private String inputScheduleFile = null;
 	private String outputNetworkFile = null;
 	private String outputStreetNetworkFile = null;
 	private String outputScheduleFile = null;
@@ -86,7 +85,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private boolean routingWithCandidateDistance = true;
 	private int nLinkThreshold = 6;
 	private double maxLinkCandidateDistance = 90;
-
 	private double candiateDistanceMulitplier = 1.6;
 
 	public PublicTransitMappingConfigGroup() {
@@ -119,9 +117,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		map.put(TRAVEL_COST_TYPE,
 				"Defines which link attribute should be used for routing. Possible values \"" + TravelCostType.linkLength + "\" (default) \n" +
 				"\t\tand \"" + travelTime + "\".");
-		map.put(NODE_SEARCH_RADIUS,
-				"Defines the radius [meter] from a stop facility within nodes are searched. Values up to 2000 don't \n" +
-				"\t\thave any significant impact on performance.");
 		map.put(SCHEDULE_FREESPEED_MODES,
 				"After the schedule has been mapped, the free speed of links can be set according to the necessary travel \n" +
 				"\t\ttimes given by the transit schedule. The freespeed of a link is set to the minimal value needed by all \n" +
@@ -134,8 +129,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 				"\t\t" + TravelCostType.linkLength + " minTravel cost is the beeline distance.");
 		map.put(NUM_OF_THREADS,
 				"Defines the number of numOfThreads that should be used for pseudoRouting. Default: 2.");
-		map.put(NETWORK_FILE, "Path to the input network file. Not needed if PTMapper is called within another class.");
-		map.put(SCHEDULE_FILE, "Path to the input schedule file. Not needed if PTMapper is called within another class.");
+		map.put(INPUT_NETWORK_FILE, "Path to the input network file. Not needed if PTMapper is called within another class.");
+		map.put(INPUT_SCHEDULE_FILE, "Path to the input schedule file. Not needed if PTMapper is called within another class.");
 		map.put(OUTPUT_NETWORK_FILE, "Path to the output network file. Not needed if PTMapper is used within another class.");
 		map.put(OUTPUT_STREET_NETWORK_FILE, "Path to the output car only network file. The input multimodal map is filtered. \n" +
 				"\t\tNot needed if PTMapper is used within another class.");
@@ -258,20 +253,6 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	}
 
 	/**
-	 * Defines the radius [meter] from a stop facility within nodes are searched.
-	 * Mainly a maximum value for performance.
-	 */
-	@StringGetter(NODE_SEARCH_RADIUS)
-	public double getNodeSearchRadius() {
-		return nodeSearchRadius;
-	}
-
-	@StringSetter(NODE_SEARCH_RADIUS)
-	public void setNodeSearchRadius(double nodeSearchRadius) {
-		this.nodeSearchRadius = nodeSearchRadius;
-	}
-
-	/**
 	 * Threads
 	 */
 	@StringGetter(NUM_OF_THREADS)
@@ -340,32 +321,32 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	/**
 	 * Params for filepaths
 	 */
-	@StringGetter(NETWORK_FILE)
+	@StringGetter(INPUT_NETWORK_FILE)
 	public String getNetworkFileStr() {
-		return this.networkFile == null ? "" : this.networkFile;
+		return this.inputNetworkFile == null ? "" : this.inputNetworkFile;
 	}
 
-	public String getNetworkFile() {
-		return this.networkFile;
+	public String getInputNetworkFile() {
+		return this.inputNetworkFile;
 	}
 
-	@StringSetter(NETWORK_FILE)
-	public void setNetworkFile(String networkFile) {
-		this.networkFile = networkFile.equals("") ? null : networkFile;
+	@StringSetter(INPUT_NETWORK_FILE)
+	public void setInputNetworkFile(String inputNetworkFile) {
+		this.inputNetworkFile = inputNetworkFile.equals("") ? null : inputNetworkFile;
 	}
 
-	@StringGetter(SCHEDULE_FILE)
+	@StringGetter(INPUT_SCHEDULE_FILE)
 	public String getScheduleFileStr() {
-		return this.scheduleFile == null ? "" : this.scheduleFile;
+		return this.inputScheduleFile == null ? "" : this.inputScheduleFile;
 	}
 
-	public String getScheduleFile() {
-		return this.scheduleFile;
+	public String getInputScheduleFile() {
+		return this.inputScheduleFile;
 	}
 
-	@StringSetter(SCHEDULE_FILE)
-	public void setScheduleFile(String scheduleFile) {
-		this.scheduleFile = scheduleFile.equals("") ? null : scheduleFile;
+	@StringSetter(INPUT_SCHEDULE_FILE)
+	public void setInputScheduleFile(String inputScheduleFile) {
+		this.inputScheduleFile = inputScheduleFile.equals("") ? null : inputScheduleFile;
 	}
 
 	@StringGetter(OUTPUT_NETWORK_FILE)

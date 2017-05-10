@@ -32,7 +32,7 @@ import java.util.Set;
 
 /**
  * Mapping example for public transit in the zurich area (agency: ZVV).
- *
+ * <p>
  * Transit schedule is available on opentransportdata.swiss
  *
  * @author polettif
@@ -60,14 +60,11 @@ public class ZVVexample {
 
 	public static void main(String[] args) throws Exception {
 //		convertOsm();
-//		convertSchedule();
-		runMappingStandard();
+		convertSchedule();
+//		runMappingStandard();
 //		runMappingShapes();
-//		runMappingOsm();
-	//		System.out.println("\n--- Q8585 ---");
-	//		System.out.format("Standard %.1f", q8585standard);
-	//		System.out.format("Gewicht  %.1f", q8585w);
-		}
+		runMappingOsm();
+	}
 
 	private static void convertOsm() {
 		// 1. 	convert OSM
@@ -127,6 +124,8 @@ public class ZVVexample {
 		}
 //		ExtractDebugSchedule.removeRand(schedule, 100);
 		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
+		filterOneRoutePerLine(schedule);
+
 		ScheduleTools.writeTransitSchedule(schedule, inputScheduleFile);
 	}
 
@@ -220,7 +219,7 @@ public class ZVVexample {
 				ShapeTools.readShapesFile(gtfsShapeFile, coordSys)
 		);
 		analysis.run();
-		analysis.writeQuantileDistancesCsv(base+"output/analysis/quantiles.csv");
+		analysis.writeQuantileDistancesCsv(base + "output/analysis/quantiles.csv");
 		System.out.format("Q8585:       %.1f\n", analysis.getQ8585());
 		System.out.format("Length diff: %.1f %%\n", Math.sqrt(analysis.getAverageSquaredLengthRatio()) * 100);
 
@@ -240,11 +239,30 @@ public class ZVVexample {
 		ptMapper.run();
 
 		NetworkTools.writeNetwork(network, outputNetwork3);
-		ScheduleTools.writeTransitSchedule(ptMapper.getSchedule(), outputSchedule3);
+		ScheduleTools.writeTransitSchedule(schedule, outputSchedule3);
 
 		runAnalysis(outputSchedule3, outputNetwork3);
+
+		Schedule2ShapeFile.run(coordSys, base + "output/shp/", schedule, network);
 	}
 
+	private static void filterOneRoutePerLine(TransitSchedule schedule) {
+		for(TransitLine transitLine : new HashSet<>(schedule.getTransitLines().values())) {
+			int maxDep = 0;
+			Id<TransitRoute> max = null;
+			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
+				if(transitRoute.getDepartures().size() > maxDep) {
+					maxDep = transitRoute.getDepartures().size();
+					max = transitRoute.getId();
+				}
+			}
 
+			for(TransitRoute t : new HashSet<>(transitLine.getRoutes().values())) {
+				if(!t.getId().equals(max)) {
+					transitLine.removeRoute(t);
+				}
+			}
+		}
+	}
 }
 

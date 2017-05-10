@@ -72,7 +72,7 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 	}
 
 	private void load() {
-		this.nodeSearchRadius = maxDistance*6;
+		this.nodeSearchRadius = maxDistance*15;
 
 		log.info("===========================");
 		log.info("Creating link candidates...");
