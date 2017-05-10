@@ -21,7 +21,6 @@ package org.matsim.pt2matsim.mapping.linkCandidateCreation;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
-import org.matsim.pt2matsim.mapping.MapperModule;
 
 import java.util.SortedSet;
 
@@ -30,7 +29,7 @@ import java.util.SortedSet;
  *
  * @author polettif
  */
-public interface LinkCandidateCreator extends MapperModule {
+public interface LinkCandidateCreator {
 	
 	/**
 	 * @return A set of link candidates for the given stop facility and schedule transport mode.

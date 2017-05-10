@@ -25,8 +25,6 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
@@ -46,6 +44,7 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * References an unmapped transit schedule to a network. Combines
@@ -53,7 +52,7 @@ import java.util.List;
  * TransitStopFacilities to link. Calculates the least cost path
  * from the transit route's first to its last stop with the constraint
  * that the path must contain a link candidate of every stop.<p/>
- *
+ * <p>
  * Additional stop facilities are created if a stop facility has more
  * than one plausible link. Artificial links are added to the network
  * if no path can be found.
@@ -64,11 +63,8 @@ public class PTMapper {
 
 	protected static Logger log = Logger.getLogger(PTMapper.class);
 	private final PseudoSchedule pseudoSchedule = new PseudoScheduleImpl();
-	private PublicTransitMappingConfigGroup config;
 	private Network network;
 	private TransitSchedule schedule;
-	private LinkCandidateCreator linkCandidates;
-	private ScheduleRouters scheduleRouters;
 
 	/**
 	 * Use this constructor if you just want to use the config for mapping parameters.
@@ -78,51 +74,38 @@ public class PTMapper {
 	 * network provided here.
 	 * <p/>
 	 *
-	 * @param config a PublicTransitMapping config that defines all parameters used
-	 *               for mapping.
 	 * @param schedule which will be newly routed.
-	 * @param network schedule is mapped to this network, is modified
+	 * @param network  schedule is mapped to this network, is modified
 	 */
-	public PTMapper(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network, MapperModule... modules) {
-		this.config = config;
+	public PTMapper(TransitSchedule schedule, Network network) {
 		this.schedule = schedule;
 		this.network = network;
-
-		for(MapperModule m : modules) {
-			if(m instanceof LinkCandidateCreator) {	this.linkCandidates = (LinkCandidateCreator) m;	}
-			if(m instanceof ScheduleRouters) {	this.scheduleRouters = (ScheduleRouters) m;	}
-		}
-
-		// assign defaults
-		if(this.linkCandidates == null) {
-			this.linkCandidates = new LinkCandidateCreatorStandard(schedule, network,
-					config.getNLinkThreshold(),
-					config.getCandidateDistanceMultiplier(),
-					config.getMaxLinkCandidateDistance(),
-					config.getModeRoutingAssignment());
-		}
-		if(this.scheduleRouters == null) {
-			this.scheduleRouters = new ScheduleRoutersStandard(schedule, network, config.getModeRoutingAssignment(), config.getTravelCostType(), config.getRoutingWithCandidateDistance());
-		}
-	}
-
-	public static void run(PublicTransitMappingConfigGroup config, TransitSchedule schedule, Network network) {
-		PTMapper ptMapper = new PTMapper(config, schedule, network);
-		ptMapper.run();
 	}
 
 	/**
-	 * Reads the schedule and network file specified in the PublicTransitMapping
-	 * config and maps the schedule to the network. Writes the output files as
-	 * well if defined in config. The mapping parameters defined in the config
-	 * are used.
+	 * Maps the schedule to the network with parameters defined in config
 	 */
-	public void run() {
-		if(schedule == null) {
-			throw new RuntimeException("No schedule defined!");
-		} else if(network == null) {
-			throw new RuntimeException("No network defined!");
-		}
+	public void run(LinkCandidateCreator linkCandidateCreator, ScheduleRouters scheduleRouters, PublicTransitMappingConfigGroup config) {
+		run(linkCandidateCreator, scheduleRouters, config.getNumOfThreads(), config.getMaxTravelCostFactor(), config.getScheduleFreespeedModes(), config.getModesToKeepOnCleanUp(), config.getRemoveNotUsedStopFacilities());
+	}
+
+	public void run(PublicTransitMappingConfigGroup config) {
+		run(	new LinkCandidateCreatorStandard(schedule, network, config),
+				new ScheduleRoutersStandard(schedule, network, config),
+				config.getNumOfThreads(), config.getMaxTravelCostFactor(),
+				config.getScheduleFreespeedModes(), config.getModesToKeepOnCleanUp(),
+				config.getRemoveNotUsedStopFacilities());
+	}
+
+	/**
+	 * Maps the schedule to the network
+	 */
+	public void run(LinkCandidateCreator linkCandidates, ScheduleRouters scheduleRouters, int numThreads, double maxTravelCostFactor, Set<String> scheduleFreespeedModes, Set<String> modesToKeepOnCleanup, boolean removeNotUsedStopFacilities) {
+		if(schedule == null) throw new RuntimeException("No schedule defined!");
+		if(network == null) throw new RuntimeException("No network defined!");
+
+		if(linkCandidates == null) throw new RuntimeException("No LinkCandidates defined!");
+		if(scheduleRouters == null) throw new RuntimeException("No ScheduleRouters defined!");
 
 		if(ScheduleTools.idsContainChildStopString(schedule)) {
 			throw new RuntimeException("Some stopFacility ids contain the string \"" + PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES + "\"! Schedule cannot be mapped.");
@@ -140,13 +123,7 @@ public class PTMapper {
 		int nStopFacilities = schedule.getFacilities().size();
 		int nTransitRoutes = 0;
 		for(TransitLine transitLine : this.schedule.getTransitLines().values()) {
-			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
-				nTransitRoutes++;
-				String scheduleMode = transitRoute.getTransportMode();
-				if(!config.getModeRoutingAssignment().containsKey(scheduleMode)) {
-					throw new IllegalArgumentException("No mode routing assignment for schedule mode " + scheduleMode);
-				}
-			}
+			nTransitRoutes += transitLine.getRoutes().size();
 		}
 
 		/* [1]
@@ -155,13 +132,12 @@ public class PTMapper {
 		  for all transit routes.
 		 */
 		log.info("==================================");
-		log.info("Calculating pseudoTransitRoutes... ("+nTransitRoutes+" transit routes in "+schedule.getTransitLines().size()+" transit lines)");
+		log.info("Calculating pseudoTransitRoutes... (" + nTransitRoutes + " transit routes in " + schedule.getTransitLines().size() + " transit lines)");
 
 		// initiate pseudoRouting
-		int numThreads = config.getNumOfThreads() > 0 ? config.getNumOfThreads() : 1;
 		PseudoRouting[] pseudoRoutingRunnables = new PseudoRouting[numThreads];
 		for(int i = 0; i < numThreads; i++) {
-			pseudoRoutingRunnables[i] = new PseudoRoutingImpl(config, scheduleRouters, linkCandidates);
+			pseudoRoutingRunnables[i] = new PseudoRoutingImpl(scheduleRouters, linkCandidates, maxTravelCostFactor);
 		}
 		// spread transit lines on runnables
 		int thr = 0;
@@ -222,7 +198,7 @@ public class PTMapper {
 		 */
 		log.info("=============================");
 		log.info("Clean schedule and network...");
-		cleanScheduleAndNetwork();
+		cleanScheduleAndNetwork(scheduleFreespeedModes, modesToKeepOnCleanup, removeNotUsedStopFacilities);
 
 		/* [6]
 		  Validate the schedule
@@ -241,16 +217,16 @@ public class PTMapper {
 		printStatistics(nStopFacilities);
 	}
 
-	private void cleanScheduleAndNetwork() {
+	private void cleanScheduleAndNetwork(Set<String> scheduleFreespeedModes, Set<String> modesToKeepOnCleanup, boolean removeNotUsedStopFacilities) {
 		// might have been set higher during pseudo routing
 		NetworkTools.resetLinkLength(network, PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE);
 
 		// changing the freespeed of the artificial links (value is used in simulations)
-		ScheduleTools.setFreeSpeedBasedOnSchedule(network, schedule, config.getScheduleFreespeedModes());
+		ScheduleTools.setFreeSpeedBasedOnSchedule(network, schedule, scheduleFreespeedModes);
 
 		// Remove unnecessary parts of schedule
-		ScheduleCleaner.removeNotUsedTransitLinks(schedule, network, config.getModesToKeepOnCleanUp(), true);
-		if(config.getRemoveNotUsedStopFacilities()) {
+		ScheduleCleaner.removeNotUsedTransitLinks(schedule, network, modesToKeepOnCleanup, true);
+		if(removeNotUsedStopFacilities) {
 			ScheduleCleaner.removeNotUsedStopFacilities(schedule);
 		}
 
@@ -333,12 +309,6 @@ public class PTMapper {
 		log.info("    Run PlausibilityCheck for further analysis");
 		log.info("");
 		log.info("==================================================");
-	}
-
-	public Config getConfig() {
-		Config configAll = ConfigUtils.createConfig();
-		configAll.addModule(config);
-		return configAll;
 	}
 
 	public TransitSchedule getSchedule() {

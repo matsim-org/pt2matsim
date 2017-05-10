@@ -82,7 +82,7 @@ public final class PublicTransitMapper {
 		Network network = config.getInputNetworkFile() == null ? null : NetworkTools.readNetwork(config.getInputNetworkFile());
 
 		// Run PTMapper
-		new PTMapper(config, schedule, network).run();
+		new PTMapper(schedule, network).run(config);
 
 		// Write the schedule and network to output files (if defined in config)
 		if(config.getOutputNetworkFile() != null && config.getOutputScheduleFile() != null) {

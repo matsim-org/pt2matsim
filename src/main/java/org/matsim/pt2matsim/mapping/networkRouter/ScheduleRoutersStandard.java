@@ -12,7 +12,6 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
-import org.matsim.pt2matsim.mapping.MapperModule;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.PTMapperTools;
@@ -29,7 +28,7 @@ import java.util.Set;
  *
  * @author polettif
  */
-public class ScheduleRoutersStandard implements ScheduleRouters, MapperModule {
+public class ScheduleRoutersStandard implements ScheduleRouters {
 
 	protected static Logger log = Logger.getLogger(ScheduleRoutersStandard.class);
 
@@ -54,12 +53,12 @@ public class ScheduleRoutersStandard implements ScheduleRouters, MapperModule {
 		load();
 	}
 
-	public ScheduleRoutersStandard(TransitSchedule schedule, Network network, Map<String, Set<String>> modeRoutingAssignment) {
-		this(schedule, network, modeRoutingAssignment, PublicTransitMappingConfigGroup.TravelCostType.linkLength, true);
+	public ScheduleRoutersStandard(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
+		this(schedule, network, config.getModeRoutingAssignment(), config.getTravelCostType(), config.getRoutingWithCandidateDistance());
 	}
 
 
-		/**
+	/**
 		 * Load path calculators for all transit routes
 		 */
 	private void load() {

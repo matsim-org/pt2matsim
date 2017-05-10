@@ -26,7 +26,6 @@ import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
-import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
@@ -52,7 +51,6 @@ public class PseudoRoutingImpl implements PseudoRouting {
 	private static Counter counterPseudoRouting = new Counter("route # ");
 	private static boolean warnMinTravelCost = true;
 
-	private final PublicTransitMappingConfigGroup config;
 	private final LinkCandidateCreator linkCandidates;
 	private final ScheduleRouters scheduleRouters;
 	private final List<TransitLine> queue = new ArrayList<>();
@@ -60,9 +58,10 @@ public class PseudoRoutingImpl implements PseudoRouting {
 	private final Set<ArtificialLink> necessaryArtificialLinks = new HashSet<>();
 
 	private final PseudoSchedule threadPseudoSchedule = new PseudoScheduleImpl();
+	private double maxTravelCostFactor;
 
-	public PseudoRoutingImpl(PublicTransitMappingConfigGroup config, ScheduleRouters scheduleRouters, LinkCandidateCreator linkCandidates) {
-		this.config = config;
+	public PseudoRoutingImpl(ScheduleRouters scheduleRouters, LinkCandidateCreator linkCandidates, double maxTravelCostFactor) {
+		this.maxTravelCostFactor = maxTravelCostFactor;
 		this.scheduleRouters = scheduleRouters;
 		this.linkCandidates = linkCandidates;
 	}
@@ -97,7 +96,7 @@ public class PseudoRoutingImpl implements PseudoRouting {
 					Set<LinkCandidate> linkCandidatesNext = linkCandidates.getLinkCandidates(routeStops.get(i + 1), transitLine, transitRoute);
 
 					double minTravelCost = scheduleRouters.getMinimalTravelCost(routeStops.get(i), routeStops.get(i + 1), transitLine, transitRoute);
-					double maxAllowedTravelCost = minTravelCost * config.getMaxTravelCostFactor();
+					double maxAllowedTravelCost = minTravelCost * maxTravelCostFactor;
 
 					if(minTravelCost == 0 && warnMinTravelCost) {
 						log.warn("There are stop pairs where minTravelCost is 0.0! This might happen if departure and arrival time of two subsequent stops are identical. Further messages are suppressed.");

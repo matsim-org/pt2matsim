@@ -19,11 +19,7 @@
 package org.matsim.pt2matsim.mapping.linkCandidateCreation;
 
 import org.matsim.api.core.v01.Coord;
-import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.network.Node;
-import org.matsim.pt.transitSchedule.api.TransitStopFacility;
-import org.matsim.pt2matsim.mapping.lib.PublicTransitStop;
 
 /**
  * A possible link for a TransitStopFacility. A LinkCandidate contains
