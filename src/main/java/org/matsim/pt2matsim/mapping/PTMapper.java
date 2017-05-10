@@ -102,7 +102,7 @@ public class PTMapper {
 					config.getModeRoutingAssignment());
 		}
 		if(this.scheduleRouters == null) {
-			this.scheduleRouters = new ScheduleRoutersStandard(schedule, network, config.getModeRoutingAssignment(), config.getTravelCostType(), true);
+			this.scheduleRouters = new ScheduleRoutersStandard(schedule, network, config.getModeRoutingAssignment(), config.getTravelCostType(), config.getRoutingWithCandidateDistance());
 		}
 	}
 

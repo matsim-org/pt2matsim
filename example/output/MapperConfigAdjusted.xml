@@ -41,7 +41,7 @@
         <param name="modesToKeepOnCleanUp" value="car"/>
 
         <!-- Path to the input network file. Not needed if PTMapper is called within another class. -->
-        <param name="networkFile" value="example/network/addison.xml.gz"/>
+        <param name="inputNetworkFile" value="example/network/addison.xml.gz"/>
 
         <!-- Defines the radius [meter] from a stop facility within nodes are searched. Values up to 2000 don't
         have any significant impact on performance. -->
@@ -64,7 +64,7 @@
         <param name="removeNotUsedStopFacilities" value="true"/>
 
         <!-- Path to the input schedule file. Not needed if PTMapper is called within another class. -->
-        <param name="scheduleFile" value="example/output/unmapped/schedule_unmapped.xml.gz"/>
+        <param name="inputScheduleFile" value="example/output/unmapped/schedule_unmapped.xml.gz"/>
 
         <!-- After the schedule has been mapped, the free speed of links can be set according to the necessary travel
         times given by the transit schedule. The freespeed of a link is set to the minimal value needed by all

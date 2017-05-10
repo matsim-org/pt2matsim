@@ -36,7 +36,6 @@ import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.lib.RouteShape;
-import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.vehicles.*;
 
@@ -51,7 +50,6 @@ import java.util.*;
 public final class ScheduleTools {
 
 	protected static Logger log = Logger.getLogger(ScheduleTools.class);
-	private static TransitRoute shapeId;
 
 	private ScheduleTools() {}
 
@@ -302,8 +300,7 @@ public final class ScheduleTools {
 	/**
 	 * Adds mode the schedule transport mode to links. Removes all network
 	 * modes elsewhere. Adds mode "artificial" to artificial
-	 * links. Used for debugging and visualization since networkModes
-	 * should be combined to pt anyway.
+	 * links. Used for debugging and visualization.
 	 */
 	public static void assignScheduleModesToLinks(TransitSchedule schedule, Network network) {
 		log.info("... Assigning schedule transport mode to network");
@@ -326,9 +323,7 @@ public final class ScheduleTools {
 				Set<String> linkModes = transitLinkNetworkModes.get(link.getId());
 				linkModes.addAll(link.getAllowedModes());
 
-				for(String m : linkModes) {
-					modes.add(m);
-				}
+				modes.addAll(linkModes);
 
 				link.setAllowedModes(modes);
 			}
