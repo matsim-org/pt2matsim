@@ -21,7 +21,6 @@ package org.matsim.pt2matsim.mapping.linkCandidateCreation;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.utils.geometry.CoordUtils;
-import org.matsim.pt2matsim.mapping.lib.PublicTransitStop;
 import org.matsim.pt2matsim.tools.CoordTools;
 
 /**

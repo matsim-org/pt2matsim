@@ -25,7 +25,6 @@ import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
-import org.matsim.pt2matsim.mapping.MapperModule;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 
 /**
@@ -35,7 +34,7 @@ import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
  *
  * @author polettif
  */
-public interface ScheduleRouters extends MapperModule {
+public interface ScheduleRouters {
 
 	/**
 	 * Calculate the least cost path between two link candidates depending on the transit line and route

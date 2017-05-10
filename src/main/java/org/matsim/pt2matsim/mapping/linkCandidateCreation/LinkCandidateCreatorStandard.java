@@ -28,9 +28,8 @@ import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
-import org.matsim.pt2matsim.mapping.lib.PublicTransitStop;
-import org.matsim.pt2matsim.mapping.lib.PublicTransitStopImpl;
 import org.matsim.pt2matsim.tools.MiscUtils;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.PTMapperTools;
@@ -69,6 +68,10 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 		this.routingAssignment = routingAssignment;
 
 		load();
+	}
+
+	public LinkCandidateCreatorStandard(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
+		this(schedule, network, config.getNLinkThreshold(), config.getCandidateDistanceMultiplier(), config.getMaxLinkCandidateDistance(), config.getModeRoutingAssignment());
 	}
 
 	private void load() {
