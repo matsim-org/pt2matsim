@@ -76,9 +76,6 @@ public class PTMapperShapesExample {
 		GtfsConverter gtfsConverter = new GtfsConverter(gtfsFeed);
 		gtfsConverter.convert(sampleDay, coordSys);
 		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), unmappedScheduleFile);
-
-		// debug shapes
-//		ShapeTools.writeESRIShapeFile(Collections.singleton(gtfsConverter.getShapes().get("26")), coordSys, base + "output/gtfsShapeDebug.shp");
 	}
 
 	private void runNormalMapping() {
@@ -103,12 +100,10 @@ public class PTMapperShapesExample {
 				50, 200);
 
 		PTMapper ptMapper = new PTMapper(schedule, network);
-//		ExtractDebugSchedule.mapScheduleToNetwork(schedule, debugLineId.toString(), debugRouteId.toString());
 		ptMapper.run(config, routers);
 
 		NetworkTools.writeNetwork(network, networkOutput2);
 		ScheduleTools.writeTransitSchedule(ptMapper.getSchedule(), scheduleOutput2);
-
 	}
 
 	public void mappingAnalysisNormal() {
@@ -122,8 +117,6 @@ public class PTMapperShapesExample {
 
 		analysis.run();
 		analysis.writeQuantileDistancesCsv(base + "output/Normal_DistancesQuantile.csv");
-		System.out.println("Q8585 normal: " + analysis.getQ8585());
-		System.out.println("Length diff. normal: " + Math.sqrt(analysis.getAverageSquaredLengthRatio()) * 100 + " %");
 	}
 
 	public void mappingAnalysisWithShapes() {
@@ -137,8 +130,6 @@ public class PTMapperShapesExample {
 
 		analysis.run();
 		analysis.writeQuantileDistancesCsv(base + "/output/Shapes_DistancesQuantile.csv");
-		System.out.println("Q8585 with shapes: " + analysis.getQ8585());
-		System.out.println("Length diff. shapes: " + Math.sqrt(analysis.getAverageSquaredLengthRatio()) * 100 + " %");
 	}
 
 	public void writeShapes() {

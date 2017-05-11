@@ -54,8 +54,6 @@ public class ZVVexample {
 	private static String outputSchedule2 = base + "output/shapes_schedule.xml.gz";
 	private static String outputNetwork3 = base + "output/osm_network.xml.gz";
 	private static String outputSchedule3 = base + "output/osm_schedule.xml.gz";
-	private static String outputNetwork4 = base + "output/weight_network.xml.gz";
-	private static String outputSchedule4 = base + "output/weight_schedule.xml.gz";
 	private static OsmData osmData;
 
 	public static void main(String[] args) throws Exception {

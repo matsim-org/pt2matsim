@@ -196,6 +196,7 @@ public class Schedule2ShapeFile {
 				.addAttribute("route", String.class)
 				.addAttribute("mode", String.class)
 				.addAttribute("simLength", Double.class)
+				.addAttribute("descr", String.class)
 				.create();
 
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
@@ -221,6 +222,7 @@ public class Schedule2ShapeFile {
 				f.setAttribute("line", transitLine.getId().toString());
 				f.setAttribute("route", transitRoute.getId().toString());
 				f.setAttribute("mode", transitRoute.getTransportMode());
+				f.setAttribute("descr", transitRoute.getDescription());
 				f.setAttribute("simLength", simLength);
 				features.add(f);
 			}

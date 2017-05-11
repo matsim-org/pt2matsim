@@ -20,8 +20,6 @@ package org.matsim.pt2matsim.workbench;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.pt.transitSchedule.api.TransitLine;
-import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
@@ -54,8 +52,8 @@ public class Asheville {
 	public static final String outputScheduleFile = "output/asheville_schedule.xml.gz";
 
 	public static void main(String[] args) {
-//		convertOsm();
-//		convertGtfs();
+		convertOsm();
+		convertGtfs();
 		runMapping();
 		analysis();
 	}
@@ -77,7 +75,7 @@ public class Asheville {
 		ScheduleTools.writeTransitSchedule(schedule, outputScheduleFile);
 		NetworkTools.writeNetwork(network, outputNetworkFile);
 
-//		Schedule2ShapeFile.mapScheduleToNetwork(EPSG, "output/shp/", schedule, network);
+		Schedule2ShapeFile.run(EPSG, "output/shp/", schedule, network);
 	}
 
 	private static void analysis() {
@@ -88,18 +86,12 @@ public class Asheville {
 
 		MappingAnalysis analysis = new MappingAnalysis(schedule, network, shapes);
 		analysis.run();
-		System.out.format("\n>>> Q8585: %.3f\n", analysis.getQ8585());
-		System.out.format("\n>>> Q9595: %.3f\n", analysis.getQQ(0.95));
-
 		analysis.writeQuantileDistancesCsv("output/analysis/quantiles.csv");
 
 		// write worst mapped route to file
 		String debugLineId = "S3_1137";
 		String debugRouteId = "605587A5072B5817";
-		ExtractDebugSchedule.run(schedule, debugLineId, debugRouteId);
-		Schedule2ShapeFile.run(EPSG, "output/debug/", schedule, network);
-		Id<RouteShape> shapeId = ScheduleTools.getShapeId(schedule.getTransitLines().get(Id.create(debugLineId, TransitLine.class)).getRoutes().get(Id.create(debugRouteId, TransitRoute.class)));
-		ShapeTools.writeESRIShapeFile(Collections.singleton(shapes.get(shapeId)), EPSG, "output/debug/shape.shp");
+		ExtractDebugSchedule.writeRouteAndShapeToShapefile(schedule, network, shapes, "output/debug/", debugLineId, debugRouteId, EPSG);
 	}
 
 	public static void convertOsm() {
