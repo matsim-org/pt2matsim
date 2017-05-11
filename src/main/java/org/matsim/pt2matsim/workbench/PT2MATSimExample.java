@@ -34,6 +34,8 @@ import java.io.IOException;
  * is Addison County, USA (except for HAFAS).
  *
  * @author polettif
+ *
+ * @deprecated somewhat
  */
 public final class PT2MATSimExample {
 

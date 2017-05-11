@@ -33,46 +33,22 @@ import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * @author polettif
  */
 public class MappingAnalysisExample {
 
-	private TransitSchedule schedule;
-	private Vehicles vehicles;
-	private Network network;
-	private GtfsConverter gtfsConverter;
-	private String coordinateSystem;
-
-	private String input = "example/";
-
 	public static void main(String[] args) throws Exception {
-		MappingAnalysisExample obj = new MappingAnalysisExample();
-		obj.prepare();
-		obj.runMapping();
-		obj.analysis();
-	}
-
-
-	public void prepare() throws IOException {
-
-		network = NetworkTools.readNetwork(input + "network/addison.xml.gz");
-
-		coordinateSystem = "EPSG:2032";
+		String input = "example/";
+		String coordinateSystem = "EPSG:2032";
 
 		// convert schedule
-		schedule = ScheduleTools.createSchedule();
-		vehicles = VehicleUtils.createVehiclesContainer();
+		TransitSchedule schedule = ScheduleTools.createSchedule();
+		Vehicles vehicles = VehicleUtils.createVehiclesContainer();
 		GtfsFeed gtfsFeed = new GtfsFeedImpl(input + "addisoncounty-vt-us-gtfs/");
-
-		gtfsConverter = new GtfsConverter(gtfsFeed);
+		GtfsConverter gtfsConverter = new GtfsConverter(gtfsFeed);
 		gtfsConverter.convert(GtfsConverter.ALL_SERVICE_IDS, coordinateSystem, schedule, vehicles);
-
-//		ExtractDebugSchedule.mapScheduleToNetwork(schedule, "SBSB_1437", "59468A1158B4286");
-
-		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), input + "mts/schedule_unmapped.xml.gz");
 
 		// read network
 		/*convert from osm
@@ -84,27 +60,20 @@ public class MappingAnalysisExample {
 
 		new OsmMultimodalNetworkConverter(osmConfig).mapScheduleToNetwork();
 		*/
+		Network network = NetworkTools.readNetwork(input + "network/addison.xml.gz");
 
-	}
-
-	public void runMapping() {
+		// Run PublicTransitMapping
 		PublicTransitMappingConfigGroup ptmConfig = PublicTransitMappingConfigGroup.createDefaultConfig();
-
-		new PTMapper(schedule, network).run(ptmConfig);
+		PTMapper.mapScheduleToNetwork(schedule, network, ptmConfig);
 
 		NetworkTools.writeNetwork(network, input+"output/addison_network.xml.gz");
 		ScheduleTools.writeTransitSchedule(schedule, input+"output/addison_schedule.xml.gz");
-	}
 
-	public void analysis() {
+		// Analyse
 		new File(input + "output/").mkdirs();
-
 		MappingAnalysis analysis = new MappingAnalysis(schedule, network, ShapeTools.readShapesFile(input + "addisoncounty-vt-us-gtfs/shapes.txt", coordinateSystem));
-
 		analysis.run();
 		analysis.writeAllDistancesCsv(input+"output/DistancesAll.csv");
 		analysis.writeQuantileDistancesCsv(input+"output/DistancesQuantile.csv");
-		System.out.println(analysis.getQ8585());
-		System.out.println(Math.sqrt(analysis.getAverageSquaredLengthRatio()));
 	}
 }

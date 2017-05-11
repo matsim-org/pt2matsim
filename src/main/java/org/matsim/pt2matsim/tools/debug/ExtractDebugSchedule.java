@@ -18,13 +18,20 @@
 
 package org.matsim.pt2matsim.tools.debug;
 
+import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.pt2matsim.lib.RouteShape;
+import org.matsim.pt2matsim.run.shp.Schedule2ShapeFile;
 import org.matsim.pt2matsim.tools.ScheduleTools;
+import org.matsim.pt2matsim.tools.ShapeTools;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -112,6 +119,19 @@ public class ExtractDebugSchedule {
 				schedule.removeTransitLine(tl);
 			}
 		}
+	}
+
+	public static void writeRouteAndShapeToShapefile(TransitSchedule schedule, Network network, Map<Id<RouteShape>, RouteShape> shapes, String outputFolder, String debugLineId, String debugRouteId, String coordSys) {
+		ExtractDebugSchedule.run(schedule, debugLineId, debugRouteId);
+		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
+		Schedule2ShapeFile s2s = new Schedule2ShapeFile(coordSys, schedule, network);
+		s2s.routes2Polylines(outputFolder + "transitRoutes.shp", true);
+		s2s.routes2Polylines(outputFolder + "transitRoutesBeeline.shp", false);
+		s2s.stopFacilities2Points(outputFolder + "stopFacilities.shp");
+
+		Id<RouteShape> shapeId = ScheduleTools.getShapeId(schedule.getTransitLines().get(Id.create(debugLineId, TransitLine.class)).getRoutes().get(Id.create(debugRouteId, TransitRoute.class)));
+		ShapeTools.writeESRIShapeFile(Collections.singleton(shapes.get(shapeId)), coordSys, outputFolder+"shape.shp");
+
 	}
 
 }
