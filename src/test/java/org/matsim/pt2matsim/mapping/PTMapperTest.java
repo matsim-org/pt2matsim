@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.core.config.ConfigGroup;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
@@ -17,7 +16,6 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ScheduleToolsTest;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 
-import java.util.Collection;
 import java.util.List;
 
 import static org.matsim.pt2matsim.tools.ScheduleToolsTest.ROUTE_B;
@@ -55,7 +53,7 @@ public class PTMapperTest {
 		ScheduleCleaner.removeMapping(schedule);
 		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
 
-		new PTMapper(ptmConfig, schedule, network).run();
+		new PTMapper(schedule, network).run(ptmConfig);
 
 //		NetworkTools.writeNetwork(network, "test/simple/outputNetwork.xml");
 //		ScheduleTools.writeTransitSchedule(schedule, "test/simple/outpuSchedule.xml");
@@ -99,7 +97,7 @@ public class PTMapperTest {
 		ScheduleCleaner.combineChildStopsToParentStop(schedule2);
 		ScheduleCleaner.removeMapping(schedule2);
 		ScheduleCleaner.removeNotUsedStopFacilities(schedule2);
-		new PTMapper(ptmConfig2, schedule2, network2).run();
+		new PTMapper(schedule2, network2).run(ptmConfig2);
 
 		// 1 loop link, 3 artificial links
 		Assert.assertEquals(NetworkToolsTest.initNetwork().getLinks().size()+4, network2.getLinks().size());

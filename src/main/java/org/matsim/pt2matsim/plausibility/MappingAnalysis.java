@@ -54,8 +54,10 @@ public class MappingAnalysis {
 	private final TransitSchedule schedule;
 	private final Map<Id<RouteShape>, RouteShape> shapes;
 	private final Network network;
+
 	private final Map<Id<TransitLine>, Map<Id<TransitRoute>, List<Double>>> routeDistances = new HashMap<>();
 	private final Map<Id<TransitLine>, Map<Id<TransitRoute>, Double>> lengthRatios = new HashMap<>();
+
 	private final Set<Tuple<Id<TransitLine>, Id<TransitRoute>>> noAnalysis = new HashSet<>();
 
 	public MappingAnalysis(TransitSchedule schedule, Network network, Map<Id<RouteShape>, RouteShape> shapes) {
@@ -156,8 +158,8 @@ public class MappingAnalysis {
 
 				if(!noAnalysis.contains(new Tuple<>(transitLine.getId(), transitRoute.getId()))) {
 					List<Double> values = routeDistances.get(transitLineId).get(transitRouteId);
-					Double lengthRatio = lengthRatios.get(transitLineId).get(transitRouteId);
 					values.sort(Double::compareTo);
+					Double lengthRatio = lengthRatios.get(transitLineId).get(transitRouteId);
 					int n = values.size();
 
 					keyTable.put(new Tuple<>(line, 1), transitLineId.toString());

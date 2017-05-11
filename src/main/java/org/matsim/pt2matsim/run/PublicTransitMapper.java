@@ -35,7 +35,7 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
 import java.util.Collections;
 
 /**
- * Allows to run an implementation
+ * Allows to mapScheduleToNetwork an implementation
  * of public transit mapping via config file path.
  *
  * Currently redirects to the only implementation
@@ -82,7 +82,8 @@ public final class PublicTransitMapper {
 		Network network = config.getInputNetworkFile() == null ? null : NetworkTools.readNetwork(config.getInputNetworkFile());
 
 		// Run PTMapper
-		new PTMapper(schedule, network).run(config);
+		PTMapper.mapScheduleToNetwork(schedule, network, config);
+		// or: new PTMapper(schedule, network).run(config);
 
 		// Write the schedule and network to output files (if defined in config)
 		if(config.getOutputNetworkFile() != null && config.getOutputScheduleFile() != null) {

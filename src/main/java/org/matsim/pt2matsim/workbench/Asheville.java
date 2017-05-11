@@ -20,21 +20,23 @@ package org.matsim.pt2matsim.workbench;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.pt.transitSchedule.api.TransitLine;
+import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.PTMapper;
-import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorStandard;
-import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersStandard;
 import org.matsim.pt2matsim.osm.lib.Osm;
 import org.matsim.pt2matsim.plausibility.MappingAnalysis;
 import org.matsim.pt2matsim.run.Gtfs2TransitSchedule;
 import org.matsim.pt2matsim.run.Osm2MultimodalNetwork;
+import org.matsim.pt2matsim.run.shp.Schedule2ShapeFile;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ShapeTools;
+import org.matsim.pt2matsim.tools.debug.ExtractDebugSchedule;
 
 import java.util.Collections;
 import java.util.Map;
@@ -58,6 +60,7 @@ public class Asheville {
 		analysis();
 	}
 
+
 	public static void convertGtfs() {
 		Gtfs2TransitSchedule.run("gtfs/", GtfsConverter.DAY_WITH_MOST_SERVICES, EPSG, inputScheduleFile, "schedule/vhcls.xml.gz");
 	}
@@ -65,20 +68,16 @@ public class Asheville {
 	public static void runMapping() {
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
 		config.setNumOfThreads(6);
-		int nLinks = 6;
-		double distanceMultiplier = 1.1;
-		double maxDistance = 70;
 
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
 
-		PTMapper ptMapper = new PTMapper(config, schedule, network, new LinkCandidateCreatorStandard(schedule, network, nLinks, distanceMultiplier, maxDistance, config.getModeRoutingAssignment()));
-		ptMapper.run();
+		PTMapper.mapScheduleToNetwork(schedule, network, config);
 
 		ScheduleTools.writeTransitSchedule(schedule, outputScheduleFile);
 		NetworkTools.writeNetwork(network, outputNetworkFile);
 
-//		Schedule2ShapeFile.run(EPSG, "output/shp/", schedule, network);
+//		Schedule2ShapeFile.mapScheduleToNetwork(EPSG, "output/shp/", schedule, network);
 	}
 
 	private static void analysis() {
@@ -93,6 +92,14 @@ public class Asheville {
 		System.out.format("\n>>> Q9595: %.3f\n", analysis.getQQ(0.95));
 
 		analysis.writeQuantileDistancesCsv("output/analysis/quantiles.csv");
+
+		// write worst mapped route to file
+		String debugLineId = "S3_1137";
+		String debugRouteId = "605587A5072B5817";
+		ExtractDebugSchedule.run(schedule, debugLineId, debugRouteId);
+		Schedule2ShapeFile.run(EPSG, "output/debug/", schedule, network);
+		Id<RouteShape> shapeId = ScheduleTools.getShapeId(schedule.getTransitLines().get(Id.create(debugLineId, TransitLine.class)).getRoutes().get(Id.create(debugRouteId, TransitRoute.class)));
+		ShapeTools.writeESRIShapeFile(Collections.singleton(shapes.get(shapeId)), EPSG, "output/debug/shape.shp");
 	}
 
 	public static void convertOsm() {

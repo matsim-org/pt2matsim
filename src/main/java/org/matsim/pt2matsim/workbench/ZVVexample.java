@@ -13,7 +13,7 @@ import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.PTMapper;
-import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorStandard;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersGtfsShapes;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersOsmAttributes;
 import org.matsim.pt2matsim.osm.OsmMultimodalNetworkConverter;
@@ -93,7 +93,7 @@ public class ZVVexample {
 		osmData = new OsmDataImpl(AllowedTagsFilter.getDefaultPTFilter());
 		new OsmFileReader(osmData).readFile(osmName);
 
-		// 1.3 initiate and run converter
+		// 1.3 initiate and mapScheduleToNetwork converter
 		OsmMultimodalNetworkConverter osmConverter = new OsmMultimodalNetworkConverter(osmData);
 		osmConverter.convert(osmConfig);
 
@@ -140,9 +140,9 @@ public class ZVVexample {
 		// create PTM config
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
 
-		// run PTMapepr
-		PTMapper ptMapper = new PTMapper(config, schedule, network);
-		ptMapper.run();
+		// mapScheduleToNetwork PTMapepr
+		PTMapper ptMapper = new PTMapper(schedule, network);
+		ptMapper.run(config);
 
 		//
 		NetworkTools.writeNetwork(network, outputNetwork1);
@@ -150,39 +150,6 @@ public class ZVVexample {
 
 		// analyse result
 		return runAnalysis(outputSchedule1, outputNetwork1);
-	}
-
-	/**
-	 * Runs a mapping with weighted links
-	 */
-	public static double runMappingWeighted() {
-		System.out.println("=====================================");
-		System.out.println("Run mapping: WEIGHTED LINK CANDIDATES");
-		System.out.println("=====================================");
-
-		// Load schedule and network
-		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
-		Network network = NetworkTools.readNetwork(inputNetworkFile);
-
-		// create PTM config
-		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
-		int nLinks = 6;
-		double distanceMultiplier = 1.1;
-		double maxDistance = 70;
-
-		// run PTMapepr
-		PTMapper ptMapper = new PTMapper(config, schedule, network,
-				new LinkCandidateCreatorStandard(schedule, network, nLinks, distanceMultiplier, maxDistance, config.getModeRoutingAssignment()));
-		ptMapper.run();
-
-		//
-		NetworkTools.writeNetwork(network, outputNetwork4);
-		ScheduleTools.writeTransitSchedule(schedule, outputSchedule4);
-
-		Schedule2ShapeFile.run(coordSys, base + "output/shp/", schedule, network);
-
-		// analyse result
-		return runAnalysis(outputSchedule4, outputNetwork4);
 	}
 
 	/**
@@ -199,8 +166,10 @@ public class ZVVexample {
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
 		Map<Id<RouteShape>, RouteShape> shapes = ShapeTools.readShapesFile(gtfsShapeFile, coordSys);
 
-		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersGtfsShapes(schedule, network, shapes, config.getModeRoutingAssignment(), config.getTravelCostType(), 50, 250));
-		ptMapper.run();
+		ScheduleRouters router = new ScheduleRoutersGtfsShapes(schedule, network, shapes, config.getModeRoutingAssignment(), config.getTravelCostType(), 50, 250);
+
+		PTMapper ptMapper = new PTMapper(schedule, network);
+		ptMapper.run(config, router);
 
 		NetworkTools.writeNetwork(network, outputNetwork2);
 		ScheduleTools.writeTransitSchedule(schedule, outputSchedule2);
@@ -235,8 +204,10 @@ public class ZVVexample {
 
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
 
-		PTMapper ptMapper = new PTMapper(config, schedule, network, new ScheduleRoutersOsmAttributes(schedule, network, config.getModeRoutingAssignment(), PublicTransitMappingConfigGroup.TravelCostType.linkLength, 0.5));
-		ptMapper.run();
+		ScheduleRouters router = new ScheduleRoutersOsmAttributes(schedule, network, config.getModeRoutingAssignment(), PublicTransitMappingConfigGroup.TravelCostType.linkLength, 0.5);
+
+		PTMapper ptMapper = new PTMapper(schedule, network);
+		ptMapper.run(config, router);
 
 		NetworkTools.writeNetwork(network, outputNetwork3);
 		ScheduleTools.writeTransitSchedule(schedule, outputSchedule3);

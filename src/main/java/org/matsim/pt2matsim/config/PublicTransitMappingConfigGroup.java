@@ -174,8 +174,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	}
 
 	/**
-	 * Loads the parameter sets for ModeRoutingAssignment, LinkCandidateCreator and ManualLinkCandidates for
-	 * easier access
+	 * Loads the parameter set for ModeRoutingAssignment for easier access
 	 */
 	private void loadParameterSets() {
 		for(ConfigGroup e : this.getParameterSets(PublicTransitMappingConfigGroup.ModeRoutingAssignment.SET_NAME)) {

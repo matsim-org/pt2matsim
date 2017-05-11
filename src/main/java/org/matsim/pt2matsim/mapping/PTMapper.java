@@ -55,7 +55,11 @@ import java.util.Set;
  * <p>
  * Additional stop facilities are created if a stop facility has more
  * than one plausible link. Artificial links are added to the network
- * if no path can be found.
+ * if no path can be found.</p>
+ * <p>
+ * {@link LinkCandidateCreator} is appliedto find link candidates and
+ * {@link ScheduleRouters} to find the shortest paths on the network.
+ * </p>
  *
  * @author polettif
  */
@@ -66,11 +70,14 @@ public class PTMapper {
 	private Network network;
 	private TransitSchedule schedule;
 
+	public static void mapScheduleToNetwork(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
+		new PTMapper(schedule, network).run(config);
+	}
+
 	/**
-	 * Use this constructor if you just want to use the config for mapping parameters.
 	 * The provided schedule is expected to contain the stops sequence and
 	 * the stop facilities each transit route. The routes will be newly routed,
-	 * any former routes will be overwritten. Changes are done on the schedule
+	 * any former routes will be overwritten. Changes are done on the schedule and
 	 * network provided here.
 	 * <p/>
 	 *
@@ -85,16 +92,32 @@ public class PTMapper {
 	/**
 	 * Maps the schedule to the network with parameters defined in config
 	 */
-	public void run(LinkCandidateCreator linkCandidateCreator, ScheduleRouters scheduleRouters, PublicTransitMappingConfigGroup config) {
-		run(linkCandidateCreator, scheduleRouters, config.getNumOfThreads(), config.getMaxTravelCostFactor(), config.getScheduleFreespeedModes(), config.getModesToKeepOnCleanUp(), config.getRemoveNotUsedStopFacilities());
-	}
+	public void run(PublicTransitMappingConfigGroup config, MapperModule... modules) {
+		LinkCandidateCreator linkCandidateCreator = null;
+		ScheduleRouters scheduleRouters = null;
 
-	public void run(PublicTransitMappingConfigGroup config) {
-		run(	new LinkCandidateCreatorStandard(schedule, network, config),
-				new ScheduleRoutersStandard(schedule, network, config),
-				config.getNumOfThreads(), config.getMaxTravelCostFactor(),
-				config.getScheduleFreespeedModes(), config.getModesToKeepOnCleanUp(),
-				config.getRemoveNotUsedStopFacilities());
+		for(MapperModule m : modules) {
+			if(m instanceof LinkCandidateCreator) linkCandidateCreator = (LinkCandidateCreator) m;
+			if(m instanceof ScheduleRouters) scheduleRouters = (ScheduleRouters) m;
+		}
+
+		// use defaults
+		if(linkCandidateCreator == null) {
+			linkCandidateCreator = new LinkCandidateCreatorStandard(schedule, network,
+					config.getNLinkThreshold(),
+					config.getCandidateDistanceMultiplier(),
+					config.getMaxLinkCandidateDistance(),
+					config.getModeRoutingAssignment());
+		}
+		if(scheduleRouters == null) {
+			scheduleRouters = new ScheduleRoutersStandard(schedule, network, config.getModeRoutingAssignment(), config.getTravelCostType(), config.getRoutingWithCandidateDistance());
+		}
+
+		run(linkCandidateCreator,
+			scheduleRouters,
+			config.getNumOfThreads(), config.getMaxTravelCostFactor(),
+			config.getScheduleFreespeedModes(), config.getModesToKeepOnCleanUp(),
+			config.getRemoveNotUsedStopFacilities());
 	}
 
 	/**
@@ -118,7 +141,6 @@ public class PTMapper {
 
 		/*
 		  Some schedule statistics
-		  Check link candidate params and mode routing assignment
 		 */
 		int nStopFacilities = schedule.getFacilities().size();
 		int nTransitRoutes = 0;

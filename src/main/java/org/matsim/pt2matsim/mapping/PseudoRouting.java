@@ -21,7 +21,7 @@ import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoTransitRoute;
 public interface PseudoRouting extends Runnable {
 
 	/**
-	 * Adds a transit line to the queue that is processed in run()
+	 * Adds a transit line to the queue that is processed in mapScheduleToNetwork()
 	 */
 	void addTransitLineToQueue(TransitLine transitLine);
 
