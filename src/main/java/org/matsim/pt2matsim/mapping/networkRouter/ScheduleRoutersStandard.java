@@ -35,7 +35,7 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 	// standard fields
 	private final TransitSchedule schedule;
 	private final Network network;
-	private final Map<String, Set<String>> modeRoutingAssignment;
+	private final Map<String, Set<String>> transportModeAssignment;
 	private final PublicTransitMappingConfigGroup.TravelCostType travelCostType;
 
 	// path calculators
@@ -43,10 +43,10 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 	private final Map<String, Network> networksByMode = new HashMap<>();
 	private final boolean considerCandidateDist;
 
-	public ScheduleRoutersStandard(TransitSchedule schedule, Network network, Map<String, Set<String>> modeRoutingAssignment, PublicTransitMappingConfigGroup.TravelCostType costType, boolean routingWithCandidateDistance) {
+	public ScheduleRoutersStandard(TransitSchedule schedule, Network network, Map<String, Set<String>> transportModeAssignment, PublicTransitMappingConfigGroup.TravelCostType costType, boolean routingWithCandidateDistance) {
 		this.schedule = schedule;
 		this.network = network;
-		this.modeRoutingAssignment = modeRoutingAssignment;
+		this.transportModeAssignment = transportModeAssignment;
 		this.travelCostType = costType;
 		this.considerCandidateDist = routingWithCandidateDistance;
 
@@ -54,7 +54,7 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 	}
 
 	public ScheduleRoutersStandard(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
-		this(schedule, network, config.getModeRoutingAssignment(), config.getTravelCostType(), config.getRoutingWithCandidateDistance());
+		this(schedule, network, config.getTransportModeAssignment(), config.getTravelCostType(), config.getRoutingWithCandidateDistance());
 	}
 
 	/**
@@ -70,7 +70,7 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 				PathCalculator tmpRouter = pathCalculatorsByMode.get(scheduleMode);
 				if(tmpRouter == null) {
 					log.info("New router for schedule mode " + scheduleMode);
-					Set<String> networkTransportModes = modeRoutingAssignment.get(scheduleMode);
+					Set<String> networkTransportModes = transportModeAssignment.get(scheduleMode);
 
 					Network filteredNetwork = NetworkTools.createFilteredNetworkByLinkMode(this.network, networkTransportModes);
 

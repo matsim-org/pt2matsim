@@ -57,7 +57,7 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 	// standard fields
 	private final TransitSchedule schedule;
 	private final Network network;
-	private final Map<String, Set<String>> modeRoutingAssignment;
+	private final Map<String, Set<String>> transportModeAssignment;
 	private final PublicTransitMappingConfigGroup.TravelCostType travelCostType;
 
 
@@ -67,8 +67,8 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 	private final Map<String, OsmRouter> osmRouters = new HashMap<>();
 
 
-	public ScheduleRoutersOsmAttributes(TransitSchedule schedule, Network network, Map<String, Set<String>> modeRoutingAssignment, PublicTransitMappingConfigGroup.TravelCostType travelCostType, double osmPtLinkTravelCostFactor) {
-		this.modeRoutingAssignment = modeRoutingAssignment;
+	public ScheduleRoutersOsmAttributes(TransitSchedule schedule, Network network, Map<String, Set<String>> transportModeAssignment, PublicTransitMappingConfigGroup.TravelCostType travelCostType, double osmPtLinkTravelCostFactor) {
+		this.transportModeAssignment = transportModeAssignment;
 		this.travelCostType = travelCostType;
 		this.schedule = schedule;
 		this.network = network;
@@ -87,7 +87,7 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 				PathCalculator tmpRouter = pathCalculatorsByMode.get(scheduleMode);
 				if(tmpRouter == null) {
 					log.info("New router for schedule mode " + scheduleMode);
-					Set<String> networkTransportModes = modeRoutingAssignment.get(scheduleMode);
+					Set<String> networkTransportModes = transportModeAssignment.get(scheduleMode);
 
 					Network filteredNetwork = NetworkTools.createFilteredNetworkByLinkMode(this.network, networkTransportModes);
 

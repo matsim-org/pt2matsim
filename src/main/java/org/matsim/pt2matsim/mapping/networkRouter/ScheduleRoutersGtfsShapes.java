@@ -43,7 +43,7 @@ public class ScheduleRoutersGtfsShapes implements ScheduleRouters {
 	// standard fields
 	private final TransitSchedule schedule;
 	private final Network network;
-	private final Map<String, Set<String>> modeRoutingAssignment;
+	private final Map<String, Set<String>> transportModeAssignment;
 	private final PublicTransitMappingConfigGroup.TravelCostType travelCostType;
 
 
@@ -61,10 +61,10 @@ public class ScheduleRoutersGtfsShapes implements ScheduleRouters {
 	private final Map<TransitLine, Map<TransitRoute, ShapeRouter>> shapeRouters = new HashMap<>();
 
 
-	public ScheduleRoutersGtfsShapes(TransitSchedule schedule, Network network, Map<Id<RouteShape>, RouteShape> shapes, Map<String, Set<String>> modeRoutingAssignment, PublicTransitMappingConfigGroup.TravelCostType travelCostType, double maxWeightDistance, double cutBuffer) {
+	public ScheduleRoutersGtfsShapes(TransitSchedule schedule, Network network, Map<Id<RouteShape>, RouteShape> shapes, Map<String, Set<String>> transportModeAssignment, PublicTransitMappingConfigGroup.TravelCostType travelCostType, double maxWeightDistance, double cutBuffer) {
 		this.schedule = schedule;
 		this.network = network;
-		this.modeRoutingAssignment = modeRoutingAssignment;
+		this.transportModeAssignment = transportModeAssignment;
 		this.travelCostType = travelCostType;
 		this.shapes = shapes;
 		this.maxWeightDistance = maxWeightDistance;
@@ -97,7 +97,7 @@ public class ScheduleRoutersGtfsShapes implements ScheduleRouters {
 					MapUtils.getMap(transitLine, mapArtificial).put(transitRoute, false);
 					pathCalculator = pathCalculatorsByShape.get(shapeId);
 					if(pathCalculator == null) {
-						Set<String> networkTransportModes = modeRoutingAssignment.get(transitRoute.getTransportMode());
+						Set<String> networkTransportModes = transportModeAssignment.get(transitRoute.getTransportMode());
 
 						// todo this setup could be improved (i.e. don't recreate/filter networks all over again)
 						cutNetwork = NetworkTools.createFilteredNetworkByLinkMode(network, networkTransportModes);
