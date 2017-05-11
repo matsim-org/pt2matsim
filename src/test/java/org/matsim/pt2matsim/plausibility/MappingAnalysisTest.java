@@ -43,7 +43,7 @@ public class MappingAnalysisTest {
 		ScheduleCleaner.removeMapping(schedule);
 		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
 
-		new PTMapper(ptmConfig, schedule, network).run();
+		new PTMapper(schedule, network).run(ptmConfig);
 		Map<Id<RouteShape>, RouteShape> shapes = ShapeToolsTest.initShapes();
 		analysis = new MappingAnalysis(schedule, network, shapes);
 		analysis.run();

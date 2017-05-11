@@ -57,10 +57,9 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 		this(schedule, network, config.getModeRoutingAssignment(), config.getTravelCostType(), config.getRoutingWithCandidateDistance());
 	}
 
-
 	/**
-		 * Load path calculators for all transit routes
-		 */
+	 * Load path calculators for all transit routes
+	 */
 	private void load() {
 		log.info("==============================================");
 		log.info("Creating network routers for transit routes...");

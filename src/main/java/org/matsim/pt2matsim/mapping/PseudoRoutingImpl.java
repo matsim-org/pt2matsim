@@ -192,7 +192,7 @@ public class PseudoRoutingImpl implements PseudoRouting {
 
 
 	/**
-	 * @return a pseudo schedule generated during run()
+	 * @return a pseudo schedule generated during mapScheduleToNetwork()
 	 */
 	@Override
 	public PseudoSchedule getPseudoSchedule() {

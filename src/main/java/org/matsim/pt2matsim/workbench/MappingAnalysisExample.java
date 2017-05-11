@@ -70,7 +70,7 @@ public class MappingAnalysisExample {
 		gtfsConverter = new GtfsConverter(gtfsFeed);
 		gtfsConverter.convert(GtfsConverter.ALL_SERVICE_IDS, coordinateSystem, schedule, vehicles);
 
-//		ExtractDebugSchedule.run(schedule, "SBSB_1437", "59468A1158B4286");
+//		ExtractDebugSchedule.mapScheduleToNetwork(schedule, "SBSB_1437", "59468A1158B4286");
 
 		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), input + "mts/schedule_unmapped.xml.gz");
 
@@ -82,7 +82,7 @@ public class MappingAnalysisExample {
 		osmConfig.setOutputNetworkFile(input+"network/addison.xml.gz");
 		osmConfig.setMaxLinkLength(20);
 
-		new OsmMultimodalNetworkConverter(osmConfig).run();
+		new OsmMultimodalNetworkConverter(osmConfig).mapScheduleToNetwork();
 		*/
 
 	}
@@ -90,7 +90,7 @@ public class MappingAnalysisExample {
 	public void runMapping() {
 		PublicTransitMappingConfigGroup ptmConfig = PublicTransitMappingConfigGroup.createDefaultConfig();
 
-		new PTMapper(ptmConfig, schedule, network).run();
+		new PTMapper(schedule, network).run(ptmConfig);
 
 		NetworkTools.writeNetwork(network, input+"output/addison_network.xml.gz");
 		ScheduleTools.writeTransitSchedule(schedule, input+"output/addison_schedule.xml.gz");
