@@ -107,10 +107,10 @@ public class PTMapper {
 					config.getNLinkThreshold(),
 					config.getCandidateDistanceMultiplier(),
 					config.getMaxLinkCandidateDistance(),
-					config.getModeRoutingAssignment());
+					config.getTransportModeAssignment());
 		}
 		if(scheduleRouters == null) {
-			scheduleRouters = new ScheduleRoutersStandard(schedule, network, config.getModeRoutingAssignment(), config.getTravelCostType(), config.getRoutingWithCandidateDistance());
+			scheduleRouters = new ScheduleRoutersStandard(schedule, network, config.getTransportModeAssignment(), config.getTravelCostType(), config.getRoutingWithCandidateDistance());
 		}
 
 		run(linkCandidateCreator,

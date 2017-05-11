@@ -68,7 +68,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private static final String ROUTING_WITH_CANDIDATE_DISTANCE = "routingWithCandidateDistance";
 
 	// default values
-	private Map<String, Set<String>> modeRoutingAssignment = new HashMap<>();
+	private Map<String, Set<String>> transportModeAssignment = new HashMap<>();
 	private Set<String> scheduleFreespeedModes = PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE_AS_SET;
 	private Set<String> modesToKeepOnCleanUp = new HashSet<>();
 	private double maxTravelCostFactor = 5.0;
@@ -98,12 +98,12 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		PublicTransitMappingConfigGroup config = new PublicTransitMappingConfigGroup();
 		config.getModesToKeepOnCleanUp().add("car");
 
-		ModeRoutingAssignment mraBus = new ModeRoutingAssignment("bus");
-		mraBus.setNetworkModesStr("car,bus");
-		ModeRoutingAssignment mraRail = new ModeRoutingAssignment("rail");
-		mraRail.setNetworkModesStr("rail,light_rail");
-		config.addParameterSet(mraBus);
-		config.addParameterSet(mraRail);
+		TransportModeAssignment tmaBus = new TransportModeAssignment("bus");
+		tmaBus.setNetworkModesStr("car,bus");
+		TransportModeAssignment tmaRail = new TransportModeAssignment("rail");
+		tmaRail.setNetworkModesStr("rail,light_rail");
+		config.addParameterSet(tmaBus);
+		config.addParameterSet(tmaRail);
 
 		return config;
 	}
@@ -160,8 +160,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	@Override
 	public ConfigGroup createParameterSet(final String type) {
 		switch(type) {
-			case ModeRoutingAssignment.SET_NAME:
-				return new ModeRoutingAssignment();
+			case TransportModeAssignment.SET_NAME:
+				return new TransportModeAssignment();
 			default:
 				throw new IllegalArgumentException("Unknown parameterset name!");
 		}
@@ -174,20 +174,20 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	}
 
 	/**
-	 * Loads the parameter set for ModeRoutingAssignment for easier access
+	 * Loads the parameter set for TransportModeAssignment for easier access
 	 */
 	private void loadParameterSets() {
-		for(ConfigGroup e : this.getParameterSets(PublicTransitMappingConfigGroup.ModeRoutingAssignment.SET_NAME)) {
-			ModeRoutingAssignment mra = (ModeRoutingAssignment) e;
-			modeRoutingAssignment.put(mra.getScheduleMode(), mra.getNetworkModes());
+		for(ConfigGroup e : this.getParameterSets(TransportModeAssignment.SET_NAME)) {
+			TransportModeAssignment mra = (TransportModeAssignment) e;
+			transportModeAssignment.put(mra.getScheduleMode(), mra.getNetworkModes());
 		}
 	}
 
 	/**
 	 * References transportModes from the schedule (key) and the
-	 * allowed modeRouting of a link from the network (value). <p/>
+	 * allowed network mode of a link from the network (value). <p/>
 	 * <p/>
-	 * Schedule transport modeRouting should be in gtfs categories:
+	 * Schedule transport mode should be in gtfs categories:
 	 * <ul>
 	 * <li>0 - Tram, Streetcar, Light rail. Any light rail or street level system within a metropolitan area.</li>
 	 * <li>1 - Subway, Metro. Any underground rail system within a metropolitan area.</li>
@@ -199,12 +199,12 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	 * <li>7 - Funicular. Any rail system designed for steep inclines.</li>
 	 * </ul>
 	 */
-	public Map<String, Set<String>> getModeRoutingAssignment() {
-		return modeRoutingAssignment;
+	public Map<String, Set<String>> getTransportModeAssignment() {
+		return transportModeAssignment;
 	}
 
-	public void setModeRoutingAssignment(Map<String, Set<String>> modeRoutingAssignment) {
-		this.modeRoutingAssignment = modeRoutingAssignment;
+	public void setTransportModeAssignment(Map<String, Set<String>> transportModeAssignment) {
+		this.transportModeAssignment = transportModeAssignment;
 	}
 
 	/**
@@ -454,9 +454,9 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	 * Network transport modes are the ones in {@link Link#getAllowedModes()}, schedule
 	 * transport modes are from {@link TransitRoute#getTransportMode()}.
 	 */
-	public static class ModeRoutingAssignment extends ReflectiveConfigGroup implements MatsimParameters {
+	public static class TransportModeAssignment extends ReflectiveConfigGroup implements MatsimParameters {
 
-		public final static String SET_NAME = "modeRoutingAssignment";
+		public final static String SET_NAME = "transportModeAssignment";
 
 		private static final String SCHEDULE_MODE = "scheduleMode";
 		private static final String NETWORK_MODES = "networkModes";
@@ -464,11 +464,11 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		private String scheduleMode;
 		private Set<String> networkModes;
 
-		public ModeRoutingAssignment() {
+		public TransportModeAssignment() {
 			super(SET_NAME);
 		}
 
-		public ModeRoutingAssignment(String scheduleMode) {
+		public TransportModeAssignment(String scheduleMode) {
 			super(SET_NAME);
 			this.scheduleMode = scheduleMode;
 		}

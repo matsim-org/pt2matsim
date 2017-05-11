@@ -163,7 +163,7 @@
             <param name="stopFacility" value=""/>
         </parameterset>
 
-        <parameterset type="modeRoutingAssignment">
+        <parameterset type="transportModeAssignment">
 
             <!-- Transit Routes with the given scheduleMode can only use links with at least one of the network modes
             defined here. Separate multiple modes by comma. If no network modes are defined, the transit route will
@@ -173,7 +173,7 @@
             <param name="scheduleMode" value="bus"/>
         </parameterset>
 
-        <parameterset type="modeRoutingAssignment">
+        <parameterset type="transportModeAssignment">
 
             <!-- Transit Routes with the given scheduleMode can only use links with at least one of the network modes
             defined here. Separate multiple modes by comma. If no network modes are defined, the transit route will

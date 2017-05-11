@@ -166,7 +166,7 @@ public class ZVVexample {
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
 		Map<Id<RouteShape>, RouteShape> shapes = ShapeTools.readShapesFile(gtfsShapeFile, coordSys);
 
-		ScheduleRouters router = new ScheduleRoutersGtfsShapes(schedule, network, shapes, config.getModeRoutingAssignment(), config.getTravelCostType(), 50, 250);
+		ScheduleRouters router = new ScheduleRoutersGtfsShapes(schedule, network, shapes, config.getTransportModeAssignment(), config.getTravelCostType(), 50, 250);
 
 		PTMapper ptMapper = new PTMapper(schedule, network);
 		ptMapper.run(config, router);
@@ -204,7 +204,7 @@ public class ZVVexample {
 
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
 
-		ScheduleRouters router = new ScheduleRoutersOsmAttributes(schedule, network, config.getModeRoutingAssignment(), PublicTransitMappingConfigGroup.TravelCostType.linkLength, 0.5);
+		ScheduleRouters router = new ScheduleRoutersOsmAttributes(schedule, network, config.getTransportModeAssignment(), PublicTransitMappingConfigGroup.TravelCostType.linkLength, 0.5);
 
 		PTMapper ptMapper = new PTMapper(schedule, network);
 		ptMapper.run(config, router);

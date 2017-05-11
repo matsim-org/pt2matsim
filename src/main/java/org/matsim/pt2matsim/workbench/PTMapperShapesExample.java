@@ -62,7 +62,7 @@ public class PTMapperShapesExample {
 		config.setMaxLinkCandidateDistance(100);
 		config.setCandidateDistanceMultiplier(1.1);
 
-		PublicTransitMappingConfigGroup.ModeRoutingAssignment mraBus = new PublicTransitMappingConfigGroup.ModeRoutingAssignment("bus");
+		PublicTransitMappingConfigGroup.TransportModeAssignment mraBus = new PublicTransitMappingConfigGroup.TransportModeAssignment("bus");
 		mraBus.setNetworkModesStr("car,bus");
 		config.addParameterSet(mraBus);
 
@@ -99,7 +99,7 @@ public class PTMapperShapesExample {
 		Network network = NetworkTools.readNetwork(networkInput);
 
 		ScheduleRouters routers = new ScheduleRoutersGtfsShapes(schedule, network,
-				ShapeTools.readShapesFile(gtfsFolder + "shapes.txt", coordSys), config.getModeRoutingAssignment(), config.getTravelCostType(),
+				ShapeTools.readShapesFile(gtfsFolder + "shapes.txt", coordSys), config.getTransportModeAssignment(), config.getTravelCostType(),
 				50, 200);
 
 		PTMapper ptMapper = new PTMapper(schedule, network);

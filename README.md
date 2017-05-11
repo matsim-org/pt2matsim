@@ -220,14 +220,14 @@ The implementation allows to manually define link candidate beforehand in the co
 or a separate csv file (parameter _manualLinkCandidate_CsvFile_). This helps mapping with complicated rail stations.
 
 #### Creating mode dependent router
-The config parameterset _modeRoutingAssignment_ defines for a transport mode, what links a transit route of this mode is allowed
+The config parameterset _transportModeAssignment_ defines for a transport mode, what links a transit route is allowed
 to use. For example, transit routes with schedule mode bus can only use links with "bus" or "car" as modes. Similarly, all 
 transit routes with the transport mode rail can only use rail links. If no assignment for a schedule transport mode is given, 
 all transit routes using that mode are mapped with artificial links between stops.
 
 To calculate the least cost paths as part of pseudo routing, a router is needed for every transport mode. To create these routers, 
 mode separated networks are generated. Then an A\* router for each of these networks is initialized. The networks are filtered 
-according to the _modeRoutingAssignment_. The router uses one of two link travel costs: either _linkLength_ or _travelTime_, 
+according to the _transportModeAssignment_. The router uses one of two link travel costs: either _linkLength_ or _travelTime_,
 defined in parameter _travelCostType_.
 
 #### Pseudo graph and routing

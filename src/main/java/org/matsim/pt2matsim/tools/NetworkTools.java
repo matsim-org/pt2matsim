@@ -431,7 +431,7 @@ public final class NetworkTools {
 		// setup config
 		PublicTransitMappingConfigGroup config = new PublicTransitMappingConfigGroup();
 		for(Map.Entry<String, Set<String>> entry : modeAssignments.entrySet()) {
-			PublicTransitMappingConfigGroup.ModeRoutingAssignment mra = new PublicTransitMappingConfigGroup.ModeRoutingAssignment(entry.getKey());
+			PublicTransitMappingConfigGroup.TransportModeAssignment mra = new PublicTransitMappingConfigGroup.TransportModeAssignment(entry.getKey());
 			mra.setNetworkModes(entry.getValue());
 			config.addParameterSet(mra);
 		}

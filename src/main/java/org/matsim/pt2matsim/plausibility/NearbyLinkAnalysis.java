@@ -23,7 +23,6 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
-import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions;
 import org.matsim.pt2matsim.tools.CsvTools;
 import org.matsim.pt2matsim.tools.MiscUtils;
 import org.matsim.pt2matsim.tools.NetworkTools;
@@ -68,7 +67,7 @@ public class NearbyLinkAnalysis {
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
 
 		for(PublicTransitStop stop : stops) {
-			Map<Double, Set<Link>> sortedLinks = NetworkTools.findClosestLinks(network, stop.getStopFacility().getCoord(), 500, config.getModeRoutingAssignment().get(stop.getMode()));
+			Map<Double, Set<Link>> sortedLinks = NetworkTools.findClosestLinks(network, stop.getStopFacility().getCoord(), 500, config.getTransportModeAssignment().get(stop.getMode()));
 			stop.addLinks(sortedLinks);
 		}
 	}
