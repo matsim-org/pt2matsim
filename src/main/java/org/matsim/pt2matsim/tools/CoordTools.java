@@ -194,8 +194,7 @@ public final class CoordTools {
 	 */
 	public static boolean isInArea(Coord coord, Coord sw, Coord ne) {
 		if(coord.getX() < sw.getX() || coord.getY() < sw.getY()) return false;
-		if(coord.getX() > ne.getX() || coord.getY() > ne.getY()) return false;
-		return true;
+		return !(coord.getX() > ne.getX() || coord.getY() > ne.getY());
 	}
 
 	/**

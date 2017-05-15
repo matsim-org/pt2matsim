@@ -22,6 +22,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
+import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
@@ -99,7 +100,7 @@ public final class Gtfs2TransitSchedule {
 		String param = sampleDayParam == null ? DAY_WITH_MOST_TRIPS : sampleDayParam;
 
 		// load gtfs files
-		GtfsFeedImpl gtfsFeed = new GtfsFeedImpl(gtfsFolder);
+		GtfsFeed gtfsFeed = new GtfsFeedImpl(gtfsFolder);
 
 		// convert to transit schedule
 		GtfsConverter converter = new GtfsConverter(gtfsFeed);

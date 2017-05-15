@@ -41,6 +41,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * Example case of Asheville, North Carolina, USA.
+ *
  * @author polettif
  */
 public class Asheville {

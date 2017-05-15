@@ -22,7 +22,7 @@ import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.network.Link;
 
 /**
- * A possible link for a TransitStopFacility. A LinkCandidate contains
+ * A possible link for a {@link PublicTransitStop}. A LinkCandidate contains
  * theoretically a link and the parent StopFacility. However, all
  * values besides Coord should be stored as primitive/Id since one might
  * be working with multiple separated networks.

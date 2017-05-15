@@ -57,7 +57,7 @@ public class ZVVexample {
 	private static OsmData osmData;
 
 	public static void main(String[] args) throws Exception {
-//		convertOsm();
+		convertOsm();
 		convertSchedule();
 //		runMappingStandard();
 //		runMappingShapes();
@@ -91,7 +91,7 @@ public class ZVVexample {
 		osmData = new OsmDataImpl(AllowedTagsFilter.getDefaultPTFilter());
 		new OsmFileReader(osmData).readFile(osmName);
 
-		// 1.3 initiate and mapScheduleToNetwork converter
+		// 1.3 initiate and run converter
 		OsmMultimodalNetworkConverter osmConverter = new OsmMultimodalNetworkConverter(osmData);
 		osmConverter.convert(osmConfig);
 
@@ -138,7 +138,7 @@ public class ZVVexample {
 		// create PTM config
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
 
-		// mapScheduleToNetwork PTMapepr
+		// run PTMapepr
 		PTMapper ptMapper = new PTMapper(schedule, network);
 		ptMapper.run(config);
 
@@ -202,6 +202,7 @@ public class ZVVexample {
 
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
 
+		// Initiate Router that uses osm data
 		ScheduleRouters router = new ScheduleRoutersOsmAttributes(schedule, network, config.getTransportModeAssignment(), PublicTransitMappingConfigGroup.TravelCostType.linkLength, 0.5);
 
 		PTMapper ptMapper = new PTMapper(schedule, network);

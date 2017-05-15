@@ -58,7 +58,7 @@ public class MappingAnalysisExample {
 		osmConfig.setOutputNetworkFile(input+"network/addison.xml.gz");
 		osmConfig.setMaxLinkLength(20);
 
-		new OsmMultimodalNetworkConverter(osmConfig).mapScheduleToNetwork();
+		new OsmMultimodalNetworkConverter(osmConfig).run();
 		*/
 		Network network = NetworkTools.readNetwork(input + "network/addison.xml.gz");
 

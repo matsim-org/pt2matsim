@@ -85,7 +85,7 @@ public final class ScheduleTools {
 
 	/**
 	 * Merges mergeSchedule with an offset into baseSchedule. baseSchedule is modified. Can be used to generate schedule
-	 * that mapScheduleToNetwork longer than 24h for simulation purposes.
+	 * that run longer than 24h for simulation purposes.
 	 *
 	 * @param mergeOffset offset in seconds added to the departures of mergeschedule
 	 * @param timeLimit departures are not added if they are after this timelimit (in seconds), starting from

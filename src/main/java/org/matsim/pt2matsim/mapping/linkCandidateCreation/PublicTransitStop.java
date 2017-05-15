@@ -26,7 +26,11 @@ import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 
 /**
- * Unique transitRouteStop
+ * Unique transitRouteStop. {@link TransitRouteStop} doesn't
+ * contain information on the transit route and line it is a
+ * part of. Thus, TransitRouteStops can't be used as identifier
+ * for multiple "stops" occuring with different transit routes
+ * on the same stop facility.
  *
  * @author polettif
  */

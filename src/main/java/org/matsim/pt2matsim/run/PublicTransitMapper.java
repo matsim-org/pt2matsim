@@ -35,7 +35,7 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
 import java.util.Collections;
 
 /**
- * Allows to mapScheduleToNetwork an implementation
+ * Allows to run an implementation
  * of public transit mapping via config file path.
  *
  * Currently redirects to the only implementation

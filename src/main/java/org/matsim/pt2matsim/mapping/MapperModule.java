@@ -19,6 +19,9 @@
 package org.matsim.pt2matsim.mapping;
 
 /**
+ * {@link org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator} and
+ * {@link org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters}
+ *
  * @author polettif
  */
 public interface MapperModule {
