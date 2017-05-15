@@ -216,9 +216,6 @@ source and destination. The loop link is referenced to the stop facility and is 
 _useArtificialLoopLink_ defines if such an artificial loop link should be created regardless of the other parameters.
 Tram, subway, ferry, funicular and gondola routes are normally mapped with artificial links.
 
-The implementation allows to manually define link candidate beforehand in the config (in a _manualLinkCandidates_ parameterset 
-or a separate csv file (parameter _manualLinkCandidate_CsvFile_). This helps mapping with complicated rail stations.
-
 #### Creating mode dependent router
 The config parameterset _transportModeAssignment_ defines for a transport mode, what links a transit route is allowed
 to use. For example, transit routes with schedule mode bus can only use links with "bus" or "car" as modes. Similarly, all 
@@ -286,10 +283,10 @@ The package provides a plausibility check via
     
 that looks for implausible parts of a route and warns accordingly. It needs the input:
 	
-    [0] schedule file
+	[0] schedule file
 	[1] network file
-	[2]	coordinate system (of both schedule and network)
-	[3]	output folder
+	[2] coordinate system (of both schedule and network)
+	[3] output folder
 
 The following files are created in the output folder:
 
@@ -303,5 +300,4 @@ The following files are created in the output folder:
 - _shp/schedule/StopFacilities.shp_: Stop Facilities as point shapefile
 - _shp/schedule/StopFacilities_refLinks.shp_: The stop facilities' reference links as polyline shapefile
 
-Shapefiles can be viewed in a GIS, a recommended open source application is [QGIS](https://www.qgis.org). It is also possible to view them in [senozon via](https://via.senozon.com/).
-However, no line attributes can be displayed or viewed there.
+Shapefiles can be viewed in a GIS, a recommended open source application is [QGIS](https://www.qgis.org). It is also possible to view them in [senozon via](https://via.senozon.com/). However, no line attributes can be displayed or viewed there.
