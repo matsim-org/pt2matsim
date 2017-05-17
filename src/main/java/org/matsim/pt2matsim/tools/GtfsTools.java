@@ -46,9 +46,16 @@ public final class GtfsTools {
 	public static LocalDate getDayWithMostTrips(GtfsFeed feed) {
 		LocalDate busiestDate = null;
 		int maxTrips = 0;
-		for(Map.Entry<LocalDate, Set<Trip>> entry : getTripsOndates(feed).entrySet()) {
-			if(entry.getValue().size() > maxTrips) {
-				maxTrips = entry.getValue().size();
+
+		Map<LocalDate, Integer> nTripsOnDate = new HashMap<>();
+		for(Service service : feed.getServices().values()) {
+			for(LocalDate day : service.getCoveredDays()) {
+				MapUtils.addToInteger(day, nTripsOnDate, 1, service.getTrips().size());
+			}
+		}
+		for(Map.Entry<LocalDate, Integer> entry : nTripsOnDate.entrySet()) {
+			if(entry.getValue() > maxTrips) {
+				maxTrips = entry.getValue();
 				busiestDate = entry.getKey();
 			}
 		}
@@ -61,14 +68,20 @@ public final class GtfsTools {
 	public static LocalDate getDayWithMostServices(GtfsFeed feed) {
 		LocalDate busiestDate = null;
 		int maxService = 0;
-		for(Map.Entry<LocalDate, Set<Service>> entry : getServicesOnDates(feed).entrySet()) {
-			if(entry.getValue().size() > maxService) {
-				maxService = entry.getValue().size();
+
+		Map<LocalDate, Integer> nServicesOnDate = new HashMap<>();
+		for(Service service : feed.getServices().values()) {
+			for(LocalDate day : service.getCoveredDays()) {
+				MapUtils.addToInteger(day, nServicesOnDate, 1, 1);
+			}
+		}
+		for(Map.Entry<LocalDate, Integer> entry : nServicesOnDate.entrySet()) {
+			if(entry.getValue() > maxService) {
+				maxService = entry.getValue();
 				busiestDate = entry.getKey();
 			}
 		}
 		return busiestDate;
-
 	}
 
 	/**
