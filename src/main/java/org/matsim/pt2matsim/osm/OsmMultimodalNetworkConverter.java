@@ -28,7 +28,6 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.network.algorithms.NetworkCleaner;
-import org.matsim.core.network.io.NetworkWriter;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
@@ -39,7 +38,6 @@ import org.matsim.pt2matsim.osm.lib.Osm;
 import org.matsim.pt2matsim.osm.lib.OsmData;
 import org.matsim.pt2matsim.tools.NetworkTools;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -106,8 +104,6 @@ public class OsmMultimodalNetworkConverter {
 
 	/**
 	 * Converts the parsed osm data to MATSim nodes and links.
-	 *
-	 * @param transformation
 	 */
 	private void convertToNetwork(CoordinateTransformation transformation) {
 
@@ -490,20 +486,14 @@ public class OsmMultimodalNetworkConverter {
 	 * Runs the network cleaner on the street network.
 	 */
 	private void cleanRoadNetwork() {
-		String tmpFilename = "tmpNetwork" + osmData + ".xml.gz";
 		Set<String> roadModes = CollectionUtils.stringToSet("car,bus");
 		Network roadNetwork = NetworkTools.createFilteredNetworkByLinkMode(network, roadModes);
 		Network restNetwork = NetworkTools.createFilteredNetworkExceptLinkMode(network, roadModes);
+		this.network = null;
 
 		new NetworkCleaner().run(roadNetwork);
-		new NetworkWriter(roadNetwork).write(tmpFilename);
-		Network roadNetworkReadAgain = NetworkTools.readNetwork(tmpFilename);
-		if(!new File(tmpFilename).delete()) {
-			log.info("Could not delete temporary road network file");
-		}
-		new NetworkCleaner().run(roadNetworkReadAgain);
-		NetworkTools.integrateNetwork(roadNetworkReadAgain, restNetwork);
-		this.network = roadNetworkReadAgain;
+		NetworkTools.integrateNetwork(restNetwork, roadNetwork);
+		this.network = restNetwork;
 	}
 
 
