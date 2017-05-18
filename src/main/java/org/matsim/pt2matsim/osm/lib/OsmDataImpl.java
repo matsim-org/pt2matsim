@@ -64,6 +64,7 @@ public class OsmDataImpl implements OsmData {
 
 		// create nodes
 		log.info("Create nodes...");
+		if(parsedWays == null) throw new RuntimeException("No nodes available in osm file");
 		Counter pnCounter = new Counter(" # ");
 		for(OsmFileReader.ParsedNode pn : parsedNodes.values()) {
 			pnCounter.incCounter();
@@ -77,6 +78,7 @@ public class OsmDataImpl implements OsmData {
 
 		// create ways
 		log.info("Create ways...");
+		if(parsedWays == null) throw new RuntimeException("No ways available in osm file");
 		Counter pwCounter = new Counter(" # ");
 		for(OsmFileReader.ParsedWay pw : parsedWays.values()) {
 			pwCounter.incCounter();
@@ -108,6 +110,10 @@ public class OsmDataImpl implements OsmData {
 
 		// create relations
 		log.info("Create relations...");
+		if(parsedRelations == null) {
+			log.warn("No relations available in osm file");
+			parsedRelations = new HashMap<>();
+		}
 		Counter prCounter = new Counter(" # ");
 		for(OsmFileReader.ParsedRelation pr : parsedRelations.values()) {
 			prCounter.incCounter();
