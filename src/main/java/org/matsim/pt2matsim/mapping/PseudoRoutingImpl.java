@@ -99,7 +99,7 @@ public class PseudoRoutingImpl implements PseudoRouting {
 					double maxAllowedTravelCost = minTravelCost * maxTravelCostFactor;
 
 					if(minTravelCost == 0 && warnMinTravelCost) {
-						log.warn("There are stop pairs where minTravelCost is 0.0! This might happen if departure and arrival time of two subsequent stops are identical. Further messages are suppressed.");
+						log.warn("There are stop pairs where minTravelCost is 0.0! This might happen if two stops are on the same coordinate or if departure and arrival time of two subsequent stops are identical. Further messages are suppressed.");
 						warnMinTravelCost = false;
 					}
 
