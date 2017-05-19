@@ -22,15 +22,16 @@ import com.opencsv.CSVWriter;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
+import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.gtfs.lib.*;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author polettif
@@ -214,5 +215,38 @@ public final class GtfsTools {
 			}
 		}
 		return tripsForStop;
+	}
+
+	/**
+	 * Filters trips.txt and stop_times.txt for the given date and time span. Writes the filtered
+	 * file to output folder. All other files are copied from the input folder.
+	 */
+	public static void filterAndCopyFeed(String inputFolder, String outputFolder, LocalDate date, double startTime, double endTime) {
+		Set<Trip> cutTrips = GtfsTools.getTripsOndates(new GtfsFeedImpl(inputFolder)).get(date);
+
+		Set<Trip> cutTripsTime = new HashSet<>();
+		for(Trip t : cutTrips) {
+			int time = t.getStopTimes().last().getArrivalTime();
+			if(time > startTime && time < endTime) {
+				cutTripsTime.add(t);
+			}
+		}
+		try {
+			new File(outputFolder).mkdir();
+
+			GtfsTools.writeStopTimes(cutTripsTime, outputFolder);
+			GtfsTools.writeTrips(cutTripsTime, outputFolder);
+
+			for(GtfsDefinitions.Files f : GtfsDefinitions.Files.values()) {
+				if(!f.equals(GtfsDefinitions.Files.STOP_TIMES) && !f.equals(GtfsDefinitions.Files.TRIPS)) {
+					File source = new File(inputFolder + f.fileName);
+					if(source.exists()) {
+						Files.copy(source.toPath(), new File(outputFolder +f.fileName).toPath(), StandardCopyOption.REPLACE_EXISTING);
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
