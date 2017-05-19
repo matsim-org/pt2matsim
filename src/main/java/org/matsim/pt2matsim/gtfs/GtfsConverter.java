@@ -119,8 +119,6 @@ public class GtfsConverter {
 			log.info("    Using stop_times.txt to generate departures");
 		}
 
-		DepartureIds departureIds = new DepartureIds();
-
 		for(Route gtfsRoute : feed.getRoutes().values()) {
 			/* [2]
 			  Create a MTS transitLine for each Route
@@ -165,6 +163,7 @@ public class GtfsConverter {
 
 					/* [5.1]
 					  Calculate departures from frequencies (if available)
+					  Todo cover with test
 					 */
 					TransitRoute transitRoute;
 					if(feed.usesFrequencies()) {
@@ -172,9 +171,8 @@ public class GtfsConverter {
 
 						for(Frequency frequency : trip.getFrequencies()) {
 							for(int t = frequency.getStartTime(); t < frequency.getEndTime(); t += frequency.getHeadWaySecs()) {
-								transitRoute.addDeparture(scheduleFactory.createDeparture(
-										Id.create(departureIds.getNext(transitRoute.getId()), Departure.class),
-										t));
+								Departure newDeparture = scheduleFactory.createDeparture(createDepartureId(transitRoute, t), t);
+								transitRoute.addDeparture(newDeparture);
 							}
 						}
 						transitLine.addRoute(transitRoute);
@@ -185,27 +183,34 @@ public class GtfsConverter {
 						  Calculate departures from stopTimes
 						 */
 
-						/* if stop sequence is already used in the same transitLine: just add new departure for the
-						 * transitRoute that uses that stop sequence
+						/*
+						if stop sequence is already used in the same transitLine: just add new departure for the
+						transitRoute that uses that stop sequence
 						 */
 						boolean createNewTransitRoute = true;
 
 						for(TransitRoute currentTransitRoute : transitLine.getRoutes().values()) {
 							if(currentTransitRoute.getStops().equals(transitRouteStops)) {
 								if(routeShapeAssignment.get(currentTransitRoute.getId()) == shapeId) {
-									currentTransitRoute.addDeparture(scheduleFactory.createDeparture(Id.create(departureIds.getNext(currentTransitRoute.getId()), Departure.class), startTime));
-									createNewTransitRoute = false;
-									break;
+									Id<Departure> departureId = createDepartureId(currentTransitRoute, startTime);
+									if((!currentTransitRoute.getDepartures().containsKey(departureId))) {
+										Departure newDeparture = scheduleFactory.createDeparture(departureId, startTime);
+										currentTransitRoute.addDeparture(newDeparture);
+										createNewTransitRoute = false;
+										break;
+									}
 								}
 							}
 						}
 
-						/* if stop sequence is not used yet, create a new transitRoute (with transitRouteStops)
-						 * and add the departure
+						/*
+						if stop sequence is not used yet, create a new transitRoute (with transitRouteStops)
+						and add the departure
 						 */
 						if(createNewTransitRoute) {
 							transitRoute = scheduleFactory.createTransitRoute(Id.create(trip.getId(), TransitRoute.class), null, transitRouteStops, gtfsRoute.getRouteType().name);
-							transitRoute.addDeparture(scheduleFactory.createDeparture(Id.create(departureIds.getNext(transitRoute.getId()), Departure.class), startTime));
+							Departure newDeparture = scheduleFactory.createDeparture(createDepartureId(transitRoute, startTime), startTime);
+							transitRoute.addDeparture(newDeparture);
 
 							if(shapeId != null) ScheduleTools.setShapeId(transitRoute, trip.getShape().getId());
 							routeShapeAssignment.put(transitRoute.getId(), shapeId);
@@ -227,6 +232,11 @@ public class GtfsConverter {
 		if(dateUsed != null) log.info("    Day " + dateUsed);
 		log.info("... GTFS converted to an unmapped MATSIM Transit Schedule");
 		log.info("#########################################################");
+	}
+
+	private Id<Departure> createDepartureId(TransitRoute route, int time) {
+		String str = route.getId().toString() + "_" + Time.writeTime(time, "HH:mm:ss");
+		return Id.create(str, Departure.class);
 	}
 
 
@@ -260,25 +270,6 @@ public class GtfsConverter {
 				}
 				return date;
 			}
-		}
-	}
-
-	/**
-	 * helper class for meaningful departureIds
-	 */
-	private class DepartureIds {
-
-		private Map<Id<TransitRoute>, Integer> ids = new HashMap<>();
-
-		String getNext(Id<TransitRoute> transitRouteId) {
-			if(!ids.containsKey(transitRouteId)) {
-				ids.put(transitRouteId, 1);
-				return transitRouteId + "_01";
-			} else {
-				int i = ids.put(transitRouteId, ids.get(transitRouteId) + 1) + 1;
-				return transitRouteId + "_" + String.format("%03d", i);
-			}
-
 		}
 	}
 }
