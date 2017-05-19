@@ -124,6 +124,7 @@ public class GtfsConverter {
 			  Create a MTS transitLine for each Route
 			 */
 			TransitLine transitLine = scheduleFactory.createTransitLine(Id.create(gtfsRoute.getShortName() + "_" + gtfsRoute.getId(), TransitLine.class));
+			transitLine.setName(gtfsRoute.getShortName());
 			schedule.addTransitLine(transitLine);
 			counterLines++;
 
