@@ -21,7 +21,6 @@ package org.matsim.pt2matsim.plausibility.log;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Identifiable;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.core.utils.collections.Tuple;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 
@@ -51,8 +50,6 @@ public interface PlausibilityWarning extends Identifiable<PlausibilityWarning> {
 	double getActual();
 
 	double getDifference();
-
-	Tuple<Object,Object> getPair();
 
 	String getCsvLine();
 

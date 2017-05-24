@@ -61,27 +61,36 @@ public final class CoordTools {
 	}
 
 	/**
-	 * calculates the azimuth difference between the a1->a2 and b1->b2
+	 * calculates the azimuth difference between c1->c2 and c2->c3. Range (-PI..PI]
 	 */
-	public static double getAzimuthDiff(Coord a1, Coord a2, Coord b1, Coord b2) {
-		if(a1.equals(b2)) {
-			return Math.PI;
+	public static double getAngleDiff(Coord c1, Coord c2, Coord c3) {
+		double az1 = getAzimuth(c1, c2);
+		double az2 = getAzimuth(c2, c3);
+
+		double diff = az2 - az1;
+
+		if(diff <= -Math.PI) {
+			diff += 2*Math.PI;
+		} else if(diff > Math.PI){
+			diff -= 2*Math.PI;
 		}
 
-		double az1 = getAzimuth(a1, a2);
-		double az2 = getAzimuth(b1, b2);
-		double diff = Math.abs(az2 - az1);
-
-		return (diff > Math.PI ? Math.PI/2 - diff : diff);
+		return diff;
 	}
 
 	/**
-	 * calculates the azimuth difference of two links
+	 * calculates the azimuth difference of two subsequent links
 	 *
 	 * @return the difference in [rad]
 	 */
-	public static double getAzimuthDiff(Link link1, Link link2) {
-		return getAzimuthDiff(link1.getFromNode().getCoord(), link1.getToNode().getCoord(), link2.getFromNode().getCoord(), link2.getToNode().getCoord());
+	public static double getAngleDiff(Link link1, Link link2) {
+		if(!link1.getToNode().getCoord().equals(link2.getFromNode().getCoord())) {
+			throw new IllegalArgumentException("link2 is not an outlink of link1");
+		}
+		if(link1.getFromNode().getId().equals(link2.getToNode().getId())) {
+			return Math.PI;
+		}
+		return getAngleDiff(link1.getFromNode().getCoord(), link1.getToNode().getCoord(), link2.getToNode().getCoord());
 	}
 
 	/**
