@@ -61,7 +61,7 @@ public class PlausibilityCheck {
 
 	protected static final Logger log = Logger.getLogger(PlausibilityCheck.class);
 
-	public static final String CsvSeparator = ";";
+	public static final String CsvSeparator = ",";
 
 	private static final double PI = Math.PI;
 
@@ -80,6 +80,11 @@ public class PlausibilityCheck {
 	private final Network network;
 	private final String coordinateSystem;
 
+	/**
+	 * Allowed travel time difference between actual and scheduled time in seconds
+	 */
+	private double ttRange;
+
 
 	/**
 	 * Constructor
@@ -92,6 +97,7 @@ public class PlausibilityCheck {
 		this.thresholds = new HashMap<>();
 		this.thresholds.put("bus", 0.7 * PI);
 		this.thresholds.put("rail", 0.3 * PI);
+		this.ttRange = 60;
 	}
 
 	/**
@@ -124,7 +130,8 @@ public class PlausibilityCheck {
 					ttActual += linkFrom.getLength() / linkFrom.getFreespeed();
 					if(nextStop.getStopFacility().getLinkId().equals(linkTo.getId())) {
 						double ttSchedule = nextStop.getArrivalOffset() - departTime;
-						if(ttActual > ttSchedule) {
+						double ttScheduleRange = ttSchedule + ttRange;
+						if(ttActual > ttScheduleRange && ttSchedule > 0) {
 							PlausibilityWarning warning = new TravelTimeWarning(transitLine, transitRoute, previousStop, nextStop, ttActual, ttSchedule);
 							addWarningToContainers(warning);
 						}
@@ -305,9 +312,9 @@ public class PlausibilityCheck {
 			}
 		}
 
-		ShapeFileWriter.writeGeometries(traveltTimeWarningsFeatures, outputPath + TRAVEL_TIME_WARNING + "s.shp");
-		ShapeFileWriter.writeGeometries(directionChangeWarningsFeatures, outputPath + DIRECTION_CHANGE_WARNING + "s.shp");
-		ShapeFileWriter.writeGeometries(loopWarningsFeatures, outputPath + LOOP_WARNING + "s.shp");
+		if(traveltTimeWarningsFeatures.size() > 0) 		ShapeFileWriter.writeGeometries(traveltTimeWarningsFeatures, outputPath + TRAVEL_TIME_WARNING + "s.shp");
+		if(directionChangeWarningsFeatures.size() > 0) 	ShapeFileWriter.writeGeometries(directionChangeWarningsFeatures, outputPath + DIRECTION_CHANGE_WARNING + "s.shp");
+		if(loopWarningsFeatures.size() > 0) 			ShapeFileWriter.writeGeometries(loopWarningsFeatures, outputPath + LOOP_WARNING + "s.shp");
 	}
 
 	/**
