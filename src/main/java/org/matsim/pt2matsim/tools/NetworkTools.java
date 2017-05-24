@@ -167,7 +167,7 @@ public final class NetworkTools {
 			 // calculate lineSegmentDistance for all links
 			 for(Link link : links) {
 				 // only use links with a viable network transport mode
-				 if(allowedTransportModes == null || MiscUtils.setsShareMinOneStringEntry(link.getAllowedModes(), allowedTransportModes)) {
+				 if(allowedTransportModes == null || MiscUtils.collectionsShareMinOneStringEntry(link.getAllowedModes(), allowedTransportModes)) {
 					 double lineSegmentDistance = CoordUtils.distancePointLinesegment(link.getFromNode().getCoord(), link.getToNode().getCoord(), coord);
 					 MapUtils.getSet(lineSegmentDistance, closestLinksSortedByDistance).add(link);
 				 }
@@ -687,7 +687,7 @@ public final class NetworkTools {
 
 		@Override
 		public boolean judgeLink(Link l) {
-			return MiscUtils.setsShareMinOneStringEntry(l.getAllowedModes(), modes);
+			return MiscUtils.collectionsShareMinOneStringEntry(l.getAllowedModes(), modes);
 		}
 	}
 
@@ -701,7 +701,7 @@ public final class NetworkTools {
 
 		@Override
 		public boolean judgeLink(Link l) {
-			return !MiscUtils.setsShareMinOneStringEntry(l.getAllowedModes(), modes);
+			return !MiscUtils.collectionsShareMinOneStringEntry(l.getAllowedModes(), modes);
 		}
 	}
 

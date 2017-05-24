@@ -167,12 +167,12 @@ public final class ScheduleCleaner {
 		int linksRemoved = 0;
 		for(Link link : new HashSet<>(network.getLinks().values())) {
 			// only remove link if there are only modes to remove on it
-			if(!org.matsim.pt2matsim.tools.MiscUtils.setsShareMinOneStringEntry(link.getAllowedModes(), modesToKeep) && !usedTransitLinkIds.contains(link.getId())) {
+			if(!org.matsim.pt2matsim.tools.MiscUtils.collectionsShareMinOneStringEntry(link.getAllowedModes(), modesToKeep) && !usedTransitLinkIds.contains(link.getId())) {
 				network.removeLink(link.getId());
 				linksRemoved++;
 			}
 			// only retain modes that are actually used
-			else if(org.matsim.pt2matsim.tools.MiscUtils.setsShareMinOneStringEntry(link.getAllowedModes(), modesToKeep) && !usedTransitLinkIds.contains(link.getId())) {
+			else if(org.matsim.pt2matsim.tools.MiscUtils.collectionsShareMinOneStringEntry(link.getAllowedModes(), modesToKeep) && !usedTransitLinkIds.contains(link.getId())) {
 				link.setAllowedModes(MiscUtils.getSharedSetStringEntries(link.getAllowedModes(), modesToKeep));
 			}
 		}

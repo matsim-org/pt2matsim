@@ -36,6 +36,7 @@ import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.plausibility.log.*;
 import org.matsim.pt2matsim.tools.*;
 import org.opengis.feature.simple.SimpleFeature;
@@ -65,20 +66,24 @@ public class PlausibilityCheck {
 
 	private static final double PI = Math.PI;
 
-	public static final String TRAVEL_TIME_WARNING = "TravelTimeWarning";
-	public static final String LOOP_WARNING = "LoopWarning";
+	public static final String ARTIFICIAL_LINK_WARNING = "ArtificialLinkWarning";
 	public static final String DIRECTION_CHANGE_WARNING = "DirectionChangeWarning";
+	public static final String LOOP_WARNING = "LoopWarning";
+	public static final String TRAVEL_TIME_WARNING = "TravelTimeWarning";
 
 	private final Set<PlausibilityWarning> allWarnings = new HashSet<>();
+	private final Map<String, Set<PlausibilityWarning>> warnings = new HashMap<>();
+
+	private final Map<List<Id<Link>>, Set<PlausibilityWarning>> warningsPerUniqueLinkSet = new HashMap<>();
+	private final Map<Id<Link>, Set<PlausibilityWarning>> warningsPerLinkId = new HashMap<>();
 	private final Map<TransitLine, Map<TransitRoute, Set<PlausibilityWarning>>> warningsSchedule = new HashMap<>();
-	private final Map<List<Id<Link>>, Set<PlausibilityWarning>> warningsLinkIds = new HashMap<>();
-	private final Map<Id<Link>, Set<PlausibilityWarning>> warningsLinks = new HashMap<>();
 
 	private Map<String, Double> thresholds;
 
 	private final TransitSchedule schedule;
 	private final Network network;
 	private final String coordinateSystem;
+	private int nRoutes;
 
 	/**
 	 * Allowed travel time difference between actual and scheduled time in seconds
@@ -98,6 +103,11 @@ public class PlausibilityCheck {
 		this.thresholds.put("bus", 0.7 * PI);
 		this.thresholds.put("rail", 0.3 * PI);
 		this.ttRange = 60;
+
+		this.warnings.put(ARTIFICIAL_LINK_WARNING, new HashSet<>());
+		this.warnings.put(DIRECTION_CHANGE_WARNING, new HashSet<>());
+		this.warnings.put(LOOP_WARNING, new HashSet<>());
+		this.warnings.put(TRAVEL_TIME_WARNING, new HashSet<>());
 	}
 
 	public void setDirectionChangeThreshold(String mode, double maxAngleDiff) {
@@ -115,8 +125,10 @@ public class PlausibilityCheck {
 	public void runCheck() {
 		AbstractPlausibilityWarning.setNetwork(network);
 
+		nRoutes = 0;
 		for(TransitLine transitLine : this.schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
+				nRoutes++;
 
 				Double directionChangeThreshold = thresholds.get(transitRoute.getTransportMode());
 
@@ -170,6 +182,12 @@ public class PlausibilityCheck {
 							addWarningToContainers(warning);
 						}
 					}
+
+					// artificial link check
+					if(linkFrom.getAllowedModes().contains(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE)) {
+						PlausibilityWarning warning = new ArtificialLinkWarning(transitLine, transitRoute, linkFrom);
+						addWarningToContainers(warning);
+					}
 				}
 
 				// catch "loops" that are part of a bigger loop
@@ -190,6 +208,16 @@ public class PlausibilityCheck {
 				}
 			}
 		}
+	}
+
+	public void logStatistics() {
+		System.out.println("===============================================================");
+		System.out.println("> Plausibility check for "+ nRoutes +" transit routes finished.");
+		System.out.println("> "+ warnings.get(ARTIFICIAL_LINK_WARNING).size() + " \t artificial links");
+		System.out.println("> "+ warnings.get(LOOP_WARNING).size() + " \t loop warnings");
+		System.out.println("> "+ warnings.get(DIRECTION_CHANGE_WARNING).size() + " \t direction change warnings");
+		System.out.println("> "+ warnings.get(TRAVEL_TIME_WARNING).size() + " \t travel time warnings");
+		System.out.println("===============================================================");
 	}
 
 	/**
@@ -218,6 +246,7 @@ public class PlausibilityCheck {
 		Collection<SimpleFeature> traveltTimeWarningsFeatures = new ArrayList<>();
 		Collection<SimpleFeature> loopWarningsFeatures = new ArrayList<>();
 		Collection<SimpleFeature> directionChangeWarningsFeatures = new ArrayList<>();
+		Collection<SimpleFeature> artificialLinkWarningsFeatures = new ArrayList<>();
 
 		PolylineFeatureFactory travelTimeWarningsFF = new PolylineFeatureFactory.Builder()
 				.setName("TravelTimeWarnings")
@@ -249,11 +278,20 @@ public class PlausibilityCheck {
 				.addAttribute("diff [gon]", String.class)
 				.create();
 
-		// route through all linkIdLists
-		for(Map.Entry<List<Id<Link>>, Set<PlausibilityWarning>> e : warningsLinkIds.entrySet()) {
+		PolylineFeatureFactory artificialWarningsFF = new PolylineFeatureFactory.Builder()
+				.setName("ArtificialLinkWarnings")
+				.setCrs(MGC.getCRS(coordinateSystem))
+				.addAttribute("warningIds", String.class)
+				.addAttribute("routeIds", String.class)
+				.addAttribute("linkId", String.class)
+				.create();
+
+		// route through all unique linkIdLists
+		for(Map.Entry<List<Id<Link>>, Set<PlausibilityWarning>> e : warningsPerUniqueLinkSet.entrySet()) {
 			boolean createLoopFeature = false;
 			boolean createTravelTimeFeature = false;
 			boolean createDirectionChangeFeature = false;
+			boolean createArtificialFeature = false;
 
 			double diff = -1, diffPerc = -1, ttExpected = -1, ttActual = -1, azDiff = 0.0;
 
@@ -285,6 +323,13 @@ public class PlausibilityCheck {
 				// Loop Warnings
 				if(w instanceof LoopWarning) {
 					createLoopFeature = true;
+					warningIds.add(w.getId());
+					routeIds.add(w.getTransitLine().getId() + ":" + w.getTransitRoute().getId());
+				}
+
+				// Loop Warnings
+				if(w instanceof ArtificialLinkWarning) {
+					createArtificialFeature = true;
 					warningIds.add(w.getId());
 					routeIds.add(w.getTransitLine().getId() + ":" + w.getTransitRoute().getId());
 				}
@@ -322,11 +367,21 @@ public class PlausibilityCheck {
 				f.setAttribute("linkIds", CollectionUtils.idSetToString(new HashSet<>(e.getKey())));
 				loopWarningsFeatures.add(f);
 			}
+
+			// Artificial Link Warnings
+			if(createArtificialFeature) {
+				SimpleFeature f = artificialWarningsFF.createPolyline(ShapeTools.linkIdList2Coordinates(network, e.getKey()));
+				f.setAttribute("warningIds", CollectionUtils.idSetToString(warningIds));
+				f.setAttribute("routeIds", CollectionUtils.setToString(routeIds));
+				f.setAttribute("linkId", CollectionUtils.idSetToString(new HashSet<>(e.getKey())));
+				artificialLinkWarningsFeatures.add(f);
+			}
 		}
 
 		if(traveltTimeWarningsFeatures.size() > 0) 		ShapeFileWriter.writeGeometries(traveltTimeWarningsFeatures, outputPath + TRAVEL_TIME_WARNING + "s.shp");
 		if(directionChangeWarningsFeatures.size() > 0) 	ShapeFileWriter.writeGeometries(directionChangeWarningsFeatures, outputPath + DIRECTION_CHANGE_WARNING + "s.shp");
 		if(loopWarningsFeatures.size() > 0) 			ShapeFileWriter.writeGeometries(loopWarningsFeatures, outputPath + LOOP_WARNING + "s.shp");
+		if(artificialLinkWarningsFeatures.size() > 0) 	ShapeFileWriter.writeGeometries(artificialLinkWarningsFeatures, outputPath + ARTIFICIAL_LINK_WARNING + "s.shp");
 	}
 
 	/**
@@ -334,11 +389,12 @@ public class PlausibilityCheck {
 	 */
 	private void addWarningToContainers(PlausibilityWarning warning) {
 		allWarnings.add(warning);
+		warnings.get(warning.getType()).add(warning);
 		MapUtils.getSet(warning.getTransitRoute(), MapUtils.getMap(warning.getTransitLine(), this.warningsSchedule)).add(warning);
-		MapUtils.getSet(warning.getLinkIds(), warningsLinkIds).add(warning);
+		MapUtils.getSet(warning.getLinkIds(), warningsPerUniqueLinkSet).add(warning);
 
 		for(Id<Link> linkId : warning.getLinkIds()) {
-			MapUtils.getSet(linkId, warningsLinks).add(warning);
+			MapUtils.getSet(linkId, warningsPerLinkId).add(warning);
 		}
 	}
 
