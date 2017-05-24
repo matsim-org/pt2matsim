@@ -18,16 +18,11 @@
 
 package org.matsim.pt2matsim.plausibility.log;
 
-import org.matsim.core.utils.collections.MapUtils;
-import org.matsim.core.utils.collections.Tuple;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt2matsim.plausibility.PlausibilityCheck;
 import org.matsim.pt2matsim.tools.ScheduleTools;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Plausibility warning if the travel time given by the schedule
@@ -36,9 +31,6 @@ import java.util.Map;
  * @author polettif
  */
 public class TravelTimeWarning extends AbstractPlausibilityWarning {
-
-	public static final Map<TransitLine, Integer> lineStat = new HashMap<>();
-	public static final Map<TransitRoute, Integer> routeStat = new HashMap<>();
 
 	private final TransitRouteStop fromStop;
 	private final TransitRouteStop toStop;
@@ -52,7 +44,6 @@ public class TravelTimeWarning extends AbstractPlausibilityWarning {
 		this.ttActual = ttActual;
 		this.ttSchedule = ttSchedule;
 
-		pair = new Tuple<>(fromStop, toStop);
 		fromId = fromStop.getStopFacility().getId().toString();
 		toId = toStop.getStopFacility().getId().toString();
 		expected = ttSchedule;
@@ -60,20 +51,11 @@ public class TravelTimeWarning extends AbstractPlausibilityWarning {
 		difference = ttActual - ttSchedule;
 
 		linkIdList = ScheduleTools.getSubRouteLinkIds(transitRoute, fromStop.getStopFacility().getLinkId(), toStop.getStopFacility().getLinkId());
-
-		MapUtils.addToInteger(transitLine, lineStat, 1, 1);
-		MapUtils.addToInteger(transitRoute, routeStat, 1, 1);
 	}
 
 	@Override
 	public String toString() {
 		return "\tTT INCONSISTENT \tstops: "+fromStop.getStopFacility().getId()+" -> "+toStop.getStopFacility().getId()+"\n" +
 			   "\t                \t\tdifference: "+String.format("%.1f", (ttActual-ttSchedule))+"\ttt network: "+String.format("%.1f",ttActual)+"\ttt schedule: "+String.format("%.1f",ttSchedule);
-	}
-
-	public String linkMessage() {
-		return 	"\tstops: "+fromStop.getStopFacility().getId()+" -> "+toStop.getStopFacility().getId()+"\n" +
-				"\tdifference: "+String.format("%.1f", (ttActual-ttSchedule))+"\ttt network: "+String.format("%.1f",ttActual)+"\ttt schedule: "+String.format("%.1f",ttSchedule);
-
 	}
 }

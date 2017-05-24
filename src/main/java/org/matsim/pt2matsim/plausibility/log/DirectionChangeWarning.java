@@ -19,14 +19,11 @@
 package org.matsim.pt2matsim.plausibility.log;
 
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt2matsim.plausibility.PlausibilityCheck;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Plausibility warning if a link sequence has abrupt direction changes
@@ -34,9 +31,6 @@ import java.util.Map;
  * @author polettif
  */
 public class DirectionChangeWarning extends AbstractPlausibilityWarning {
-
-	public static Map<TransitLine, Integer> lineStat = new HashMap<>();
-	public static Map<TransitRoute, Integer> routeStat = new HashMap<>();
 
 	public DirectionChangeWarning(TransitLine transitLine, TransitRoute transitRoute, Link link1, Link link2, double angleDiff) {
 		super(PlausibilityCheck.DIRECTION_CHANGE_WARNING, transitLine, transitRoute);
@@ -48,9 +42,6 @@ public class DirectionChangeWarning extends AbstractPlausibilityWarning {
 		linkIdList = new ArrayList<>();
 		linkIdList.add(link1.getId());
 		linkIdList.add(link2.getId());
-
-		MapUtils.addToInteger(transitLine, lineStat, 1, 1);
-		MapUtils.addToInteger(transitRoute, routeStat, 1, 1);
 	}
 
 	@Override

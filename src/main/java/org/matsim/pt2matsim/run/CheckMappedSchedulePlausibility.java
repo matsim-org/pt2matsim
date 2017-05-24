@@ -115,6 +115,8 @@ public final class CheckMappedSchedulePlausibility {
 		StopFacilityHistogram histogram = new StopFacilityHistogram(schedule);
 		histogram.createCsv(outputFolder + "stopfacilities.csv");
 		histogram.createPng(outputFolder + "stopfacilities_histogram.png");
+
+		check.logStatistics();
 	}
 
 }

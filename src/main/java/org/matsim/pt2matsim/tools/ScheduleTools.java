@@ -528,7 +528,7 @@ public final class ScheduleTools {
 		}
 
 		for(Link link : network.getLinks().values()) {
-			if(MiscUtils.setsShareMinOneStringEntry(link.getAllowedModes(), networkModes)) {
+			if(MiscUtils.collectionsShareMinOneStringEntry(link.getAllowedModes(), networkModes)) {
 				if(necessaryMinSpeeds.containsKey(link.getId())) {
 					double necessaryMinSpeed = necessaryMinSpeeds.get(link.getId());
 					if(necessaryMinSpeed > link.getFreespeed()) {

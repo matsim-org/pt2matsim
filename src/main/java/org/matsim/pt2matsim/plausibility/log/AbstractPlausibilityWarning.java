@@ -23,7 +23,6 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.utils.collections.CollectionUtils;
-import org.matsim.core.utils.collections.Tuple;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt2matsim.plausibility.PlausibilityCheck;
@@ -61,7 +60,6 @@ public abstract class AbstractPlausibilityWarning implements PlausibilityWarning
 	protected final TransitLine transitLine;
 	protected final TransitRoute transitRoute;
 
-	protected Tuple<Object, Object> pair;
 	protected List<Id<Link>> linkIdList;
 	protected String fromId;
 	protected String toId;
@@ -154,4 +152,22 @@ public abstract class AbstractPlausibilityWarning implements PlausibilityWarning
 		return difference;
 	}
 
+
+	@Override
+	public boolean equals(Object o) {
+		if(this == o) return true;
+		if(o == null || getClass() != o.getClass()) return false;
+
+		AbstractPlausibilityWarning that = (AbstractPlausibilityWarning) o;
+
+		if(type != null ? !type.equals(that.type) : that.type != null) return false;
+		return linkIdList != null ? linkIdList.equals(that.linkIdList) : that.linkIdList == null;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = type != null ? type.hashCode() : 0;
+		result = 31 * result + (linkIdList != null ? linkIdList.hashCode() : 0);
+		return result;
+	}
 }

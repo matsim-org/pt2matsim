@@ -18,50 +18,31 @@
 
 package org.matsim.pt2matsim.plausibility.log;
 
-import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.network.Node;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt2matsim.plausibility.PlausibilityCheck;
-import org.matsim.pt2matsim.tools.ScheduleTools;
 
-import java.util.List;
+import java.util.ArrayList;
 
 /**
- * Plausibility warning if a link sequence passes a node twice
+ * Plausibility warning if a link sequence has abrupt direction changes
  *
  * @author polettif
  */
-public class LoopWarning extends AbstractPlausibilityWarning {
+public class ArtificialLinkWarning extends AbstractPlausibilityWarning {
 
-	private Node node;
+	public ArtificialLinkWarning(TransitLine transitLine, TransitRoute transitRoute, Link link) {
+		super(PlausibilityCheck.ARTIFICIAL_LINK_WARNING, transitLine, transitRoute);
+		this.fromId = link.getFromNode().getId().toString();
+		this.toId = link.getToNode().getId().toString();
 
-	public LoopWarning(TransitLine transitLine, TransitRoute transitRoute, Node node, Link firstLoopLink, Link lastLoopLink) {
-		super(PlausibilityCheck.LOOP_WARNING, transitLine, transitRoute);
-		this.node = node;
-
-		linkIdList = ScheduleTools.getLoopSubRouteLinkIds(transitRoute, firstLoopLink.getId(), lastLoopLink.getId());
-
-		fromId = firstLoopLink.getId().toString();
-		toId = lastLoopLink.getId().toString();
-		expected = 0;
-		actual = 0;
-	}
-
-	public LoopWarning(TransitLine transitLine, TransitRoute transitRoute, List<Id<Link>> loop) {
-		super(PlausibilityCheck.LOOP_WARNING, transitLine, transitRoute);
-
-		linkIdList = loop;
-
-		fromId = loop.get(0).toString();
-		toId = loop.get(loop.size()-1).toString();
-		expected = 0;
-		actual = 0;
+		linkIdList = new ArrayList<>();
+		linkIdList.add(link.getId());
 	}
 
 	@Override
 	public String toString() {
-		return "\tLOOP            \tnode: "+node.getId();
+		return "[ArtificialLink:" + linkIdList.get(0) +"]";
 	}
 }

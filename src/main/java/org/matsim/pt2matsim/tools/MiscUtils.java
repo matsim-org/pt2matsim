@@ -33,7 +33,7 @@ public final class MiscUtils {
 	/**
 	 * @return true if two sets have at least one identical entry.
 	 */
-	public static <E> boolean setsShareMinOneEntry(Set<E> set1, Set<E> set2) {
+	public static <E> boolean collectionsShareMinOneEntry(Collection<E> set1, Collection<E> set2) {
 		if(set1 == null || set2 == null) {
 			return false;
 		} else {
@@ -52,7 +52,7 @@ public final class MiscUtils {
 	 * @return true if two sets (e.g. scheduleTransportModes and
 	 * networkTransportModes) have at least one identical entry (ignores case).
 	 */
-	public static boolean setsShareMinOneStringEntry(Set<String> set1, Set<String> set2) {
+	public static boolean collectionsShareMinOneStringEntry(Set<String> set1, Set<String> set2) {
 		if(set1 == null || set2 == null) {
 			return false;
 		} else {
