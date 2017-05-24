@@ -4,25 +4,29 @@ import org.junit.Test;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.core.utils.geometry.CoordUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author polettif
  */
 public class CoordToolsTest {
 
-	public static final Coord coordA = new Coord(0.0, 0.0);
-	public static final Coord coordB = new Coord(20.0, 0.0);
-	public static final Coord coordC = new Coord(20.0, 20.0);
-	public static final Coord coordD = new Coord(0.0, 20.0);
-	public static final Coord coordE = new Coord(-20.0, 20.0);
-	public static final Coord coordF = new Coord(-20.0, 0.0);
-	public static final Coord coordG = new Coord(-20.0, -20.0);
-	public static final Coord coordH = new Coord(0.0, -10.0);
-	public static final Coord coordI = new Coord(20.0, -20.0);
-	public static final Coord coordW = new Coord(-10.0, 30.0);
-	public static final Coord coordX = new Coord(10.0, 5.0);
-	public static final Coord coordZ = new Coord(10.0, -30.0);
+	public static final Coord coordA = new Coord(0.0, 	0.0);
+	public static final Coord coordB = new Coord(20.0, 	0.0);
+	public static final Coord coordC = new Coord(20.0, 	20.0);
+	public static final Coord coordD = new Coord(0.0, 	20.0);
+	public static final Coord coordE = new Coord(-20.0, 	20.0);
+	public static final Coord coordF = new Coord(-20.0, 	0.0);
+	public static final Coord coordG = new Coord(-20.0, 	-20.0);
+	public static final Coord coordH = new Coord(0.0, 	-10.0);
+	public static final Coord coordI = new Coord(20.0, 	-20.0);
+	public static final Coord coordW = new Coord(-10.0, 	30.0);
+	public static final Coord coordX = new Coord(10.0, 	5.0);
+	public static final Coord coordZ = new Coord(10.0, 	-30.0);
 
 	private final double testDelta = 1/1000.;
 
@@ -35,13 +39,21 @@ public class CoordToolsTest {
 	         |
 	 ·   ·   |   ·   ·
 	         |  X
-	 F-------A---Y---B---->
+	 F-------A-------B---->
 	         |
-	 ·   ·   |	 ·   ·
+	 ·   ·   H	 ·   ·
 	    	 |
-	 G   ·   H   ·   I
+	 G   ·   |   ·   I
              |
 	 ·   ·   |   Z   ·
+
+
+	    ^
+	    |
+	    | --> Az+
+	    |
+	    O
+
 	 */
 
 	@Test
@@ -54,6 +66,37 @@ public class CoordToolsTest {
 		assertEquals(250, 200* CoordTools.getAzimuth(coordA,coordG)/Math.PI, testDelta);
 		assertEquals(300, 200* CoordTools.getAzimuth(coordA,coordF)/Math.PI, testDelta);
 		assertEquals(350, 200* CoordTools.getAzimuth(coordA,coordE)/Math.PI, testDelta);
+	}
+
+	@Test
+	public void getAzimuthDiff() {
+		assertEquals(100, 200*CoordTools.getAngleDiff(coordA, coordD, coordC)/Math.PI, testDelta);
+		assertEquals(150, 200*CoordTools.getAngleDiff(coordA, coordD, coordB)/Math.PI, testDelta);
+		assertEquals(-100,  200*CoordTools.getAngleDiff(coordA, coordB, coordC)/Math.PI, testDelta);
+		assertEquals(-150,  200*CoordTools.getAngleDiff(coordA, coordB, coordD)/Math.PI, testDelta);
+
+		assertEquals(50, 200*CoordTools.getAngleDiff(coordH, coordA, coordC)/Math.PI, testDelta);
+		assertEquals(-50, 200*CoordTools.getAngleDiff(coordH, coordA, coordE)/Math.PI, testDelta);
+
+		assertEquals(0, 200*CoordTools.getAngleDiff(coordF, coordA, coordB)/Math.PI, testDelta);
+		assertEquals(200, 200*CoordTools.getAngleDiff(coordA, coordF, coordB)/Math.PI, testDelta);
+
+		Map<String, Coord> coords = new HashMap<>();
+		coords.put("A", coordA); coords.put("B", coordB); coords.put("C", coordC); coords.put("D", coordD);
+		coords.put("E", coordE); coords.put("F", coordF); coords.put("G", coordG); coords.put("H", coordH);
+		coords.put("I", coordI); coords.put("W", coordW); coords.put("X", coordX); coords.put("Z", coordZ);
+
+		for(Map.Entry<String, Coord> c0 : coords.entrySet()) {
+			for(Map.Entry<String, Coord> c1 : coords.entrySet()) {
+				for(Map.Entry<String, Coord> c2 : coords.entrySet()) {
+					if(!c1.equals(c0) && !c2.equals(c0) && !c1.equals(c2)) {
+						double diff = CoordTools.getAngleDiff(c0.getValue(), c1.getValue(), c2.getValue());
+						assertTrue(diff <= Math.PI);
+						assertTrue(diff >= -Math.PI);
+					}
+				}
+			}
+		}
 
 	}
 

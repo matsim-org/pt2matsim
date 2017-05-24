@@ -100,6 +100,15 @@ public class PlausibilityCheck {
 		this.ttRange = 60;
 	}
 
+	public void setDirectionChangeThreshold(String mode, double maxAngleDiff) {
+		this.thresholds.put(mode, maxAngleDiff);
+	}
+
+	public void setTtRange(double tt) {
+		this.ttRange = tt;
+	}
+
+
 	/**
 	 * Performs the plausibility check on the schedule
 	 */
@@ -151,16 +160,19 @@ public class PlausibilityCheck {
 					}
 
 					// angle check (check if one link has length 0)
-					if(directionChangeThreshold != null) {
-						double angleDiff = CoordTools.getAzimuthDiff(linkFrom, linkTo);
-						if(Math.abs(angleDiff) > directionChangeThreshold && linkFrom.getLength() > 0 && linkTo.getLength() > 0 && angleDiff != PI) {
-							PlausibilityWarning warning = new DirectionChangeWarning(transitLine, transitRoute, linkFrom, linkTo, directionChangeThreshold, angleDiff);
+					if(directionChangeThreshold != null
+							&& !linkFrom.getFromNode().getCoord().equals(linkFrom.getToNode().getCoord())
+							&& !linkTo.getFromNode().getCoord().equals(linkTo.getToNode().getCoord())) {
+
+						double angleDiff = Math.abs(CoordTools.getAngleDiff(linkFrom, linkTo));
+						if(angleDiff > directionChangeThreshold) {
+							PlausibilityWarning warning = new DirectionChangeWarning(transitLine, transitRoute, linkFrom, linkTo, angleDiff);
 							addWarningToContainers(warning);
 						}
 					}
 				}
 
-				// get "loop" that are part of a bigger loop
+				// catch "loops" that are part of a bigger loop
 				Set<List<Id<Link>>> subsetLoops = new HashSet<>();
 				for(List<Id<Link>> loop1 : loops) {
 					for(List<Id<Link>> loop2 : loops) {

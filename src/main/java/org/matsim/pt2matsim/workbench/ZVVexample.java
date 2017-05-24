@@ -59,9 +59,9 @@ public class ZVVexample {
 	public static void main(String[] args) throws Exception {
 		convertOsm();
 		convertSchedule();
-//		runMappingStandard();
+		runMappingStandard();
 //		runMappingShapes();
-		runMappingOsm();
+//		runMappingOsm();
 	}
 
 	private static void convertOsm() {
@@ -146,6 +146,8 @@ public class ZVVexample {
 		NetworkTools.writeNetwork(network, outputNetwork1);
 		ScheduleTools.writeTransitSchedule(schedule, outputSchedule1);
 
+		Schedule2ShapeFile.run(coordSys, base + "output/shp/", schedule, network);
+
 		// analyse result
 		return runAnalysis(outputSchedule1, outputNetwork1);
 	}
@@ -187,8 +189,6 @@ public class ZVVexample {
 		);
 		analysis.run();
 		analysis.writeQuantileDistancesCsv(base + "output/analysis/quantiles.csv");
-		System.out.format("Q8585:       %.1f\n", analysis.getQ8585());
-		System.out.format("Length diff: %.1f %%\n", Math.sqrt(analysis.getAverageSquaredLengthRatio()) * 100);
 
 		return analysis.getQ8585();
 	}
@@ -212,8 +212,6 @@ public class ZVVexample {
 		ScheduleTools.writeTransitSchedule(schedule, outputSchedule3);
 
 		runAnalysis(outputSchedule3, outputNetwork3);
-
-		Schedule2ShapeFile.run(coordSys, base + "output/shp/", schedule, network);
 	}
 
 	private static void filterOneRoutePerLine(TransitSchedule schedule) {

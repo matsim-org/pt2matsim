@@ -110,11 +110,6 @@ public abstract class AbstractPlausibilityWarning implements PlausibilityWarning
 	}
 
 	@Override
-	public Tuple<Object, Object> getPair() {
-		return pair;
-	}
-
-	@Override
 	public List<Id<Link>> getLinkIds() {
 		return linkIdList;
 	}
