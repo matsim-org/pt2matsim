@@ -23,7 +23,6 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt2matsim.plausibility.PlausibilityCheck;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
 import java.util.List;
@@ -38,19 +37,17 @@ public class LoopWarning extends AbstractPlausibilityWarning {
 	private Node node;
 
 	public LoopWarning(TransitLine transitLine, TransitRoute transitRoute, Node node, Link firstLoopLink, Link lastLoopLink) {
-		super(PlausibilityCheck.LOOP_WARNING, transitLine, transitRoute);
+		super(Type.LoopWarning, transitLine, transitRoute);
 		this.node = node;
 
 		linkIdList = ScheduleTools.getLoopSubRouteLinkIds(transitRoute, firstLoopLink.getId(), lastLoopLink.getId());
 
 		fromId = firstLoopLink.getId().toString();
 		toId = lastLoopLink.getId().toString();
-		expected = 0;
-		actual = 0;
 	}
 
 	public LoopWarning(TransitLine transitLine, TransitRoute transitRoute, List<Id<Link>> loop) {
-		super(PlausibilityCheck.LOOP_WARNING, transitLine, transitRoute);
+		super(Type.LoopWarning, transitLine, transitRoute);
 
 		linkIdList = loop;
 
@@ -62,6 +59,6 @@ public class LoopWarning extends AbstractPlausibilityWarning {
 
 	@Override
 	public String toString() {
-		return "\tLOOP            \tnode: "+node.getId();
+		return "[Loop, node:"+node.getId()+"]";
 	}
 }

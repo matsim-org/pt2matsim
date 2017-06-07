@@ -49,11 +49,12 @@ import static org.matsim.pt2matsim.tools.ScheduleTools.getTransitRouteLinkIds;
 
 /**
  * Performs a plausibility check on the given schedule
- * and network. Checks for three implausibilities:
+ * and network. Checks for these implausibilities:
  * <ul>
  *     <li>loops</li>
  *     <li>travel time</li>
  *     <li>direction changes</li>
+ *     <li>artificial links</li>
  * </ul>
  *
  * @author polettif
@@ -72,7 +73,7 @@ public class PlausibilityCheck {
 	public static final String TRAVEL_TIME_WARNING = "TravelTimeWarning";
 
 	private final Set<PlausibilityWarning> allWarnings = new HashSet<>();
-	private final Map<String, Set<PlausibilityWarning>> warnings = new HashMap<>();
+	private final Map<PlausibilityWarning.Type, Set<PlausibilityWarning>> warnings = new HashMap<>();
 
 	private final Map<List<Id<Link>>, Set<PlausibilityWarning>> warningsPerUniqueLinkSet = new HashMap<>();
 	private final Map<Id<Link>, Set<PlausibilityWarning>> warningsPerLinkId = new HashMap<>();
@@ -104,10 +105,10 @@ public class PlausibilityCheck {
 		this.thresholds.put("rail", 0.3 * PI);
 		this.ttRange = 60;
 
-		this.warnings.put(ARTIFICIAL_LINK_WARNING, new HashSet<>());
-		this.warnings.put(DIRECTION_CHANGE_WARNING, new HashSet<>());
-		this.warnings.put(LOOP_WARNING, new HashSet<>());
-		this.warnings.put(TRAVEL_TIME_WARNING, new HashSet<>());
+		this.warnings.put(PlausibilityWarning.Type.ArtificialLinkWarning, new HashSet<>());
+		this.warnings.put(PlausibilityWarning.Type.DirectionChangeWarning, new HashSet<>());
+		this.warnings.put(PlausibilityWarning.Type.LoopWarning, new HashSet<>());
+		this.warnings.put(PlausibilityWarning.Type.TravelTimeWarning, new HashSet<>());
 	}
 
 	public void setDirectionChangeThreshold(String mode, double maxAngleDiff) {
@@ -210,13 +211,13 @@ public class PlausibilityCheck {
 		}
 	}
 
-	public void logStatistics() {
+	public void printStatisticsLog() {
 		System.out.println("===============================================================");
 		System.out.println("> Plausibility check for "+ nRoutes +" transit routes finished.");
-		System.out.println("> "+ warnings.get(ARTIFICIAL_LINK_WARNING).size() + " \t artificial links");
-		System.out.println("> "+ warnings.get(LOOP_WARNING).size() + " \t loop warnings");
-		System.out.println("> "+ warnings.get(DIRECTION_CHANGE_WARNING).size() + " \t direction change warnings");
-		System.out.println("> "+ warnings.get(TRAVEL_TIME_WARNING).size() + " \t travel time warnings");
+		System.out.println("> "+ warnings.get(PlausibilityWarning.Type.ArtificialLinkWarning).size() + " \t artificial links");
+		System.out.println("> "+ warnings.get(PlausibilityWarning.Type.LoopWarning).size() + " \t loop warnings");
+		System.out.println("> "+ warnings.get(PlausibilityWarning.Type.DirectionChangeWarning).size() + " \t direction change warnings");
+		System.out.println("> "+ warnings.get(PlausibilityWarning.Type.TravelTimeWarning).size() + " \t travel time warnings");
 		System.out.println("===============================================================");
 	}
 
@@ -225,9 +226,31 @@ public class PlausibilityCheck {
 	 */
 	public void writeCsv(String outputFile) {
 		List<String> csvLines = new ArrayList<>();
-		csvLines.add(AbstractPlausibilityWarning.CSV_HEADER);
+		String sep = PlausibilityCheck.CsvSeparator;
+		String csvHeader =	"id" + sep +
+				"WarningType" + sep +
+				"TransitLine" + sep +
+				"TransitRoute" + sep +
+				"fromId" + sep +
+				"toId" + sep +
+				"diff" + sep +
+				"expected" + sep +
+				"actual" + sep +
+				"linkIds";
+		csvLines.add(csvHeader);
+
 		for(PlausibilityWarning w : allWarnings) {
-			csvLines.add(w.getCsvLine());
+			String line =   w.getId() + sep +
+					w.getType() + sep +
+					w.getTransitLine().getId() + sep +
+					w.getTransitRoute().getId() + sep +
+					w.getFromId() + sep +
+					w.getToId() + sep +
+					w.getDifference() + sep +
+					w.getExpected() + sep +
+					w.getActual() + sep +
+					CollectionUtils.idSetToString(new HashSet<>(w.getLinkIds()));
+			csvLines.add(line);
 		}
 		try {
 			log.info("Writing warnings to csv file " +outputFile +" ...");
@@ -275,7 +298,7 @@ public class PlausibilityCheck {
 				.addAttribute("routeIds", String.class)
 				.addAttribute("linkIds", String.class)
 				.addAttribute("diff [rad]", String.class)
-				.addAttribute("diff [gon]", String.class)
+				.addAttribute("diff [deg]", String.class)
 				.create();
 
 		PolylineFeatureFactory artificialWarningsFF = new PolylineFeatureFactory.Builder()
@@ -355,7 +378,7 @@ public class PlausibilityCheck {
 				f.setAttribute("routeIds", CollectionUtils.setToString(routeIds));
 				f.setAttribute("linkIds", CollectionUtils.idSetToString(new HashSet<>(e.getKey())));
 				f.setAttribute("diff [rad]", azDiff);
-				f.setAttribute("diff [gon]", 200*azDiff/Math.PI);
+				f.setAttribute("diff [deg]", 180*azDiff/Math.PI);
 				directionChangeWarningsFeatures.add(f);
 			}
 
@@ -405,5 +428,9 @@ public class PlausibilityCheck {
 		Logger.getLogger(Node.class).setLevel(Level.ERROR);
 		Logger.getLogger(Link.class).setLevel(Level.ERROR);
 		Logger.getLogger(MatsimXmlParser.class).setLevel(Level.ERROR);
+	}
+
+	public Map<PlausibilityWarning.Type, Set<PlausibilityWarning>> getWarnings() {
+		return warnings;
 	}
 }

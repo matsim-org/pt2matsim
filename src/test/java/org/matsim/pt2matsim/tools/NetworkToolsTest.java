@@ -10,7 +10,6 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.NetworkFactory;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.network.NetworkUtils;
-import org.matsim.core.utils.geometry.CoordUtils;
 
 import java.util.*;
 
@@ -139,7 +138,8 @@ public class NetworkToolsTest {
 			for(Node toNode : net.getNodes().values()) {
 				String strId = fromNode.getId().toString() + toNode.getId().toString();
 				if(linksToCreate.contains(strId)) {
-					NetworkUtils.createAndAddLink(net, Id.createLinkId(strId), fromNode, toNode, CoordUtils.calcEuclideanDistance(fromNode.getCoord(), toNode.getCoord()), 1, 1, 1);
+					// NetworkUtils.createAndAddLink(net, Id.createLinkId(strId), fromNode, toNode, CoordUtils.calcEuclideanDistance(fromNode.getCoord(), toNode.getCoord()), 1, 1, 1);
+					NetworkUtils.createAndAddLink(net, Id.createLinkId(strId), fromNode, toNode, 20, 1, 1, 1);
 				}
 			}
 		}

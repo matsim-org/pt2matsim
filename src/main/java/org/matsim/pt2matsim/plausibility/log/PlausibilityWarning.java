@@ -33,7 +33,9 @@ import java.util.List;
  */
 public interface PlausibilityWarning extends Identifiable<PlausibilityWarning> {
 
-	String getType();
+	enum Type {ArtificialLinkWarning, DirectionChangeWarning, LoopWarning, TravelTimeWarning}
+
+	Type getType();
 
 	List<Id<Link>> getLinkIds();
 
@@ -51,7 +53,4 @@ public interface PlausibilityWarning extends Identifiable<PlausibilityWarning> {
 
 	double getDifference();
 
-	String getCsvLine();
-
-	List<String> getCsvLineForEachLink();
 }

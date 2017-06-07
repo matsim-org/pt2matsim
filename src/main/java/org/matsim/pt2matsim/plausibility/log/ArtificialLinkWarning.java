@@ -21,7 +21,6 @@ package org.matsim.pt2matsim.plausibility.log;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt2matsim.plausibility.PlausibilityCheck;
 
 import java.util.ArrayList;
 
@@ -33,7 +32,7 @@ import java.util.ArrayList;
 public class ArtificialLinkWarning extends AbstractPlausibilityWarning {
 
 	public ArtificialLinkWarning(TransitLine transitLine, TransitRoute transitRoute, Link link) {
-		super(PlausibilityCheck.ARTIFICIAL_LINK_WARNING, transitLine, transitRoute);
+		super(Type.ArtificialLinkWarning, transitLine, transitRoute);
 		this.fromId = link.getFromNode().getId().toString();
 		this.toId = link.getToNode().getId().toString();
 
@@ -43,6 +42,6 @@ public class ArtificialLinkWarning extends AbstractPlausibilityWarning {
 
 	@Override
 	public String toString() {
-		return "[ArtificialLink:" + linkIdList.get(0) +"]";
+		return "[ArtificialLink, link:" + linkIdList.get(0) +"]";
 	}
 }

@@ -22,13 +22,9 @@ package org.matsim.pt2matsim.plausibility.log;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt2matsim.plausibility.PlausibilityCheck;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -38,23 +34,10 @@ import java.util.List;
  */
 public abstract class AbstractPlausibilityWarning implements PlausibilityWarning {
 
-	private static final String sep = PlausibilityCheck.CsvSeparator;
-
-	public static final String CSV_HEADER =	"id" + sep +
-											"WarningType" + sep +
-											"TransitLine" + sep +
-											"TransitRoute" + sep +
-											"fromId" + sep +
-											"toId" + sep +
-											"diff" + sep +
-											"expected" + sep +
-											"actual" + sep +
-											"linkIds";
-
 	protected static Network net;
 	protected static long idLong = 0;
 
-	protected final String type;
+	protected final Type type;
 
 	protected final Id<PlausibilityWarning> id;
 	protected final TransitLine transitLine;
@@ -67,7 +50,7 @@ public abstract class AbstractPlausibilityWarning implements PlausibilityWarning
 	protected double actual;
 	protected double difference;
 
-	public AbstractPlausibilityWarning(String type, TransitLine transitLine, TransitRoute transitRoute) {
+	public AbstractPlausibilityWarning(Type type, TransitLine transitLine, TransitRoute transitRoute) {
 		this.id = Id.create(idLong++, PlausibilityWarning.class);
 		this.type = type;
 		this.transitLine = transitLine;
@@ -81,30 +64,6 @@ public abstract class AbstractPlausibilityWarning implements PlausibilityWarning
 	@Override
 	public Id<PlausibilityWarning> getId() {
 		return id;
-	}
-
-	@Override
-	public String getCsvLine() {
-		return  id + sep +
-				type + sep +
-				transitLine.getId() + sep +
-				transitRoute.getId() + sep +
-				fromId + sep +
-				toId + sep +
-				difference + sep +
-				expected + sep +
-				actual + sep +
-				CollectionUtils.idSetToString(new HashSet<>(linkIdList));
-	}
-
-	@Override
-	public List<String> getCsvLineForEachLink() {
-		List<String> csvLines = new ArrayList<>();
-		for(Id<Link> linkId : linkIdList) {
-			String str = getCsvLine()+PlausibilityCheck.CsvSeparator+linkId;
-			csvLines.add(str);
-		}
-		return csvLines;
 	}
 
 	@Override
@@ -123,7 +82,7 @@ public abstract class AbstractPlausibilityWarning implements PlausibilityWarning
 	}
 
 	@Override
-	public String getType() {
+	public Type getType() {
 		return type;
 	}
 

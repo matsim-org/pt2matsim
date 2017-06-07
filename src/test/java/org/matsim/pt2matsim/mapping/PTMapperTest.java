@@ -9,6 +9,7 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.tools.NetworkToolsTest;
@@ -54,10 +55,13 @@ public class PTMapperTest {
 		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
 
 		new PTMapper(schedule, network).run(ptmConfig);
-
-//		NetworkTools.writeNetwork(network, "test/simple/outputNetwork.xml");
-//		ScheduleTools.writeTransitSchedule(schedule, "test/simple/outpuSchedule.xml");
 	}
+
+	@Test
+	public void validadeMappedSchedule() {
+		Assert.assertTrue(TransitScheduleValidator.validateAll(schedule, network).isValid());
+	}
+
 
 	@Test
 	public void allowedModes() {

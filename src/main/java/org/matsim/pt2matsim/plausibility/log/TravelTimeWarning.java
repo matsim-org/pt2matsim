@@ -18,11 +18,14 @@
 
 package org.matsim.pt2matsim.plausibility.log;
 
+import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
-import org.matsim.pt2matsim.plausibility.PlausibilityCheck;
 import org.matsim.pt2matsim.tools.ScheduleTools;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Plausibility warning if the travel time given by the schedule
@@ -32,13 +35,16 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
  */
 public class TravelTimeWarning extends AbstractPlausibilityWarning {
 
+	public static final Map<TransitLine, Integer> lineStat = new HashMap<>();
+	public static final Map<TransitRoute, Integer> routeStat = new HashMap<>();
+
 	private final TransitRouteStop fromStop;
 	private final TransitRouteStop toStop;
 	private final double ttActual;
 	private final double ttSchedule;
 
 	public TravelTimeWarning(TransitLine transitLine, TransitRoute transitRoute, TransitRouteStop fromStop, TransitRouteStop toStop, double ttActual, double ttSchedule) {
-		super(PlausibilityCheck.TRAVEL_TIME_WARNING, transitLine, transitRoute);
+		super(Type.TravelTimeWarning, transitLine, transitRoute);
 		this.fromStop = fromStop;
 		this.toStop = toStop;
 		this.ttActual = ttActual;
@@ -51,11 +57,13 @@ public class TravelTimeWarning extends AbstractPlausibilityWarning {
 		difference = ttActual - ttSchedule;
 
 		linkIdList = ScheduleTools.getSubRouteLinkIds(transitRoute, fromStop.getStopFacility().getLinkId(), toStop.getStopFacility().getLinkId());
+
+		MapUtils.addToInteger(transitLine, lineStat, 1, 1);
+		MapUtils.addToInteger(transitRoute, routeStat, 1, 1);
 	}
 
 	@Override
 	public String toString() {
-		return "\tTT INCONSISTENT \tstops: "+fromStop.getStopFacility().getId()+" -> "+toStop.getStopFacility().getId()+"\n" +
-			   "\t                \t\tdifference: "+String.format("%.1f", (ttActual-ttSchedule))+"\ttt network: "+String.format("%.1f",ttActual)+"\ttt schedule: "+String.format("%.1f",ttSchedule);
+		return "[TravelTime, fromStop:" + fromStop.getStopFacility().getId() + ", toStop:" + toStop.getStopFacility().getId() + ", ttNetwork:" + String.format("%.1f", ttActual) + ", ttSchedule:" + String.format("%.1f", ttSchedule) + "]";
 	}
 }

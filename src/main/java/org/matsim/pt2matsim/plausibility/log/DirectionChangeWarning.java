@@ -21,7 +21,6 @@ package org.matsim.pt2matsim.plausibility.log;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt2matsim.plausibility.PlausibilityCheck;
 
 import java.util.ArrayList;
 
@@ -33,7 +32,7 @@ import java.util.ArrayList;
 public class DirectionChangeWarning extends AbstractPlausibilityWarning {
 
 	public DirectionChangeWarning(TransitLine transitLine, TransitRoute transitRoute, Link link1, Link link2, double angleDiff) {
-		super(PlausibilityCheck.DIRECTION_CHANGE_WARNING, transitLine, transitRoute);
+		super(Type.DirectionChangeWarning, transitLine, transitRoute);
 		this.fromId = link1.getId().toString();
 		this.toId = link2.getId().toString();
 
@@ -46,6 +45,6 @@ public class DirectionChangeWarning extends AbstractPlausibilityWarning {
 
 	@Override
 	public String toString() {
-		return "\tDIRECTION CHANGE\tlinks: "+fromId+"\t->\t"+toId+"\t\tdifference: "+difference*180/Math.PI +" deg";
+		return String.format("[DirectionChange, fromLink:%s, toLink:%s, diff:%.1f°]", fromId, toId, difference*180/Math.PI);
 	}
 }
