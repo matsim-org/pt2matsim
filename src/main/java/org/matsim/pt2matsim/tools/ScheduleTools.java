@@ -344,6 +344,49 @@ public final class ScheduleTools {
 		new TransitScheduleWriter(schedule).writeFile(scheduleFile);
 	}
 
+	/**
+	 * Adds a loop link at the routeStart
+	 */
+	public static void addLoopLinkAtRouteStart(TransitSchedule schedule, Network network) {
+		for(TransitLine transitLine : schedule.getTransitLines().values()) {
+			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
+				// get current start link
+				Id<Link> cuckooLinkId = transitRoute.getRoute().getStartLinkId();
+				Link cuckooLink = network.getLinks().get(cuckooLinkId);
+
+				// create new link id list (which excludes the start link
+				List<Id<Link>> newLinkIdList = new ArrayList<>();
+				newLinkIdList.add(cuckooLinkId);
+				newLinkIdList.addAll(transitRoute.getRoute().getLinkIds());
+				Id<Link> endLinkId = transitRoute.getRoute().getEndLinkId();
+
+				// generate new startlink id
+				String str = PublicTransitMappingStrings.PREFIX_ARTIFICIAL +
+						transitRoute.getStops().get(0).getStopFacility().getId() +
+						"_" + cuckooLinkId.toString();
+				Id<Link> newStartLinkId = Id.createLinkId(str);
+
+				// create new start link if necessary
+				if(!network.getLinks().keySet().contains(newStartLinkId)) {
+					Link newStartLink = network.getFactory().createLink(newStartLinkId, cuckooLink.getFromNode(), cuckooLink.getFromNode());
+					newStartLink.setAllowedModes(new HashSet<>());
+					newStartLink.setCapacity(cuckooLink.getCapacity());
+					newStartLink.setFreespeed(cuckooLink.getFreespeed());
+					newStartLink.setLength(0);
+					network.addLink(newStartLink);
+				}
+
+				// update allowed modes
+				Link newStartLink = network.getLinks().get(newStartLinkId);
+				Set<String> allowedModes = new HashSet<>(newStartLink.getAllowedModes());
+				allowedModes.add(transitRoute.getTransportMode());
+				newStartLink.setAllowedModes(allowedModes);
+
+				// set new route
+				transitRoute.getRoute().setLinkIds(newStartLinkId, newLinkIdList, endLinkId);
+			}
+		}
+	}
 
 	/**
 	 * @return the list of link ids used by transit routes (first and last

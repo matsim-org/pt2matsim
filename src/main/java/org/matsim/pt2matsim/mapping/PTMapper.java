@@ -240,7 +240,6 @@ public class PTMapper {
 	}
 
 	private void cleanScheduleAndNetwork(Set<String> scheduleFreespeedModes, Set<String> modesToKeepOnCleanup, boolean removeNotUsedStopFacilities) {
-		// might have been set higher during pseudo routing
 		NetworkTools.resetLinkLength(network, PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE);
 
 		// changing the freespeed of the artificial links (value is used in simulations)
@@ -252,9 +251,9 @@ public class PTMapper {
 			ScheduleCleaner.removeNotUsedStopFacilities(schedule);
 		}
 
-
 		// change the network transport modes
 		ScheduleTools.assignScheduleModesToLinks(schedule, network);
+		ScheduleTools.addLoopLinkAtRouteStart(schedule, network);
 		// NetworkTools.replaceNonCarModesWithPT(network);
 		// ScheduleTools.addPTModeToNetwork(schedule, network);
 	}
