@@ -23,11 +23,13 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
+import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.PTMapper;
 import org.matsim.pt2matsim.osm.lib.Osm;
 import org.matsim.pt2matsim.plausibility.MappingAnalysis;
 import org.matsim.pt2matsim.run.CheckMappedSchedulePlausibility;
+import org.matsim.pt2matsim.run.Gtfs2TransitSchedule;
 import org.matsim.pt2matsim.run.Osm2MultimodalNetwork;
 import org.matsim.pt2matsim.run.shp.Schedule2ShapeFile;
 import org.matsim.pt2matsim.tools.NetworkTools;
@@ -54,10 +56,10 @@ public class Asheville {
 	public static final String outputPlausibility = "output/plausibility/";
 
 	public static void main(String[] args) {
-//		convertOsm();
-//		Gtfs2TransitSchedule.run("gtfs/", GtfsConverter.DAY_WITH_MOST_SERVICES, EPSG, inputScheduleFile, "schedule/vhcls.xml.gz");
-//		runMapping();
-//		analysis();
+		convertOsm();
+		Gtfs2TransitSchedule.run("gtfs/", GtfsConverter.DAY_WITH_MOST_SERVICES, EPSG, inputScheduleFile, "schedule/vhcls.xml.gz");
+		runMapping();
+		analysis();
 		CheckMappedSchedulePlausibility.run(outputScheduleFile, outputNetworkFile, EPSG, outputPlausibility);
 	}
 

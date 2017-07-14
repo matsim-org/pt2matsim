@@ -25,10 +25,7 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ShapeTools;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Mapping example for public transit in the zurich area (agency: ZVV).
@@ -57,8 +54,10 @@ public class ZVVexample {
 	private static OsmData osmData;
 
 	public static void main(String[] args) throws Exception {
-		convertOsm();
-		convertSchedule();
+//		convertOsm();
+//		convertSchedule();
+		filterSchedule();
+		convertShapes();
 		runMappingStandard();
 //		runMappingShapes();
 //		runMappingOsm();
@@ -110,7 +109,9 @@ public class ZVVexample {
 
 		// 3. write the transit schedule
 		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), fullScheduleFileUM);
+	}
 
+	public static void filterSchedule() {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(fullScheduleFileUM);
 
 		for(TransitLine transitLine : new HashSet<>(schedule.getTransitLines().values())) {
@@ -123,8 +124,27 @@ public class ZVVexample {
 //		ExtractDebugSchedule.removeRand(schedule, 100);
 		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
 		filterOneRoutePerLine(schedule);
+		removeRouteWithIncorrectShapes(schedule);
 
 		ScheduleTools.writeTransitSchedule(schedule, inputScheduleFile);
+	}
+
+	public static void convertShapes() {
+		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
+
+		Map<Id<RouteShape>, RouteShape> shapes = ShapeTools.readShapesFile(gtfsShapeFile, coordSys);
+		Map<Id<RouteShape>, RouteShape> shapesToConvert = new HashMap<>();
+
+
+		for(TransitLine transitLine : schedule.getTransitLines().values()) {
+			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
+				Id<RouteShape> id = ScheduleTools.getShapeId(transitRoute);
+				shapesToConvert.put(id, shapes.get(id));
+			}
+		}
+
+
+		ShapeTools.writeESRIShapeFile(shapesToConvert.values(), coordSys, base + "output/shp/gtfs.shp");
 	}
 
 	/**
@@ -232,5 +252,23 @@ public class ZVVexample {
 			}
 		}
 	}
+
+	private static void removeRouteWithIncorrectShapes(TransitSchedule schedule) {
+		Set<String> routesToRemove = new HashSet<>();
+		routesToRemove.add("80.T0.31-650-P-j16-1.6.H"); // straight shape line
+		routesToRemove.add("852.T0.21-105-P-j16-1.4.R"); // straight shape line
+		routesToRemove.add("101.T0.21-611-P-j16-1.3.H"); // line too short
+		routesToRemove.add("79.T0.21-611-P-j16-1.10.R"); // line too short
+
+		for(TransitLine transitLine : schedule.getTransitLines().values()) {
+			for(TransitRoute transitRoute : new HashSet<>(transitLine.getRoutes().values())) {
+				if(routesToRemove.contains(transitRoute.getId().toString())) {
+					transitLine.removeRoute(transitRoute);
+					System.out.println(transitRoute + " removed!");
+				}
+			}
+		}
+	}
+
 }
 

@@ -58,6 +58,7 @@ public class MappingAnalysis {
 
 	private final ConcurrentMap<Tuple<Id<TransitLine>, Id<TransitRoute>>, List<Double>> routeDistances = new ConcurrentHashMap<>();
 	private final ConcurrentMap<Id<TransitLine>, Map<Id<TransitRoute>, Double>> lengthRatios = new ConcurrentHashMap<>();
+	private final Map<Tuple<Id<TransitLine>, Id<TransitRoute>>, Id<RouteShape>> shapeAssignment = new HashMap<>();
 
 	private final Set<Tuple<Id<TransitLine>, Id<TransitRoute>>> noAnalysis = new HashSet<>();
 
@@ -84,6 +85,7 @@ public class MappingAnalysis {
 				RouteShape shape = shapes.get(shapeId);
 
 				if(shape != null) {
+					shapeAssignment.put(new Tuple<>(transitLine.getId(), transitRoute.getId()), shape.getId());
 					mappingAnalyser[t++].addToQueue(transitLine, transitRoute, shape);
 				} else {
 					noAnalysis.add(new Tuple<>(transitLine.getId(), transitRoute.getId()));
@@ -122,13 +124,14 @@ public class MappingAnalysis {
 		Map<Tuple<Integer, Integer>, String> keyTable = new HashMap<>();
 		keyTable.put(new Tuple<>(1, 1), "transitLine");
 		keyTable.put(new Tuple<>(1, 2), "transitRoute");
-		keyTable.put(new Tuple<>(1, 3), "lengthRatio");
-		keyTable.put(new Tuple<>(1, 4), "Q25");
-		keyTable.put(new Tuple<>(1, 5), "Q50");
-		keyTable.put(new Tuple<>(1, 6), "Q75");
-		keyTable.put(new Tuple<>(1, 7), "Q85");
-		keyTable.put(new Tuple<>(1, 8), "Q95");
-		keyTable.put(new Tuple<>(1, 9), "MAX_DISTANCE");
+		keyTable.put(new Tuple<>(1, 3), "shape");
+		keyTable.put(new Tuple<>(1, 4), "lengthRatio");
+		keyTable.put(new Tuple<>(1, 5), "Q25");
+		keyTable.put(new Tuple<>(1, 6), "Q50");
+		keyTable.put(new Tuple<>(1, 7), "Q75");
+		keyTable.put(new Tuple<>(1, 8), "Q85");
+		keyTable.put(new Tuple<>(1, 9), "Q95");
+		keyTable.put(new Tuple<>(1, 10), "MAX_DISTANCE");
 
 		int line = 2;
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
@@ -144,13 +147,14 @@ public class MappingAnalysis {
 
 					keyTable.put(new Tuple<>(line, 1), transitLineId.toString());
 					keyTable.put(new Tuple<>(line, 2), transitRouteId.toString());
-					keyTable.put(new Tuple<>(line, 3), lengthRatio.toString());
-					keyTable.put(new Tuple<>(line, 4), values.get((int) (n * 0.25)).toString());
-					keyTable.put(new Tuple<>(line, 5), values.get((int) (n * 0.50)).toString());
-					keyTable.put(new Tuple<>(line, 6), values.get((int) (n * 0.75)).toString());
-					keyTable.put(new Tuple<>(line, 7), values.get((int) (n * 0.85)).toString());
-					keyTable.put(new Tuple<>(line, 8), values.get((int) (n * 0.95)).toString());
-					keyTable.put(new Tuple<>(line, 9), values.get(n - 1).toString());
+					keyTable.put(new Tuple<>(line, 3), shapeAssignment.get(new Tuple<>(transitLineId, transitRouteId)).toString());
+					keyTable.put(new Tuple<>(line, 4), lengthRatio.toString());
+					keyTable.put(new Tuple<>(line, 5), values.get((int) (n * 0.25)).toString());
+					keyTable.put(new Tuple<>(line, 6), values.get((int) (n * 0.50)).toString());
+					keyTable.put(new Tuple<>(line, 7), values.get((int) (n * 0.75)).toString());
+					keyTable.put(new Tuple<>(line, 8), values.get((int) (n * 0.85)).toString());
+					keyTable.put(new Tuple<>(line, 9), values.get((int) (n * 0.95)).toString());
+					keyTable.put(new Tuple<>(line, 10), values.get(n - 1).toString());
 					line++;
 				}
 			}
