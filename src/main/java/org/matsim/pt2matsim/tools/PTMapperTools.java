@@ -33,7 +33,6 @@ import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
-import org.matsim.pt2matsim.mapping.pseudoRouter.ArtificialLink;
 import org.matsim.pt2matsim.mapping.pseudoRouter.ArtificialLinkImpl;
 
 import java.util.*;
@@ -57,10 +56,6 @@ public final class PTMapperTools {
 	 * @return the linkIds of the links in path
 	 */
 	public static List<Id<Link>> getLinkIdsFromPath(LeastCostPathCalculator.Path path) {
-//		List<Id<Link>> list = new ArrayList<>();
-//		for(Link link : path.links) {
-//			list.add(link.getStopId());
-//		}
 		return path.links.stream().map(Link::getId).collect(Collectors.toList());
 	}
 

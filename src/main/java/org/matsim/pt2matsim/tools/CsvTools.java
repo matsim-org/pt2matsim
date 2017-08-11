@@ -85,10 +85,11 @@ public final class CsvTools {
 	 *
 	 * @param header      the header (first line) of the csv file
 	 * @param columnNames array of attributes you need the indices of
-	 * @return the index for each attribute given in columnNames
+	 * @return the index for each attribute given in columnNames. Mapping is null,
+	 * if column name could not be found
 	 *
 	 */
-	public static Map<String, Integer> getIndices(String[] header, String[] columnNames) {
+	public static Map<String, Integer> getIndices(String[] header, String[] columnNames) throws IllegalArgumentException {
 		Map<String, Integer> indices = new HashMap<>();
 
 		for(String columnName : columnNames) {
@@ -99,9 +100,6 @@ public final class CsvTools {
 				}
 			}
 		}
-
-		if(columnNames.length != indices.size())
-			throw new IllegalArgumentException("Column name not found in csv. Might be some additional characters in the header or the encoding not being UTF-8.");
 
 		return indices;
 	}

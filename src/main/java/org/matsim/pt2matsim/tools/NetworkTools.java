@@ -436,9 +436,7 @@ public final class NetworkTools {
 			config.addParameterSet(mra);
 		}
 
-		ScheduleRouters scheduleRouters = new ScheduleRoutersStandard(schedule, network, modeAssignments, PublicTransitMappingConfigGroup.TravelCostType.linkLength, true);
-
-		return scheduleRouters;
+		return new ScheduleRoutersStandard(schedule, network, modeAssignments, PublicTransitMappingConfigGroup.TravelCostType.linkLength, true);
 	}
 
 	/**

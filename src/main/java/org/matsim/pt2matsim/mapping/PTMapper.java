@@ -253,7 +253,7 @@ public class PTMapper {
 
 		// change the network transport modes
 		ScheduleTools.assignScheduleModesToLinks(schedule, network);
-		ScheduleTools.addLoopLinkAtRouteStart(schedule, network);
+		// ScheduleTools.addLoopLinkAtRouteStart(schedule, network);
 		// NetworkTools.replaceNonCarModesWithPT(network);
 		// ScheduleTools.addPTModeToNetwork(schedule, network);
 	}
