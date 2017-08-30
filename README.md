@@ -1,5 +1,7 @@
 # PT2MATSim
 
+[![Build Status](https://travis-ci.org/matsim-org/pt2matsim.svg?branch=master)](https://travis-ci.org/matsim-org/pt2matsim)
+
 PT2MATSim is a package to convert schedule data such as GTFS, HAFAS or OSM to a completely mapped MATSim schedule.
 
 There are multiple public transit schedule data formats, widely used formats are GTFS and HAFAS. Numerous GTFS feeds are
