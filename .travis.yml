@@ -1,1 +1,5 @@
 language: java
+
+script:
+  - mvn test -B -Dmatsim.preferLocalDtds=true
+  - mvn deploy -DskipTests=true --settings=settings.xml;
