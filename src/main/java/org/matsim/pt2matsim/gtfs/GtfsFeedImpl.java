@@ -366,25 +366,25 @@ public class GtfsFeedImpl implements GtfsFeed {
 		}
 		
 		// Extended route types
-		switch (routeType / 100) {
-		case 1: return RouteTypes.RAIL; // Railway Service
-		case 2: return RouteTypes.BUS; // Coach Service
-		case 3: return RouteTypes.RAIL; // Suburban Railway Service
-		case 4: return RouteTypes.RAIL; // Urban Railway Service
-		case 5: return RouteTypes.SUBWAY; // Metro Service 
-		case 6: return RouteTypes.SUBWAY; // Underground Service
-		case 7: return RouteTypes.BUS; // Bus Service
-		case 8: return RouteTypes.BUS; // Trolleybus Service
-		case 9: return RouteTypes.TRAM; // Tram Service
-		case 10: return RouteTypes.FERRY; // Water Transport Service
-		case 12: return RouteTypes.FERRY; // Ferry Service
-		case 13: return RouteTypes.CABLE_CAR; // Telecabin Service
-		case 14: return RouteTypes.FUNICULAR; // Funicular Service
+		switch (routeType  - (routeType % 100)) {
+		case 100: return RouteTypes.RAIL; // Railway Service
+		case 200: return RouteTypes.BUS; // Coach Service
+		case 300: return RouteTypes.RAIL; // Suburban Railway Service
+		case 400: return RouteTypes.RAIL; // Urban Railway Service
+		case 500: return RouteTypes.SUBWAY; // Metro Service 
+		case 600: return RouteTypes.SUBWAY; // Underground Service
+		case 700: return RouteTypes.BUS; // Bus Service
+		case 800: return RouteTypes.BUS; // Trolleybus Service
+		case 900: return RouteTypes.TRAM; // Tram Service
+		case 1000: return RouteTypes.FERRY; // Water Transport Service
+		case 1200: return RouteTypes.FERRY; // Ferry Service
+		case 1300: return RouteTypes.CABLE_CAR; // Telecabin Service
+		case 1400: return RouteTypes.FUNICULAR; // Funicular Service
 		
-		case 11: // Air Service
-		case 15: // Taxi Service
-		case 16: // Self Drive
-		case 17: // Miscellaneous Service
+		case 1100: // Air Service
+		case 1500: // Taxi Service
+		case 1600: // Self Drive
+		case 1700: // Miscellaneous Service
 			return null;
 		}
 		
@@ -452,7 +452,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 				Service service = services.get(line[col.get(GtfsDefinitions.SERVICE_ID)]);
 				
 				if (route == null) {
-					log.warn("Cannot create trip for route " + col.get(GtfsDefinitions.ROUTE_ID) + ", because it does not exist (maybe ignored due to invalid type)");
+					log.warn("Cannot create trip for route " + line[col.get(GtfsDefinitions.ROUTE_ID)] + ", because it does not exist (maybe ignored due to invalid type)");
 				} else {
 					if(usesShapes) {
 						Id<RouteShape> shapeId = Id.create(line[col.get(GtfsDefinitions.SHAPE_ID)], RouteShape.class); // column might not be available
@@ -499,50 +499,55 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 				Trip trip = trips.get(line[col.get(GtfsDefinitions.TRIP_ID)]);
 				Stop stop = stops.get(line[col.get(GtfsDefinitions.STOP_ID)]);
-
-				if(!line[col.get(GtfsDefinitions.ARRIVAL_TIME)].equals("")) {
-					// get position and times
-					int sequencePosition = Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]);
-					int arrivalTime = (int) Time.parseTime(line[col.get(GtfsDefinitions.ARRIVAL_TIME)]);
-					int departureTime = (int) Time.parseTime(line[col.get(GtfsDefinitions.DEPARTURE_TIME)]);
-
-					// create StopTime
-					StopTime newStopTime = new StopTimeImpl(sequencePosition,
-							arrivalTime,
-							departureTime,
-							stop,
-							trip
-					);
-					((TripImpl) trip).addStopTime(newStopTime);
-
-					// add trip to stop
-					((StopImpl) stop).addTrip(trip);
-				}
-				/* GTFS Reference: If this stop isn't a time point, use an empty string value for the
-				  arrival_time and departure_time fields.
-				 */
-				else {
-					Integer currentStopSequencePosition = Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]);
-					StopTime previousStopTime = trip.getStopTimes().last();
-
-					// create StopTime
-					StopTime newStopTime = new StopTimeImpl(currentStopSequencePosition,
-							previousStopTime.getArrivalTime(),
-							previousStopTime.getDepartureTime(),
-							stop,
-							trip);
-
-					((TripImpl) trip).addStopTime(newStopTime);
-
-					// add trip to stop
-					((StopImpl) stop).addTrip(trip);
-
-					if(warnStopTimes) {
-						log.warn("No arrival time set! Stops without arrival times will be scheduled based on the " +
-								"nearest preceding timed stop. This message is only given once.");
-						warnStopTimes = false;
+				
+				if (stop == null) {
+					log.warn("Cannot load stop time for trip " + line[col.get(GtfsDefinitions.TRIP_ID)] + ", because it does not exist (maybe ignored due to invalid route type)");
+				} else {
+					if(!line[col.get(GtfsDefinitions.ARRIVAL_TIME)].equals("")) {
+						// get position and times
+						int sequencePosition = Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]);
+						int arrivalTime = (int) Time.parseTime(line[col.get(GtfsDefinitions.ARRIVAL_TIME)]);
+						int departureTime = (int) Time.parseTime(line[col.get(GtfsDefinitions.DEPARTURE_TIME)]);
+	
+						// create StopTime
+						StopTime newStopTime = new StopTimeImpl(sequencePosition,
+								arrivalTime,
+								departureTime,
+								stop,
+								trip
+						);
+						((TripImpl) trip).addStopTime(newStopTime);
+	
+						// add trip to stop
+						((StopImpl) stop).addTrip(trip);
+					}
+					/* GTFS Reference: If this stop isn't a time point, use an empty string value for the
+					  arrival_time and departure_time fields.
+					 */
+					else {
+						Integer currentStopSequencePosition = Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]);
+						StopTime previousStopTime = trip.getStopTimes().last();
+	
+						// create StopTime
+						StopTime newStopTime = new StopTimeImpl(currentStopSequencePosition,
+								previousStopTime.getArrivalTime(),
+								previousStopTime.getDepartureTime(),
+								stop,
+								trip);
+	
+						((TripImpl) trip).addStopTime(newStopTime);
+	
+						// add trip to stop
+						((StopImpl) stop).addTrip(trip);
+	
+						if(warnStopTimes) {
+							log.warn("No arrival time set! Stops without arrival times will be scheduled based on the " +
+									"nearest preceding timed stop. This message is only given once.");
+							warnStopTimes = false;
+						}
 					}
 				}
+				
 				line = reader.readNext();
 			}
 			reader.close();
