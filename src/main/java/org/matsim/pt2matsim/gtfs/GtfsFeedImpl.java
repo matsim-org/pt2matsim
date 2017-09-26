@@ -415,7 +415,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 				if (routeType == null) {
 					log.warn("Route of type " + routeType + " will be ignored");
 				} else {
-					Route newGtfsRoute = new RouteImpl(line[col.get(GtfsDefinitions.ROUTE_ID)], line[col.get(GtfsDefinitions.ROUTE_SHORT_NAME)], GtfsDefinitions.RouteTypes.values()[routeTypeNr]);
+					Route newGtfsRoute = new RouteImpl(line[col.get(GtfsDefinitions.ROUTE_ID)], line[col.get(GtfsDefinitions.ROUTE_SHORT_NAME)], routeType);
 					routes.put(line[col.get(GtfsDefinitions.ROUTE_ID)], newGtfsRoute);
 				}
 
