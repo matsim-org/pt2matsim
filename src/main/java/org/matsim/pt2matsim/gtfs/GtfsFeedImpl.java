@@ -413,7 +413,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 				RouteTypes routeType = getRouteType(routeTypeNr);
 
 				if (routeType == null) {
-					log.warn("Route of type " + routeType + " will be ignored");
+					log.warn("Route of type " + routeTypeNr + " will be ignored");
 				} else {
 					Route newGtfsRoute = new RouteImpl(line[col.get(GtfsDefinitions.ROUTE_ID)], line[col.get(GtfsDefinitions.ROUTE_SHORT_NAME)], routeType);
 					routes.put(line[col.get(GtfsDefinitions.ROUTE_ID)], newGtfsRoute);
@@ -450,18 +450,22 @@ public class GtfsFeedImpl implements GtfsFeed {
 				Trip newTrip;
 				Route route = routes.get(line[col.get(GtfsDefinitions.ROUTE_ID)]);
 				Service service = services.get(line[col.get(GtfsDefinitions.SERVICE_ID)]);
-
-				if(usesShapes) {
-					Id<RouteShape> shapeId = Id.create(line[col.get(GtfsDefinitions.SHAPE_ID)], RouteShape.class); // column might not be available
-					newTrip = new TripImpl(line[col.get(GtfsDefinitions.TRIP_ID)], route, service, shapes.get(shapeId));
+				
+				if (route == null) {
+					log.warn("Cannot create trip for route " + col.get(GtfsDefinitions.ROUTE_ID) + ", because it does not exist (maybe ignored due to invalid type)");
 				} else {
-					newTrip = new TripImpl(line[col.get(GtfsDefinitions.TRIP_ID)], route, service, null);
+					if(usesShapes) {
+						Id<RouteShape> shapeId = Id.create(line[col.get(GtfsDefinitions.SHAPE_ID)], RouteShape.class); // column might not be available
+						newTrip = new TripImpl(line[col.get(GtfsDefinitions.TRIP_ID)], route, service, shapes.get(shapeId));
+					} else {
+						newTrip = new TripImpl(line[col.get(GtfsDefinitions.TRIP_ID)], route, service, null);
+					}
+	
+					// store Trip
+					((RouteImpl) route).addTrip(newTrip);
+					((ServiceImpl) service).addTrip(newTrip);
+					trips.put(newTrip.getId(), newTrip);
 				}
-
-				// store Trip
-				((RouteImpl) route).addTrip(newTrip);
-				((ServiceImpl) service).addTrip(newTrip);
-				trips.put(newTrip.getId(), newTrip);
 
 				line = reader.readNext();
 			}
