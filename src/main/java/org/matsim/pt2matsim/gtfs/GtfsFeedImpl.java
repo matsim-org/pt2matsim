@@ -352,7 +352,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 * - Standard: https://developers.google.com/transit/gtfs/reference/routes-file
 	 * - Extended: https://developers.google.com/transit/gtfs/reference/extended-route-types
 	 */
-	private RouteTypes getRouteType(int routeType) {
+	private RouteTypes getRouteType(int routeType) {		
 		// Standard route types
 		switch (routeType) {
 		case 0: return RouteTypes.TRAM;
@@ -390,6 +390,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 		
 		throw new IllegalArgumentException("Invalid GTFS route type: " + routeType);
 	}
+	
+	final private Set<String> ignoredRoutes = new HashSet<>();
 
 	/**
 	 * Basically just reads all routeIds and their corresponding names and types and puts them in {@link #routes}.
@@ -413,7 +415,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 				RouteTypes routeType = getRouteType(routeTypeNr);
 
 				if (routeType == null) {
-					log.warn("Route of type " + routeTypeNr + " will be ignored");
+					log.warn("Route " + line[col.get(GtfsDefinitions.ROUTE_ID)] + " of type " + routeTypeNr + " will be ignored");
+					ignoredRoutes.add(line[col.get(GtfsDefinitions.ROUTE_ID)]);
 				} else {
 					Route newGtfsRoute = new RouteImpl(line[col.get(GtfsDefinitions.ROUTE_ID)], line[col.get(GtfsDefinitions.ROUTE_SHORT_NAME)], routeType);
 					routes.put(line[col.get(GtfsDefinitions.ROUTE_ID)], newGtfsRoute);
@@ -427,6 +430,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 		}
 		log.info("...     routes.txt loaded");
 	}
+	
+	final private Set<String> ignoredTrips = new HashSet<>();
 
 	/**
 	 * Generates a trip with trip_id and adds it to the corresponding route (referenced by route_id) in {@link #routes}.
@@ -448,11 +453,17 @@ public class GtfsFeedImpl implements GtfsFeed {
 			String[] line = reader.readNext();
 			while(line != null) {
 				Trip newTrip;
-				Route route = routes.get(line[col.get(GtfsDefinitions.ROUTE_ID)]);
+				
+				String routeId = line[col.get(GtfsDefinitions.ROUTE_ID)];
+				Route route = routes.get(routeId);
 				Service service = services.get(line[col.get(GtfsDefinitions.SERVICE_ID)]);
 				
 				if (route == null) {
-					log.warn("Cannot create trip for route " + line[col.get(GtfsDefinitions.ROUTE_ID)] + ", because it does not exist (maybe ignored due to invalid type)");
+					if (!ignoredRoutes.contains(routeId)) {
+						throw new IllegalStateException("Route " + routeId + " not found");
+					} else {
+						ignoredTrips.add(line[col.get(GtfsDefinitions.TRIP_ID)]);
+					}
 				} else {
 					if(usesShapes) {
 						Id<RouteShape> shapeId = Id.create(line[col.get(GtfsDefinitions.SHAPE_ID)], RouteShape.class); // column might not be available
@@ -497,11 +508,14 @@ public class GtfsFeedImpl implements GtfsFeed {
 			String[] line = reader.readNext();
 			while(line != null) {
 
-				Trip trip = trips.get(line[col.get(GtfsDefinitions.TRIP_ID)]);
+				String tripId = line[col.get(GtfsDefinitions.TRIP_ID)];
+				Trip trip = trips.get(tripId);
 				Stop stop = stops.get(line[col.get(GtfsDefinitions.STOP_ID)]);
 				
-				if (stop == null) {
-					log.warn("Cannot load stop time for trip " + line[col.get(GtfsDefinitions.TRIP_ID)] + ", because it does not exist (maybe ignored due to invalid route type)");
+				if (trip == null) {
+					if (!ignoredTrips.contains(tripId)) {
+						throw new IllegalStateException("Trip " + tripId + " not found");
+					}
 				} else {
 					if(!line[col.get(GtfsDefinitions.ARRIVAL_TIME)].equals("")) {
 						// get position and times
