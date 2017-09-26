@@ -27,6 +27,7 @@ import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt2matsim.gtfs.lib.*;
+import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions.RouteTypes;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.apache.commons.io.input.BOMInputStream;
 
@@ -344,6 +345,51 @@ public class GtfsFeedImpl implements GtfsFeed {
 			throw new RuntimeException("Emtpy line found in shapes.txt");
 		}
 	}
+	
+	/**
+	 * Determines the route type of a given route type index
+	 * 
+	 * - Standard: https://developers.google.com/transit/gtfs/reference/routes-file
+	 * - Extended: https://developers.google.com/transit/gtfs/reference/extended-route-types
+	 */
+	private RouteTypes getRouteType(int routeType) {
+		// Standard route types
+		switch (routeType) {
+		case 0: return RouteTypes.TRAM;
+		case 1: return RouteTypes.SUBWAY;
+		case 2: return RouteTypes.RAIL;
+		case 3: return RouteTypes.BUS;
+		case 4: return RouteTypes.FERRY;
+		case 5: return RouteTypes.CABLE_CAR;
+		case 6: return RouteTypes.GONDOLA;
+		case 7: return RouteTypes.FUNICULAR;
+		}
+		
+		// Extended route types
+		switch (routeType / 100) {
+		case 1: return RouteTypes.RAIL; // Railway Service
+		case 2: return RouteTypes.BUS; // Coach Service
+		case 3: return RouteTypes.RAIL; // Suburban Railway Service
+		case 4: return RouteTypes.RAIL; // Urban Railway Service
+		case 5: return RouteTypes.SUBWAY; // Metro Service 
+		case 6: return RouteTypes.SUBWAY; // Underground Service
+		case 7: return RouteTypes.BUS; // Bus Service
+		case 8: return RouteTypes.BUS; // Trolleybus Service
+		case 9: return RouteTypes.TRAM; // Tram Service
+		case 10: return RouteTypes.FERRY; // Water Transport Service
+		case 12: return RouteTypes.FERRY; // Ferry Service
+		case 13: return RouteTypes.CABLE_CAR; // Telecabin Service
+		case 14: return RouteTypes.FUNICULAR; // Funicular Service
+		
+		case 11: // Air Service
+		case 15: // Taxi Service
+		case 16: // Self Drive
+		case 17: // Miscellaneous Service
+			return null;
+		}
+		
+		throw new IllegalArgumentException("Invalid GTFS route type: " + routeType);
+	}
 
 	/**
 	 * Basically just reads all routeIds and their corresponding names and types and puts them in {@link #routes}.
@@ -364,12 +410,14 @@ public class GtfsFeedImpl implements GtfsFeed {
 			String[] line = reader.readNext();
 			while(line != null) {
 				int routeTypeNr = Integer.parseInt(line[col.get(GtfsDefinitions.ROUTE_TYPE)]);
-				if(routeTypeNr < 0 || routeTypeNr > 7) {
-					throw new RuntimeException("Invalid value for route type: " + routeTypeNr + " [https://developers.google.com/transit/gtfs/reference/routes-file]");
-				}
+				RouteTypes routeType = getRouteType(routeTypeNr);
 
-				Route newGtfsRoute = new RouteImpl(line[col.get(GtfsDefinitions.ROUTE_ID)], line[col.get(GtfsDefinitions.ROUTE_SHORT_NAME)], GtfsDefinitions.RouteTypes.values()[routeTypeNr]);
-				routes.put(line[col.get(GtfsDefinitions.ROUTE_ID)], newGtfsRoute);
+				if (routeType == null) {
+					log.warn("Route of type " + routeType + " will be ignored");
+				} else {
+					Route newGtfsRoute = new RouteImpl(line[col.get(GtfsDefinitions.ROUTE_ID)], line[col.get(GtfsDefinitions.ROUTE_SHORT_NAME)], GtfsDefinitions.RouteTypes.values()[routeTypeNr]);
+					routes.put(line[col.get(GtfsDefinitions.ROUTE_ID)], newGtfsRoute);
+				}
 
 				line = reader.readNext();
 			}
