@@ -2,4 +2,4 @@ language: java
 
 script:
   - mvn test -B -Dmatsim.preferLocalDtds=true
-  - mvn deploy -DskipTests=true --settings=settings.xml;
+  - if [[ $TRAVIS_BRANCH == "releases" ]]; then if [[ $( cat pom.xml | grep SNAPSHOT ) ]]; then exit 1; else mvn deploy -DskipTests=true --settings=settings.xml; fi; fi
