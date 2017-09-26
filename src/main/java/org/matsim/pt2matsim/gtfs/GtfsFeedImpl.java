@@ -28,10 +28,14 @@ import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt2matsim.gtfs.lib.*;
 import org.matsim.pt2matsim.lib.RouteShape;
+import org.apache.commons.io.input.BOMInputStream;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 
 
@@ -147,6 +151,19 @@ public class GtfsFeedImpl implements GtfsFeed {
 		loadFrequencies();
 		log.info("All files loaded");
 	}
+	
+	/**
+	 * Creates a reader for CSV files
+	 * 
+	 * GTFS allows a BOM to precede the file content, which needs to be skipped
+	 * in case it is present
+
+	 * @throws FileNotFoundException
+	 */
+	private CSVReader createCSVReader(String path) throws FileNotFoundException {
+		InputStream stream = new BOMInputStream(new FileInputStream(path));
+		return new CSVReader(new InputStreamReader(stream));
+	}
 
 	/**
 	 * Reads all stops and puts them in {@link #stops}
@@ -159,10 +176,10 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 */
 	private void loadStops() throws IOException {
 		log.info("Loading stops.txt");
-		CSVReader reader;
-
+		
 		try {
-			reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.STOPS.fileName));
+			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.STOPS.fileName);
+			
 			String[] header = reader.readNext(); // read header
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.STOPS.columns, GtfsDefinitions.Files.STOPS.optionalColumns); // get column numbers for required fields
 
@@ -210,7 +227,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 	private void loadCalendar() throws IOException {
 		log.info("Loading calendar.txt");
 		try {
-			CSVReader reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.CALENDAR.fileName));
+			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.CALENDAR.fileName);
+
 			String[] header = reader.readNext();
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.CALENDAR.columns, GtfsDefinitions.Files.CALENDAR.optionalColumns);
 
@@ -248,9 +266,10 @@ public class GtfsFeedImpl implements GtfsFeed {
 	private void loadCalendarDates() {
 		// calendar dates are optional
 		log.info("Looking for calendar_dates.txt");
-		CSVReader reader;
+		
 		try {
-			reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.CALENDAR_DATES.fileName));
+			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.CALENDAR_DATES.fileName);
+			
 			String[] header = reader.readNext();
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.CALENDAR_DATES.columns, GtfsDefinitions.Files.CALENDAR_DATES.optionalColumns);
 
@@ -295,9 +314,9 @@ public class GtfsFeedImpl implements GtfsFeed {
 	private void loadShapes() {
 		// shapes are optional
 		log.info("Looking for shapes.txt");
-		CSVReader reader;
+		
 		try {
-			reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.SHAPES.fileName));
+			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.SHAPES.fileName);
 
 			String[] header = reader.readNext();
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.SHAPES.columns, GtfsDefinitions.Files.SHAPES.optionalColumns);
@@ -338,7 +357,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	private void loadRoutes() throws IOException {
 		log.info("Loading routes.txt");
 		try {
-			CSVReader reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.ROUTES.fileName));
+			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.ROUTES.fileName);
 			String[] header = reader.readNext();
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.ROUTES.columns, GtfsDefinitions.Files.ROUTES.optionalColumns);
 
@@ -374,7 +393,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	private void loadTrips() throws IOException {
 		log.info("Loading trips.txt");
 		try {
-			CSVReader reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.TRIPS.fileName));
+			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.TRIPS.fileName);
 			String[] header = reader.readNext();
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.TRIPS.columns, GtfsDefinitions.Files.TRIPS.optionalColumns);
 
@@ -419,7 +438,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 		log.info("Loading stop_times.txt");
 		try {
 			boolean warnStopTimes = true;
-			CSVReader reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.STOP_TIMES.fileName));
+			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.STOP_TIMES.fileName);
 			String[] header = reader.readNext();
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.STOP_TIMES.columns, GtfsDefinitions.Files.STOP_TIMES.optionalColumns);
 
@@ -491,9 +510,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 	private void loadFrequencies() {
 		log.info("Looking for frequencies.txt");
 		// frequencies are optional
-		CSVReader reader;
 		try {
-			reader = new CSVReader(new FileReader(root + GtfsDefinitions.Files.FREQUENCIES.fileName));
+			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.FREQUENCIES.fileName);
 			String[] header = reader.readNext();
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.FREQUENCIES.columns, GtfsDefinitions.Files.FREQUENCIES.optionalColumns);
 
