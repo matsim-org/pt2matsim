@@ -206,17 +206,17 @@ _Steps 4 & 5: Calculate least cost path on the pseudo graph. Use this path to cr
 ### Algorithm implementation and parameters
 
 #### Link candidates
-First, a set of link candidates is created for each stop facility and schedule transport mode. For all nodes within 
-_nodeSearchRadius_ the in- and outlinks are fetched and sorted in ascending order by their distance from the stop facility.
-All links within the the candidate distance are considered as link candidates. The candidate distance is calculated by
+First, a set of link candidates is created for each stop facility and schedule transport mode. For nodes around the
+stop coordinate, the in- and outlinks are fetched and sorted in ascending order by their distance from the stop facility.
+All links within the "candidate distance" are considered as link candidates. The candidate distance is calculated by
 multiplying the distance from stop facility to the n-th link (defined by _nLinkThreshold_) and the _candidateDistanceMultiplier_ factor.
 For example, if the 6th link is located 12 meters from the stop facility, given a multiplier of 1.5, all links within 18 meters
 from the stop facility are considered as link candidates. However, no links farther than _maxLinkCandidateDistance_ from the stop
 facility are used. Stop facilities with no link within _maxLinkCandidateDistance_ are given a dummy loop link at their
 coordinates: A node is added at the coordinate and a dummy loop link is added to the network with the added node as
 source and destination. The loop link is referenced to the stop facility and is set as its only link candidate.
-_useArtificialLoopLink_ defines if such an artificial loop link should be created regardless of the other parameters.
-Tram, subway, ferry, funicular and gondola routes are normally mapped with artificial links.
+Note: If _maxLinkCandidateDistance_ is 0, all routes use artificial links. That way an separate network for public transit
+can be created.
 
 #### Creating mode dependent router
 The config parameterset _transportModeAssignment_ defines for a transport mode, what links a transit route is allowed
@@ -233,17 +233,17 @@ defined in parameter _travelCostType_.
 During this step the best sequence of link candidates for each transit route is calculated. While routing on the network uses 
 an A\* router, least cost path search on the pseudo graph is done with a separate Dijkstra implementation.
 
-Artificial links connect the _toNode_ of a link candidate with the _fromNode_ of the next link candidate. Artificial links 
+Artificial links connect the toNode of a link candidate with the fromNode of the next link candidate. Artificial links
 are added to the network in two cases: When no path on the network between two link candidates can be found or if the least 
-cost path has costs greater than a threshold. This threshold is defined as _maxTravelCostFactor_ times the minimal travel costs. 
-The minimal travel costs depend on the parameter _travelCostType_: If it is _linkLength_, the beeline distance between the two 
-stops is used. If it is _travelTime_, the minimal travel cost is equivalent to the travel time needed based on the arrival and 
+cost path has costs greater than a threshold. This threshold is defined as _maxTravelCostFactor_ times the minimal travel costs.
+The minimal travel costs depend on the parameter _travelCostType_: If it is _linkLength_, the beeline distance between the two
+stops is used. If it is _travelTime_, the minimal travel cost is equivalent to the travel time needed based on the arrival and
 departure offsets of the two stops. All artificial links (including loop links for stop facilities) and nodes have the prefix "pt_".
 
-The step "PseudoRouting" creates _PseudoRoutes_ for each transit route, each of which contains a sequence of  _PseudoRouteStops_. 
-A _PseudoRouteStop_ contains information on the stop facility, the link candidate as well as departure and arrival offsets.
+The step "PseudoRouting" creates PseudoRoutes for each transit route, each of which contains a sequence of PseudoRouteStops.
+A PseudoRouteStop contains information on the stop facility, the link candidate as well as departure and arrival offsets.
 
-This pseudo routing step can be parallelized using multiple threads (_numOfThreads_). For each thread a queue of transit lines is 
+This pseudo routing step can be parallelized using multiple threads (_numOfThreads_). For each thread a queue of transit lines is
 handled. However, the search for the shortest path between link candidates uses the routing algorithms provided in the MATSim core 
 which are not thread safe. Access to the mode separated routers had to be synchronized.
 
@@ -269,7 +269,7 @@ highest minimal freespeed of all transit routes of a link is used as the link's 
 modes as well (defined in _scheduleFreespeedModes_). It is recommended to do this for rail.
 
 The transport mode of each transit route is assigned to its used links. Links that are not used by a transit route are 
-removed. This can clean up and simplify rail networks. Links which have a mode defined in _modesToKeepOnCleanup_ are kept 
+removed. This can clean up and simplify rail networks. Links which have a mode defined in _modesToKeepOnCleanup_ are kept
 regardless of public transit usage.
 
 ### Check Mapped Schedule Plausibility

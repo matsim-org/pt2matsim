@@ -124,8 +124,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 				"\t\tmodes (rail is recommended) can be added, separated by commas.");
 		map.put(MAX_TRAVEL_COST_FACTOR,
 				"If all paths between two stops have a [travelCost] > [" + MAX_TRAVEL_COST_FACTOR + "] * [minTravelCost], \n" +
-				"\t\tan artificial link is created. If " + TRAVEL_COST_TYPE + " is " + travelTime + "\n" +
-				"\t\tminTravelCost is the travelTime between stops from schedule. If " + TRAVEL_COST_TYPE + " is \n" +
+				"\t\tan artificial link is created. If " + TRAVEL_COST_TYPE + " is " + travelTime + ", minTravelCost is the travel time\n" +
+				"\t\tbetween stops from the schedule. If " + TRAVEL_COST_TYPE + " is \n" +
 				"\t\t" + TravelCostType.linkLength + " minTravel cost is the beeline distance.");
 		map.put(NUM_OF_THREADS,
 				"Defines the number of numOfThreads that should be used for pseudoRouting. Default: 2.");
@@ -138,8 +138,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		map.put(REMOVE_NOT_USED_STOP_FACILITIES,
 				"If true, stop facilities that are not used by any transit route are removed from the schedule. Default: true");
 		map.put(ROUTING_WITH_CANDIDATE_DISTANCE,
-				"The travel cost of a link candidate can be increased according to its distance to the stop facility x2. This" +
-				"\t\t\ttends to give more accurate results. If "+ TRAVEL_COST_TYPE +" is "+ travelTime +", freespeed on" +
+				"The travel cost of a link candidate can be increased according to its distance to the stop facility x2. This \n" +
+				"\t\t\ttends to give more accurate results. If "+ TRAVEL_COST_TYPE +" is "+ travelTime +", freespeed on \n" +
 				"\t\t\tthe link is applied to the beeline distance.");
 
 		// link candidates

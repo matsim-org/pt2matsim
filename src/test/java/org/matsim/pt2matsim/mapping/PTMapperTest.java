@@ -58,7 +58,7 @@ public class PTMapperTest {
 	}
 
 	@Test
-	public void validadeMappedSchedule() {
+	public void validateMappedSchedule() {
 		Assert.assertTrue(TransitScheduleValidator.validateAll(schedule, network).isValid());
 	}
 
