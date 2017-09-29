@@ -59,8 +59,6 @@ public class FPLANRoute {
 
 	private Id<VehicleType> vehicleTypeId;
 
-	public boolean addToSchedule = true;
-
 	public static void setSchedule(TransitSchedule schedule) {
 		FPLANRoute.schedule = schedule;
 		FPLANRoute.scheduleFactory = schedule.getFactory();
@@ -81,10 +79,16 @@ public class FPLANRoute {
 
 	// First departure time:
 	private int firstDepartureTime = -1; //[sec]
-	public void setFirstDepartureTime(int hour, int minute) {
+	public void setFirstDepartureTime(int time) {
 		if(firstDepartureTime < 0) {
-			this.firstDepartureTime = (hour * 3600) + (minute * 60);
+			this.firstDepartureTime = time;
+		} else {
+			log.error("First departure time already set");
 		}
+	}
+
+	public int getFirstDepartureTime() {
+		return firstDepartureTime;
 	}
 
 	// Used vehicle type, Id and mode:
@@ -106,7 +110,7 @@ public class FPLANRoute {
 	 * @param arrivalTime   Expected as seconds from midnight or zero if not available.
 	 * @param departureTime Expected as seconds from midnight or zero if not available.
 	 */
-	public void addRouteStop(String stopFacilityId, double arrivalTime, double departureTime) {
+	public void addRouteStop(String stopFacilityId, int arrivalTime, int departureTime) {
 		Object[] tmpRouteStop = new Object[3];
 		tmpRouteStop[0] = stopFacilityId;
 		tmpRouteStop[1] = arrivalTime;
@@ -170,8 +174,8 @@ public class FPLANRoute {
 
 		for(Object[] t : tmpStops) {
 			Id<TransitStopFacility> stopFacilityId = Id.create((String) t[0], TransitStopFacility.class);
-			double arrivalTime = (double) t[1];
-			double departureTime = (double) t[2];
+			int arrivalTime = (int) t[1];
+			int departureTime = (int) t[2];
 
 			double arrivalDelay = 0.0;
 			if(arrivalTime > 0 && firstDepartureTime > 0) {

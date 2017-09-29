@@ -55,7 +55,7 @@ public class FPLANReader {
 			FPLANRoute currentFPLANRoute = null;
 
 			Counter counter = new Counter("FPLAN line # ");
-			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(FPLANfile), "latin1"));
+			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(FPLANfile), "utf-8"));
 			String newLine = readsLines.readLine();
 			while(newLine != null) {
 				if(newLine.charAt(0) == '*') {
@@ -81,7 +81,7 @@ public class FPLANReader {
 						try {
 							numberOfDepartures = Integer.parseInt(newLine.substring(22, 25));
 							cycleTime = Integer.parseInt(newLine.substring(26, 29));
-						} catch (Exception e) {
+						} catch (Exception ignored) {
 						}
 						currentFPLANRoute = new FPLANRoute(operator, fahrtnummer, numberOfDepartures, cycleTime);
 						hafasRoutes.add(currentFPLANRoute);
@@ -103,11 +103,6 @@ public class FPLANReader {
 							// Vehicle Id:
 							Id<VehicleType> typeId = Id.create(newLine.substring(3, 6).trim(), VehicleType.class);
 							currentFPLANRoute.setVehicleTypeId(typeId);
-
-							// First Departure:
-							int hourFirstDeparture = Integer.parseInt(newLine.substring(25, 27));
-							int minuteFirstDeparture = Integer.parseInt(newLine.substring(27, 29));
-							currentFPLANRoute.setFirstDepartureTime(hourFirstDeparture, minuteFirstDeparture);
 						}
 					}
 
@@ -174,26 +169,40 @@ public class FPLANReader {
 					boolean departureTimeNegative = newLine.charAt(36) == '-';
 
 					if(currentFPLANRoute != null) {
-						double arrivalTime = 0;
+						int arrivalTime;
+						int departureTime;
+
 						try {
-							arrivalTime = Double.parseDouble(newLine.substring(31, 33)) * 3600 +
-									Double.parseDouble(newLine.substring(33, 35)) * 60;
+							arrivalTime = Integer.parseInt(newLine.substring(31, 33)) * 3600 +
+									Integer.parseInt(newLine.substring(33, 35)) * 60;
 						} catch (Exception e) {
+							arrivalTime = -1;
 						}
-						double departureTime = 0;
 						try {
-							departureTime = Double.parseDouble(newLine.substring(38, 40)) * 3600 +
-									Double.parseDouble(newLine.substring(40, 42)) * 60;
+							departureTime = Integer.parseInt(newLine.substring(38, 40)) * 3600 +
+									Integer.parseInt(newLine.substring(40, 42)) * 60;
 						} catch (Exception e) {
+							departureTime = -1;
+						}
+
+						if(arrivalTime < 0) {
+							arrivalTime = departureTime;
+						}
+						else if(departureTime < 0) {
+							departureTime = arrivalTime;
+						}
+
+
+						// if no departure has been set yet
+						if(currentFPLANRoute.getFirstDepartureTime() < 0) {
+							currentFPLANRoute.setFirstDepartureTime(departureTime);
 						}
 
 						// only add if stop is not "Durchfahrt" or "Diensthalt"
 						if(!(arrivalTimeNegative && departureTimeNegative)) {
 							currentFPLANRoute.addRouteStop(newLine.substring(0, 7), arrivalTime, departureTime);
 						}
-					} /*else {
-						log.error("Laufweg-Line before appropriate *Z-Line.");
-					}*/
+					}
 				}
 
 				newLine = readsLines.readLine();

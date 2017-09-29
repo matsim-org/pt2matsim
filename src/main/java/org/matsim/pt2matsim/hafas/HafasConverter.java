@@ -74,9 +74,9 @@ public class HafasConverter {
 		List<FPLANRoute> routes = FPLANReader.parseFPLAN(bitfeldNummern, operators, hafasFolder + "FPLAN");
 		log.info("  Read transit lines... done.");
 
-		log.info("  Creating Transit Routes...");
+		log.info("  Creating transit routes...");
 		createTransitRoutesFromFPLAN(routes, schedule, vehicles);
-		log.info("  Creating Transit Routes... done.");
+		log.info("  Creating transit routes... done.");
 
 		// 5. Clean schedule
 		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
