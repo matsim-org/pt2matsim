@@ -24,22 +24,11 @@ Tools to validate and rudimentarily edit the mapped schedule are also part of th
 
 ![pt2matsim workflow](doc/pt2matsim_workflow.jpg)
 
-### Standalone Usage
+### Binaries
 
-The tools can be used as a maven package or as a standalone utility. In order to create
-a standalone version the repository needs to be cloned. Afterwards, maven can be used
-to create a runnable jar:
+Releases are available on Bintray: https://bintray.com/polettif/matsim/pt2matsim
 
-    mvn -Prelease -DskipTests=true
-
-The runnable tools are then located in
-
-    pt2matsim/target/pt2matsim-VERSION-release.zip
-
-The zip file contains the runnable jar and its dependencies in the `lib/` folder.
-The tools can then be run in the following way:
-
-    java -cp pt2matsim-VERSION.jar:libs org.matsim.pt2matsim.run.Gtfs2TransitSchedule
+The master branch contains the snapshot version with the latest changes. Clone the git repository to use it.
 
 ## Creating a multimodal network
 
