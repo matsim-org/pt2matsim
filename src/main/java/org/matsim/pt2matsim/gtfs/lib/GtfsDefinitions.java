@@ -88,6 +88,12 @@ public final class GtfsDefinitions {
 	public static final String DROP_OFF_TYPE = "drop_off_type";
 	public static final String TIMEPOINT = "timepoint";
 
+	public static final String FROM_STOP_ID = "from_stop_id";
+	public static final String TO_STOP_ID = "to_stop_id";
+	public static final String TRANSFER_TYPE = "transfer_type";
+	public static final String MIN_TRANSFER_TIME = "min_transfer_time";
+
+
 	//Constants
 	/**
 	 * Values
@@ -130,7 +136,12 @@ public final class GtfsDefinitions {
 		FREQUENCIES("Frequency",
 				"frequencies.txt",
 				new String[]{TRIP_ID, START_TIME, END_TIME, HEADWAY_SECS},
-				new String[]{EXACT_TIMES});
+				new String[]{EXACT_TIMES}),
+
+		TRANSFERS("Transfer",
+				"transfers.txt",
+				new String[]{FROM_STOP_ID, TO_STOP_ID, TRANSFER_TYPE},
+				new String[]{MIN_TRANSFER_TIME});
 
 		//Attributes
 		public final String name;
@@ -146,8 +157,6 @@ public final class GtfsDefinitions {
 			this.optionalColumns = optionalColumns;
 		}
 	}
-
-
 	
 	public enum WayTypes {
 		RAIL,
@@ -191,14 +200,13 @@ public final class GtfsDefinitions {
 
 	public enum FareTransferType {
 		NO_TRANSFER_PERMITTED, TRANSFER_ONCE, TRANSFER_TWICE, UNLIMITED
-
 	}
+
 	public enum PaymentMethod {
 		ON_BOARD, BEFORE_BOARDING
-
 	}
-	public enum TransferType {
-		RECOMMENDED, TIMED_TRANSFER_POINT, MIN_TRANSFER_TIME, NOT_POSSIBLE
 
+	public enum TransferType {
+		RECOMMENDED_TRANSFER_POINT, TIMED_TRANSFER_POINT, REQUIRES_MIN_TRANSFER_TIME, TRANSFER_NOT_POSSIBLE
 	}
 }

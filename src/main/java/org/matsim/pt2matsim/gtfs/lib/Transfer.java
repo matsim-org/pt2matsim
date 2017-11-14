@@ -31,7 +31,7 @@ public interface Transfer {
 	GtfsDefinitions.TransferType getTransferType();
 
 	/**
-	 * optional, necessary if transferType is MIN_TRANSFER_TIME
+	 * optional, necessary if transferType is REQUIRES_MIN_TRANSFER_TIME
 	 */
 	Integer minTransferTime();
 }

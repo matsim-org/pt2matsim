@@ -33,7 +33,6 @@ import org.apache.commons.io.input.BOMInputStream;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -77,6 +76,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	private Map<String, Service> services = new HashMap<>();
 	private Map<String, Trip> trips = new HashMap<>();
 	private Map<Id<RouteShape>, RouteShape> shapes = new HashMap<>();
+	private Collection<Transfer> transfers = new HashSet<>();
 	private String coordSys = TransformationFactory.WGS84;
 
 	public GtfsFeedImpl(String gtfsFolder) {
@@ -150,6 +150,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 			throw new RuntimeException("File stop_times.txt not found!");
 		}
 		loadFrequencies();
+		loadTransfers();
 		log.info("All files loaded");
 	}
 	
@@ -385,7 +386,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 		case 1500: // Taxi Service
 		case 1600: // Self Drive
 		case 1700: // Miscellaneous Service
-			return null;
+		return null;
 		}
 		
 		throw new IllegalArgumentException("Invalid GTFS route type: " + routeType);
@@ -614,11 +615,50 @@ public class GtfsFeedImpl implements GtfsFeed {
 			}
 		} catch (FileNotFoundException e) {
 			log.info("...     no frequencies file found");
-		} catch (IOException e) {
-			e.printStackTrace();
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new RuntimeException("Emtpy line found in frequencies.txt");
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
+	}
+
+	private void loadTransfers() {
+		log.info("Looking for transfers.txt");
+		// transfers are optional
+		try {
+			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.TRANSFERS.fileName);
+			String[] header = reader.readNext();
+			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.TRANSFERS.columns, GtfsDefinitions.Files.TRANSFERS.optionalColumns);
+
+			String[] line = reader.readNext();
+			while(line != null) {
+				String fromStopId = line[col.get(GtfsDefinitions.FROM_STOP_ID)];
+				String toStopId = line[col.get(GtfsDefinitions.TO_STOP_ID)];
+				GtfsDefinitions.TransferType tt = GtfsDefinitions.TransferType.values()[Integer.parseInt(line[col.get(GtfsDefinitions.TRANSFER_TYPE)])];
+
+				if(tt.equals(GtfsDefinitions.TransferType.REQUIRES_MIN_TRANSFER_TIME)) {
+					try {
+						int minTransferTime = Integer.parseInt(line[col.get(GtfsDefinitions.TRANSFER_TYPE)]);
+						transfers.add(new TransferImpl(fromStopId, toStopId, tt, minTransferTime));
+					} catch (NumberFormatException e) {
+						throw new IllegalArgumentException("No required minimal transfer time set for transfer "+ line[col.get(GtfsDefinitions.FROM_STOP_ID)] + " -> "+ line[col.get(GtfsDefinitions.TO_STOP_ID)] + "!");
+					}
+				} else {
+					// store transfer
+					transfers.add(new TransferImpl(fromStopId, toStopId, tt));
+				}
+
+				line = reader.readNext();
+			}
+			reader.close();
+		} catch (ArrayIndexOutOfBoundsException i) {
+			throw new RuntimeException("Emtpy line found in transfers.txt");
+		} catch (FileNotFoundException e) {
+			log.info("            no transfers file found");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		log.info("...     transfers.txt loaded");
 	}
 
 	@Override
@@ -639,6 +679,11 @@ public class GtfsFeedImpl implements GtfsFeed {
 	@Override
 	public boolean usesFrequencies() {
 		return usesFrequencies;
+	}
+
+	@Override
+	public Collection<Transfer> getTransfers() {
+		return transfers;
 	}
 
 	@Override

@@ -39,7 +39,7 @@ public class TransferImpl implements Transfer {
 		this.hash = (fromStopId + toStopId).hashCode() + transferType.hashCode();
 	}
 
-	public TransferImpl(String fromStopId, String toStopId, GtfsDefinitions.TransferType transferType, int minTransferTime) {
+	public TransferImpl(String fromStopId, String toStopId, GtfsDefinitions.TransferType transferType, Integer minTransferTime) {
 		this.fromStopId = fromStopId;
 		this.toStopId = toStopId;
 		this.transferType = transferType;
