@@ -175,7 +175,9 @@ public final class Osm {
 		public static final String PRIMARY = "primary";
 		public static final String PRIMARY_LINK = "primary_link";
 		public static final String SECONDARY = "secondary";
+		public static final String SECONDARY_LINK = "secondary_link";
 		public static final String TERTIARY = "tertiary";
+		public static final String TERTIARY_LINK = "tertiary_link";
 		public static final String MINOR = "minor";
 		public static final String UNCLASSIFIED = "unclassified";
 		public static final String RESIDENTIAL = "residential";
