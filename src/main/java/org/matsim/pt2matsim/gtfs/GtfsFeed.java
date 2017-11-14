@@ -19,12 +19,10 @@
 package org.matsim.pt2matsim.gtfs;
 
 import org.matsim.api.core.v01.Id;
-import org.matsim.pt2matsim.gtfs.lib.Route;
-import org.matsim.pt2matsim.gtfs.lib.Service;
-import org.matsim.pt2matsim.gtfs.lib.Stop;
-import org.matsim.pt2matsim.gtfs.lib.Trip;
+import org.matsim.pt2matsim.gtfs.lib.*;
 import org.matsim.pt2matsim.lib.RouteShape;
 
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -45,6 +43,8 @@ public interface GtfsFeed {
 	Map<Id<RouteShape>, RouteShape> getShapes();
 
 	boolean usesFrequencies();
+
+	Collection<Transfer> getTransfers();
 
 	/**
 	 * transforms all stops to the target coordinate system
