@@ -26,7 +26,22 @@ Tools to validate and rudimentarily edit the mapped schedule are also part of th
 
 ### Binaries
 
-Releases are available on Bintray: https://bintray.com/polettif/matsim/pt2matsim
+Releases are available on Bintray: https://bintray.com/polettif/matsim/pt2matsim. Dependency snippet:
+
+    <repositories>
+        <repository>
+            <id>pt2matsim</id>
+            <url>http://dl.bintray.com/polettif/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.matsim</groupId>
+            <artifactId>pt2matsim</artifactId>
+            <version>17.11</version>
+        </dependency>
+    </dependencies>
 
 The master branch contains the snapshot version with the latest changes. Clone the git repository to use it.
 
