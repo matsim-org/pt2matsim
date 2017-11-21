@@ -31,5 +31,5 @@ public interface Route {
 
 	String getShortName();
 
-	GtfsDefinitions.RouteTypes getRouteType();
+	GtfsDefinitions.RouteType getRouteType();
 }

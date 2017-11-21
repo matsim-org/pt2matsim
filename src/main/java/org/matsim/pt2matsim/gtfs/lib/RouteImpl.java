@@ -20,7 +20,7 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
-import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions.RouteTypes;
+import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions.RouteType;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,10 +31,10 @@ public class RouteImpl implements Route {
 
 	private final String routeId;
 	private final String shortName;
-	private final RouteTypes routeType;
+	private final RouteType routeType;
 	private final Map<String, Trip> trips = new HashMap<>();
 
-	public RouteImpl(String routeId, String shortName, RouteTypes routeType) {
+	public RouteImpl(String routeId, String shortName, RouteType routeType) {
 		this.routeId = routeId;
 		this.shortName = shortName;
 		this.routeType = routeType;
@@ -73,7 +73,7 @@ public class RouteImpl implements Route {
 	 * required attribute
 	 */
 	@Override
-	public RouteTypes getRouteType() {
+	public RouteType getRouteType() {
 		return routeType;
 	}
 

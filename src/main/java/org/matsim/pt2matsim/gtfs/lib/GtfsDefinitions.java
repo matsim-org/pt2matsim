@@ -94,7 +94,6 @@ public final class GtfsDefinitions {
 	public static final String MIN_TRANSFER_TIME = "min_transfer_time";
 
 
-	//Constants
 	/**
 	 * Values
 	 */
@@ -143,13 +142,11 @@ public final class GtfsDefinitions {
 				new String[]{FROM_STOP_ID, TO_STOP_ID, TRANSFER_TYPE},
 				new String[]{MIN_TRANSFER_TIME});
 
-		//Attributes
 		public final String name;
 		public final String fileName;
 		public final String[] columns;
 		public final String[] optionalColumns;
 
-		//Methods
 		Files(String name, String fileName, String[] requiredColumns, String[] optionalColumns) {
 			this.name = name;
 			this.fileName = fileName;
@@ -157,35 +154,92 @@ public final class GtfsDefinitions {
 			this.optionalColumns = optionalColumns;
 		}
 	}
-	
-	public enum WayTypes {
-		RAIL,
-		ROAD,
-		WATER,
-		CABLE
-	}
-	public enum RouteTypes {
-		//Values
-		TRAM("tram", WayTypes.RAIL),
-		SUBWAY("subway", WayTypes.RAIL),
-		RAIL("rail", WayTypes.RAIL),
-		BUS("bus", WayTypes.ROAD),
-		FERRY("ferry", WayTypes.WATER),
-		CABLE_CAR("cable car", WayTypes.CABLE),
-		GONDOLA("gondola", WayTypes.CABLE),
-		FUNICULAR("funicular", WayTypes.RAIL);
-		//Attributes
+
+	/**
+	 * [https://developers.google.com/transit/gtfs/reference/#routestxt]<br/>
+	 * The route_type field describes the type of transportation used on a route.
+	 */
+	public enum RouteType {
+		/**
+		 * Tram, Streetcar, Light rail. Any light rail or street level system within a metropolitan area.
+		 */
+		TRAM	(0, "tram"),
+		/**
+		 * Subway, Metro. Any underground rail system within a metropolitan area.
+		 */
+		SUBWAY	(1, "subway"),
+		/**
+		 * Rail. Used for intercity or long-distance travel.
+		 */
+		RAIL	(2, "rail"),
+		/**
+		 * Bus. Used for short- and long-distance bus routes.
+		 */
+		BUS		(3, "bus"),
+		/**
+		 * Ferry. Used for short- and long-distance boat service.
+		 */
+		FERRY	(4, "ferry"),
+		/**
+		 * Cable car. Used for street-level cable cars where the cable runs beneath the car.
+		 */
+		CABLE_CAR	(5, "cable car"),
+		/**
+		 * Gondola, Suspended cable car. Typically used for aerial cable cars where the car is suspended from the cable.
+		 */
+		GONDOLA	 	(6, "gondola"),
+		/**
+		 * Funicular. Any rail system designed for steep inclines.
+		 */
+		FUNICULAR	(7, "funicular");
+
+		public int index;
 		public String name;
-		public WayTypes wayType;
-		//Methods
-		RouteTypes(String name,WayTypes wayType) {
+
+		RouteType(int index, String name) {
+			this.index = index;
 			this.name = name;
-			this.wayType = wayType;
+		}
+
+		/**
+		 * Determines the route type of a given route type index
+		 *
+		 * - Standard: https://developers.google.com/transit/gtfs/reference/routes-file
+		 * - Extended: https://developers.google.com/transit/gtfs/reference/extended-route-types
+		 */
+		public static RouteType getRouteType(int routeType) {
+			if(routeType < RouteType.values().length) {
+				return RouteType.values()[routeType];
+			}
+
+			// Extended route types
+			switch (routeType  - (routeType % 100)) {
+				case 100: return RouteType.RAIL; // Railway Service
+				case 200: return RouteType.BUS; // Coach Service
+				case 300: return RouteType.RAIL; // Suburban Railway Service
+				case 400: return RouteType.RAIL; // Urban Railway Service
+				case 500: return RouteType.SUBWAY; // Metro Service
+				case 600: return RouteType.SUBWAY; // Underground Service
+				case 700: return RouteType.BUS; // Bus Service
+				case 800: return RouteType.BUS; // Trolleybus Service
+				case 900: return RouteType.TRAM; // Tram Service
+				case 1000: return RouteType.FERRY; // Water Transport Service
+				case 1200: return RouteType.FERRY; // Ferry Service
+				case 1300: return RouteType.CABLE_CAR; // Telecabin Service
+				case 1400: return RouteType.FUNICULAR; // Funicular Service
+
+				case 1100: // Air Service
+				case 1500: // Taxi Service
+				case 1600: // Self Drive
+				case 1700: // Miscellaneous Service
+				return null;
+			}
+			throw new IllegalArgumentException("Invalid GTFS route type: " + routeType);
 		}
 	}
 
 	/**
-	 * <i>[https://developers.google.com/transit/gtfs/reference/stops-file]</i><br/>
+	 * <i>[https://developers.google.com/transit/gtfs/reference/#stopstxt]</i><br/>
 	 * Identifies whether this stop ID represents a stop or station. If no location type is specified, or the
 	 * location_type is blank, stop IDs are treated as stops. Stations can have different properties from stops when
 	 * they are represented on a map or used in trip planning.<br/><br/>
@@ -206,7 +260,22 @@ public final class GtfsDefinitions {
 		ON_BOARD, BEFORE_BOARDING
 	}
 
+	/**
+	 * [https://developers.google.com/transit/gtfs/reference/#transferstxt]
+	 * Optional
+	 */
 	public enum TransferType {
-		RECOMMENDED_TRANSFER_POINT, TIMED_TRANSFER_POINT, REQUIRES_MIN_TRANSFER_TIME, TRANSFER_NOT_POSSIBLE
+		RECOMMENDED_TRANSFER_POINT(0, "Recommended transfer point"), // This is a recommended transfer point between routes.
+		TIMED_TRANSFER_POINT(1, "Timed transfer point"), //This is a timed transfer point between two routes. The departing vehicle is expected to wait for the arriving one, with sufficient time for a passenger to transfer between routes.
+		REQUIRES_MIN_TRANSFER_TIME(2, "Requires minimal transfer time"), // This transfer requires a minimum amount of time between arrival and departure to ensure a connection. The time required to transfer is specified by min_transfer_time.
+		TRANSFER_NOT_POSSIBLE(3, "Transfer not possible");
+
+		public int index;
+		public String name;
+
+		TransferType(int index, String name) {
+			this.index = index;
+			this.name = name;
+		}
 	}
 }
