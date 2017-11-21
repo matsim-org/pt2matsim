@@ -18,7 +18,7 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
-import org.matsim.pt2matsim.lib.RouteShape;
+import org.matsim.pt2matsim.tools.lib.RouteShape;
 
 import java.util.List;
 import java.util.NavigableSet;

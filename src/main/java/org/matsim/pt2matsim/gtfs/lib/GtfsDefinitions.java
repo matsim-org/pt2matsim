@@ -163,35 +163,35 @@ public final class GtfsDefinitions {
 		/**
 		 * Tram, Streetcar, Light rail. Any light rail or street level system within a metropolitan area.
 		 */
-		TRAM	(0, "tram"),
+		TRAM(0, "tram"),
 		/**
 		 * Subway, Metro. Any underground rail system within a metropolitan area.
 		 */
-		SUBWAY	(1, "subway"),
+		SUBWAY(1, "subway"),
 		/**
 		 * Rail. Used for intercity or long-distance travel.
 		 */
-		RAIL	(2, "rail"),
+		RAIL(2, "rail"),
 		/**
 		 * Bus. Used for short- and long-distance bus routes.
 		 */
-		BUS		(3, "bus"),
+		BUS(3, "bus"),
 		/**
 		 * Ferry. Used for short- and long-distance boat service.
 		 */
-		FERRY	(4, "ferry"),
+		FERRY(4, "ferry"),
 		/**
 		 * Cable car. Used for street-level cable cars where the cable runs beneath the car.
 		 */
-		CABLE_CAR	(5, "cable car"),
+		CABLE_CAR(5, "cable car"),
 		/**
 		 * Gondola, Suspended cable car. Typically used for aerial cable cars where the car is suspended from the cable.
 		 */
-		GONDOLA	 	(6, "gondola"),
+		GONDOLA(6, "gondola"),
 		/**
 		 * Funicular. Any rail system designed for steep inclines.
 		 */
-		FUNICULAR	(7, "funicular");
+		FUNICULAR(7, "funicular");
 
 		public int index;
 		public String name;
