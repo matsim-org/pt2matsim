@@ -39,7 +39,7 @@ Releases are available on Bintray: https://bintray.com/polettif/matsim/pt2matsim
         <dependency>
             <groupId>org.matsim</groupId>
             <artifactId>pt2matsim</artifactId>
-            <version>17.11</version>
+            <version>{VERSION}</version>
         </dependency>
     </dependencies>
 
