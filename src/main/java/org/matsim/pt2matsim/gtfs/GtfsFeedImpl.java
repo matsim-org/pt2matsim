@@ -27,7 +27,7 @@ import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt2matsim.gtfs.lib.*;
-import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions.RouteTypes;
+import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions.RouteType;
 import org.matsim.pt2matsim.lib.RouteShape;
 import org.apache.commons.io.input.BOMInputStream;
 
@@ -347,51 +347,6 @@ public class GtfsFeedImpl implements GtfsFeed {
 		}
 	}
 	
-	/**
-	 * Determines the route type of a given route type index
-	 * 
-	 * - Standard: https://developers.google.com/transit/gtfs/reference/routes-file
-	 * - Extended: https://developers.google.com/transit/gtfs/reference/extended-route-types
-	 */
-	private RouteTypes getRouteType(int routeType) {		
-		// Standard route types
-		switch (routeType) {
-		case 0: return RouteTypes.TRAM;
-		case 1: return RouteTypes.SUBWAY;
-		case 2: return RouteTypes.RAIL;
-		case 3: return RouteTypes.BUS;
-		case 4: return RouteTypes.FERRY;
-		case 5: return RouteTypes.CABLE_CAR;
-		case 6: return RouteTypes.GONDOLA;
-		case 7: return RouteTypes.FUNICULAR;
-		}
-		
-		// Extended route types
-		switch (routeType  - (routeType % 100)) {
-		case 100: return RouteTypes.RAIL; // Railway Service
-		case 200: return RouteTypes.BUS; // Coach Service
-		case 300: return RouteTypes.RAIL; // Suburban Railway Service
-		case 400: return RouteTypes.RAIL; // Urban Railway Service
-		case 500: return RouteTypes.SUBWAY; // Metro Service 
-		case 600: return RouteTypes.SUBWAY; // Underground Service
-		case 700: return RouteTypes.BUS; // Bus Service
-		case 800: return RouteTypes.BUS; // Trolleybus Service
-		case 900: return RouteTypes.TRAM; // Tram Service
-		case 1000: return RouteTypes.FERRY; // Water Transport Service
-		case 1200: return RouteTypes.FERRY; // Ferry Service
-		case 1300: return RouteTypes.CABLE_CAR; // Telecabin Service
-		case 1400: return RouteTypes.FUNICULAR; // Funicular Service
-		
-		case 1100: // Air Service
-		case 1500: // Taxi Service
-		case 1600: // Self Drive
-		case 1700: // Miscellaneous Service
-		return null;
-		}
-		
-		throw new IllegalArgumentException("Invalid GTFS route type: " + routeType);
-	}
-	
 	final private Set<String> ignoredRoutes = new HashSet<>();
 
 	/**
@@ -413,7 +368,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 			String[] line = reader.readNext();
 			while(line != null) {
 				int routeTypeNr = Integer.parseInt(line[col.get(GtfsDefinitions.ROUTE_TYPE)]);
-				RouteTypes routeType = getRouteType(routeTypeNr);
+
+				RouteType routeType = RouteType.getRouteType(routeTypeNr);
 
 				if (routeType == null) {
 					log.warn("Route " + line[col.get(GtfsDefinitions.ROUTE_ID)] + " of type " + routeTypeNr + " will be ignored");
