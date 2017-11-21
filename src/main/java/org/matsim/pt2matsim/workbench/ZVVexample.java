@@ -11,7 +11,7 @@ import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions;
-import org.matsim.pt2matsim.lib.RouteShape;
+import org.matsim.pt2matsim.tools.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.PTMapper;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersGtfsShapes;

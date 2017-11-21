@@ -28,7 +28,7 @@ import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt2matsim.gtfs.lib.*;
 import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions.RouteType;
-import org.matsim.pt2matsim.lib.RouteShape;
+import org.matsim.pt2matsim.tools.lib.RouteShape;
 import org.apache.commons.io.input.BOMInputStream;
 
 import java.io.FileInputStream;

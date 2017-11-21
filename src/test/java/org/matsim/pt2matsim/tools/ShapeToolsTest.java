@@ -8,7 +8,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt2matsim.gtfs.lib.GtfsShape;
-import org.matsim.pt2matsim.lib.RouteShape;
+import org.matsim.pt2matsim.tools.lib.RouteShape;
 
 import java.util.Collection;
 import java.util.HashMap;

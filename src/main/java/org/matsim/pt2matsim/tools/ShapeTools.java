@@ -38,7 +38,7 @@ import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions;
 import org.matsim.pt2matsim.gtfs.lib.GtfsShape;
 import org.matsim.pt2matsim.gtfs.lib.Route;
 import org.matsim.pt2matsim.gtfs.lib.Trip;
-import org.matsim.pt2matsim.lib.RouteShape;
+import org.matsim.pt2matsim.tools.lib.RouteShape;
 import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.FileNotFoundException;
