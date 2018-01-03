@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-
 public class RouteImpl implements Route {
 
 	private final String routeId;

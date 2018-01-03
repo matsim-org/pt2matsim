@@ -266,7 +266,7 @@ public final class GtfsDefinitions {
 	 */
 	public enum TransferType {
 		RECOMMENDED_TRANSFER_POINT(0, "Recommended transfer point"), // This is a recommended transfer point between routes.
-		TIMED_TRANSFER_POINT(1, "Timed transfer point"), //This is a timed transfer point between two routes. The departing vehicle is expected to wait for the arriving one, with sufficient time for a passenger to transfer between routes.
+		TIMED_TRANSFER_POINT(1, "Timed transfer point"), // This is a timed transfer point between two routes. The departing vehicle is expected to wait for the arriving one, with sufficient time for a passenger to transfer between routes.
 		REQUIRES_MIN_TRANSFER_TIME(2, "Requires minimal transfer time"), // This transfer requires a minimum amount of time between arrival and departure to ensure a connection. The time required to transfer is specified by min_transfer_time.
 		TRANSFER_NOT_POSSIBLE(3, "Transfer not possible");
 

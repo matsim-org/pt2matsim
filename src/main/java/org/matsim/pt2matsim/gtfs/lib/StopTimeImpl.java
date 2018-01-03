@@ -32,7 +32,6 @@ public class StopTimeImpl implements StopTime {
 	private final int departureTime;
 	private final Stop stop;
 	private final Trip trip;
-	private final int hash;
 
 	public StopTimeImpl(Integer sequencePosition, int arrivalTime, int departureTime, Stop stop, Trip trip) {
 		this.sequencePosition = sequencePosition;
@@ -40,11 +39,6 @@ public class StopTimeImpl implements StopTime {
 		this.departureTime = departureTime;
 		this.stop = stop;
 		this.trip = trip;
-
-		int result = getSequencePosition().hashCode();
-		result = 31 * result + getStop().hashCode();
-		result = 31 * result + getTrip().hashCode();
-		this.hash = result;
 	}
 
 
@@ -84,8 +78,7 @@ public class StopTimeImpl implements StopTime {
 		return sequencePosition;
 	}
 
-	@Override
-	public boolean equals(Object o) {
+	public boolean eqals(Object o) {
 		if(this == o) return true;
 		if(o == null || getClass() != o.getClass()) return false;
 
@@ -95,8 +88,28 @@ public class StopTimeImpl implements StopTime {
 	}
 
 	@Override
+	public boolean equals(Object o) {
+		if(this == o) return true;
+		if(o == null || getClass() != o.getClass()) return false;
+
+		StopTimeImpl stopTime = (StopTimeImpl) o;
+
+		if(arrivalTime != stopTime.arrivalTime) return false;
+		if(departureTime != stopTime.departureTime) return false;
+		if(sequencePosition != null ? !sequencePosition.equals(stopTime.sequencePosition) : stopTime.sequencePosition != null)
+			return false;
+		if(stop != null ? !stop.equals(stopTime.stop) : stopTime.stop != null) return false;
+		return trip != null ? trip.equals(stopTime.trip) : stopTime.trip == null;
+	}
+
+	@Override
 	public int hashCode() {
-		return hash;
+		int result = sequencePosition != null ? sequencePosition.hashCode() : 0;
+		result = 31 * result + arrivalTime;
+		result = 31 * result + departureTime;
+		result = 31 * result + (stop != null ? stop.hashCode() : 0);
+		result = 31 * result + (trip != null ? trip.hashCode() : 0);
+		return result;
 	}
 
 	@Override

@@ -22,8 +22,8 @@ package org.matsim.pt2matsim.gtfs.lib;
 
 import org.matsim.pt2matsim.tools.lib.RouteShape;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 
@@ -36,7 +36,7 @@ public class TripImpl implements Trip {
 	private final Service service;
 	private final RouteShape shape;
 	private final NavigableSet<StopTime> stopTimes;
-	private final List<Frequency> frequencies;
+	private final Collection<Frequency> frequencies;
 	private final Route route;
 
 	public TripImpl(String id, Route route, Service service, RouteShape shape) {
@@ -45,7 +45,7 @@ public class TripImpl implements Trip {
 		this.service = service;
 		this.shape = shape;
 		stopTimes = new TreeSet<>();
-		frequencies = new ArrayList<>();
+		frequencies = new HashSet<>();
 	}
 
 	public void addStopTime(StopTime stopTime) {
@@ -97,7 +97,7 @@ public class TripImpl implements Trip {
 	 * required attribute
 	 */
 	@Override
-	public List<Frequency> getFrequencies() {
+	public Collection<Frequency> getFrequencies() {
 		return frequencies;
 	}
 

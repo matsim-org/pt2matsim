@@ -20,7 +20,7 @@ package org.matsim.pt2matsim.gtfs.lib;
 
 import org.matsim.pt2matsim.tools.lib.RouteShape;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.NavigableSet;
 
 /**
@@ -38,7 +38,7 @@ public interface Trip {
 
 	NavigableSet<StopTime> getStopTimes();
 
-	List<Frequency> getFrequencies();
+	Collection<Frequency> getFrequencies();
 
 	Route getRoute();
 }

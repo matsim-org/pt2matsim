@@ -18,6 +18,9 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
+import java.math.BigDecimal;
+import java.util.Currency;
+
 /**
  * @author polettif
  */
@@ -25,9 +28,9 @@ public interface Fare {
 
 	String getId();
 
-	String getPrice();
+	BigDecimal getPrice();
 
-	String getCurrencyType();
+	Currency getCurrencyType();
 
 	GtfsDefinitions.PaymentMethod getPaymentMethod();
 

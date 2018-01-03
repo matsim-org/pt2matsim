@@ -32,7 +32,7 @@ public class StopImpl implements Stop {
 	private final String id;
 	private final String name;
 	private final int hash;
-	private final Set<Trip> trips = new HashSet<>();
+	private final Collection<Trip> trips = new HashSet<>();
 
 	// optional
 	private GtfsDefinitions.LocationType locationType = null;
