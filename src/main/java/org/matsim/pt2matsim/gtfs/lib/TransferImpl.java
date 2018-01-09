@@ -80,7 +80,15 @@ public class TransferImpl implements Transfer {
 		return (other.getFromStopId().equals(this.getFromStopId()) &&
 				other.getToStopId().equals(this.getToStopId()) &&
 				other.getTransferType().equals(this.getTransferType()) &&
-				other.minTransferTime().equals(this.minTransferTime()));
+				equalsMinTransferTime(other));
+	}
+
+	private boolean equalsMinTransferTime(Transfer other) {
+		if (other.minTransferTime() == null) {
+			return this.minTransferTime == null;
+		} else {
+			return other.minTransferTime().equals(this.minTransferTime());
+		}
 	}
 
 	@Override
