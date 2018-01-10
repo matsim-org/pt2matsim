@@ -31,6 +31,7 @@ public class RouteImpl implements Route {
 	private final String routeId;
 	private final String shortName;
 	private final RouteType routeType;
+
 	private final Map<String, Trip> trips = new HashMap<>();
 
 	public RouteImpl(String routeId, String shortName, RouteType routeType) {
@@ -82,12 +83,20 @@ public class RouteImpl implements Route {
 		if(o == null || getClass() != o.getClass()) return false;
 
 		RouteImpl route = (RouteImpl) o;
-		return routeId.equals(route.routeId);
+
+		if(!routeId.equals(route.routeId)) return false;
+		if(!shortName.equals(route.shortName)) return false;
+		if(routeType != route.routeType) return false;
+		return trips.equals(route.trips);
 	}
 
 	@Override
 	public int hashCode() {
-		return routeId.hashCode();
+		int result = routeId.hashCode();
+		result = 31 * result + shortName.hashCode();
+		result = 31 * result + routeType.hashCode();
+		result = 31 * result + trips.hashCode();
+		return result;
 	}
 
 	@Override

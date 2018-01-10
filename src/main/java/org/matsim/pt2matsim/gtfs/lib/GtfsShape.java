@@ -117,23 +117,25 @@ public class GtfsShape implements RouteShape {
 	}
 
 	@Override
-	public String toString() {
-		return id.toString() + " [" + coordSorted.size() + " coordSorted]";
-	}
-
-	@Override
 	public boolean equals(Object o) {
 		if(this == o) return true;
 		if(o == null || getClass() != o.getClass()) return false;
 
 		GtfsShape gtfsShape = (GtfsShape) o;
-		return getId().equals(gtfsShape.getId()) && coordSorted.equals(gtfsShape.getCoordsSorted());
+
+		if(!id.equals(gtfsShape.id)) return false;
+		return coordSorted.equals(gtfsShape.coordSorted);
 	}
 
 	@Override
 	public int hashCode() {
-		int result = getId().hashCode();
+		int result = id.hashCode();
 		result = 31 * result + coordSorted.hashCode();
 		return result;
+	}
+
+	@Override
+	public String toString() {
+		return id.toString() + " [" + coordSorted.size() + " coordSorted]";
 	}
 }

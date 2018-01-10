@@ -30,6 +30,7 @@ public class StopTimeImpl implements StopTime {
 	private final Integer sequencePosition;
 	private final int arrivalTime;
 	private final int departureTime;
+
 	private final Stop stop;
 	private final Trip trip;
 
@@ -52,39 +53,19 @@ public class StopTimeImpl implements StopTime {
 		return trip;
 	}
 
-	/**
-	 * required attribute
-	 */
 	@Override
 	public int getArrivalTime() {
 		return arrivalTime;
 	}
 
-	/**
-	 * required attribute
-	 */
 	@Override
 	public int getDepartureTime() {
 		return departureTime;
 	}
 
-	/**
-	 * required attribute
-	 *
-	 * @return the position of the stopTime within the stopSequence
-	 */
 	@Override
 	public Integer getSequencePosition() {
 		return sequencePosition;
-	}
-
-	public boolean eqals(Object o) {
-		if(this == o) return true;
-		if(o == null || getClass() != o.getClass()) return false;
-
-		StopTimeImpl stopTime = (StopTimeImpl) o;
-
-		return getSequencePosition().equals(stopTime.getSequencePosition()) && getStop().equals(stopTime.getStop()) && getTrip().equals(stopTime.getTrip());
 	}
 
 	@Override
@@ -96,19 +77,18 @@ public class StopTimeImpl implements StopTime {
 
 		if(arrivalTime != stopTime.arrivalTime) return false;
 		if(departureTime != stopTime.departureTime) return false;
-		if(sequencePosition != null ? !sequencePosition.equals(stopTime.sequencePosition) : stopTime.sequencePosition != null)
-			return false;
-		if(stop != null ? !stop.equals(stopTime.stop) : stopTime.stop != null) return false;
-		return trip != null ? trip.equals(stopTime.trip) : stopTime.trip == null;
+		if(!sequencePosition.equals(stopTime.sequencePosition)) return false;
+		if(!stop.equals(stopTime.stop)) return false;
+		return trip.equals(stopTime.trip);
 	}
 
 	@Override
 	public int hashCode() {
-		int result = sequencePosition != null ? sequencePosition.hashCode() : 0;
+		int result = sequencePosition.hashCode();
 		result = 31 * result + arrivalTime;
 		result = 31 * result + departureTime;
-		result = 31 * result + (stop != null ? stop.hashCode() : 0);
-		result = 31 * result + (trip != null ? trip.hashCode() : 0);
+		result = 31 * result + stop.hashCode();
+		result = 31 * result + trip.hashCode();
 		return result;
 	}
 

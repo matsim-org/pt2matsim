@@ -31,15 +31,17 @@ public class StopImpl implements Stop {
 
 	private final String id;
 	private final String name;
-	private final int hash;
-	private final Collection<Trip> trips = new HashSet<>();
+	private final double lon;
+	private final double lat;
 
-	// optional
+	/** optional **/
 	private GtfsDefinitions.LocationType locationType = null;
+
+	/** optional **/
 	private String parentStationId = null;
-	private double lon; // West-East
-	private double lat; // Sout-North
+
 	private Coord coord;
+	private final Collection<Trip> trips = new HashSet<>();
 
 	public StopImpl(String id, String name, double lon, double lat) {
 		this.id = id;
@@ -47,22 +49,8 @@ public class StopImpl implements Stop {
 		this.lat = lat;
 		this.coord = new Coord(lon, lat);
 		this.name = name;
-
-		int result;
-		long temp;
-		result = getId().hashCode();
-		result = 31 * result + getName().hashCode();
-		temp = Double.doubleToLongBits(getLon());
-		result = 31 * result + (int) (temp ^ (temp >>> 32));
-		temp = Double.doubleToLongBits(getLat());
-		result = 31 * result + (int) (temp ^ (temp >>> 32));
-		this.hash = result;
 	}
 
-
-	/**
-	 * required attribute
-	 */
 	@Override
 	public String getId() {
 		return id;
@@ -78,9 +66,6 @@ public class StopImpl implements Stop {
 		return lat;
 	}
 
-	/**
-	 * required attribute
-	 */
 	@Override
 	public String getName() {
 		return name;
@@ -96,13 +81,7 @@ public class StopImpl implements Stop {
 		return locationType;
 	}
 
-	public void setLocationType(GtfsDefinitions.LocationType type) {
-		this.locationType = type;
-	}
-
-	/**
-	 * optional
-	 */
+	@Override
 	public String getParentStationId() {
 		return parentStationId;
 	}
@@ -114,6 +93,10 @@ public class StopImpl implements Stop {
 
 	public void setCoord(Coord coord) {
 		this.coord = coord;
+	}
+
+	public void setLocationType(GtfsDefinitions.LocationType type) {
+		this.locationType = type;
 	}
 
 	public void setParentStation(String id) {
@@ -130,12 +113,28 @@ public class StopImpl implements Stop {
 		if(o == null || getClass() != o.getClass()) return false;
 
 		StopImpl stop = (StopImpl) o;
-		return Double.compare(stop.getLon(), getLon()) == 0 && Double.compare(stop.getLat(), getLat()) == 0 && getId().equals(stop.getId()) && getName().equals(stop.getName());
+
+		if(Double.compare(stop.lon, lon) != 0) return false;
+		if(Double.compare(stop.lat, lat) != 0) return false;
+		if(!id.equals(stop.id)) return false;
+		if(!name.equals(stop.name)) return false;
+		if(locationType != stop.locationType) return false;
+		return parentStationId != null ? parentStationId.equals(stop.parentStationId) : stop.parentStationId == null;
 	}
 
 	@Override
 	public int hashCode() {
-		return hash;
+		int result;
+		long temp;
+		result = id.hashCode();
+		result = 31 * result + name.hashCode();
+		temp = Double.doubleToLongBits(lon);
+		result = 31 * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(lat);
+		result = 31 * result + (int) (temp ^ (temp >>> 32));
+		result = 31 * result + (locationType != null ? locationType.hashCode() : 0);
+		result = 31 * result + (parentStationId != null ? parentStationId.hashCode() : 0);
+		return result;
 	}
 
 	@Override

@@ -59,7 +59,9 @@ public class ServiceImpl implements Service {
 		this.endDate = null;
 	}
 
-
+	/**
+	 * Adds a new addition date
+	 */
 	public void addAddition(String addition) {
 		LocalDate additionDate = parseDateFormat(addition);
 		additions.add(additionDate);
@@ -75,12 +77,8 @@ public class ServiceImpl implements Service {
 		coveredDays.remove(exceptionDate);
 	}
 
-	/**
-	 * @return a set of dates on which this service runs
-	 */
-	@Override
-	public Collection<LocalDate> getCoveredDays() {
-		return Collections.unmodifiableCollection(coveredDays);
+	public void addTrip(Trip newTrip) {
+		trips.put(newTrip.getId(), newTrip);
 	}
 
 	/**
@@ -88,6 +86,14 @@ public class ServiceImpl implements Service {
 	 */
 	private LocalDate parseDateFormat(String yyyymmdd) {
 		return LocalDate.of(Integer.parseInt(yyyymmdd.substring(0, 4)), Integer.parseInt(yyyymmdd.substring(4, 6)), Integer.parseInt(yyyymmdd.substring(6, 8)));
+	}
+
+	/**
+	 * @return a set of dates on which this service runs
+	 */
+	@Override
+	public Collection<LocalDate> getCoveredDays() {
+		return Collections.unmodifiableCollection(coveredDays);
 	}
 
 	/**
@@ -143,10 +149,6 @@ public class ServiceImpl implements Service {
 		return Collections.unmodifiableMap(trips);
 	}
 
-	public void addTrip(Trip newTrip) {
-		trips.put(newTrip.getId(), newTrip);
-	}
-
 	@Override
 	public boolean runsOnDate(LocalDate checkDate) {
 		if(checkDate == null) {
@@ -173,13 +175,29 @@ public class ServiceImpl implements Service {
 		if(this == o) return true;
 		if(o == null || getClass() != o.getClass()) return false;
 
-		Service that = (Service) o;
-		return (that.getId().equals(id));
+		ServiceImpl service = (ServiceImpl) o;
+
+		if(!id.equals(service.id)) return false;
+		if(!Arrays.equals(days, service.days)) return false;
+		if(!startDate.equals(service.startDate)) return false;
+		if(!endDate.equals(service.endDate)) return false;
+		if(!additions.equals(service.additions)) return false;
+		if(!exceptions.equals(service.exceptions)) return false;
+		if(!coveredDays.equals(service.coveredDays)) return false;
+		return trips.equals(service.trips);
 	}
 
 	@Override
 	public int hashCode() {
-		return id.hashCode();
+		int result = id.hashCode();
+		result = 31 * result + Arrays.hashCode(days);
+		result = 31 * result + startDate.hashCode();
+		result = 31 * result + endDate.hashCode();
+		result = 31 * result + additions.hashCode();
+		result = 31 * result + exceptions.hashCode();
+		result = 31 * result + coveredDays.hashCode();
+		result = 31 * result + trips.hashCode();
+		return result;
 	}
 
 	@Override

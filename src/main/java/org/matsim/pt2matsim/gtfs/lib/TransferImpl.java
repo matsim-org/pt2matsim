@@ -28,15 +28,14 @@ public class TransferImpl implements Transfer {
 	private final String fromStopId;
 	private final String toStopId;
 	private final GtfsDefinitions.TransferType transferType;
+	/** optional **/
 	private final Integer minTransferTime;
-	private final int hash;
 
 	public TransferImpl(String fromStopId, String toStopId, GtfsDefinitions.TransferType transferType) {
 		this.fromStopId = fromStopId;
 		this.toStopId = toStopId;
 		this.transferType = transferType;
 		this.minTransferTime = null;
-		this.hash = (fromStopId + toStopId).hashCode() + transferType.hashCode();
 	}
 
 	public TransferImpl(String fromStopId, String toStopId, GtfsDefinitions.TransferType transferType, Integer minTransferTime) {
@@ -44,7 +43,6 @@ public class TransferImpl implements Transfer {
 		this.toStopId = toStopId;
 		this.transferType = transferType;
 		this.minTransferTime = minTransferTime;
-		this.hash = (fromStopId + toStopId).hashCode() + transferType.hashCode() + minTransferTime;
 	}
 
 	@Override
@@ -63,37 +61,30 @@ public class TransferImpl implements Transfer {
 	}
 
 	@Override
-	public Integer minTransferTime() {
+	public Integer getMinTransferTime() {
 		return minTransferTime;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if(this == obj)
-			return true;
-		if(obj == null)
-			return false;
-		if(getClass() != obj.getClass())
-			return false;
+	public boolean equals(Object o) {
+		if(this == o) return true;
+		if(o == null || getClass() != o.getClass()) return false;
 
-		Transfer other = (Transfer) obj;
-		return (other.getFromStopId().equals(this.getFromStopId()) &&
-				other.getToStopId().equals(this.getToStopId()) &&
-				other.getTransferType().equals(this.getTransferType()) &&
-				equalsMinTransferTime(other));
-	}
+		TransferImpl transfer = (TransferImpl) o;
 
-	private boolean equalsMinTransferTime(Transfer other) {
-		if (other.minTransferTime() == null) {
-			return this.minTransferTime == null;
-		} else {
-			return other.minTransferTime().equals(this.minTransferTime());
-		}
+		if(!fromStopId.equals(transfer.fromStopId)) return false;
+		if(!toStopId.equals(transfer.toStopId)) return false;
+		if(transferType != transfer.transferType) return false;
+		return minTransferTime != null ? minTransferTime.equals(transfer.minTransferTime) : transfer.minTransferTime == null;
 	}
 
 	@Override
 	public int hashCode() {
-		return hash;
+		int result = fromStopId.hashCode();
+		result = 31 * result + toStopId.hashCode();
+		result = 31 * result + transferType.hashCode();
+		result = 31 * result + (minTransferTime != null ? minTransferTime.hashCode() : 0);
+		return result;
 	}
 
 	@Override

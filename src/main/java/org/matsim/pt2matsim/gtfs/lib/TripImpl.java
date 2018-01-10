@@ -44,8 +44,8 @@ public class TripImpl implements Trip {
 		this.id = id;
 		this.service = service;
 		this.shape = shape;
-		stopTimes = new TreeSet<>();
-		frequencies = new HashSet<>();
+		this.stopTimes = new TreeSet<>();
+		this.frequencies = new HashSet<>();
 	}
 
 	public void addStopTime(StopTime stopTime) {
