@@ -40,7 +40,7 @@ public class StopImpl implements Stop {
 	/** optional **/
 	private String parentStationId = null;
 
-	private Coord coord;
+	private final Coord coord;
 	private final Collection<Trip> trips = new HashSet<>();
 
 	public StopImpl(String id, String name, double lon, double lat) {
@@ -49,6 +49,16 @@ public class StopImpl implements Stop {
 		this.lat = lat;
 		this.coord = new Coord(lon, lat);
 		this.name = name;
+	}
+
+	public StopImpl(String id, String name, double lon, double lat, GtfsDefinitions.LocationType locationType, String parentStationId) {
+		this.id = id;
+		this.lon = lon;
+		this.lat = lat;
+		this.coord = new Coord(lon, lat);
+		this.name = name;
+		this.locationType = locationType;
+		this.parentStationId = parentStationId;
 	}
 
 	@Override
@@ -91,10 +101,6 @@ public class StopImpl implements Stop {
 		return coord;
 	}
 
-	public void setCoord(Coord coord) {
-		this.coord = coord;
-	}
-
 	public void setLocationType(GtfsDefinitions.LocationType type) {
 		this.locationType = type;
 	}
@@ -132,13 +138,11 @@ public class StopImpl implements Stop {
 		result = 31 * result + (int) (temp ^ (temp >>> 32));
 		temp = Double.doubleToLongBits(lat);
 		result = 31 * result + (int) (temp ^ (temp >>> 32));
-		result = 31 * result + (locationType != null ? locationType.hashCode() : 0);
-		result = 31 * result + (parentStationId != null ? parentStationId.hashCode() : 0);
 		return result;
 	}
 
 	@Override
 	public String toString() {
-		return "[stop:" + id + ", \"" + name + "\"]";
+		return "[stop:" + id + " \"" + name + "\" (" + lon + ", " + lat + ")]";
 	}
 }

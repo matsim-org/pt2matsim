@@ -648,7 +648,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 		CoordinateTransformation transformation = TransformationFactory.getCoordinateTransformation(coordSys, targetCoordinateSystem);
 		for(Stop stop : stops.values()) {
-			((StopImpl) stop).setCoord(transformation.transform(stop.getCoord()));
+			transformation.transform(stop.getCoord());
 
 			if(stop.getCoord().getX() > maxE) maxE = stop.getCoord().getX();
 			if(stop.getCoord().getY() > maxN) maxN = stop.getCoord().getY();

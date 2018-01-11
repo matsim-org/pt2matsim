@@ -3,6 +3,11 @@ package org.matsim.pt2matsim.gtfs;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.matsim.api.core.v01.Coord;
+import org.matsim.pt2matsim.gtfs.lib.Stop;
+import org.matsim.pt2matsim.gtfs.lib.StopImpl;
+
+import java.util.*;
 
 /**
  * @author polettif
@@ -17,7 +22,7 @@ public class GtfsFeedImplTest {
 	}
 
 	@Test
-	public void statistics() throws Exception {
+	public void statistics() {
 		Assert.assertEquals(114, feed.getStops().size());
 		Assert.assertEquals(11, feed.getRoutes().size());
 		Assert.assertEquals(15, feed.getServices().size());
@@ -26,8 +31,29 @@ public class GtfsFeedImplTest {
 	}
 
 	@Test
-	public void transform() {
+	public void stopsEqualAfterTransform() {
+		Stop testStop = feed.getStops().values().stream().findFirst().
+				<Stop>map(s -> new StopImpl(s.getId(), s.getName(), s.getLon(), s.getLat(), s.getLocationType(), s.getParentStationId())).
+				orElse(null);
+		Assert.assertNotNull(testStop);
 		feed.transform("EPSG:2032");
+		Assert.assertEquals(testStop, feed.getStops().get(testStop.getId()));
 	}
+
+	@Test
+	public void coordEqualAfterRetransform() {
+		Set<Coord> coords1 = new HashSet<>();
+		for(Stop stop : feed.getStops().values()) {
+			coords1.add(stop.getCoord());
+		}
+		feed.transform("EPSG:2032");
+		feed.transform("WGS84");
+		Set<Coord> coords2 = new HashSet<>();
+		for(Stop stop : feed.getStops().values()) {
+			coords2.add(new Coord(stop.getCoord().getX(), stop.getCoord().getY()));
+		}
+		Assert.assertEquals(coords1, coords2);
+	}
+
 
 }
