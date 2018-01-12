@@ -27,35 +27,46 @@ public class FrequencyImpl implements Frequency {
 	private final int startTime;
 	private final int endTime;
 	private final int headwaySecs;
+	/** optional **/
+	private final boolean exactTimes;
 
 	public FrequencyImpl(int startTime, int endTime, int headwaySecs) {
 		this.startTime = startTime;
 		this.endTime = endTime;
 		this.headwaySecs = headwaySecs;
+		this.exactTimes = false;
 	}
 
-	/**
-	 * required attribute
-	 */
+	public FrequencyImpl(int startTime, int endTime, int headwaySecs, boolean exactTimes) {
+		this.startTime = startTime;
+		this.endTime = endTime;
+		this.headwaySecs = headwaySecs;
+		this.exactTimes = exactTimes;
+	}
+
+	/** required */
 	@Override
 	public int getStartTime() {
 		return startTime;
 	}
 
-	/**
-	 * required attribute
-	 */
+	/** required */
+
 	@Override
 	public int getEndTime() {
 		return endTime;
 	}
 
-	/**
-	 * required attribute
-	 */
+	/** required */
+
 	@Override
 	public int getHeadWaySecs() {
 		return headwaySecs;
+	}
+
+	@Override
+	public boolean isExactlyScheduled() {
+		return exactTimes;
 	}
 
 

@@ -24,10 +24,13 @@ package org.matsim.pt2matsim.gtfs.lib;
  */
 public interface Transfer {
 
+	/** required **/
 	String getFromStopId();
 
+	/** required **/
 	String getToStopId();
 
+	/** required **/
 	GtfsDefinitions.TransferType getTransferType();
 
 	/**

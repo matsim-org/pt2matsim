@@ -48,6 +48,15 @@ public class TripImpl implements Trip {
 		this.frequencies = new HashSet<>();
 	}
 
+	public TripImpl(String id, Route route, Service service) {
+		this.route = route;
+		this.id = id;
+		this.service = service;
+		this.shape = null;
+		this.stopTimes = new TreeSet<>();
+		this.frequencies = new HashSet<>();
+	}
+
 	public void addStopTime(StopTime stopTime) {
 		stopTimes.add(stopTime);
 	}
@@ -56,46 +65,36 @@ public class TripImpl implements Trip {
 		frequencies.add(frequency);
 	}
 
-	@Override
-	public boolean hasShape() {
-		return shape != null;
-	}
-
-	/**
-	 * required attribute
-	 */
+	/** required */
 	@Override
 	public String getId() {
 		return id;
 	}
 
-	/**
-	 * required attribute
-	 */
+	/** required */
 	@Override
 	public Service getService() {
 		return service;
 	}
 
-	/**
-	 * required attribute
-	 */
+	@Override
+	public boolean hasShape() {
+		return shape != null;
+	}
+
+	/** required */
 	@Override
 	public RouteShape getShape() {
 		return shape;
 	}
 
-	/**
-	 * required attribute
-	 */
+	/** required */
 	@Override
 	public NavigableSet<StopTime> getStopTimes() {
 		return stopTimes;
 	}
 
-	/**
-	 * required attribute
-	 */
+	/** required */
 	@Override
 	public Collection<Frequency> getFrequencies() {
 		return frequencies;

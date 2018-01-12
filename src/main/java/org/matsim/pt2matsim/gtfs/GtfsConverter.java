@@ -42,12 +42,14 @@ import java.util.Map;
  */
 public class GtfsConverter {
 
+	private final boolean AWAIT_DEPARTURE_TIME_DEFAULT = true;
+	private final boolean BLOCKS_DEFAULT = false;
+
 	public static final String ALL_SERVICE_IDS = "all";
 	public static final String DAY_WITH_MOST_TRIPS = "dayWithMostTrips";
 	public static final String DAY_WITH_MOST_SERVICES = "dayWithMostServices";
+
 	protected static Logger log = Logger.getLogger(GtfsConverter.class);
-	private final boolean AWAIT_DEPARTURE_TIME_DEFAULT = true;
-	private final boolean BLOCKS_DEFAULT = false;
 	private final GtfsFeed feed;
 
 	private LocalDate dateUsed = null;
@@ -134,7 +136,7 @@ public class GtfsConverter {
 			  loop through each trip for the gtfsRoute and generate transitRoute (if the serviceId is correct)
 			 */
 			for(Trip trip : gtfsRoute.getTrips().values()) {
-				Id<RouteShape> shapeId = trip.hasShape() ? trip.getShape().getId() : null;
+				Id<RouteShape> shapeId = trip.getShape() != null ? trip.getShape().getId() : null;
 
 				if(trip.getService().runsOnDate(extractDate)) {
 					/* [4]

@@ -88,57 +88,37 @@ public class ServiceImpl implements Service {
 		return LocalDate.of(Integer.parseInt(yyyymmdd.substring(0, 4)), Integer.parseInt(yyyymmdd.substring(4, 6)), Integer.parseInt(yyyymmdd.substring(6, 8)));
 	}
 
-	/**
-	 * @return a set of dates on which this service runs
-	 */
-	@Override
-	public Collection<LocalDate> getCoveredDays() {
-		return Collections.unmodifiableCollection(coveredDays);
-	}
-
-	/**
-	 * required attribute
-	 */
+	/** required */
 	@Override
 	public String getId() {
 		return id;
 	}
 
-	/**
-	 * required attribute
-	 */
+	/** required */
 	@Override
 	public boolean[] getDays() {
 		return days;
 	}
 
-	/**
-	 * required attribute (null if service ist not defined in calendar.txt)
-	 */
+	/** required */
 	@Override
 	public LocalDate getStartDate() {
 		return startDate;
 	}
 
-	/**
-	 * required attribute (null if service ist not defined in calendar.txt)
-	 */
+	/** required */
 	@Override
 	public LocalDate getEndDate() {
 		return endDate;
 	}
 
-	/**
-	 * required attribute
-	 */
+	/** required */
 	@Override
 	public Collection<LocalDate> getAdditions() {
 		return Collections.unmodifiableCollection(additions);
 	}
 
-	/**
-	 * required attribute
-	 */
+	/** required */
 	@Override
 	public Collection<LocalDate> getExceptions() {
 		return Collections.unmodifiableCollection(exceptions);
@@ -147,6 +127,14 @@ public class ServiceImpl implements Service {
 	@Override
 	public Map<String, Trip> getTrips() {
 		return Collections.unmodifiableMap(trips);
+	}
+
+	/**
+	 * @return a set of dates on which this service runs
+	 */
+	@Override
+	public Collection<LocalDate> getCoveredDays() {
+		return Collections.unmodifiableCollection(coveredDays);
 	}
 
 	@Override

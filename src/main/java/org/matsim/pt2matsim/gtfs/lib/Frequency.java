@@ -29,4 +29,6 @@ public interface Frequency {
 
 	int getHeadWaySecs();
 
+	boolean isExactlyScheduled();
+
 }

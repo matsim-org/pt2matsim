@@ -25,11 +25,17 @@ import java.util.Map;
  */
 public interface Route {
 
-	Map<String, Trip> getTrips();
-
+	/** required **/
 	String getId();
 
+	/** required **/
 	String getShortName();
 
+	/** required **/
+	String getLongName();
+
+	/** required **/
 	GtfsDefinitions.RouteType getRouteType();
+
+	Map<String, Trip> getTrips();
 }

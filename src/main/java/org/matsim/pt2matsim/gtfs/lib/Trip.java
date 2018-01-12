@@ -28,17 +28,17 @@ import java.util.NavigableSet;
  */
 public interface Trip {
 
-	boolean hasShape();
-
 	String getId();
 
-	Service getService();
-
-	RouteShape getShape();
-
 	NavigableSet<StopTime> getStopTimes();
+
+	Service getService();
 
 	Collection<Frequency> getFrequencies();
 
 	Route getRoute();
+
+	boolean hasShape();
+
+	RouteShape getShape();
 }

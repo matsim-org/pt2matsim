@@ -50,6 +50,7 @@ public final class GtfsDefinitions {
 	public static final String EXCEPTION_TYPE = "exception_type";
 	public static final String DATE = "date";
 	public static final String ROUTE_SHORT_NAME = "route_short_name";
+	public static final String ROUTE_LONG_NAME = "route_long_name";
 	public static final String ROUTE_TYPE = "route_type";
 	public static final String ROUTE_ID = "route_id";
 	public static final String TRIP_ID = "trip_id";
@@ -119,7 +120,7 @@ public final class GtfsDefinitions {
 
 		ROUTES("Route",
 				"routes.txt",
-				new String[]{ROUTE_ID, ROUTE_SHORT_NAME, ROUTE_TYPE},
+				new String[]{ROUTE_ID, ROUTE_SHORT_NAME, ROUTE_LONG_NAME, ROUTE_TYPE},
 				new String[]{ROUTE_DESC, ROUTE_URL, ROUTE_COLOR, ROUTE_TEXT_COLOR}),
 
 		TRIPS("Trip",

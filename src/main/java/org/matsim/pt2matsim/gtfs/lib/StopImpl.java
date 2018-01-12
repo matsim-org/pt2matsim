@@ -33,10 +33,8 @@ public class StopImpl implements Stop {
 	private final String name;
 	private final double lon;
 	private final double lat;
-
 	/** optional **/
 	private GtfsDefinitions.LocationType locationType = null;
-
 	/** optional **/
 	private String parentStationId = null;
 

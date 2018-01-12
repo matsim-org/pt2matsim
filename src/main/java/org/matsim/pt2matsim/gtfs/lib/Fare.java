@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.util.Currency;
 
 /**
+ * Not implemented
  * @author polettif
  */
 public interface Fare {

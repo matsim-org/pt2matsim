@@ -30,13 +30,15 @@ public class RouteImpl implements Route {
 
 	private final String routeId;
 	private final String shortName;
+	private final String longName;
 	private final RouteType routeType;
 
 	private final Map<String, Trip> trips = new HashMap<>();
 
-	public RouteImpl(String routeId, String shortName, RouteType routeType) {
+	public RouteImpl(String routeId, String shortName, String longName, RouteType routeType) {
 		this.routeId = routeId;
 		this.shortName = shortName;
+		this.longName = longName;
 		this.routeType = routeType;
 	}
 
@@ -48,33 +50,33 @@ public class RouteImpl implements Route {
 		trips.put(trip.getId(), trip);
 	}
 
-	@Override
-	public Map<String, Trip> getTrips() {
-		return Collections.unmodifiableMap(trips);
-	}
-
-	/**
-	 * required attribute
- 	 */
+	/** required */
 	@Override
 	public String getId() {
 		return routeId;
 	}
 
-	/**
-	 * required attribute
-	 */
+	/** required */
 	@Override
 	public String getShortName() {
 		return shortName;
 	}
 
-	/**
-	 * required attribute
-	 */
+	/** required **/
+	@Override
+	public String getLongName() {
+		return longName;
+	}
+
+	/** required */
 	@Override
 	public RouteType getRouteType() {
 		return routeType;
+	}
+
+	@Override
+	public Map<String, Trip> getTrips() {
+		return Collections.unmodifiableMap(trips);
 	}
 
 	@Override

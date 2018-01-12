@@ -26,7 +26,8 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * An interface to load and convert GTFS feeds
+ * An interface to store a GTFS feed to convert afterwards.
+ * Note: Not all elements of a feed are represented.
  *
  * @author polettif
  */

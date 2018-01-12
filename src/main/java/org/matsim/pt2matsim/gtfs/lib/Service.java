@@ -27,19 +27,26 @@ import java.util.Map;
  */
 public interface Service {
 
-	Collection<LocalDate> getCoveredDays();
-
+	/** required (calendar.txt) **/
 	String getId();
 
+	/** required (calendar.txt) **/
 	boolean[] getDays();
 
+	/** required (calendar.txt) **/
 	LocalDate getStartDate();
 
+	/** required (calendar.txt) **/
 	LocalDate getEndDate();
 
+	/** required (calendar_dates.txt) **/
 	Collection<LocalDate> getAdditions();
 
+	/** required (calendar_dates.txt) **/
 	Collection<LocalDate> getExceptions();
+
+	/** required (calendar_dates.txt) **/
+	Collection<LocalDate> getCoveredDays();
 
 	Map<String, Trip> getTrips();
 

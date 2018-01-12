@@ -28,20 +28,21 @@ import java.util.Collection;
 public interface Stop {
 
 	/**
+	 * [required]
 	 * ID that uniquely identifies a stop or station. Multiple routes may use the same stop. The stop_id is dataset unique.
 	 */
 	String getId();
 
+	/** required **/
 	double getLon();
 
+	/** required **/
 	double getLat();
 
 	/**
-	 * Name of a stop or station
+	 * [required] Name of a stop or station
 	 */
 	String getName();
-
-	Collection<Trip> getTrips();
 
 	/**
 	 * [optional] Identifies whether this stop represents a stop or station.
@@ -54,6 +55,8 @@ public interface Stop {
 	 * location type=1.
 	 */
 	String getParentStationId();
+
+	Collection<Trip> getTrips();
 
 	Coord getCoord();
 }

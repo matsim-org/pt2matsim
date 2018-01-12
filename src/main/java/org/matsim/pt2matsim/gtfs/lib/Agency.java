@@ -19,6 +19,7 @@
 package org.matsim.pt2matsim.gtfs.lib;
 
 /**
+ * Not implemented
  * @author polettif
  */
 public interface Agency {

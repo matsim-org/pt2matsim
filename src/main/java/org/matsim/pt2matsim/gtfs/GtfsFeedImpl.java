@@ -16,7 +16,6 @@
  *                                                                         *
  * *********************************************************************** */
 
-
 package org.matsim.pt2matsim.gtfs;
 
 import com.opencsv.CSVReader;
@@ -24,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
+import org.matsim.core.utils.geometry.transformations.GeotoolsTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt2matsim.gtfs.lib.*;
@@ -37,7 +37,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
-
 
 /**
  * Reads GTFS files and stores data
@@ -375,7 +374,10 @@ public class GtfsFeedImpl implements GtfsFeed {
 					log.warn("Route " + line[col.get(GtfsDefinitions.ROUTE_ID)] + " of type " + routeTypeNr + " will be ignored");
 					ignoredRoutes.add(line[col.get(GtfsDefinitions.ROUTE_ID)]);
 				} else {
-					Route newGtfsRoute = new RouteImpl(line[col.get(GtfsDefinitions.ROUTE_ID)], line[col.get(GtfsDefinitions.ROUTE_SHORT_NAME)], routeType);
+					String routeId = line[col.get(GtfsDefinitions.ROUTE_ID)];
+					String shortName = line[col.get(GtfsDefinitions.ROUTE_SHORT_NAME)];
+					String longName = line[col.get(GtfsDefinitions.ROUTE_LONG_NAME)];
+					Route newGtfsRoute = new RouteImpl(routeId, shortName, longName, routeType);
 					routes.put(line[col.get(GtfsDefinitions.ROUTE_ID)], newGtfsRoute);
 				}
 
@@ -426,7 +428,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 						Id<RouteShape> shapeId = Id.create(line[col.get(GtfsDefinitions.SHAPE_ID)], RouteShape.class); // column might not be available
 						newTrip = new TripImpl(line[col.get(GtfsDefinitions.TRIP_ID)], route, service, shapes.get(shapeId));
 					} else {
-						newTrip = new TripImpl(line[col.get(GtfsDefinitions.TRIP_ID)], route, service, null);
+						newTrip = new TripImpl(line[col.get(GtfsDefinitions.TRIP_ID)], route, service);
 					}
 	
 					// store Trip
@@ -645,6 +647,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 	@Override
 	public double[] transform(String targetCoordinateSystem) {
 		double minE = Double.MAX_VALUE, minN = Double.MAX_VALUE, maxE = Double.MIN_VALUE, maxN = Double.MIN_VALUE;
+
+
 
 		CoordinateTransformation transformation = TransformationFactory.getCoordinateTransformation(coordSys, targetCoordinateSystem);
 		for(Stop stop : stops.values()) {
