@@ -25,7 +25,7 @@ public class BasicScheduleEditorTest {
 	 * ["rerouteViaLink"] [TransitLineId] [TransitRouteId] [oldLinkId] [newLinkId]
 	 */
 	@Test
-	public void rerouteViaLink() throws Exception {
+	public void rerouteViaLink() {
 		TransitSchedule schedule = initSchedule();
 		Network network = NetworkToolsTest.initNetwork();
 
@@ -57,7 +57,7 @@ public class BasicScheduleEditorTest {
 	 * ["changeRefLink"] ["allTransitRoutesOnLink"] [linkId] [ParentId] [newlinkId]
 	 */
 	@Test
-	public void changeRefLink() throws Exception {
+	public void changeRefLink() {
 		TransitSchedule schedule = initSchedule();
 		Network network = NetworkToolsTest.initNetwork();
 
@@ -83,12 +83,12 @@ public class BasicScheduleEditorTest {
 	}
 
 	@Test
-	public void refreshTransitRoute() throws Exception {
+	public void refreshTransitRoute() {
 
 	}
 
 	@Test
-	public void refreshSchedule() throws Exception {
+	public void refreshSchedule() {
 
 	}
 

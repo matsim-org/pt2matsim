@@ -245,7 +245,7 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 			double currentDistance = entry.getKey();
 			double currentNLinks = entry.getValue().size();
 
-			// if the distance is greate than the maximum distance
+			// if the distance is greater than the maximum distance
 			if(currentDistance > maxDistance) {
 				break;
 			}

@@ -157,7 +157,7 @@ public class NetworkToolsTest {
 	}
 
 	@Test
-	public void getNearestLink() throws Exception {
+	public void getNearestLink() {
 		Coord testR = new Coord(1.0, 10.0);
 		Coord testL = new Coord(-1.0, 10.0);
 
@@ -169,14 +169,14 @@ public class NetworkToolsTest {
 	}
 
 	@Test
-	public void getOppositeLink() throws Exception {
+	public void getOppositeLink() {
 		Network network = initNetwork();
 
 		Assert.assertEquals("AD", NetworkTools.getOppositeLink(network.getLinks().get(Id.createLinkId("DA"))).getId().toString());
 	}
 
 	@Test
-	public void coordIsOnRightSideOfLink() throws Exception {
+	public void coordIsOnRightSideOfLink() {
 		Coord c = new Coord(-1.0, 1.0);
 
 		Assert.assertTrue(NetworkTools.coordIsOnRightSideOfLink(c, network.getLinks().get(Id.createLinkId("IG"))));
@@ -189,7 +189,7 @@ public class NetworkToolsTest {
 	}
 
 	@Test
-	public void linkSequenceHasDuplicateLink() throws Exception {
+	public void linkSequenceHasDuplicateLink() {
 		List<Link> seq = new ArrayList<>();
 		seq.add(getLink("XA"));
 		seq.add(getLink("AB"));
@@ -204,7 +204,7 @@ public class NetworkToolsTest {
 	}
 
 	@Test
-	public void linkSequenceHasUTurns() throws Exception {
+	public void linkSequenceHasUTurns() {
 		List<Link> seq = new ArrayList<>();
 		seq.add(getLink("AB"));
 		seq.add(getLink("BC"));
@@ -221,7 +221,7 @@ public class NetworkToolsTest {
 	}
 
 	@Test
-	public void reduceSequencedLinks() throws Exception {
+	public void reduceSequencedLinks() {
 		List<Link> seq = new ArrayList<>();
 		seq.add(getLink("AH"));
 		seq.add(getLink("HZ"));

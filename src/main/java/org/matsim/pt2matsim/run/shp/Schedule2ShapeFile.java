@@ -242,7 +242,7 @@ public class Schedule2ShapeFile {
 
 
 	/**
-	 * @return the sum of all link lenght's of a transit route
+	 * @return the sum of all link lenghts of a transit route
 	 */
 	private double getRouteLength(TransitRoute transitRoute) {
 		double length = 0;

@@ -16,7 +16,6 @@
  *                                                                         *
  * *********************************************************************** */
 
-
 package org.matsim.pt2matsim.tools;
 
 import org.apache.log4j.Logger;
@@ -647,9 +646,8 @@ public final class NetworkTools {
 	/**
 	 * Calculates the length of a link sequence
 	 * @param euclidian uses the sum of all link lengths if <tt>false</tt>
-	 * @throws Exception if links are not connected
 	 */
-	public static double calcRouteLength(List<Link> links, boolean euclidian) throws Exception {
+	public static double calcRouteLength(List<Link> links, boolean euclidian) {
 		double length = 0;
 		Link debugPrev = null;
 		for(Link link : links) {
@@ -667,7 +665,7 @@ public final class NetworkTools {
 		return length;
 	}
 
-	public static double calcRouteLength(Network network, TransitRoute transitRoute, boolean euclidian) throws Exception {
+	public static double calcRouteLength(Network network, TransitRoute transitRoute, boolean euclidian) {
 		return calcRouteLength(NetworkUtils.getLinks(network, ScheduleTools.getTransitRouteLinkIds(transitRoute)), euclidian);
 	}
 

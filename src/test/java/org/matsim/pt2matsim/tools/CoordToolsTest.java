@@ -57,7 +57,7 @@ public class CoordToolsTest {
 	 */
 
 	@Test
-	public void getAzimuth() throws Exception {
+	public void getAzimuth() {
 		assertEquals(0,   200* CoordTools.getAzimuth(coordA,coordD)/Math.PI, testDelta);
 		assertEquals(50,  200* CoordTools.getAzimuth(coordA,coordC)/Math.PI, testDelta);
 		assertEquals(100, 200* CoordTools.getAzimuth(coordA,coordB)/Math.PI, testDelta);

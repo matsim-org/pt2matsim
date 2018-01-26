@@ -17,7 +17,7 @@ public class GtfsConverterTest {
 	private TransitSchedule scheduleAddison;
 
 	@Before
-	public void convert() throws Exception {
+	public void convert() {
 		String coordinateSystem = "EPSG:2032";
 
 		gtfsFeed = new GtfsFeedImpl("test/Addisoncounty-GTFS/");

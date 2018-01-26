@@ -53,7 +53,7 @@ public class ZVVexample {
 	private static String outputSchedule3 = base + "output/osm_schedule.xml.gz";
 	private static OsmData osmData;
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 //		convertOsm();
 //		convertSchedule();
 		filterSchedule();
@@ -158,7 +158,7 @@ public class ZVVexample {
 		// create PTM config
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
 
-		// run PTMapepr
+		// run PTMapper
 		PTMapper ptMapper = new PTMapper(schedule, network);
 		ptMapper.run(config);
 

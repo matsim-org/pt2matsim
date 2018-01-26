@@ -17,7 +17,7 @@ import java.util.Set;
 public class PlausibilityCheckTest {
 
 	@Test
-	public void runCheck() throws Exception {
+	public void runCheck() {
 		TransitSchedule s = ScheduleToolsTest.initSchedule();
 		Network n = NetworkToolsTest.initNetwork();
 

@@ -45,7 +45,7 @@ public final class PT2MATSimExample {
 	private static final String outputUnmapped = output + "unmapped/";
 	private static final String addisonCountyEPSG = "EPSG:2032";
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 		prepare();
 		// 1. Convert a gtfs schedule to an unmapped transit schedule
 		gtfsToSchedule();

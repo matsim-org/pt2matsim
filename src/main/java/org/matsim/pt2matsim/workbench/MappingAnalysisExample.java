@@ -39,7 +39,7 @@ import java.io.File;
  */
 public class MappingAnalysisExample {
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 		String input = "example/";
 		String coordinateSystem = "EPSG:2032";
 

@@ -57,7 +57,7 @@ import java.util.Set;
  * than one plausible link. Artificial links are added to the network
  * if no path can be found.</p>
  * <p>
- * {@link LinkCandidateCreator} is appliedto find link candidates and
+ * {@link LinkCandidateCreator} is applied to find link candidates and
  * {@link ScheduleRouters} to find the shortest paths on the network.
  * </p>
  *

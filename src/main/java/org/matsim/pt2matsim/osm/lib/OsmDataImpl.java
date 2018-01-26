@@ -19,9 +19,7 @@
 package org.matsim.pt2matsim.osm.lib;
 
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
-import org.matsim.core.utils.collections.QuadTree;
 import org.matsim.core.utils.misc.Counter;
 
 import java.util.*;
@@ -37,17 +35,8 @@ public class OsmDataImpl implements OsmData {
 	private final Map<Id<Osm.Way>, Osm.Way> ways = new HashMap<>();
 	private final Map<Id<Osm.Relation>, Osm.Relation> relations = new HashMap<>();
 
-	private Map<Long, OsmFileReader.ParsedNode> parsedNodes = null;
 	private Map<Long, OsmFileReader.ParsedRelation> parsedRelations = null;
 	private Map<Long, OsmFileReader.ParsedWay> parsedWays = null;
-
-	// node extent
-	private double minX = Double.MAX_VALUE;
-	private double minY = Double.MAX_VALUE;
-	private double maxX = Double.MIN_VALUE;
-	private double maxY = Double.MIN_VALUE;
-
-	private QuadTree<Osm.Node> quadTree;
 
 	// Filters
 	private AllowedTagsFilter filter = new AllowedTagsFilter();
@@ -60,21 +49,8 @@ public class OsmDataImpl implements OsmData {
 
 	public void buildMap() {
 		log.info("Build map...");
-		quadTree = new QuadTree<>(minX, minY, maxX, maxY);
 
-		// create nodes
-		log.info("Create nodes...");
-		if(parsedWays == null) throw new RuntimeException("No nodes available in osm file");
-		Counter pnCounter = new Counter(" # ");
-		for(OsmFileReader.ParsedNode pn : parsedNodes.values()) {
-			pnCounter.incCounter();
-			Osm.Node newNode = new OsmElement.Node(pn.id, pn.coord, pn.tags);
-			quadTree.put(newNode.getCoord().getX(), newNode.getCoord().getY(), newNode);
-			if(nodes.put(newNode.getId(), newNode) != null) {
-				throw new RuntimeException("Node id " + newNode.getId() + "already exists on map");
-			}
-		}
-		parsedNodes = null;
+		// nodes have already been created
 
 		// create ways
 		log.info("Create ways...");
@@ -242,17 +218,11 @@ public class OsmDataImpl implements OsmData {
 	@Override
 	public void handleParsedNode(OsmFileReader.ParsedNode node) {
 		if(filter.matches(node)) {
-			if(parsedNodes == null) parsedNodes = new HashMap<>();
-			parsedNodes.put(node.id, node);
-			updateExtent(node.coord);
+			Osm.Node newNode = new OsmElement.Node(node.id, node.coord, node.tags);
+			if(nodes.put(newNode.getId(), newNode) != null) {
+				throw new RuntimeException("Node id " + newNode.getId() + "already exists on map");
+			}
 		}
-	}
-
-	private void updateExtent(Coord c) {
-		if(c.getX() < minX) minX = c.getX();
-		if(c.getY() < minY) minY = c.getY();
-		if(c.getX() > maxX) maxX = c.getX();
-		if(c.getY() > maxY) maxY = c.getY();
 	}
 
 	@Override

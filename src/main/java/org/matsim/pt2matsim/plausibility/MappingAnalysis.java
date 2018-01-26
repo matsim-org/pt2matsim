@@ -171,7 +171,7 @@ public class MappingAnalysis {
 
 	/**
 	 * Writes all measured distances for all transit transitRoute to a csv file. Each measured distance is written to a new file
-	 * which tends to inflate files considarbly.
+	 * which tends to inflate files considerably.
 	 */
 	public void writeAllDistancesCsv(String filename) {
 		Map<Tuple<Integer, Integer>, String> keyTable = new HashMap<>();

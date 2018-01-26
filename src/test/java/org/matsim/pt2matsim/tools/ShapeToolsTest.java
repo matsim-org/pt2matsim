@@ -76,7 +76,7 @@ public class ShapeToolsTest {
 	}
 
 	@Test
-	public void calcMinDistanceToShape() throws Exception {
+	public void calcMinDistanceToShape() {
 		Assert.assertEquals(0, ShapeTools.calcMinDistanceToShape(coordX, shapeB), d);
 		Assert.assertEquals(5, ShapeTools.calcMinDistanceToShape(new Coord(-5, -5), shapeB), d);
 
@@ -86,13 +86,13 @@ public class ShapeToolsTest {
 
 
 	@Test
-	public void getNodesWithinBuffer() throws Exception {
+	public void getNodesWithinBuffer() {
 		Collection<Node> nodes = ShapeTools.getNodesWithinBuffer(NetworkToolsTest.initNetwork(), shapeB, 1.0);
 		Assert.assertEquals(9, nodes.size());
 	}
 
 	@Test
-	public void getShapeLength() throws Exception {
+	public void getShapeLength() {
 		double lengthA1 = ShapeTools.getShapeLength(shapeA1);
 		double lengthA2 = ShapeTools.getShapeLength(shapeA2);
 		Assert.assertEquals(lengthA1, lengthA2, d);

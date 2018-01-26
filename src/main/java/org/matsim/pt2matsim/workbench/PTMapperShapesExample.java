@@ -38,7 +38,7 @@ public class PTMapperShapesExample {
 	private static String networkOutput2 = base + "output/shapes_network.xml.gz";
 	private static String scheduleOutput2 = base + "output/shapes_schedule.xml.gz";
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 		convertGtfs();
 		mappingAnalysisNormal();
 		mappingAnalysisWithShapes();
@@ -62,7 +62,7 @@ public class PTMapperShapesExample {
 		return config;
 	}
 
-	public static void convertGtfs() throws Exception {
+	public static void convertGtfs() {
 		gtfsFeed = new GtfsFeedImpl(gtfsFolder);
 		GtfsConverter gtfsConverter = new GtfsConverter(gtfsFeed);
 		gtfsConverter.convert(sampleDay, coordSys);
