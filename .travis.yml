@@ -2,4 +2,5 @@ language: java
 
 script:
   - mvn test -B -Dmatsim.preferLocalDtds=true
-  - if ! [[ $( cat pom.xml | grep "SNAPSHOT" ) ]]; then mvn deploy -DskipTests=true --settings=settings.xml; fi
+  - mvn deploy -DskipTests=true --settings=settings.xml
+#  - if ! [[ $( cat pom.xml | grep "SNAPSHOT" ) ]]; then mvn deploy -DskipTests=true --settings=settings.xml; fi
