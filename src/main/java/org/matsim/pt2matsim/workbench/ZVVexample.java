@@ -19,7 +19,7 @@ import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersOsmAttributes;
 import org.matsim.pt2matsim.osm.OsmMultimodalNetworkConverter;
 import org.matsim.pt2matsim.osm.lib.*;
 import org.matsim.pt2matsim.plausibility.MappingAnalysis;
-import org.matsim.pt2matsim.run.shp.Schedule2ShapeFile;
+import org.matsim.pt2matsim.run.gis.Schedule2ShapeFile;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ShapeTools;

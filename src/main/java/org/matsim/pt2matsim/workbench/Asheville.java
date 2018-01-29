@@ -31,7 +31,7 @@ import org.matsim.pt2matsim.plausibility.MappingAnalysis;
 import org.matsim.pt2matsim.run.CheckMappedSchedulePlausibility;
 import org.matsim.pt2matsim.run.Gtfs2TransitSchedule;
 import org.matsim.pt2matsim.run.Osm2MultimodalNetwork;
-import org.matsim.pt2matsim.run.shp.Schedule2ShapeFile;
+import org.matsim.pt2matsim.run.gis.Schedule2ShapeFile;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ShapeTools;

@@ -16,7 +16,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.run.shp;
+package org.matsim.pt2matsim.run.gis;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import org.apache.log4j.Logger;
