@@ -25,7 +25,7 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.tools.lib.RouteShape;
-import org.matsim.pt2matsim.run.shp.Schedule2ShapeFile;
+import org.matsim.pt2matsim.run.gis.Schedule2ShapeFile;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ShapeTools;
 

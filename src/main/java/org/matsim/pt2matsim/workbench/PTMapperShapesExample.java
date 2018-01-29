@@ -12,7 +12,7 @@ import org.matsim.pt2matsim.mapping.PTMapper;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersGtfsShapes;
 import org.matsim.pt2matsim.plausibility.MappingAnalysis;
-import org.matsim.pt2matsim.run.shp.Schedule2ShapeFile;
+import org.matsim.pt2matsim.run.gis.Schedule2ShapeFile;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ShapeTools;

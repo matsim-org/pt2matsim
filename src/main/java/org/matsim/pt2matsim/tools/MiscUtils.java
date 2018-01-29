@@ -30,6 +30,19 @@ public final class MiscUtils {
 
 	private MiscUtils() {}
 
+	public static String collectionToString(final Collection<?> values) {
+		boolean isFirst = true;
+		StringBuilder str = new StringBuilder();
+		for (Object s : values) {
+			if (!isFirst) {
+				str.append(',');
+			}
+			str.append(s.toString());
+			isFirst = false;
+		}
+		return str.toString();
+	}
+
 	/**
 	 * @return true if two sets have at least one identical entry.
 	 */
