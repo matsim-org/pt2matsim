@@ -9,8 +9,6 @@ import org.matsim.pt2matsim.tools.ScheduleToolsTest;
 
 import java.io.File;
 
-import static org.junit.Assert.*;
-
 /**
  * @author polettif
  */

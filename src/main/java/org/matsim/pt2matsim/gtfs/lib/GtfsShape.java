@@ -20,10 +20,8 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
-import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.pt2matsim.tools.lib.RouteShape;
 
 import java.util.ArrayList;
@@ -92,19 +90,6 @@ public class GtfsShape implements RouteShape {
 		}
 		if(point.getY() > extentNEy) {
 			extentNEy = point.getY();
-		}
-	}
-
-	public Coordinate[] getCoordinates() {
-		if(coordSorted.size() == 0) {
-			return null;
-		} else {
-			int i = 0;
-			Coordinate[] coordinates = new Coordinate[coordSorted.values().size()];
-			for(Coord coord : coordSorted.values()) {
-				coordinates[i++] = MGC.coord2Coordinate(coord);
-			}
-			return coordinates;
 		}
 	}
 

@@ -6,7 +6,9 @@ import org.junit.Test;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.pt2matsim.gtfs.lib.Stop;
 import org.matsim.pt2matsim.gtfs.lib.StopImpl;
+import org.matsim.pt2matsim.tools.GtfsTools;
 
+import java.io.File;
 import java.util.*;
 
 /**
@@ -53,6 +55,12 @@ public class GtfsFeedImplTest {
 			coords2.add(new Coord(stop.getCoord().getX(), stop.getCoord().getY()));
 		}
 		Assert.assertEquals(coords1, coords2);
+	}
+
+	@Test
+	public void gtfsShapesGeojson() {
+		GtfsTools.writeShapesToGeojson(feed, "test/shapes.geojson");
+		new File("test/shapes.geojson").delete();
 	}
 
 

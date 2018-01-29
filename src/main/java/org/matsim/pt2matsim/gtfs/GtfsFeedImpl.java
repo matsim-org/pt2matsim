@@ -19,23 +19,18 @@
 package org.matsim.pt2matsim.gtfs;
 
 import com.opencsv.CSVReader;
+import org.apache.commons.io.input.BOMInputStream;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
-import org.matsim.core.utils.geometry.transformations.GeotoolsTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt2matsim.gtfs.lib.*;
 import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions.RouteType;
 import org.matsim.pt2matsim.tools.lib.RouteShape;
-import org.apache.commons.io.input.BOMInputStream;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -647,8 +642,6 @@ public class GtfsFeedImpl implements GtfsFeed {
 	@Override
 	public double[] transform(String targetCoordinateSystem) {
 		double minE = Double.MAX_VALUE, minN = Double.MAX_VALUE, maxE = Double.MIN_VALUE, maxN = Double.MIN_VALUE;
-
-
 
 		CoordinateTransformation transformation = TransformationFactory.getCoordinateTransformation(coordSys, targetCoordinateSystem);
 		for(Stop stop : stops.values()) {

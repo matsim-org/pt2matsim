@@ -25,7 +25,6 @@ import org.matsim.api.core.v01.Coord;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Set;
 
 public class StopImpl implements Stop {
 
