@@ -54,6 +54,7 @@ public class OsmElement {
 			return id;
 		}
 
+		@Override
 		public Coord getCoord() {
 			return coord;
 		}
@@ -203,6 +204,7 @@ public class OsmElement {
 			return id;
 		}
 
+		@Override
 		public List<Osm.Element> getMembers() {
 			return members;
 		}

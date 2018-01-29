@@ -65,21 +65,6 @@ public class Schedule2Geojson {
 		}
 	}
 
-	private static final Logger log = Logger.getLogger(Schedule2Geojson.class);
-	private final TransitSchedule schedule;
-	private final Network network;
-	private final String crs;
-	private final CoordinateTransformation ct;
-
-	private Map<TransitStopFacility, Set<Id<TransitRoute>>> routesOnStopFacility = new HashMap<>();
-
-	public Schedule2Geojson(String originalCoordRefSys, final TransitSchedule schedule, final Network network) {
-		this.crs = originalCoordRefSys;
-		this.ct = originalCoordRefSys == null ? new IdentityTransformation() : TransformationFactory.getCoordinateTransformation(originalCoordRefSys, TransformationFactory.WGS84);
-		this.schedule = schedule;
-		this.network = network;
-	}
-
 	/**
 	 * Converts the given schedule based on the given network
 	 * to GIS shape files.
@@ -108,6 +93,22 @@ public class Schedule2Geojson {
 		s2s.stopFacilities2Points(outputFolder + "stopFacilities.geojson");
 		s2s.stopRefLinks2Polylines(outputFolder + "refLinks.geojson");
 		s2s.convertNetwork(outputFolder);
+	}
+
+	private static final Logger log = Logger.getLogger(Schedule2Geojson.class);
+	private final TransitSchedule schedule;
+	private final Network network;
+	private final String crs;
+
+	private final CoordinateTransformation ct;
+
+	private Map<TransitStopFacility, Set<Id<TransitRoute>>> routesOnStopFacility = new HashMap<>();
+
+	public Schedule2Geojson(String originalCoordRefSys, final TransitSchedule schedule, final Network network) {
+		this.crs = originalCoordRefSys;
+		this.ct = originalCoordRefSys == null ? new IdentityTransformation() : TransformationFactory.getCoordinateTransformation(originalCoordRefSys, TransformationFactory.WGS84);
+		this.schedule = schedule;
+		this.network = network;
 	}
 
 	/**

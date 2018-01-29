@@ -48,16 +48,14 @@ public class Network2Geojson {
 	 *             [3] output links file
 	 */
 	public static void main(String[] args) {
-		if(args.length == 3) {
-			run(args[0], args[1], args[2], null);
-		} else if(args.length == 4) {
+		if(args.length == 4) {
 			run(args[0], args[1], args[2], args[3]);
 		} else {
 			throw new RuntimeException("Incorrect number of arguments " + args.length);
 		}
 	}
 
-	public static void run(String networkFile, String nodesOutputFile, String linksOutputFile, String networkCoordSys) {
+	public static void run(String networkCoordSys, String networkFile, String nodesOutputFile, String linksOutputFile) {
 		run(networkCoordSys, NetworkTools.readNetwork(networkFile), nodesOutputFile, linksOutputFile);
 	}
 

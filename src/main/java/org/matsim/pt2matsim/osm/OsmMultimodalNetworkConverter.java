@@ -26,6 +26,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.utils.collections.CollectionUtils;
@@ -172,6 +173,10 @@ public class OsmMultimodalNetworkConverter {
 						log.warn("Way node with less than 1 way found.");
 					}
 				}
+				// fix for some roundabouts with identical first and last node
+				if(way.getNodes().get(0).equals(way.getNodes().get(way.getNodes().size() - 1))) {
+					nodesToIgnore.remove(way.getNodes().get(0));
+				}
 			}
 			// verify we did not mark nodes as unused that build a loop
 			for(Osm.Way way : ways.values()) {
@@ -206,7 +211,7 @@ public class OsmMultimodalNetworkConverter {
 		log.info("Creating nodes...");
 		for(Osm.Node node : nodes.values()) {
 			if(!nodesToIgnore.contains(node)) {
-				org.matsim.api.core.v01.network.Node nn = this.network.getFactory().createNode(Id.create(node.getId(), org.matsim.api.core.v01.network.Node.class), node.getCoord());
+				Node nn = this.network.getFactory().createNode(Id.create(node.getId(), Node.class), node.getCoord());
 				this.network.addNode(nn);
 			}
 		}
