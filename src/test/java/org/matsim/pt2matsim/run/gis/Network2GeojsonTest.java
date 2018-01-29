@@ -7,8 +7,6 @@ import org.matsim.pt2matsim.tools.NetworkToolsTest;
 
 import java.io.File;
 
-import static org.junit.Assert.*;
-
 /**
  * @author polettif
  */
@@ -23,7 +21,7 @@ public class Network2GeojsonTest {
 
 	@Test
 	public void run() {
-		Network2Geojson.run(network, "test/nodes.geojson", "test/links.geojson", null);
+		Network2Geojson.run(null, network, "test/nodes.geojson", "test/links.geojson");
 		new File("test/nodes.geojson").delete();
 		new File("test/links.geojson").delete();
 	}
