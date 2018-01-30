@@ -38,6 +38,10 @@ public final class CreateDefaultPTMapperConfig {
 	 * @param args [0] default config filename
 	 */
 	public static void main(final String[] args) {
+		if(args.length < 1) {
+			throw new IllegalArgumentException("Config file name as argument needed");
+		}
+
 		Config config = ConfigUtils.createConfig();
 
 		config.addModule(PublicTransitMappingConfigGroup.createDefaultConfig());

@@ -63,7 +63,7 @@ the original length can be stored in the length attribute of the new link.
 
 A default config file can be created by running
 
-    org.matsim.pt2matsim.run.CreateDefaultOsmConfig
+    org.matsim.pt2matsim.run.CreateDefaultOsmConfig defaultConfigFile.xml
     
 The converter can be run via
 

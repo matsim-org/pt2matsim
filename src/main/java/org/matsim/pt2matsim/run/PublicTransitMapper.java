@@ -62,7 +62,7 @@ public final class PublicTransitMapper {
 		if(args.length == 1) {
 			run(args[0]);
 		} else {
-			throw new IllegalArgumentException("Incorrect number of arguments: [0] Public Transit Mapping config file");
+			throw new IllegalArgumentException("Public Transit Mapping config file as argument needed");
 		}
 	}
 

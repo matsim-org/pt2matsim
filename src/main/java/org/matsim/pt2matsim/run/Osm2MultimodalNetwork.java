@@ -48,7 +48,7 @@ public final class Osm2MultimodalNetwork {
 		if(args.length == 1) {
 			run(args[0]);
 		} else {
-			throw new IllegalArgumentException("Wrong number of arguments");
+			throw new IllegalArgumentException("Config file as argument needed");
 		}
 	}
 
