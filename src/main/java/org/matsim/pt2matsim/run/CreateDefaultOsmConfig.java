@@ -18,13 +18,7 @@
 
 package org.matsim.pt2matsim.run;
 
-import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.ConfigWriter;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
-
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Creates a default osmConverter config file.
