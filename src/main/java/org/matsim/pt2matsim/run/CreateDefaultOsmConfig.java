@@ -42,13 +42,7 @@ public final class CreateDefaultOsmConfig {
 			throw new IllegalArgumentException("Config file name as argument needed");
 		}
 
-		Config config = ConfigUtils.createConfig();
-
-		config.addModule(OsmConverterConfigGroup.createDefaultConfig());
-
-		Set<String> toRemove = config.getModules().keySet().stream().filter(module -> !module.equals(OsmConverterConfigGroup.GROUP_NAME)).collect(Collectors.toSet());
-		toRemove.forEach(config::removeModule);
-
-		new ConfigWriter(config).write(args[0]);
+		OsmConverterConfigGroup defaultConfig = OsmConverterConfigGroup.createDefaultConfig();
+		defaultConfig.writeToFile(args[0]);
 	}
 }
