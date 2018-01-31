@@ -32,6 +32,7 @@ import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
+import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.osm.lib.AllowedTagsFilter;
@@ -82,7 +83,9 @@ public class OsmMultimodalNetworkConverter {
 	 */
 	public void convert(OsmConverterConfigGroup config) {
 		this.config = config;
-		CoordinateTransformation transformation = TransformationFactory.getCoordinateTransformation("WGS84", config.getOutputCoordinateSystem());
+		CoordinateTransformation transformation = (config.getOutputCoordinateSystem() == null ?
+				new IdentityTransformation() :
+				TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, config.getOutputCoordinateSystem()));
 		readWayParams();
 		convertToNetwork(transformation);
 		cleanRoadNetwork();

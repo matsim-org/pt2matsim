@@ -62,7 +62,6 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	private String osmFile;
 	private String outputNetworkFile;
 	private String outputCoordinateSystem;
-	private CoordinateTransformation coordinateTransformation = new IdentityTransformation();
 
 	private double maxLinkLength = 500.0;
 	private boolean keepPaths = false;
@@ -182,10 +181,7 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 
 	@StringSetter(OUTPUT_COORDINATE_SYSTEM)
 	public void setOutputCoordinateSystem(String outputCoordinateSystem) {
-		if(outputCoordinateSystem != null) {
-			this.outputCoordinateSystem = outputCoordinateSystem;
-			this.coordinateTransformation = TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem);
-		}
+		this.outputCoordinateSystem = outputCoordinateSystem;
 	}
 
 	@Override
@@ -209,10 +205,6 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 				"\t\ttraffic lights not explicitly modeled, a kind of \"average simulated speed\" can be used.\n" +
 				"\t\tDefaults to false. Set true to scale the speed limit down by the value specified by the wayValues)");
 		return map;
-	}
-
-	public CoordinateTransformation getCoordinateTransformation() {
-		return this.coordinateTransformation;
 	}
 
 	@Override
@@ -298,7 +290,6 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 			this.osmKey = osmKey;
 		}
 
-
 		@StringGetter("lanes")
 		public double getLanes() {
 			return lanes;
@@ -348,7 +339,6 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		public void setOneway(boolean oneway) {
 			this.oneway = oneway;
 		}
-
 
 		public Set<String> getAllowedTransportModes() {
 			return this.allowedTransportModes;
