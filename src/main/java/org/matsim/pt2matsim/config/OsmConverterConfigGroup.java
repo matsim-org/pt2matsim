@@ -20,8 +20,7 @@
 package org.matsim.pt2matsim.config;
 
 import org.matsim.core.api.internal.MatsimParameters;
-import org.matsim.core.config.ConfigGroup;
-import org.matsim.core.config.ReflectiveConfigGroup;
+import org.matsim.core.config.*;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
@@ -32,6 +31,7 @@ import org.matsim.pt2matsim.osm.lib.Osm;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -102,6 +102,14 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.LIGHT_RAIL, 1, 80.0 / 3.6, 1.0, 9999, false, railSingleton));
 
 		return defaultConfig;
+	}
+
+	public void writeToFile(String filename) {
+		Config matsimConfig = ConfigUtils.createConfig();
+		matsimConfig.addModule(this);
+		Set<String> toRemove = matsimConfig.getModules().keySet().stream().filter(module -> !module.equals(OsmConverterConfigGroup.GROUP_NAME)).collect(Collectors.toSet());
+		toRemove.forEach(matsimConfig::removeModule);
+		new ConfigWriter(matsimConfig).write(filename);
 	}
 
 	@StringGetter(OSM_FILE)
