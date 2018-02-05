@@ -37,7 +37,7 @@ public class StopImpl implements Stop {
 	/** optional **/
 	private String parentStationId = null;
 
-	private final Coord coord;
+	private Coord coord;
 	private final Collection<Trip> trips = new HashSet<>();
 
 	public StopImpl(String id, String name, double lon, double lat) {
@@ -141,5 +141,9 @@ public class StopImpl implements Stop {
 	@Override
 	public String toString() {
 		return "[stop:" + id + " \"" + name + "\" (" + lon + ", " + lat + ")]";
+	}
+
+	public void setCoord(Coord newCoord) {
+		this.coord = newCoord;
 	}
 }

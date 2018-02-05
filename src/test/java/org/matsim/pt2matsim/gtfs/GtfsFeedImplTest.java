@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.Id;
 import org.matsim.pt2matsim.gtfs.lib.Stop;
 import org.matsim.pt2matsim.gtfs.lib.StopImpl;
 import org.matsim.pt2matsim.tools.GtfsTools;
@@ -16,6 +17,7 @@ import java.util.*;
  */
 public class GtfsFeedImplTest {
 
+	private static final double DELTA = 0.000001;
 	private GtfsFeed feed;
 
 	@Before
@@ -44,17 +46,23 @@ public class GtfsFeedImplTest {
 
 	@Test
 	public void coordEqualAfterRetransform() {
-		Set<Coord> coords1 = new HashSet<>();
+		Map<String, Coord> stopCoords1 = new HashMap<>();
 		for(Stop stop : feed.getStops().values()) {
-			coords1.add(stop.getCoord());
+			stopCoords1.put(stop.getId(), stop.getCoord());
 		}
 		feed.transform("EPSG:2032");
 		feed.transform("WGS84");
-		Set<Coord> coords2 = new HashSet<>();
+		Map<String, Coord> stopCoords2 = new HashMap<>();
 		for(Stop stop : feed.getStops().values()) {
-			coords2.add(new Coord(stop.getCoord().getX(), stop.getCoord().getY()));
+			stopCoords2.put(stop.getId(), new Coord(stop.getCoord().getX(), stop.getCoord().getY()));
 		}
-		Assert.assertEquals(coords1, coords2);
+
+		for(Map.Entry<String, Coord> entry : stopCoords2.entrySet()) {
+			Coord orig = stopCoords1.get(entry.getKey());
+			Coord compare = entry.getValue();
+			Assert.assertEquals(orig.getX(), compare.getX(), DELTA);
+			Assert.assertEquals(orig.getY(), compare.getY(), DELTA);
+		}
 	}
 
 	@Test
