@@ -55,7 +55,7 @@ public class FPLANReader {
 			FPLANRoute currentFPLANRoute = null;
 
 			Counter counter = new Counter("FPLAN line # ");
-			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(FPLANfile), "utf-8"));
+			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(FPLANfile)));
 			String newLine = readsLines.readLine();
 			while(newLine != null) {
 				if(newLine.charAt(0) == '*') {
