@@ -99,10 +99,18 @@ public class HafasConverter {
 
 		for(FPLANRoute fplanRoute : routes) {
 			Id<VehicleType> vehicleTypeId = fplanRoute.getVehicleTypeId();
+			
+			HafasDefaults.Vehicles hafasVehicleType = HafasDefaults.Vehicles.ZUG;
+			
+			try {
+				hafasVehicleType = HafasDefaults.Vehicles.valueOf(vehicleTypeId.toString());
+			} catch (IllegalArgumentException e) {
+				log.warn("Vehicle category '" + vehicleTypeId.toString() + "' is unknown. Falling back to generic ZUG and adding to schedule.");
+			}
 
 			// get wheter the route using this vehicle type should be added & set transport mode
-			if(HafasDefaults.Vehicles.valueOf(vehicleTypeId.toString()).addToSchedule) {
-				String transportMode = HafasDefaults.Vehicles.valueOf(vehicleTypeId.toString()).transportMode.modeName;
+			if(hafasVehicleType.addToSchedule) {
+				String transportMode = hafasVehicleType.transportMode.modeName;
 
 				Id<TransitLine> lineId = createLineId(fplanRoute);
 
@@ -124,16 +132,16 @@ public class HafasConverter {
 					vehicleType = vehicleFactory.createVehicleType(Id.create(vehicleTypeId.toString(), VehicleType.class));
 
 					// using default values for vehicle type
-					vehicleType.setLength(HafasDefaults.Vehicles.valueOf(typeIdstr).length);
-					vehicleType.setWidth(HafasDefaults.Vehicles.valueOf(typeIdstr).width);
-					vehicleType.setAccessTime(HafasDefaults.Vehicles.valueOf(typeIdstr).accessTime);
-					vehicleType.setEgressTime(HafasDefaults.Vehicles.valueOf(typeIdstr).egressTime);
-					vehicleType.setDoorOperationMode(HafasDefaults.Vehicles.valueOf(typeIdstr).doorOperation);
-					vehicleType.setPcuEquivalents(HafasDefaults.Vehicles.valueOf(typeIdstr).pcuEquivalents);
+					vehicleType.setLength(hafasVehicleType.length);
+					vehicleType.setWidth(hafasVehicleType.width);
+					vehicleType.setAccessTime(hafasVehicleType.accessTime);
+					vehicleType.setEgressTime(hafasVehicleType.egressTime);
+					vehicleType.setDoorOperationMode(hafasVehicleType.doorOperation);
+					vehicleType.setPcuEquivalents(hafasVehicleType.pcuEquivalents);
 
 					VehicleCapacity vehicleCapacity = vehicleFactory.createVehicleCapacity();
-					vehicleCapacity.setSeats(HafasDefaults.Vehicles.valueOf(typeIdstr).capacitySeats);
-					vehicleCapacity.setStandingRoom(HafasDefaults.Vehicles.valueOf(typeIdstr).capacityStanding);
+					vehicleCapacity.setSeats(hafasVehicleType.capacitySeats);
+					vehicleCapacity.setStandingRoom(hafasVehicleType.capacityStanding);
 					vehicleType.setCapacity(vehicleCapacity);
 
 					vehicles.addVehicleType(vehicleType);
