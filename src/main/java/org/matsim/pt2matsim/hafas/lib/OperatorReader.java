@@ -37,7 +37,7 @@ public class OperatorReader {
 
 	public static Map<String, String> readOperators(String BETRIEB_DE) throws IOException {
 		Map<String, String> operators = new HashMap<>();
-		BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(BETRIEB_DE), "latin1"));
+		BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(BETRIEB_DE)));
 		String newLine = readsLines.readLine();
 		while (newLine != null) {
 			String abbrevationOperator = newLine.split("\"")[1].replace(" ","");

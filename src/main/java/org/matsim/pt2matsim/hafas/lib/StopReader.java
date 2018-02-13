@@ -64,7 +64,7 @@ public class StopReader {
 
 	private void createStops() throws IOException {
 		log.info("  Read transit stops...");
-			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToBFKOORD_GEOFile), "latin1"));
+			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToBFKOORD_GEOFile)));
 			String newLine = readsLines.readLine();
 			while (newLine != null) {
 				/*
