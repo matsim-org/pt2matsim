@@ -33,7 +33,7 @@ To include pt2matsim in your own maven project add this snippet to your pom.xml:
     <repositories>
         <repository>
             <id>pt2matsim</id>
-            <url>http://dl.bintray.com/polettif/</url>
+            <url>http://dl.bintray.com/polettif/matsim</url>
         </repository>
     </repositories>
 
