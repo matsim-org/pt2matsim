@@ -6,6 +6,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
+// import org.matsim.core.router.FastAStarLandmarksFactory;
 import org.matsim.core.router.util.*;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
@@ -77,8 +78,10 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 
 					LocalRouter r = new LocalRouter();
 
-					LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory(filteredNetwork, r);
-					tmpRouter = new PathCalculator(factory.createPathCalculator(filteredNetwork, r, r));
+					/**/ LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory(filteredNetwork, r);
+					/**/ tmpRouter = new PathCalculator(factory.createPathCalculator(filteredNetwork, r, r));
+					// todo matsim 0.10.0
+					//tmpRouter = new PathCalculator(factory.createPathCalculator(filteredNetwork, r, r));
 
 					pathCalculatorsByMode.put(scheduleMode, tmpRouter);
 					networksByMode.put(scheduleMode, filteredNetwork);

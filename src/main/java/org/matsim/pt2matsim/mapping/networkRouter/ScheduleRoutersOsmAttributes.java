@@ -24,6 +24,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
+// import org.matsim.core.router.FastAStarLandmarksFactory;
 import org.matsim.core.router.util.*;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
@@ -81,6 +82,8 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 	 */
 	private void load() {
 		log.info("Initiating network and router for transit routes...");
+		// todo matsim 0.10.0
+		// LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory();
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				String scheduleMode = transitRoute.getTransportMode();
@@ -93,8 +96,10 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 
 					OsmRouter r = new OsmRouter(scheduleMode);
 
-					LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory(filteredNetwork, r);
-					tmpRouter = new PathCalculator(factory.createPathCalculator(filteredNetwork, r, r));
+					/**/ LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory(filteredNetwork, r);
+					/**/ tmpRouter = new PathCalculator(factory.createPathCalculator(filteredNetwork, r, r));
+					// todo matsim 0.10.0
+					//tmpRouter = new PathCalculator(factory.createPathCalculator(filteredNetwork, r, r));
 
 					pathCalculatorsByMode.put(scheduleMode, tmpRouter);
 					networksByMode.put(scheduleMode, filteredNetwork);

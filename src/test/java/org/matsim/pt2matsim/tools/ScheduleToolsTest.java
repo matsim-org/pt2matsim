@@ -1,3 +1,4 @@
+
 package org.matsim.pt2matsim.tools;
 
 import org.junit.Assert;
@@ -5,10 +6,10 @@ import org.junit.Test;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt.utils.TransitScheduleValidator;
+import org.matsim.pt2matsim.mapping.pseudoRouter.LinkSequence;
 import org.matsim.pt2matsim.tools.lib.RouteShape;
 
 import java.util.LinkedList;
@@ -81,7 +82,7 @@ public class ScheduleToolsTest {
 		a1route.add(Id.createLinkId("AX"));
 		a1route.add(Id.createLinkId("XB"));
 		Id<Link> a1end = Id.createLinkId("BI");
-		NetworkRoute networkRouteA1 = new LinkNetworkRouteImpl(a1start, a1route, a1end);
+		NetworkRoute networkRouteA1 = new LinkSequence(a1start, a1route, a1end);
 		List<TransitRouteStop> a1stops = new LinkedList<>();
 		a1stops.add(fac.createTransitRouteStop(stop1ED, 0.0, 0.0));
 		a1stops.add(fac.createTransitRouteStop(stop2DA, 20.0, 20.0));
@@ -101,7 +102,7 @@ public class ScheduleToolsTest {
 		a2route.add(Id.createLinkId("XA"));
 		a2route.add(Id.createLinkId("AD"));
 		Id<Link> a2end = Id.createLinkId("DE");
-		NetworkRoute networkRouteA2 = new LinkNetworkRouteImpl(a2start, a2route, a2end);
+		NetworkRoute networkRouteA2 = new LinkSequence(a2start, a2route, a2end);
 		List<TransitRouteStop> a2stops = new LinkedList<>();
 		a2stops.add(fac.createTransitRouteStop(stop4IB, 0.0, 0.0));
 		a2stops.add(fac.createTransitRouteStop(stop3XA, 40.0, 40.0));
@@ -125,7 +126,7 @@ public class ScheduleToolsTest {
 		bRoute.add(Id.createLinkId("HZ"));
 		bRoute.add(Id.createLinkId("ZI"));
 		Id<Link> bEend = Id.createLinkId("IB");
-		NetworkRoute networkRouteB = new LinkNetworkRouteImpl(bStart, bRoute, bEend);
+		NetworkRoute networkRouteB = new LinkSequence(bStart, bRoute, bEend);
 		List<TransitRouteStop> bStops = new LinkedList<>();
 		bStops.add(fac.createTransitRouteStop(stop1EW, 0.0, 0.0));
 		bStops.add(fac.createTransitRouteStop(stop3XA, 80.0, 80.0));
