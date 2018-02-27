@@ -84,7 +84,7 @@ public class Network2Geojson {
 	private Network network;
 	private FeatureCollection linkFeatures = new FeatureCollection();
 	private FeatureCollection nodeFeatures = new FeatureCollection();
-	private FeatureCollection networkFeatureCollection = new FeatureCollection();
+	private FeatureCollection networkFeatureCollection;
 
 	public Network2Geojson(String networkCoordSystem, Network network) {
 		this.ct = networkCoordSystem == null ? new IdentityTransformation() : TransformationFactory.getCoordinateTransformation(networkCoordSystem, TransformationFactory.WGS84);
@@ -110,6 +110,7 @@ public class Network2Geojson {
 	}
 
 	private void combineFeatures() {
+		this.networkFeatureCollection = new FeatureCollection();
 		this.networkFeatureCollection.addAll(linkFeatures.getFeatures());
 		this.networkFeatureCollection.addAll(nodeFeatures.getFeatures());
 	}
