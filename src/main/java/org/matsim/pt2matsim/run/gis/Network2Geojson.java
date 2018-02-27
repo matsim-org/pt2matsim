@@ -40,58 +40,91 @@ import java.util.List;
 public class Network2Geojson {
 
 	/**
-	 * Converts a network to geojson files (nodes and links)
+	 * Converts a network to a geojson file
 	 *
-	 * @param args [0] network coordinate system (coordinates are transformed to WGS84)
+	 * @param args [0] network coordinate system (coordinates are transformed to WGS84, use WGS84 for no transformation)
 	 * 			   [1] input network file
-	 *             [2] output nodes file
-	 *             [3] output links file
+	 *             [2] output network file (contains only links if nodes file is given)
+	 *             [3] output nodes file (optional)
 	 */
 	public static void main(String[] args) {
 		if(args.length == 4) {
 			run(args[0], args[1], args[2], args[3]);
+		} else if(args.length == 3) {
+			run(args[0], args[1], args[2]);
 		} else {
 			throw new RuntimeException("Incorrect number of arguments " + args.length);
 		}
 	}
 
-	public static void run(String networkCoordSys, String networkFile, String nodesOutputFile, String linksOutputFile) {
-		run(networkCoordSys, NetworkTools.readNetwork(networkFile), nodesOutputFile, linksOutputFile);
+	public static void run(String networkCoordSys, String networkFile, String linksOutputFile, String nodesOutputFile) {
+		run(networkCoordSys, NetworkTools.readNetwork(networkFile), linksOutputFile, nodesOutputFile);
 	}
 
-	public static void run(String networkCoordSys, Network network, String nodesOutputFile, String linksOutputFile) {
-		Network2Geojson n2g = new Network2Geojson(networkCoordSys, network);
-		n2g.convertNodes(nodesOutputFile);
-		n2g.convertLinks(linksOutputFile);
+	public static void run(String networkCoordSys, String networkFile, String networkOutputFile) {
+		run(networkCoordSys, NetworkTools.readNetwork(networkFile), networkOutputFile);
 	}
+
+	public static void run(String networkCoordSys, Network network, String linksOutputFile, String nodesOutputFile) {
+		Network2Geojson n2g = new Network2Geojson(networkCoordSys, network);
+		n2g.writeLinks(linksOutputFile);
+		if(nodesOutputFile != null) {
+			n2g.writeNodes(nodesOutputFile);
+		}
+	}
+
+	public static void run(String networkCoordSys, Network network, String networkOutputFile) {
+		Network2Geojson n2g = new Network2Geojson(networkCoordSys, network);
+		n2g.writeNetwork(networkOutputFile);
+	}
+
 
 	protected static Logger log = Logger.getLogger(Network2Geojson.class);
 	private final CoordinateTransformation ct;
 	private Network network;
+	private FeatureCollection linkFeatures = new FeatureCollection();
+	private FeatureCollection nodeFeatures = new FeatureCollection();
+	private FeatureCollection networkFeatureCollection = new FeatureCollection();
 
 	public Network2Geojson(String networkCoordSystem, Network network) {
 		this.ct = networkCoordSystem == null ? new IdentityTransformation() : TransformationFactory.getCoordinateTransformation(networkCoordSystem, TransformationFactory.WGS84);
 		this.network = network;
+		convertLinks();
+		convertNodes();
+		combineFeatures();
 	}
 
-	public void convertNodes(String nodesOutputFile) {
-		FeatureCollection featureCollection = new FeatureCollection();
+	public void writeNetwork(String networkOutputFile) {
+		GeojsonTools.writeFeatureCollectionToFile(networkFeatureCollection, networkOutputFile);
+		log.info("Network file (" + networkOutputFile + ") written.");
+	}
 
+	public void writeLinks(String linkOutputFile) {
+		GeojsonTools.writeFeatureCollectionToFile(linkFeatures, linkOutputFile);
+		log.info("Network file (" + linkOutputFile + ") written.");
+	}
+
+	public void writeNodes(String nodeOutputFile) {
+		GeojsonTools.writeFeatureCollectionToFile(nodeFeatures, nodeOutputFile);
+		log.info("Network file (" + nodeOutputFile + ") written.");
+	}
+
+	private void combineFeatures() {
+		this.networkFeatureCollection.addAll(linkFeatures.getFeatures());
+		this.networkFeatureCollection.addAll(nodeFeatures.getFeatures());
+	}
+
+	private void convertNodes() {
 		for(Node node : network.getNodes().values()) {
 			Feature f = GeojsonTools.createPointFeature(ct.transform(node.getCoord()));
 			f.setProperty("id", node.getId().toString());
 //			f.setProperty("inLinks", MiscUtils.collectionToString(node.getInLinks().values()));
 //			f.setProperty("outLinks", MiscUtils.collectionToString(node.getOutLinks().values()));
-			featureCollection.add(f);
+			this.nodeFeatures.add(f);
 		}
-
-		GeojsonTools.writeFeatureCollectionToFile(featureCollection, nodesOutputFile);
-		log.info("Nodes file (" + nodesOutputFile + ") written.");
 	}
 
-	public void convertLinks(String linksOutputFile) {
-		FeatureCollection linkFeatures = new FeatureCollection();
-
+	private void convertLinks() {
 		for(Link link : network.getLinks().values()) {
 			Feature f = createLineFeature(link);
 			f.setProperty("id", link.getId().toString());
@@ -102,11 +135,8 @@ public class Network2Geojson {
 			f.setProperty("fromNode", link.getFromNode().getId().toString());
 			f.setProperty("toNode", link.getToNode().getId().toString());
 			f.setProperty("modes", CollectionUtils.setToString(link.getAllowedModes()));
-			linkFeatures.add(f);
+			this.linkFeatures.add(f);
 		}
-
-		GeojsonTools.writeFeatureCollectionToFile(linkFeatures, linksOutputFile);
-		log.info("Links file (" + linksOutputFile + ") written.");
 	}
 
 	private Feature createLineFeature(Link link) {

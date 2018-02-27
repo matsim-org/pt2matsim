@@ -206,12 +206,11 @@ public class Schedule2Geojson {
 	}
 
 	/**
-	 * Converts the network to a shapefile. Calls {@link org.matsim.utils.gis.matsim2esri.network.Links2ESRIShape}
+	 * Converts the network to a geojson. Calls {@link org.matsim.utils.gis.matsim2esri.network.Links2ESRIShape}
 	 */
-	private void convertNetwork(String outputFolder) {
+	private void convertNetwork(String outputNetworkFile) {
 		Network2Geojson n2s = new Network2Geojson(this.crs, network);
-		n2s.convertNodes(outputFolder + "networkNodes.geojson");
-		n2s.convertLinks(outputFolder + "networkLinks.geojson");
+		n2s.writeNetwork(outputNetworkFile);
 	}
 
 
