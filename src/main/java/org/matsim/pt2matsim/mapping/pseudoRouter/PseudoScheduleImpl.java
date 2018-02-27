@@ -20,7 +20,6 @@ package org.matsim.pt2matsim.mapping.pseudoRouter;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 
@@ -93,7 +92,7 @@ public class PseudoScheduleImpl implements PseudoSchedule {
 
 			// add link sequence
 			List<Id<Link>> l = pseudoTransitRoute.getNetworkLinkIdList();
-			newTransitRoute.setRoute(new LinkNetworkRouteImpl(l.get(0), l.subList(1, l.size() - 1), l.get(l.size() - 1)));
+			newTransitRoute.setRoute(new LinkSequence(l.get(0), l.subList(1, l.size() - 1), l.get(l.size() - 1)));
 
 			// add description
 			newTransitRoute.setDescription(pseudoTransitRoute.getTransitRoute().getDescription());
