@@ -25,13 +25,7 @@ public class Schedule2GeojsonTest {
 
 	@Test
 	public void run() {
-		new File("test/geojsonSchedule/").mkdir();
-		Schedule2Geojson.run(null, "test/geojsonSchedule/", this.schedule, this.network);
-		new File("test/geojsonSchedule/transitRoutes.geojson").delete();
-		new File("test/geojsonSchedule/stopFacilities.geojson").delete();
-		new File("test/geojsonSchedule/refLinks.geojson").delete();
-		new File("test/geojsonSchedule/networkNodes.geojson").delete();
-		new File("test/geojsonSchedule/networkLinks.geojson").delete();
-		new File("test/geojsonSchedule/").delete();
+		Schedule2Geojson.run("Atlantis", "test/schedule.geojson", this.schedule, this.network);
+		new File("test/schedule.geojson").delete();
 	}
 }

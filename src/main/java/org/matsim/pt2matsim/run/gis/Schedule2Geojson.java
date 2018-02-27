@@ -46,12 +46,11 @@ public class Schedule2Geojson {
 
 	/**
 	 * Converts the given schedule based on the given network
-	 * to geojson files. The output folder contains files for: transitRoutes, stopFacilities, refLinks, networkNodes*, networkLinks*.
+	 * to a geojson file that contains the stop facilities and transit routes.
 	 * <br/><br/>
-	 * * if network is given
 	 *
 	 * @param args [0] coordinate reference system (coordinates are transformed to WGS84)
-	 *             [1] output folder
+	 *             [1] output schedule geojson file
 	 *             [2] input schedule
 	 *             [3] input network (optional)
 	 */
@@ -67,57 +66,92 @@ public class Schedule2Geojson {
 
 	/**
 	 * Converts the given schedule based on the given network
-	 * to GIS shape files.
+	 * to a geojson file containing the stops and transit routes.
 	 *
 	 * @param crs          coordinate reference system (EPSG:*, coordinates are transformed to WGS83)
-	 * @param outputFolder output folder
+	 * @param outputFile   output schedule folder
 	 * @param scheduleFile input schedule file
 	 * @param networkFile  input network file (<tt>null</tt> if not available)
 	 */
-	public static void run(String crs, String outputFolder, String scheduleFile, String networkFile) {
+	public static void run(String crs, String outputFile, String scheduleFile, String networkFile) {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(scheduleFile);
 		Network network = networkFile == null ? null : NetworkTools.readNetwork(networkFile);
 
 		Schedule2Geojson s2s = new Schedule2Geojson(crs, schedule, network);
-
-		s2s.routes2Polylines(outputFolder + "transitRoutes.geojson", network != null);
-		s2s.stopFacilities2Points(outputFolder + "stopFacilities.geojson");
-		s2s.stopRefLinks2Polylines(outputFolder + "refLinks.geojson");
-		s2s.convertNetwork(outputFolder);
+		s2s.writeSchedule(outputFile);
 	}
 
-	public static void run(String crs, String outputFolder, TransitSchedule schedule, Network network) {
+	public static void run(String crs, String outputFile, TransitSchedule schedule, Network network) {
 		Schedule2Geojson s2s = new Schedule2Geojson(crs, schedule, network);
-
-		s2s.routes2Polylines(outputFolder + "transitRoutes.geojson", network != null);
-		s2s.stopFacilities2Points(outputFolder + "stopFacilities.geojson");
-		s2s.stopRefLinks2Polylines(outputFolder + "refLinks.geojson");
-		s2s.convertNetwork(outputFolder);
+		s2s.writeSchedule(outputFile);
 	}
 
 	private static final Logger log = Logger.getLogger(Schedule2Geojson.class);
 	private final TransitSchedule schedule;
 	private final Network network;
-	private final String crs;
-
 	private final CoordinateTransformation ct;
-
 	private Map<TransitStopFacility, Set<Id<TransitRoute>>> routesOnStopFacility = new HashMap<>();
 
+	private FeatureCollection transitRouteFeatures = new FeatureCollection();
+	private FeatureCollection stopFacilityFeatures = new FeatureCollection();
+	private FeatureCollection stopRefLinks = new FeatureCollection();
+	private FeatureCollection scheduleFeatureCollection;
+
+
 	public Schedule2Geojson(String originalCoordRefSys, final TransitSchedule schedule, final Network network) {
-		this.crs = originalCoordRefSys;
 		this.ct = originalCoordRefSys == null ? new IdentityTransformation() : TransformationFactory.getCoordinateTransformation(originalCoordRefSys, TransformationFactory.WGS84);
 		this.schedule = schedule;
 		this.network = network;
+
+		convertTransitRoutes(network != null);
+		convertStopFacilities();
+		combineFeatures();
+	}
+
+	public void writeSchedule(String outputFile) {
+		GeojsonTools.writeFeatureCollectionToFile(this.scheduleFeatureCollection, outputFile);
+	}
+
+	public void writeStopFacilities(String outputFile) {
+		GeojsonTools.writeFeatureCollectionToFile(this.stopFacilityFeatures, outputFile);
+	}
+
+	public void writeTransitRoutes(String outputFile) {
+		GeojsonTools.writeFeatureCollectionToFile(this.transitRouteFeatures, outputFile);
+	}
+
+	public void writeStopRefLinks(String outputFile) {
+		GeojsonTools.writeFeatureCollectionToFile(this.stopRefLinks, outputFile);
+	}
+
+	private void combineFeatures() {
+		this.scheduleFeatureCollection = new FeatureCollection();
+		this.scheduleFeatureCollection.addAll(transitRouteFeatures.getFeatures());
+		this.scheduleFeatureCollection.addAll(stopFacilityFeatures.getFeatures());
+		// TODO set refLink as network attribute
 	}
 
 	/**
-	 * Converts reference links to polylines.
+	 * Converts the stop facilities to points.
 	 */
-	public void stopRefLinks2Polylines(String outputFile) {
-		FeatureCollection lineFeatures = new FeatureCollection();
-
+	private void convertStopFacilities() {
 		for(TransitStopFacility stopFacility : schedule.getFacilities().values()) {
+			Coord stopCoord = stopFacility.getCoord();
+
+			Feature pf = GeojsonTools.createPointFeature(ct.transform(stopCoord));
+			pf.setProperty("stopFacilityId", stopFacility.getId().toString());
+			pf.setProperty("stopFacilityName", stopFacility.getName());
+			pf.setProperty("stopFacilityPostAreaId", stopFacility.getStopPostAreaId());
+			pf.setProperty("stopFacilityIsBlocking", stopFacility.getIsBlockingLane());
+
+			if(stopFacility.getLinkId() != null) pf.setProperty("stopFacilityLinkId", stopFacility.getLinkId().toString());
+
+			if(routesOnStopFacility.get(stopFacility) != null) {
+				pf.setProperty("stopFacilityTransitRoutes", CollectionUtils.idSetToString(routesOnStopFacility.get(stopFacility)));
+			}
+			stopFacilityFeatures.add(pf);
+
+			// convert stop ref links (not written to combined file)
 			if(stopFacility.getLinkId() != null) {
 				Link refLink = network.getLinks().get(stopFacility.getLinkId());
 
@@ -131,47 +165,15 @@ public class Schedule2Geojson {
 				lf.setProperty("linkId", stopFacility.getLinkId().toString());
 				lf.setProperty("postAreaId", stopFacility.getStopPostAreaId());
 				lf.setProperty("isBlocking", stopFacility.getIsBlockingLane());
-				lineFeatures.add(lf);
+				stopRefLinks.add(lf);
 			}
 		}
-
-		GeojsonTools.writeFeatureCollectionToFile(lineFeatures, outputFile);
-	}
-
-
-	/**
-	 * Converts the stop facilities to points.
-	 */
-	public void stopFacilities2Points(String pointOutputFile) {
-		FeatureCollection pointFeatures = new FeatureCollection();
-
-		for(TransitStopFacility stopFacility : schedule.getFacilities().values()) {
-			Coord stopCoord = stopFacility.getCoord();
-
-
-			Feature pf = GeojsonTools.createPointFeature(ct.transform(stopCoord));
-			pf.setProperty("id", stopFacility.getId().toString());
-			pf.setProperty("name", stopFacility.getName());
-			pf.setProperty("postAreaId", stopFacility.getStopPostAreaId());
-			pf.setProperty("isBlocking", stopFacility.getIsBlockingLane());
-
-			if(stopFacility.getLinkId() != null) pf.setProperty("linkId", stopFacility.getLinkId().toString());
-
-			if(routesOnStopFacility.get(stopFacility) != null) {
-				pf.setProperty("routes", CollectionUtils.idSetToString(routesOnStopFacility.get(stopFacility)));
-			}
-			pointFeatures.add(pf);
-		}
-
-		GeojsonTools.writeFeatureCollectionToFile(pointFeatures, pointOutputFile);
 	}
 
 	/**
 	 * Converts the transit routes to polylines
 	 */
-	public void routes2Polylines(String outputFile, boolean useNetworkLinks) {
-		FeatureCollection features = new FeatureCollection();
-
+	private void convertTransitRoutes(boolean useNetworkLinks) {
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 
@@ -193,26 +195,15 @@ public class Schedule2Geojson {
 				}
 
 				Feature f = GeojsonTools.createLineFeature(coords);
-				f.setProperty("line", transitLine.getId().toString());
-				f.setProperty("route", transitRoute.getId().toString());
-				f.setProperty("mode", transitRoute.getTransportMode());
-				f.setProperty("descr", transitRoute.getDescription());
-				f.setProperty("simLength", simLength);
-				features.add(f);
+				f.setProperty("transitLineId", transitLine.getId().toString());
+				f.setProperty("transitRouteId", transitRoute.getId().toString());
+				f.setProperty("transportMode", transitRoute.getTransportMode());
+				f.setProperty("transitRouteDescription", transitRoute.getDescription());
+				f.setProperty("transitRouteSimLength", simLength);
+				transitRouteFeatures.add(f);
 			}
 		}
-
-		GeojsonTools.writeFeatureCollectionToFile(features, outputFile);
 	}
-
-	/**
-	 * Converts the network to a geojson. Calls {@link org.matsim.utils.gis.matsim2esri.network.Links2ESRIShape}
-	 */
-	private void convertNetwork(String outputNetworkFile) {
-		Network2Geojson n2s = new Network2Geojson(this.crs, network);
-		n2s.writeNetwork(outputNetworkFile);
-	}
-
 
 	/**
 	 * @return the sum of all link lenghts of a transit route
