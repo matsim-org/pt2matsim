@@ -20,6 +20,8 @@ package org.matsim.pt2matsim.gtfs;
 
 import com.opencsv.CSVReader;
 import org.apache.commons.io.input.BOMInputStream;
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -32,6 +34,7 @@ import org.matsim.pt2matsim.tools.lib.RouteShape;
 
 import java.io.*;
 import java.util.*;
+
 
 /**
  * Reads GTFS files and stores data
@@ -74,8 +77,12 @@ public class GtfsFeedImpl implements GtfsFeed {
 	private String coordSys = TransformationFactory.WGS84;
 
 	public GtfsFeedImpl(String gtfsFolder) {
+		if(gtfsFolder.endsWith(".zip")) {
+			gtfsFolder = unzip(gtfsFolder);
+		}
 		loadFiles(gtfsFolder);
 	}
+
 
 	/**
 	 * In case optional columns in a csv file are missing or are out of order, addressing array
@@ -126,34 +133,44 @@ public class GtfsFeedImpl implements GtfsFeed {
 		this.root = inputPath;
 
 		log.info("Loading GTFS files from " + root);
-		try { loadStops(); } catch (IOException e) {
+		try {
+			loadStops();
+		} catch (IOException e) {
 			throw new RuntimeException("File stops.txt not found!");
 		}
-		try { loadCalendar(); } catch (IOException e) {
+		try {
+			loadCalendar();
+		} catch (IOException e) {
 			throw new RuntimeException("File calendar.txt not found! ");
 		}
 		loadCalendarDates();
 		loadShapes();
-		try { loadRoutes(); } catch (IOException e) {
+		try {
+			loadRoutes();
+		} catch (IOException e) {
 			throw new RuntimeException("File routes.txt not found!");
 		}
-		try { loadTrips(); } catch (IOException e) {
+		try {
+			loadTrips();
+		} catch (IOException e) {
 			throw new RuntimeException("File trips.txt not found!");
 		}
-		try { loadStopTimes(); } catch (IOException e) {
+		try {
+			loadStopTimes();
+		} catch (IOException e) {
 			throw new RuntimeException("File stop_times.txt not found!");
 		}
 		loadFrequencies();
 		loadTransfers();
 		log.info("All files loaded");
 	}
-	
+
 	/**
 	 * Creates a reader for CSV files
-	 * 
+	 * <p>
 	 * GTFS allows a BOM to precede the file content, which needs to be skipped
 	 * in case it is present
-
+	 *
 	 * @throws FileNotFoundException
 	 */
 	private CSVReader createCSVReader(String path) throws FileNotFoundException {
@@ -172,10 +189,10 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 */
 	private void loadStops() throws IOException {
 		log.info("Loading stops.txt");
-		
+
 		try {
 			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.STOPS.fileName);
-			
+
 			String[] header = reader.readNext(); // read header
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.STOPS.columns, GtfsDefinitions.Files.STOPS.optionalColumns); // get column numbers for required fields
 
@@ -262,10 +279,10 @@ public class GtfsFeedImpl implements GtfsFeed {
 	private void loadCalendarDates() {
 		// calendar dates are optional
 		log.info("Looking for calendar_dates.txt");
-		
+
 		try {
 			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.CALENDAR_DATES.fileName);
-			
+
 			String[] header = reader.readNext();
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.CALENDAR_DATES.columns, GtfsDefinitions.Files.CALENDAR_DATES.optionalColumns);
 
@@ -310,7 +327,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	private void loadShapes() {
 		// shapes are optional
 		log.info("Looking for shapes.txt");
-		
+
 		try {
 			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.SHAPES.fileName);
 
@@ -340,7 +357,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 			throw new RuntimeException("Emtpy line found in shapes.txt");
 		}
 	}
-	
+
 	final private Set<String> ignoredRoutes = new HashSet<>();
 
 	/**
@@ -365,7 +382,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 				RouteType routeType = RouteType.getRouteType(routeTypeNr);
 
-				if (routeType == null) {
+				if(routeType == null) {
 					log.warn("Route " + line[col.get(GtfsDefinitions.ROUTE_ID)] + " of type " + routeTypeNr + " will be ignored");
 					ignoredRoutes.add(line[col.get(GtfsDefinitions.ROUTE_ID)]);
 				} else {
@@ -384,7 +401,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 		}
 		log.info("...     routes.txt loaded");
 	}
-	
+
 	final private Set<String> ignoredTrips = new HashSet<>();
 
 	/**
@@ -407,13 +424,13 @@ public class GtfsFeedImpl implements GtfsFeed {
 			String[] line = reader.readNext();
 			while(line != null) {
 				Trip newTrip;
-				
+
 				String routeId = line[col.get(GtfsDefinitions.ROUTE_ID)];
 				Route route = routes.get(routeId);
 				Service service = services.get(line[col.get(GtfsDefinitions.SERVICE_ID)]);
-				
-				if (route == null) {
-					if (!ignoredRoutes.contains(routeId)) {
+
+				if(route == null) {
+					if(!ignoredRoutes.contains(routeId)) {
 						throw new IllegalStateException("Route " + routeId + " not found");
 					} else {
 						ignoredTrips.add(line[col.get(GtfsDefinitions.TRIP_ID)]);
@@ -425,7 +442,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 					} else {
 						newTrip = new TripImpl(line[col.get(GtfsDefinitions.TRIP_ID)], route, service);
 					}
-	
+
 					// store Trip
 					((RouteImpl) route).addTrip(newTrip);
 					((ServiceImpl) service).addTrip(newTrip);
@@ -465,9 +482,9 @@ public class GtfsFeedImpl implements GtfsFeed {
 				String tripId = line[col.get(GtfsDefinitions.TRIP_ID)];
 				Trip trip = trips.get(tripId);
 				Stop stop = stops.get(line[col.get(GtfsDefinitions.STOP_ID)]);
-				
-				if (trip == null) {
-					if (!ignoredTrips.contains(tripId)) {
+
+				if(trip == null) {
+					if(!ignoredTrips.contains(tripId)) {
 						throw new IllegalStateException("Trip " + tripId + " not found");
 					}
 				} else {
@@ -476,7 +493,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 						int sequencePosition = Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]);
 						int arrivalTime = (int) Time.parseTime(line[col.get(GtfsDefinitions.ARRIVAL_TIME)]);
 						int departureTime = (int) Time.parseTime(line[col.get(GtfsDefinitions.DEPARTURE_TIME)]);
-	
+
 						// create StopTime
 						StopTime newStopTime = new StopTimeImpl(sequencePosition,
 								arrivalTime,
@@ -485,7 +502,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 								trip
 						);
 						((TripImpl) trip).addStopTime(newStopTime);
-	
+
 						// add trip to stop
 						((StopImpl) stop).addTrip(trip);
 					}
@@ -495,19 +512,19 @@ public class GtfsFeedImpl implements GtfsFeed {
 					else {
 						Integer currentStopSequencePosition = Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]);
 						StopTime previousStopTime = trip.getStopTimes().last();
-	
+
 						// create StopTime
 						StopTime newStopTime = new StopTimeImpl(currentStopSequencePosition,
 								previousStopTime.getArrivalTime(),
 								previousStopTime.getDepartureTime(),
 								stop,
 								trip);
-	
+
 						((TripImpl) trip).addStopTime(newStopTime);
-	
+
 						// add trip to stop
 						((StopImpl) stop).addTrip(trip);
-	
+
 						if(warnStopTimes) {
 							log.warn("No arrival time set! Stops without arrival times will be scheduled based on the " +
 									"nearest preceding timed stop. This message is only given once.");
@@ -515,7 +532,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 						}
 					}
 				}
-				
+
 				line = reader.readNext();
 			}
 			reader.close();
@@ -577,6 +594,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 	private void loadTransfers() {
 		log.info("Looking for transfers.txt");
+		boolean transfersFileFound = true;
 		// transfers are optional
 		try {
 			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.TRANSFERS.fileName);
@@ -594,7 +612,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 						int minTransferTime = Integer.parseInt(line[col.get(GtfsDefinitions.TRANSFER_TYPE)]);
 						transfers.add(new TransferImpl(fromStopId, toStopId, tt, minTransferTime));
 					} catch (NumberFormatException e) {
-						throw new IllegalArgumentException("No required minimal transfer time set for transfer "+ line[col.get(GtfsDefinitions.FROM_STOP_ID)] + " -> "+ line[col.get(GtfsDefinitions.TO_STOP_ID)] + "!");
+						throw new IllegalArgumentException("No required minimal transfer time set for transfer " + line[col.get(GtfsDefinitions.FROM_STOP_ID)] + " -> " + line[col.get(GtfsDefinitions.TO_STOP_ID)] + "!");
 					}
 				} else {
 					// store transfer
@@ -607,11 +625,30 @@ public class GtfsFeedImpl implements GtfsFeed {
 		} catch (ArrayIndexOutOfBoundsException i) {
 			throw new RuntimeException("Emtpy line found in transfers.txt");
 		} catch (FileNotFoundException e) {
-			log.info("            no transfers file found");
+			log.info("...     no transfers file found");
+			transfersFileFound = false;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		log.info("...     transfers.txt loaded");
+		if(transfersFileFound) {
+			log.info("...     transfers.txt loaded");
+		}
+	}
+
+	private String unzip(String compressedZip) {
+		String unzippedFolder = compressedZip.substring(0, compressedZip.length() - 4) + "/";
+		log.info("Unzipping " + compressedZip + " to " + unzippedFolder);
+
+		try {
+			ZipFile zipFile = new ZipFile(compressedZip);
+			if(zipFile.isEncrypted()) {
+				throw new RuntimeException("Zip file is encrypted");
+			}
+			zipFile.extractAll(unzippedFolder);
+		} catch (ZipException e) {
+			e.printStackTrace();
+		}
+		return unzippedFolder;
 	}
 
 	@Override
@@ -670,6 +707,5 @@ public class GtfsFeedImpl implements GtfsFeed {
 	public Map<String, Trip> getTrips() {
 		return trips;
 	}
-
 
 }
