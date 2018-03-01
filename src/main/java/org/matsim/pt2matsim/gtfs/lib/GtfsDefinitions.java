@@ -20,11 +20,10 @@
 
 package org.matsim.pt2matsim.gtfs.lib;
 
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
+import java.util.TreeMap;
 
 public final class GtfsDefinitions {
-
-	public static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ISO_LOCAL_TIME;
 
 	// column names
 	public static final String SHAPE_ID = "shape_id";
@@ -204,39 +203,194 @@ public final class GtfsDefinitions {
 
 		/**
 		 * Determines the route type of a given route type index
-		 *
-		 * - Standard: https://developers.google.com/transit/gtfs/reference/routes-file
-		 * - Extended: https://developers.google.com/transit/gtfs/reference/extended-route-types
 		 */
 		public static RouteType getRouteType(int routeType) {
-			if(routeType < RouteType.values().length) {
-				return RouteType.values()[routeType];
-			}
-
-			// Extended route types
-			switch (routeType  - (routeType % 100)) {
-				case 100: return RouteType.RAIL; // Railway Service
-				case 200: return RouteType.BUS; // Coach Service
-				case 300: return RouteType.RAIL; // Suburban Railway Service
-				case 400: return RouteType.RAIL; // Urban Railway Service
-				case 500: return RouteType.SUBWAY; // Metro Service
-				case 600: return RouteType.SUBWAY; // Underground Service
-				case 700: return RouteType.BUS; // Bus Service
-				case 800: return RouteType.BUS; // Trolleybus Service
-				case 900: return RouteType.TRAM; // Tram Service
-				case 1000: return RouteType.FERRY; // Water Transport Service
-				case 1200: return RouteType.FERRY; // Ferry Service
-				case 1300: return RouteType.CABLE_CAR; // Telecabin Service
-				case 1400: return RouteType.FUNICULAR; // Funicular Service
-
-				case 1100: // Air Service
-				case 1500: // Taxi Service
-				case 1600: // Self Drive
-				case 1700: // Miscellaneous Service
-				return null;
-			}
-			throw new IllegalArgumentException("Invalid GTFS route type: " + routeType);
+			return ExtendedRouteType.getExtendedRouteType(routeType).routeType;
 		}
+	}
+
+	public enum ExtendedRouteType {
+		// Base: https://developers.google.com/transit/gtfs/reference/routes-file
+		Tram      (0, "Tram", RouteType.TRAM),
+		Subway    (1, "Subway", RouteType.SUBWAY),
+		Rail      (2, "Rail", RouteType.RAIL),
+		Bus       (3, "Bus", RouteType.BUS),
+		Ferry     (4, "Ferry", RouteType.FERRY),
+		Cable_car (5, "Cable car", RouteType.CABLE_CAR),
+		Gondola   (6, "Gondola", RouteType.GONDOLA),
+		Funicular (7, "Funicular", RouteType.FUNICULAR),
+
+		// Extended: https://developers.google.com/transit/gtfs/reference/extended-route-types
+		Railway_Service                       (100,  "Railway Service", 				RouteType.RAIL),
+		High_Speed_Rail_Service               (101,  "High Speed Rail Service", 		RouteType.RAIL),
+		Long_Distance_Trains                  (102,  "Long Distance Trains", 			RouteType.RAIL),
+		Inter_Regional_Rail_Service           (103,  "Inter Regional Rail Service",		RouteType.RAIL),
+		Car_Transport_Rail_Service            (104,  "Car Transport Rail Service", 		RouteType.RAIL),
+		Sleeper_Rail_Service                  (105,  "Sleeper Rail Service", 			RouteType.RAIL),
+		Regional_Rail_Service                 (106,  "Regional Rail Service", 			RouteType.RAIL),
+		Tourist_Railway_Service               (107,  "Tourist Railway Service", 		RouteType.RAIL),
+		Rail_Shuttle_Within_Complex           (108,  "Rail Shuttle (Within Complex)", 	RouteType.RAIL),
+		Suburban_Railway                      (109,  "Suburban Railway", 				RouteType.RAIL),
+		Replacement_Rail_Service              (110,  "Replacement Rail Service", 		RouteType.RAIL),
+		Special_Rail_Service                  (111,  "Special Rail Service", 			RouteType.RAIL),
+		Lorry_Transport_Rail_Service          (112,  "Lorry Transport Rail Service",	RouteType.RAIL),
+		All_Rail_Services                     (113,  "All Rail Services",				RouteType.RAIL),
+		Cross_Country_Rail_Service            (114,  "Cross-Country Rail Service",		RouteType.RAIL),
+		Vehicle_Transport_Rail_Service        (115,  "Vehicle Transport Rail Service",	RouteType.RAIL),
+		Rack_and_Pinion_Railway               (116,  "Rack and Pinion Railway",			RouteType.RAIL),
+		Additional_Rail_Service               (117,  "Additional Rail Service", 		RouteType.RAIL),
+
+		Coach_Service                         (200,  "Coach Service",					RouteType.RAIL),
+		International_Coach_Service           (201,  "International Coach Service",		RouteType.BUS),
+		National_Coach_Service                (202,  "National Coach Service",			RouteType.BUS),
+		Shuttle_Coach_Service                 (203,  "Shuttle Coach Service",			RouteType.BUS),
+		Regional_Coach_Service                (204,  "Regional Coach Service",			RouteType.BUS),
+		Special_Coach_Service                 (205,  "Special Coach Service",			RouteType.BUS),
+		Sightseeing_Coach_Service             (206,  "Sightseeing Coach Service",		RouteType.BUS),
+		Tourist_Coach_Service                 (207,  "Tourist Coach Service",			RouteType.BUS),
+		Commuter_Coach_Service                (208,  "Commuter Coach Service",			RouteType.BUS),
+		All_Coach_Services                    (209,  "All Coach Services",				RouteType.BUS),
+
+		Suburban_Railway_Service              (300,  "Suburban Railway Service",		RouteType.RAIL),
+
+		Urban_Railway_Service                 (400,  "Urban Railway Service", 			RouteType.RAIL),
+		Metro_Service_2                       (401,  "Metro Service",					RouteType.SUBWAY),
+		Underground_Service_2                 (402,  "Underground Service",				RouteType.SUBWAY),
+		Urban_Railway_Service_2               (403,  "Urban Railway Service",			RouteType.RAIL),
+		All_Urban_Railway_Services            (404,  "All Urban Railway Services",		RouteType.RAIL),
+		Monorail                              (405,  "Monorail",						RouteType.RAIL),
+
+		Metro_Service                         (500,  "Metro Service", 					RouteType.SUBWAY),
+
+		Underground_Service                   (600,  "Underground Service", 			RouteType.SUBWAY),
+
+		Bus_Service                           (700,  "Bus Service", 					RouteType.BUS),
+		Regional_Bus_Service                  (701,  "Regional Bus Service", 			RouteType.BUS),
+		Express_Bus_Service                   (702,  "Express Bus Service", 			RouteType.BUS),
+		Stopping_Bus_Service                  (703,  "Stopping Bus Service", 			RouteType.BUS),
+		Local_Bus_Service                     (704,  "Local Bus Service", 				RouteType.BUS),
+		Night_Bus_Service                     (705,  "Night Bus Service", 				RouteType.BUS),
+		Post_Bus_Service                      (706,  "Post Bus Service", 				RouteType.BUS),
+		Special_Needs_Bus                     (707,  "Special Needs Bus", 				RouteType.BUS),
+		Mobility_Bus_Service                  (708,  "Mobility Bus Service", 			RouteType.BUS),
+		Mobility_Bus_for_Registered_Disabled  (709,  "Mobility Bus for Registered Disabled", RouteType.BUS),
+		Sightseeing_Bus                       (710,  "Sightseeing Bus",					RouteType.BUS),
+		Shuttle_Bus                           (711,  "Shuttle Bus",						RouteType.BUS),
+		School_Bus                            (712,  "School Bus",						RouteType.BUS),
+		School_and_Public_Service_Bus         (713,  "School and Public Service Bus", 	RouteType.BUS),
+		Rail_Replacement_Bus_Service          (714,  "Rail Replacement Bus Service", 	RouteType.BUS),
+		Demand_and_Response_Bus_Service       (715,  "Demand and Response Bus Service",	RouteType.BUS),
+		All_Bus_Services                      (716,  "All Bus Services",				RouteType.BUS),
+
+		Trolleybus_Service                    (800,  "Trolleybus Service",				RouteType.BUS),
+
+		Tram_Service                          (900,  "Tram Service", 					RouteType.TRAM),
+		City_Tram_Service                     (901,  "City Tram Service", 				RouteType.TRAM),
+		Local_Tram_Service                    (902,  "Local Tram Service", 				RouteType.TRAM),
+		Regional_Tram_Service                 (903,  "Regional Tram Service", 			RouteType.TRAM),
+		Sightseeing_Tram_Service              (904,  "Sightseeing Tram Service", 		RouteType.TRAM),
+		Shuttle_Tram_Service                  (905,  "Shuttle Tram Service", 			RouteType.TRAM),
+		All_Tram_Services                     (906,  "All Tram Services", 				RouteType.TRAM),
+
+		Water_Transport_Service               (1000, "Water Transport Service", 			RouteType.FERRY),
+		International_Car_Ferry_Service       (1001, "International Car Ferry Service", 	RouteType.FERRY),
+		National_Car_Ferry_Service            (1002, "National Car Ferry Service",			RouteType.FERRY),
+		Regional_Car_Ferry_Service            (1003, "Regional Car Ferry Service", 			RouteType.FERRY),
+		Local_Car_Ferry_Service               (1004, "Local Car Ferry Service", 			RouteType.FERRY),
+		International_Passenger_Ferry_Service (1005, "International Passenger Ferry Service", RouteType.FERRY),
+		National_Passenger_Ferry_Service      (1006, "National Passenger Ferry Service",	RouteType.FERRY),
+		Regional_Passenger_Ferry_Service      (1007, "Regional Passenger Ferry Service",	RouteType.FERRY),
+		Local_Passenger_Ferry_Service         (1008, "Local Passenger Ferry Service", 		RouteType.FERRY),
+		Post_Boat_Service                     (1009, "Post Boat Service", 					RouteType.FERRY),
+		Train_Ferry_Service                   (1010, "Train Ferry Service", 				RouteType.FERRY),
+		Road_Link_Ferry_Service               (1011, "Road-Link Ferry Service", 			RouteType.FERRY),
+		Airport_Link_Ferry_Service            (1012, "Airport-Link Ferry Service", 			RouteType.FERRY),
+		Car_High_Speed_Ferry_Service          (1013, "Car High-Speed Ferry Service", 		RouteType.FERRY),
+		Passenger_High_Speed_Ferry_Service    (1014, "Passenger High-Speed Ferry Service",	RouteType.FERRY),
+		Sightseeing_Boat_Service              (1015, "Sightseeing Boat Service", 			RouteType.FERRY),
+		School_Boat                           (1016, "School Boat",							RouteType.FERRY),
+		Cable_Drawn_Boat_Service              (1017, "Cable-Drawn Boat Service",			RouteType.FERRY),
+		River_Bus_Service                     (1018, "River Bus Service",					RouteType.FERRY),
+		Scheduled_Ferry_Service               (1019, "Scheduled Ferry Service", 			RouteType.FERRY),
+		Shuttle_Ferry_Service                 (1020, "Shuttle Ferry Service",				RouteType.FERRY),
+		All_Water_Transport_Services          (1021, "All Water Transport Services", 		RouteType.FERRY),
+
+		Air_Service                           (1100, "Air Service", 						null),
+		International_Air_Service             (1101, "International Air Service", 			null),
+		Domestic_Air_Service                  (1102, "Domestic Air Service", 				null),
+		Intercontinental_Air_Service          (1103, "Intercontinental Air Service", 		null),
+		Domestic_Scheduled_Air_Service        (1104, "Domestic Scheduled Air Service", 		null),
+		Shuttle_Air_Service                   (1105, "Shuttle Air Service", 				null),
+		Intercontinental_Charter_Air_Service  (1106, "Intercontinental Charter Air Service",null),
+		International_Charter_Air_Service     (1107, "International Charter Air Service", 	null),
+		Round_Trip_Charter_Air_Service        (1108, "Round-Trip Charter Air Service", 		null),
+		Sightseeing_Air_Service               (1109, "Sightseeing Air Service", 			null),
+		Helicopter_Air_Service                (1110, "Helicopter Air Service", 				null),
+		Domestic_Charter_Air_Service          (1111, "Domestic Charter Air Service",		null),
+		Schengen_Area_Air_Service             (1112, "Schengen-Area Air Service", 			null),
+		Airship_Service                       (1113, "Airship Service", 					null),
+		All_Air_Services                      (1114, "All Air Services", 					null),
+
+		Ferry_Service                         (1200, "Ferry Service", 				RouteType.FERRY),
+
+		Telecabin_Service                     (1300, "Telecabin Service", 			RouteType.CABLE_CAR),
+		Telecabin_Service_2                   (1301, "Telecabin Service", 			RouteType.CABLE_CAR),
+		Cable_Car_Service                     (1302, "Cable Car Service", 			RouteType.CABLE_CAR),
+		Elevator_Service                      (1303, "Elevator Service", 			RouteType.CABLE_CAR),
+		Chair_Lift_Service                    (1304, "Chair Lift Service", 			RouteType.CABLE_CAR),
+		Drag_Lift_Service                     (1305, "Drag Lift Service", 			RouteType.CABLE_CAR),
+		Small_Telecabin_Service               (1306, "Small Telecabin Service", 	RouteType.CABLE_CAR),
+		All_Telecabin_Services                (1307, "All Telecabin Services", 		RouteType.CABLE_CAR),
+
+		Funicular_Service_                    (1400, "Funicular Service", 			RouteType.FUNICULAR),
+		Funicular_Service                     (1401, "Funicular Service", 			RouteType.FUNICULAR),
+		All_Funicular_Service                 (1402, "All Funicular Service", 		RouteType.FUNICULAR),
+
+		Taxi_Service                          (1500, "Taxi Service", 				null),
+		Communal_Taxi_Service                 (1501, "Communal Taxi Service", 		RouteType.BUS),
+		Water_Taxi_Service                    (1502, "Water Taxi Service", 			RouteType.FERRY),
+		Rail_Taxi_Service                     (1503, "Rail Taxi Service", 			RouteType.RAIL),
+		Bike_Taxi_Service                     (1504, "Bike Taxi Service", 			null),
+		Licensed_Taxi_Service                 (1505, "Licensed Taxi Service", 		null),
+		Private_Hire_Service_Vehicle          (1506, "Private Hire Service Vehicle",null),
+		All_Taxi_Services                     (1507, "All Taxi Services", 			null),
+
+		Self_Drive                            (1600, "Self Drive", 		null),
+		Hire_Car                              (1601, "Hire Car", 		null),
+		Hire_Van                              (1602, "Hire Van", 		null),
+		Hire_Motorbike                        (1603, "Hire Motorbike", 	null),
+		Hire_Cycle                            (1604, "Hire Cycle", 		null),
+
+		Miscellaneous_Service                 (1700, "Miscellaneous Service", 	null),
+		Horse_drawn_Carriage                  (1701, "Horse-drawn Carriage", 	null);
+
+		private final int index;
+		private final String name;
+		private final RouteType routeType;
+
+		ExtendedRouteType(int index, String name, RouteType routeType) {
+			this.index = index;
+			this.name = name;
+			this.routeType = routeType;
+		}
+
+		private static final Map<Integer, ExtendedRouteType> extendedRouteTypes = new TreeMap<>();
+
+		static {
+			for(ExtendedRouteType type : ExtendedRouteType.values()) {
+				extendedRouteTypes.put(type.index, type);
+
+			}
+		}
+
+		public static ExtendedRouteType getExtendedRouteType(int routeType) {
+			ExtendedRouteType extRouteType = extendedRouteTypes.get(routeType);
+			if(extRouteType == null) {
+				throw new IllegalArgumentException("Invalid GTFS route type: " + routeType);
+			}
+			return extendedRouteTypes.get(routeType);
+		}
+
 	}
 
 	/**
