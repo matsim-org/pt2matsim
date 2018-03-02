@@ -14,18 +14,32 @@ import org.matsim.pt.utils.TransitScheduleValidator;
 public class GtfsConverterTest {
 
 	private GtfsFeed gtfsFeed;
-	private TransitSchedule scheduleAddison;
+	private GtfsConverter gtfsConverter;
+	private TransitSchedule schedule;
+	private String coordSystem = "EPSG:26917";
+	private String feedFolder = "test/GrandRiverTransit-GTFS/";
 
 	@Before
 	public void convert() {
-		String coordinateSystem = "EPSG:2032";
+		gtfsFeed = new GtfsFeedImpl(feedFolder);
 
-		gtfsFeed = new GtfsFeedImpl("test/Addisoncounty-GTFS/");
+		gtfsConverter = new GtfsConverter(gtfsFeed);
+		schedule = gtfsConverter.convert(GtfsConverter.ALL_SERVICE_IDS, coordSystem);
+	}
 
-		GtfsConverter gtfsConverter = new GtfsConverter(gtfsFeed);
-		scheduleAddison = gtfsConverter.convert(GtfsConverter.ALL_SERVICE_IDS, coordinateSystem);
-		gtfsConverter.convert(GtfsConverter.DAY_WITH_MOST_SERVICES, coordinateSystem);
-		gtfsConverter.convert(GtfsConverter.DAY_WITH_MOST_TRIPS, coordinateSystem);
+	@Test
+	public void convertDayWithMostServices() {
+		gtfsConverter.convert(GtfsConverter.DAY_WITH_MOST_SERVICES, coordSystem);
+	}
+
+	@Test
+	public void convertDayWithMostTrips() {
+		gtfsConverter.convert(GtfsConverter.DAY_WITH_MOST_TRIPS, coordSystem);
+	}
+
+	@Test
+	public void numberOfStops() {
+		Assert.assertEquals( 	2452, gtfsFeed.getStops().size());
 	}
 
 	@Test
@@ -34,7 +48,7 @@ public class GtfsConverterTest {
 		int nTransitRoutes = 0;
 		int nDepartures = 0;
 
-		for(TransitLine tl : scheduleAddison.getTransitLines().values()) {
+		for(TransitLine tl : schedule.getTransitLines().values()) {
 			nTransitLines++;
 			nTransitRoutes += tl.getRoutes().size();
 			for(TransitRoute tr : tl.getRoutes().values()) {
@@ -48,23 +62,18 @@ public class GtfsConverterTest {
 
 	@Test
 	public void validUnmappedSchedule() {
-		Assert.assertTrue(TransitScheduleValidator.validateAllStopsExist(scheduleAddison).isValid());
-		Assert.assertTrue(TransitScheduleValidator.validateOffsets(scheduleAddison).isValid());
+		Assert.assertTrue(TransitScheduleValidator.validateAllStopsExist(schedule).isValid());
+		Assert.assertTrue(TransitScheduleValidator.validateOffsets(schedule).isValid());
 	}
 
 
 	@Test
-	public void testSecondFeed() {
-		String coordinateSystem = "WGS84";
-
-		gtfsFeed = new GtfsFeedImpl("test/GrandRiverTransit-GTFS/");
-
-		GtfsConverter gtfsConverter2 = new GtfsConverter(gtfsFeed);
-		int scheduleServices = gtfsConverter2.convert(GtfsConverter.DAY_WITH_MOST_SERVICES, coordinateSystem).getTransitLines().size();
-		int scheduleDay = gtfsConverter2.convert("20161027", coordinateSystem).getTransitLines().size();
+	public void testDays() {
+		int scheduleServices = gtfsConverter.convert(GtfsConverter.DAY_WITH_MOST_SERVICES, coordSystem).getTransitLines().size();
+		int scheduleDay = gtfsConverter.convert("20161027", coordSystem).getTransitLines().size();
 
 		Assert.assertEquals(scheduleServices, scheduleDay);
+		Assert.assertEquals(gtfsFeed.getRoutes().size(), 74);
 	}
-
 
 }
