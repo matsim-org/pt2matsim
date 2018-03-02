@@ -250,8 +250,6 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 			String[] line = reader.readNext();
 			while(line != null) {
-				// if(i == Math.pow(2, c)) { log.info("        # " + i); c++; } i++;
-
 				boolean[] days = new boolean[7];
 				for(int d = 0; d < 7; d++) {
 					days[d] = line[indexMonday + d].equals("1");

@@ -17,20 +17,21 @@ import java.util.*;
  */
 public class GtfsFeedImplTest {
 
-	private static final double DELTA = 0.000001;
+	private String gtfsTestFeed = "test/stib-mivb-gtfs.zip";
+	private String coordinateSystem = "EPSG:32631";
 	private GtfsFeed feed;
 
 	@Before
 	public void prepare() {
-		feed = new GtfsFeedImpl("test/Addisoncounty-GTFS/");
+		feed = new GtfsFeedImpl(gtfsTestFeed);
 	}
 
 	@Test
 	public void statistics() {
-		Assert.assertEquals(114, feed.getStops().size());
-		Assert.assertEquals(11, feed.getRoutes().size());
-		Assert.assertEquals(15, feed.getServices().size());
-		Assert.assertEquals(50, feed.getShapes().size());
+		Assert.assertEquals(2514, feed.getStops().size());
+		Assert.assertEquals(92, feed.getRoutes().size());
+		Assert.assertEquals(139, feed.getServices().size());
+		Assert.assertEquals(806, feed.getShapes().size());
 		Assert.assertFalse(feed.usesFrequencies());
 	}
 
@@ -40,7 +41,7 @@ public class GtfsFeedImplTest {
 				<Stop>map(s -> new StopImpl(s.getId(), s.getName(), s.getLon(), s.getLat(), s.getLocationType(), s.getParentStationId())).
 				orElse(null);
 		Assert.assertNotNull(testStop);
-		feed.transform("EPSG:2032");
+		feed.transform(coordinateSystem);
 		Assert.assertEquals(testStop, feed.getStops().get(testStop.getId()));
 	}
 
@@ -50,7 +51,7 @@ public class GtfsFeedImplTest {
 		for(Stop stop : feed.getStops().values()) {
 			stopCoords1.put(stop.getId(), stop.getCoord());
 		}
-		feed.transform("EPSG:2032");
+		feed.transform(coordinateSystem);
 		feed.transform("WGS84");
 		Map<String, Coord> stopCoords2 = new HashMap<>();
 		for(Stop stop : feed.getStops().values()) {
@@ -60,6 +61,8 @@ public class GtfsFeedImplTest {
 		for(Map.Entry<String, Coord> entry : stopCoords2.entrySet()) {
 			Coord orig = stopCoords1.get(entry.getKey());
 			Coord compare = entry.getValue();
+
+			double DELTA = 0.000001;
 			Assert.assertEquals(orig.getX(), compare.getX(), DELTA);
 			Assert.assertEquals(orig.getY(), compare.getY(), DELTA);
 		}
