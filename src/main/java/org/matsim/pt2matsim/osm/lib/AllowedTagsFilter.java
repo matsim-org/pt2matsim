@@ -119,10 +119,13 @@ public class AllowedTagsFilter {
 		}
 	}
 
-	/*pckg*/ void mergeFilter(AllowedTagsFilter f) {
-		for(Osm.ElementType t : f.keyValuePairs.keySet()) {
+	/**
+	 * Adds the tags and exceptions from otherFilter into this filter
+	 */
+	public void mergeFilter(AllowedTagsFilter otherFilter) {
+		for(Osm.ElementType t : otherFilter.keyValuePairs.keySet()) {
 			Map<String, Set<String>> tmpMap = MapUtils.getMap(t, keyValuePairs);
-			for(Map.Entry<String, Set<String>> pair : f.keyValuePairs.get(t).entrySet()) {
+			for(Map.Entry<String, Set<String>> pair : otherFilter.keyValuePairs.get(t).entrySet()) {
 				if(tmpMap.containsKey(pair.getKey())) {
 					tmpMap.get(pair.getKey()).addAll(pair.getValue());
 				} else {
@@ -130,9 +133,9 @@ public class AllowedTagsFilter {
 				}
 			}
 		}
-		for(Osm.ElementType t : f.keyValueExceptions.keySet()) {
+		for(Osm.ElementType t : otherFilter.keyValueExceptions.keySet()) {
 			Map<String, Set<String>> tmpMap = MapUtils.getMap(t, keyValueExceptions);
-			for(Map.Entry<String, Set<String>> pair : f.keyValueExceptions.get(t).entrySet()) {
+			for(Map.Entry<String, Set<String>> pair : otherFilter.keyValueExceptions.get(t).entrySet()) {
 				if(tmpMap.containsKey(pair.getKey())) {
 					tmpMap.get(pair.getKey()).addAll(pair.getValue());
 				} else {

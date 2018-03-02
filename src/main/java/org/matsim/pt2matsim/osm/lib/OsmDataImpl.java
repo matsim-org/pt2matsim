@@ -41,6 +41,9 @@ public class OsmDataImpl implements OsmData {
 	// Filters
 	private AllowedTagsFilter filter = new AllowedTagsFilter();
 
+	/**
+	 * @param filters are used when reading an osm file, tags not specified in filters are skipped
+	 */
 	public OsmDataImpl(AllowedTagsFilter... filters) {
 		for(AllowedTagsFilter f : filters) {
 			this.filter.mergeFilter(f);

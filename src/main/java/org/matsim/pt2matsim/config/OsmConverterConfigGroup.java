@@ -76,6 +76,7 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	public static OsmConverterConfigGroup createDefaultConfig() {
 		Set<String> carSingleton = Collections.singleton("car");
 		Set<String> railSingleton = Collections.singleton("rail");
+		Set<String> busSingleton = Collections.singleton("bus");
 
 		OsmConverterConfigGroup defaultConfig = new OsmConverterConfigGroup();
 		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MOTORWAY, 2, 120.0 / 3.6, 1.0, 2000, true, carSingleton));
@@ -97,6 +98,10 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.RAIL, 1, 160.0 / 3.6, 1.0, 9999, false, railSingleton));
 		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.TRAM, 1, 40.0 / 3.6, 1.0, 9999, true, railSingleton));
 		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.LIGHT_RAIL, 1, 80.0 / 3.6, 1.0, 9999, false, railSingleton));
+
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.PSV, Osm.Value.YES, 1, 50.0 / 3.6, 1.0, 9999, false, busSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.PSV, Osm.Value.DESIGNATED, 1, 50.0 / 3.6, 1.0, 9999, false, busSingleton));
+		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.BUS, Osm.Value.DESIGNATED, 1, 50.0 / 3.6, 1.0, 9999, false, busSingleton));
 
 		return defaultConfig;
 	}
@@ -222,7 +227,7 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		}
 	}
 
-	public AllowedTagsFilter getBasicWayFilter() {
+	public AllowedTagsFilter getWayFilter() {
 		AllowedTagsFilter filter = new AllowedTagsFilter();
 		for(ConfigGroup e : this.getParameterSets(OsmConverterConfigGroup.OsmWayParams.SET_NAME)) {
 			OsmConverterConfigGroup.OsmWayParams w = (OsmConverterConfigGroup.OsmWayParams) e;

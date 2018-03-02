@@ -21,8 +21,7 @@ package org.matsim.pt2matsim.config;
 
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.api.internal.MatsimParameters;
-import org.matsim.core.config.ConfigGroup;
-import org.matsim.core.config.ReflectiveConfigGroup;
+import org.matsim.core.config.*;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt2matsim.run.PublicTransitMapper;
@@ -31,6 +30,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup.TravelCostType.travelTime;
 
@@ -107,6 +107,15 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 
 		return config;
 	}
+
+	public void writeToFile(String filename) {
+		Config matsimConfig = ConfigUtils.createConfig();
+		matsimConfig.addModule(this);
+		Set<String> toRemove = matsimConfig.getModules().keySet().stream().filter(module -> !module.equals(OsmConverterConfigGroup.GROUP_NAME)).collect(Collectors.toSet());
+		toRemove.forEach(matsimConfig::removeModule);
+		new ConfigWriter(matsimConfig).write(filename);
+	}
+
 
 	@Override
 	public final Map<String, String> getComments() {

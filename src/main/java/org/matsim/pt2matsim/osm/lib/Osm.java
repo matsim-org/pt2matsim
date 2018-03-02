@@ -137,6 +137,7 @@ public final class Osm {
 		public final static String ONEWAY = "oneway";
 		public final static String ACCESS = "access";
 		public static final String PSV = "psv";
+		public static final String BUS = "bus";
 
 		// rarely used
 		public static final String TYPE = "type";
@@ -196,6 +197,10 @@ public final class Osm {
 		public static final String FUNICULAR = "funicular";
 		public static final String MONORAIL = "monorail";
 		public static final String SUBWAY = "subway";
+
+		// values for psv=*
+		public static final String YES = "yes";
+		public static final String DESIGNATED = "designated";
 	}
 
 

@@ -82,7 +82,7 @@ public final class Osm2MultimodalNetwork {
 	}
 
 	public static void run(OsmConverterConfigGroup config) {
-		OsmData osmData = new OsmDataImpl(config.getBasicWayFilter());
+		OsmData osmData = new OsmDataImpl(config.getWayFilter());
 		new OsmFileReader(osmData).readFile(config.getOsmFile());
 
 		OsmMultimodalNetworkConverter converter = new OsmMultimodalNetworkConverter(osmData);
