@@ -21,9 +21,11 @@ package org.matsim.pt2matsim.tools;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.geojson.*;
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.network.Link;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -60,5 +62,14 @@ public class GeojsonTools {
 
 		lineFeature.setGeometry(geometry);
 		return lineFeature;
+	}
+
+	public static List<Coord> links2Coords(List<Link> links) {
+		List<Coord> coords = new ArrayList<>();
+		coords.add(links.get(0).getFromNode().getCoord());
+		for(Link link : links) {
+			coords.add(link.getToNode().getCoord());
+		}
+		return coords;
 	}
 }

@@ -25,6 +25,7 @@ import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt2matsim.plausibility.PlausibilityCheck;
 import org.matsim.pt2matsim.plausibility.StopFacilityHistogram;
+import org.matsim.pt2matsim.run.gis.Schedule2Geojson;
 import org.matsim.pt2matsim.run.gis.Schedule2ShapeFile;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
@@ -41,10 +42,11 @@ public final class CheckMappedSchedulePlausibility {
 	/**
 	 * Performs a plausibility check on the given schedule and network files
 	 * and writes the results to the output folder.
-	 * @param args	[0] schedule file
-	 *              [1] network file
-	 *              [2]	coordinate system (of both schedule and network)
-	 *              [3]	output folder
+	 *
+	 * @param args [0] schedule file
+	 *             [1] network file
+	 *             [2] coordinate system (of both schedule and network)
+	 *             [3] output folder
 	 */
 	public static void main(final String[] args) {
 		if(args.length == 4) {
@@ -54,29 +56,26 @@ public final class CheckMappedSchedulePlausibility {
 		}
 	}
 
+	// TODO update readme
 	/**
 	 * Performs a plausibility check on the given schedule and network files
 	 * and writes the results to the output folder. The following files are
 	 * created in the output folder:
 	 * <ul>
-	 * 	<li>allPlausibilityWarnings.csv: shows all plausibility warnings in a csv file</li>
-	 * 	<li>stopfacilities.csv: the number of child stop facilities for all stop facilities as csv</li>
-	 * 	<li>stopfacilities_histogram.png: a histogram as png showing the number of child stop facilities</li>
-	 * 	<li>shp/warnings/WarningsLoops.shp: Loops warnings as polyline shapefile</li>
-	 * 	<li>shp/warnings/WarningsTravelTime.shp: Travel time warnings as polyline shapefile</li>
-	 * 	<li>shp/warnings/WarningsDirectionChange.shp: Direction change warnings as polyline shapefile</li>
-	 * 	<li>shp/schedule/TransitRoutes.shp: Transit routes of the schedule as polyline shapefile</li>
-	 * 	<li>shp/schedule/StopFacilities.shp: Stop Facilities as point shapefile</li>
-	 * 	<li>shp/schedule/StopFacilities_refLinks.shp: The stop facilities' reference links as polyline shapefile</li>
+	 * <li>allPlausibilityWarnings.csv: shows all plausibility warnings in a csv file</li>
+	 * <li>stopfacilities.csv: the number of child stop facilities for all stop facilities as csv</li>
+	 * <li>stopfacilities_histogram.png: a histogram as png showing the number of child stop facilities</li>
+	 * <li>PlausibilityWarnings.geojson: Contains all warnings for groups of links</li>
+	 * <li>schedule/TransitRoutes.geojson: Transit routes of the schedule as lines</li>
+	 * <li>schedule/StopFacilities.geojson: Stop Facilities as points</li>
+	 * <li>schedule/StopFacilities_refLinks.geojson: The stop facilities' reference links as polyline shapefile</li>
 	 * </ul>
-	 * Shapefiles can be viewed in an GIS, a recommended open source GIS is QGIS. It is also possible to view them in senozon VIA.
-	 * However, no line attributes can be displayed or viewed there.
-	 * @param scheduleFile the schedule file
-	 * @param networkFile network file
+	 * Geojson can be viewed in an GIS, a recommended open source GIS is QGIS.
+	 *
+	 * @param scheduleFile     the schedule file
+	 * @param networkFile      network file
 	 * @param coordinateSystem A name used by {@link MGC}. Use EPSG:* code to avoid problems.
-	 * @param outputFolder the output folder where all csv and shapefiles are written
-	 *
-	 *
+	 * @param outputFolder     the output folder where all csv and shapefiles are written
 	 */
 	public static void run(String scheduleFile, String networkFile, String coordinateSystem, String outputFolder) {
 		PlausibilityCheck.setLogLevels();
@@ -99,17 +98,14 @@ public final class CheckMappedSchedulePlausibility {
 		}
 
 		new File(outputFolder).mkdir();
-		new File(outputFolder+"shp/").mkdir();
-		new File(outputFolder+"shp/schedule/").mkdir();
-		//noinspection ResultOfMethodCallIgnored
-		new File(outputFolder+"shp/warnings/").mkdir();
+		new File(outputFolder + "schedule/").mkdir();
 		check.writeCsv(outputFolder + "allPlausibilityWarnings.csv");
-		check.writeResultShapeFiles(outputFolder+"shp/warnings/");
+		check.writeResultsGeojson( outputFolder + "PlausibilityWarnings.geojson");
 
-		Schedule2ShapeFile schedule2shp = new Schedule2ShapeFile(coordinateSystem, schedule, network);
-		schedule2shp.routes2Polylines(outputFolder+"shp/schedule/TransitRoutes.shp", true);
-		schedule2shp.stopFacilities2Points(outputFolder+"shp/schedule/StopFacilities.shp");
-		schedule2shp.stopRefLinks2Polylines(outputFolder+"shp/schedule/StopFacilities_refLinks.shp");
+		Schedule2Geojson schedule2geojson = new Schedule2Geojson(coordinateSystem, schedule, network);
+		schedule2geojson.writeTransitRoutes(outputFolder + "schedule/TransitRoutes.geojson");
+		schedule2geojson.writeStopFacilities(outputFolder + "schedule/StopFacilities.geojson");
+		schedule2geojson.writeStopRefLinks(outputFolder + "schedule/StopFacilities_refLinks.geojson");
 
 		// stop facility histogram
 		StopFacilityHistogram histogram = new StopFacilityHistogram(schedule);
