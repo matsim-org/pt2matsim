@@ -20,6 +20,8 @@ package org.matsim.pt2matsim.plausibility;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.geojson.Feature;
+import org.geojson.FeatureCollection;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -118,7 +120,6 @@ public class PlausibilityCheck {
 	public void setTtRange(double tt) {
 		this.ttRange = tt;
 	}
-
 
 	/**
 	 * Performs the plausibility check on the schedule
@@ -260,9 +261,95 @@ public class PlausibilityCheck {
 		}
 	}
 
+	public void writeResultsGeojson(String warningsFile) {
+		log.info("Writing warnings geojson file " + warningsFile + " ...");
+
+		FeatureCollection warnings = new FeatureCollection();
+
+		// route through all unique linkIdLists
+		for(Map.Entry<List<Id<Link>>, Set<PlausibilityWarning>> e : warningsPerUniqueLinkSet.entrySet()) {
+			boolean createLoopFeature = false;
+			boolean createTravelTimeFeature = false;
+			boolean createDirectionChangeFeature = false;
+			boolean createArtificialFeature = false;
+
+			double diff = -1, diffPerc = -1, ttExpected = -1, ttActual = -1, azDiff = 0.0;
+
+			Set<Id<PlausibilityWarning>> warningIds = new HashSet<>();
+			Set<String> routeIds = new HashSet<>();
+
+			for(PlausibilityWarning w : e.getValue()) {
+				// Travel Time Warnings
+				if(w instanceof TravelTimeWarning) {
+					createTravelTimeFeature = true;
+					if(w.getExpected()/w.getActual() > diff) {
+						diff = w.getDifference();
+						ttActual = w.getActual();
+						ttExpected = w.getExpected();
+						diffPerc = ttActual / ttExpected - 1;
+					}
+					warningIds.add(w.getId());
+					routeIds.add(w.getTransitLine().getId() + ":" + w.getTransitRoute().getId());
+				}
+
+				// Direction Change Warnings
+				if(w instanceof DirectionChangeWarning) {
+					createDirectionChangeFeature = true;
+					warningIds.add(w.getId());
+					routeIds.add(w.getTransitLine().getId() + ":" + w.getTransitRoute().getId());
+					azDiff = w.getDifference();
+				}
+
+				// Loop Warnings
+				if(w instanceof LoopWarning) {
+					createLoopFeature = true;
+					warningIds.add(w.getId());
+					routeIds.add(w.getTransitLine().getId() + ":" + w.getTransitRoute().getId());
+				}
+
+				// Loop Warnings
+				if(w instanceof ArtificialLinkWarning) {
+					createArtificialFeature = true;
+					warningIds.add(w.getId());
+					routeIds.add(w.getTransitLine().getId() + ":" + w.getTransitRoute().getId());
+				}
+			}
+
+			Feature feature = GeojsonTools.createLineFeature(GeojsonTools.links2Coords(NetworkTools.getLinksFromIds(network, e.getKey())));
+
+			feature.setProperty(TRAVEL_TIME_WARNING, createTravelTimeFeature);
+			feature.setProperty(DIRECTION_CHANGE_WARNING, createDirectionChangeFeature);
+			feature.setProperty(LOOP_WARNING, createLoopFeature);
+			feature.setProperty(ARTIFICIAL_LINK_WARNING, createArtificialFeature);
+
+			feature.setProperty("warningIds", CollectionUtils.idSetToString(warningIds));
+			feature.setProperty("routeIds", CollectionUtils.setToString(routeIds));
+			feature.setProperty("linkIds", CollectionUtils.idSetToString(new HashSet<>(e.getKey())));
+
+			// Travel Time Warnings
+			if(createTravelTimeFeature) {
+				feature.setProperty("ttDiff [s]", diff);
+				feature.setProperty("ttDiff [%]", diffPerc);
+				feature.setProperty("ttExpected", ttExpected);
+				feature.setProperty("ttActual", ttActual);
+			}
+
+			// Direction Change Warning
+			if(createDirectionChangeFeature) {
+				feature.setProperty("azDiff [rad]", azDiff);
+				feature.setProperty("azDiff [deg]", 180*azDiff/Math.PI);
+			}
+
+			warnings.add(feature);
+		}
+
+		GeojsonTools.writeFeatureCollectionToFile(warnings, warningsFile);
+	}
+
 	/**
 	 * Writes all warnings to several shape files in the given folder
 	 */
+	@Deprecated
 	public void writeResultShapeFiles(String outputPath) {
 		log.info("Writing warnings shapefiles in folder " + outputPath + " ...");
 
