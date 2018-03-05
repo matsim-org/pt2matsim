@@ -107,7 +107,6 @@ public final class Gtfs2TransitSchedule {
 		converter.convert(param, outputCoordinateSystem);
 
 		// write Files
-		boolean authExists = true;
 		ScheduleTools.writeTransitSchedule(converter.getSchedule(), scheduleFile);
 		if(vehicleFile != null) {
 			ScheduleTools.writeVehicles(converter.getVehicles(), vehicleFile);
