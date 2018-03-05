@@ -23,9 +23,9 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.gtfs.lib.*;
-import org.matsim.pt2matsim.tools.lib.RouteShape;
 import org.matsim.pt2matsim.tools.GtfsTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
+import org.matsim.pt2matsim.tools.lib.RouteShape;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 
@@ -125,7 +125,7 @@ public class GtfsConverter {
 			/* [2]
 			  Create a MTS transitLine for each Route
 			 */
-			TransitLine transitLine = scheduleFactory.createTransitLine(Id.create(gtfsRoute.getShortName() + "_" + gtfsRoute.getId(), TransitLine.class));
+			TransitLine transitLine = scheduleFactory.createTransitLine(Id.create(gtfsRoute.getId(), TransitLine.class));
 			transitLine.setName(gtfsRoute.getShortName());
 			schedule.addTransitLine(transitLine);
 			counterLines++;
@@ -166,7 +166,6 @@ public class GtfsConverter {
 
 					/* [5.1]
 					  Calculate departures from frequencies (if available)
-					  Todo cover with test
 					 */
 					TransitRoute transitRoute;
 					if(feed.usesFrequencies()) {
@@ -241,7 +240,6 @@ public class GtfsConverter {
 		String str = route.getId().toString() + "_" + Time.writeTime(time, "HH:mm:ss");
 		return Id.create(str, Departure.class);
 	}
-
 
 	/**
 	 * @return The date from which services and thus trips should be extracted
