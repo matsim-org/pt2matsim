@@ -14,7 +14,6 @@ import org.matsim.pt2matsim.mapping.PTMapperTest;
 import org.matsim.pt2matsim.tools.NetworkToolsTest;
 import org.matsim.pt2matsim.tools.ScheduleToolsTest;
 import org.matsim.pt2matsim.tools.ShapeToolsTest;
-import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 import org.matsim.pt2matsim.tools.lib.RouteShape;
 
 import java.util.Map;
@@ -36,10 +35,7 @@ public class MappingAnalysisTest {
 	public void prepare() {
 		PublicTransitMappingConfigGroup ptmConfig = PTMapperTest.initPTMConfig();
 		Network network = NetworkToolsTest.initNetwork();
-		TransitSchedule schedule = ScheduleToolsTest.initSchedule();
-		ScheduleCleaner.combineChildStopsToParentStop(schedule);
-		ScheduleCleaner.removeMapping(schedule);
-		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
+		TransitSchedule schedule = ScheduleToolsTest.initUnmappedSchedule();
 
 		new PTMapper(schedule, network).run(ptmConfig);
 
