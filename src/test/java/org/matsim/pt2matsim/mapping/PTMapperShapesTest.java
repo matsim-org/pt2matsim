@@ -39,10 +39,7 @@ public class PTMapperShapesTest {
 	public void prepare() {
 		ptmConfig = initPTMConfig();
 		network = NetworkToolsTest.initNetwork();
-		schedule = ScheduleToolsTest.initSchedule();
-		ScheduleCleaner.combineChildStopsToParentStop(schedule);
-		ScheduleCleaner.removeMapping(schedule);
-		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
+		schedule = ScheduleToolsTest.initUnmappedSchedule();
 
 		Map<Id<RouteShape>, RouteShape> shapes = ShapeToolsTest.initShapes();
 		ScheduleRouters scheduleRouters = new ScheduleRoutersGtfsShapes(schedule, network, shapes, ptmConfig.getTransportModeAssignment(), PublicTransitMappingConfigGroup.TravelCostType.linkLength, 10.0, 99);

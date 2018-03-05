@@ -22,9 +22,6 @@ package org.matsim.pt2matsim.config;
 import org.matsim.core.api.internal.MatsimParameters;
 import org.matsim.core.config.*;
 import org.matsim.core.utils.collections.CollectionUtils;
-import org.matsim.core.utils.geometry.CoordinateTransformation;
-import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
-import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt2matsim.osm.lib.AllowedTagsFilter;
 import org.matsim.pt2matsim.osm.lib.Osm;
 

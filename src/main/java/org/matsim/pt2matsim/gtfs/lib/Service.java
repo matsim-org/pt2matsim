@@ -19,7 +19,6 @@
 package org.matsim.pt2matsim.gtfs.lib;
 
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.Map;
 import java.util.SortedSet;
 

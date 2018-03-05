@@ -10,6 +10,7 @@ import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt2matsim.mapping.pseudoRouter.LinkSequence;
+import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 import org.matsim.pt2matsim.tools.lib.RouteShape;
 
 import java.util.LinkedList;
@@ -41,6 +42,7 @@ public class ScheduleToolsTest {
 		TransitStopFacility stop4IB = fac.createTransitStopFacility(Id.create("stop4.link:IB", TransitStopFacility.class), new Coord(2600065, 1200022), false);
 		TransitStopFacility stop4BI = fac.createTransitStopFacility(Id.create("stop4.link:BI", TransitStopFacility.class), new Coord(2600065, 1200022), false);
 		stop1ED.setLinkId(Id.createLinkId("ED"));
+		stop1EW.setLinkId(Id.createLinkId("EW"));
 		stop2DA.setLinkId(Id.createLinkId("DA"));
 		stop3AX.setLinkId(Id.createLinkId("AX"));
 		stop4BI.setLinkId(Id.createLinkId("BI"));
@@ -51,9 +53,20 @@ public class ScheduleToolsTest {
 
 		TransitStopFacility stop5AH = fac.createTransitStopFacility(Id.create("stop5.link:AH", TransitStopFacility.class), new Coord(2600039, 1200035), false);
 		TransitStopFacility stop6ZI = fac.createTransitStopFacility(Id.create("stop6.link:ZI", TransitStopFacility.class), new Coord(2600055, 1200015), false);
-		stop1EW.setLinkId(Id.createLinkId("EW"));
 		stop5AH.setLinkId(Id.createLinkId("AH"));
 		stop6ZI.setLinkId(Id.createLinkId("ZI"));
+
+		stop1ED.setName("One");
+		stop1EW.setName("One");
+		stop1DE.setName("One");
+		stop3AX.setName("Three");
+		stop3XA.setName("Three");
+		stop2AD.setName("Two");
+		stop2DA.setName("Two");
+		stop4IB.setName("Four");
+		stop4BI.setName("Four");
+		stop5AH.setName("Five");
+		stop6ZI.setName("Six");
 
 		// add to schedule
 		transitSchedule.addStopFacility(stop1ED);
@@ -142,6 +155,14 @@ public class ScheduleToolsTest {
 		lineB.addRoute(routeB);
 
 		return transitSchedule;
+	}
+
+	public static TransitSchedule initUnmappedSchedule() {
+		TransitSchedule schedule = ScheduleToolsTest.initSchedule();
+		ScheduleCleaner.combineChildStopsToParentStop(schedule);
+		ScheduleCleaner.removeMapping(schedule);
+		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
+		return schedule;
 	}
 
 	@Test

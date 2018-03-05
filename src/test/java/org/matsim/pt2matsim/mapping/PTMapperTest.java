@@ -15,7 +15,6 @@ import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.tools.NetworkToolsTest;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ScheduleToolsTest;
-import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 
 import java.util.List;
 
@@ -49,10 +48,7 @@ public class PTMapperTest {
 	public void prepare() {
 		ptmConfig = initPTMConfig();
 		network = NetworkToolsTest.initNetwork();
-		schedule = ScheduleToolsTest.initSchedule();
-		ScheduleCleaner.combineChildStopsToParentStop(schedule);
-		ScheduleCleaner.removeMapping(schedule);
-		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
+		schedule = ScheduleToolsTest.initUnmappedSchedule();
 
 		new PTMapper(schedule, network).run(ptmConfig);
 	}
@@ -96,11 +92,8 @@ public class PTMapperTest {
 		PublicTransitMappingConfigGroup ptmConfig2 = initPTMConfig();
 		ptmConfig2.setMaxLinkCandidateDistance(3);
 
-		TransitSchedule schedule2 = ScheduleToolsTest.initSchedule();
+		TransitSchedule schedule2 = ScheduleToolsTest.initUnmappedSchedule();
 		Network network2 = NetworkToolsTest.initNetwork();
-		ScheduleCleaner.combineChildStopsToParentStop(schedule2);
-		ScheduleCleaner.removeMapping(schedule2);
-		ScheduleCleaner.removeNotUsedStopFacilities(schedule2);
 		new PTMapper(schedule2, network2).run(ptmConfig2);
 
 		// 1 loop link, 3 artificial links
