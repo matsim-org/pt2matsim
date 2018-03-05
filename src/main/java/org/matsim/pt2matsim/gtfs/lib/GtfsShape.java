@@ -22,12 +22,10 @@ package org.matsim.pt2matsim.gtfs.lib;
 
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
+import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.pt2matsim.tools.lib.RouteShape;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Implementation of RouteShape, represents a GTFS shape (i.e. a sequence
@@ -66,6 +64,13 @@ public class GtfsShape implements RouteShape {
 
 	public List<Coord> getCoords() {
 		return new ArrayList<>(coordSorted.values());
+	}
+
+	public void transformCoords(CoordinateTransformation transformation) {
+		for(Map.Entry<Integer, Coord> entry : this.coordSorted.entrySet()) {
+			Coord transformedCoord = transformation.transform(entry.getValue());
+			this.coordSorted.put(entry.getKey(), transformedCoord);
+		}
 	}
 
 	/**
