@@ -687,6 +687,11 @@ public class GtfsFeedImpl implements GtfsFeed {
 			if(stop.getCoord().getX() < minE) minE = stop.getCoord().getX();
 			if(stop.getCoord().getY() < minN) minN = stop.getCoord().getY();
 		}
+
+		for(RouteShape routeShape : this.shapes.values()) {
+			((GtfsShape) routeShape).transformCoords(transformation);
+		}
+
 		this.coordSys = targetCoordinateSystem;
 		return new double[]{minE, minN, maxE, maxN};
 	}
