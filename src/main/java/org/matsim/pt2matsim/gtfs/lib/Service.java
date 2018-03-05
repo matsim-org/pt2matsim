@@ -21,6 +21,7 @@ package org.matsim.pt2matsim.gtfs.lib;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Map;
+import java.util.SortedSet;
 
 /**
  * @author polettif
@@ -40,13 +41,13 @@ public interface Service {
 	LocalDate getEndDate();
 
 	/** required (calendar_dates.txt) **/
-	Collection<LocalDate> getAdditions();
+	SortedSet<LocalDate> getAdditions();
 
 	/** required (calendar_dates.txt) **/
-	Collection<LocalDate> getExceptions();
+	SortedSet<LocalDate> getExceptions();
 
 	/** required (calendar_dates.txt) **/
-	Collection<LocalDate> getCoveredDays();
+	SortedSet<LocalDate> getCoveredDays();
 
 	Map<String, Trip> getTrips();
 
