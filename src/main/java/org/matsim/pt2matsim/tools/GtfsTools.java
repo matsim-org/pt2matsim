@@ -61,7 +61,7 @@ public final class GtfsTools {
 		LocalDate busiestDate = null;
 		int maxTrips = 0;
 
-		Map<LocalDate, Integer> nTripsOnDate = new HashMap<>();
+		Map<LocalDate, Integer> nTripsOnDate = new TreeMap<>();
 		for(Service service : feed.getServices().values()) {
 			for(LocalDate day : service.getCoveredDays()) {
 				MapUtils.addToInteger(day, nTripsOnDate, 1, service.getTrips().size());
@@ -83,7 +83,7 @@ public final class GtfsTools {
 		LocalDate busiestDate = null;
 		int maxService = 0;
 
-		Map<LocalDate, Integer> nServicesOnDate = new HashMap<>();
+		Map<LocalDate, Integer> nServicesOnDate = new TreeMap<>();
 		for(Service service : feed.getServices().values()) {
 			for(LocalDate day : service.getCoveredDays()) {
 				MapUtils.addToInteger(day, nServicesOnDate, 1, 1);

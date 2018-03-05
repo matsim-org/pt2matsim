@@ -30,9 +30,9 @@ public class ServiceImpl implements Service {
 	private final LocalDate startDate;
 	private final LocalDate endDate;
 
-	private final Collection<LocalDate> additions = new ArrayList<>();
-	private final Collection<LocalDate> exceptions = new ArrayList<>();
-	private final Set<LocalDate> coveredDays = new HashSet<>();
+	private final SortedSet<LocalDate> additions = new TreeSet<>();
+	private final SortedSet<LocalDate> exceptions = new TreeSet<>();
+	private final SortedSet<LocalDate> coveredDays = new TreeSet<>();
 
 	private final Map<String, Trip> trips = new HashMap<>();
 
@@ -43,7 +43,7 @@ public class ServiceImpl implements Service {
 		this.endDate = parseDateFormat(endDateStr);
 
 		LocalDate currentDate = startDate;
-		while(currentDate.isBefore(endDate)) {
+		while(currentDate.isBefore(endDate.plusDays(1))) {
 			int currentWeekday = currentDate.getDayOfWeek().getValue() - 1;
 			if(days[currentWeekday]) {
 				coveredDays.add(currentDate);
@@ -114,14 +114,14 @@ public class ServiceImpl implements Service {
 
 	/** required */
 	@Override
-	public Collection<LocalDate> getAdditions() {
-		return Collections.unmodifiableCollection(additions);
+	public SortedSet<LocalDate> getAdditions() {
+		return Collections.unmodifiableSortedSet(additions);
 	}
 
 	/** required */
 	@Override
-	public Collection<LocalDate> getExceptions() {
-		return Collections.unmodifiableCollection(exceptions);
+	public SortedSet<LocalDate> getExceptions() {
+		return Collections.unmodifiableSortedSet(exceptions);
 	}
 
 	@Override
@@ -133,8 +133,8 @@ public class ServiceImpl implements Service {
 	 * @return a set of dates on which this service runs
 	 */
 	@Override
-	public Collection<LocalDate> getCoveredDays() {
-		return Collections.unmodifiableCollection(coveredDays);
+	public SortedSet<LocalDate> getCoveredDays() {
+		return Collections.unmodifiableSortedSet(coveredDays);
 	}
 
 	@Override
