@@ -21,7 +21,7 @@ import static org.matsim.pt2matsim.tools.CoordToolsTest.*;
  */
 public class ShapeToolsTest {
 
-	public static final double offset = 1.2;
+	public static final double offset = 2;
 	private static final double d = 0.0001;
 	private RouteShape shapeA1;
 	private RouteShape shapeA2;
@@ -78,7 +78,7 @@ public class ShapeToolsTest {
 	@Test
 	public void calcMinDistanceToShape() {
 		Assert.assertEquals(0, ShapeTools.calcMinDistanceToShape(coordX, shapeB), d);
-		Assert.assertEquals(5, ShapeTools.calcMinDistanceToShape(new Coord(-5, -5), shapeB), d);
+		Assert.assertEquals(5, ShapeTools.calcMinDistanceToShape(new Coord(2600035, 1200035), shapeB), d);
 
 		Coord bx = CoordTools.calcNewPoint(coordX, CoordTools.getAzimuth(coordX, coordB), CoordUtils.calcEuclideanDistance(coordX, coordB) / 2);
 		Assert.assertEquals(0, ShapeTools.calcMinDistanceToShape(bx, shapeA1), d);

@@ -138,7 +138,6 @@ public class NetworkToolsTest {
 			for(Node toNode : net.getNodes().values()) {
 				String strId = fromNode.getId().toString() + toNode.getId().toString();
 				if(linksToCreate.contains(strId)) {
-					// NetworkUtils.createAndAddLink(net, Id.createLinkId(strId), fromNode, toNode, CoordUtils.calcEuclideanDistance(fromNode.getCoord(), toNode.getCoord()), 1, 1, 1);
 					NetworkUtils.createAndAddLink(net, Id.createLinkId(strId), fromNode, toNode, 20, 1, 1, 1);
 				}
 			}
@@ -158,8 +157,8 @@ public class NetworkToolsTest {
 
 	@Test
 	public void getNearestLink() {
-		Coord testR = new Coord(1.0, 10.0);
-		Coord testL = new Coord(-1.0, 10.0);
+		Coord testR = new Coord(2600041.0, 1200050.0);
+		Coord testL = new Coord(2600039.0, 1200050.0);
 
 		Node nearestNode = NetworkUtils.getNearestNode(network, testR);
 		Assert.assertEquals("A", nearestNode.getId().toString());
@@ -177,7 +176,7 @@ public class NetworkToolsTest {
 
 	@Test
 	public void coordIsOnRightSideOfLink() {
-		Coord c = new Coord(-1.0, 1.0);
+		Coord c = new Coord(2600039.0, 1200041.0);
 
 		Assert.assertTrue(NetworkTools.coordIsOnRightSideOfLink(c, network.getLinks().get(Id.createLinkId("IG"))));
 		Assert.assertTrue(NetworkTools.coordIsOnRightSideOfLink(c, network.getLinks().get(Id.createLinkId("FE"))));
@@ -227,17 +226,17 @@ public class NetworkToolsTest {
 		seq.add(getLink("HZ"));
 		seq.add(getLink("ZI"));
 
-		NetworkTools.reduceSequencedLinks(seq, new Coord(10.0, -5.0));
+		NetworkTools.reduceSequencedLinks(seq, new Coord(2600050.0, 1200035.0));
 		Assert.assertEquals(1, seq.size());
 		Assert.assertEquals("AH", seq.get(0).getId().toString());
 
 		Collection<? extends Link> seqAll = new HashSet<>(network.getLinks().values());
-		NetworkTools.reduceSequencedLinks(seqAll, new Coord(1.0, 2.0));
+		NetworkTools.reduceSequencedLinks(seqAll, new Coord(2600041.0, 1200042.0));
 		Assert.assertEquals(10, network.getLinks().size()-seqAll.size());
 	}
 
 	@Test
-	public void calcRouteLength() throws Exception {
+	public void calcRouteLength() {
 		List<Link> seq = new ArrayList<>();
 		seq.add(getLink("AB"));
 		seq.add(getLink("BC"));

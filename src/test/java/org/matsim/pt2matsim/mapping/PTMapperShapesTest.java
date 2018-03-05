@@ -12,7 +12,6 @@ import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
-import org.matsim.pt2matsim.tools.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersGtfsShapes;
 import org.matsim.pt2matsim.tools.NetworkToolsTest;
@@ -20,6 +19,7 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ScheduleToolsTest;
 import org.matsim.pt2matsim.tools.ShapeToolsTest;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
+import org.matsim.pt2matsim.tools.lib.RouteShape;
 
 import java.util.List;
 import java.util.Map;
@@ -30,6 +30,7 @@ import static org.matsim.pt2matsim.mapping.PTMapperTest.initPTMConfig;
  * @author polettif
  */
 public class PTMapperShapesTest {
+
 	public Network network;
 	public TransitSchedule schedule;
 	public PublicTransitMappingConfigGroup ptmConfig;

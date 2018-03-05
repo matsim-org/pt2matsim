@@ -31,15 +31,15 @@ public class ScheduleToolsTest {
 		TransitScheduleFactory fac = transitSchedule.getFactory();
 
 		// create StopFacilities
-		TransitStopFacility stop1ED = fac.createTransitStopFacility(Id.create("stop1.link:ED", TransitStopFacility.class), new Coord(-19, 20), false);
-		TransitStopFacility stop1EW = fac.createTransitStopFacility(Id.create("stop1.link:EW", TransitStopFacility.class), new Coord(-19, 20), false);
-		TransitStopFacility stop1DE = fac.createTransitStopFacility(Id.create("stop1.link:DE", TransitStopFacility.class), new Coord(-19, 20), false);
-		TransitStopFacility stop3AX = fac.createTransitStopFacility(Id.create("stop3.link:AX", TransitStopFacility.class), new Coord(9, 4), false);
-		TransitStopFacility stop3XA = fac.createTransitStopFacility(Id.create("stop3.link:XA", TransitStopFacility.class), new Coord(9, 4), false);
-		TransitStopFacility stop2AD = fac.createTransitStopFacility(Id.create("stop2.link:AD", TransitStopFacility.class), new Coord(0, 10), false);
-		TransitStopFacility stop2DA = fac.createTransitStopFacility(Id.create("stop2.link:DA", TransitStopFacility.class), new Coord(0, 10), false);
-		TransitStopFacility stop4IB = fac.createTransitStopFacility(Id.create("stop4.link:IB", TransitStopFacility.class), new Coord(25, -18), false);
-		TransitStopFacility stop4BI = fac.createTransitStopFacility(Id.create("stop4.link:BI", TransitStopFacility.class), new Coord(25, -18), false);
+		TransitStopFacility stop1ED = fac.createTransitStopFacility(Id.create("stop1.link:ED", TransitStopFacility.class), new Coord(2600021, 1200060), false);
+		TransitStopFacility stop1EW = fac.createTransitStopFacility(Id.create("stop1.link:EW", TransitStopFacility.class), new Coord(2600021, 1200060), false);
+		TransitStopFacility stop1DE = fac.createTransitStopFacility(Id.create("stop1.link:DE", TransitStopFacility.class), new Coord(2600021, 1200060), false);
+		TransitStopFacility stop3AX = fac.createTransitStopFacility(Id.create("stop3.link:AX", TransitStopFacility.class), new Coord(2600049, 1200044), false);
+		TransitStopFacility stop3XA = fac.createTransitStopFacility(Id.create("stop3.link:XA", TransitStopFacility.class), new Coord(2600049, 1200044), false);
+		TransitStopFacility stop2AD = fac.createTransitStopFacility(Id.create("stop2.link:AD", TransitStopFacility.class), new Coord(2600040, 1200050), false);
+		TransitStopFacility stop2DA = fac.createTransitStopFacility(Id.create("stop2.link:DA", TransitStopFacility.class), new Coord(2600040, 1200050), false);
+		TransitStopFacility stop4IB = fac.createTransitStopFacility(Id.create("stop4.link:IB", TransitStopFacility.class), new Coord(2600065, 1200022), false);
+		TransitStopFacility stop4BI = fac.createTransitStopFacility(Id.create("stop4.link:BI", TransitStopFacility.class), new Coord(2600065, 1200022), false);
 		stop1ED.setLinkId(Id.createLinkId("ED"));
 		stop2DA.setLinkId(Id.createLinkId("DA"));
 		stop3AX.setLinkId(Id.createLinkId("AX"));
@@ -49,8 +49,8 @@ public class ScheduleToolsTest {
 		stop3XA.setLinkId(Id.createLinkId("XA"));
 		stop4IB.setLinkId(Id.createLinkId("IB"));
 
-		TransitStopFacility stop5AH = fac.createTransitStopFacility(Id.create("stop5.link:AH", TransitStopFacility.class), new Coord(-1, -5), false);
-		TransitStopFacility stop6ZI = fac.createTransitStopFacility(Id.create("stop6.link:ZI", TransitStopFacility.class), new Coord(15, -25), false);
+		TransitStopFacility stop5AH = fac.createTransitStopFacility(Id.create("stop5.link:AH", TransitStopFacility.class), new Coord(2600039, 1200035), false);
+		TransitStopFacility stop6ZI = fac.createTransitStopFacility(Id.create("stop6.link:ZI", TransitStopFacility.class), new Coord(2600055, 1200015), false);
 		stop1EW.setLinkId(Id.createLinkId("EW"));
 		stop5AH.setLinkId(Id.createLinkId("AH"));
 		stop6ZI.setLinkId(Id.createLinkId("ZI"));
@@ -155,9 +155,13 @@ public class ScheduleToolsTest {
 		ScheduleTools.mergeSchedules(testSchedule, initSchedule());
 
 
-		int nRoutesTest=0, nRoutesInit=0;
-		for(TransitLine l : testSchedule.getTransitLines().values()) { nRoutesTest += l.getRoutes().size(); }
-		for(TransitLine l : initSchedule().getTransitLines().values()) { nRoutesInit += l.getRoutes().size(); }
+		int nRoutesTest = 0, nRoutesInit = 0;
+		for(TransitLine l : testSchedule.getTransitLines().values()) {
+			nRoutesTest += l.getRoutes().size();
+		}
+		for(TransitLine l : initSchedule().getTransitLines().values()) {
+			nRoutesInit += l.getRoutes().size();
+		}
 
 		Assert.assertEquals(testSchedule.getTransitLines().size(), initSchedule().getTransitLines().size());
 		Assert.assertEquals(nRoutesInit, nRoutesTest);
@@ -168,9 +172,9 @@ public class ScheduleToolsTest {
 	public void mergeSchedulesOffset() {
 		TransitSchedule baseSchedule = initSchedule();
 		TransitSchedule testSchedule = initSchedule();
-		ScheduleTools.mergeSchedules(testSchedule, baseSchedule, 24*3600, 60*3600);
+		ScheduleTools.mergeSchedules(testSchedule, baseSchedule, 24 * 3600, 60 * 3600);
 
-		int nRoutesTest=0, nRoutesInit=0, nDeparturesTest=0, nDeparturesInit=0;
+		int nRoutesTest = 0, nRoutesInit = 0, nDeparturesTest = 0, nDeparturesInit = 0;
 		for(TransitLine l : testSchedule.getTransitLines().values()) {
 			for(TransitRoute tr : l.getRoutes().values()) {
 				nRoutesTest++;
@@ -187,16 +191,16 @@ public class ScheduleToolsTest {
 		Assert.assertEquals(testSchedule.getTransitLines().size(), initSchedule().getTransitLines().size());
 		Assert.assertEquals(nRoutesInit, nRoutesTest);
 		Assert.assertEquals(testSchedule.getFacilities().size(), initSchedule().getFacilities().size());
-		Assert.assertEquals(nDeparturesInit*2, nDeparturesTest);
+		Assert.assertEquals(nDeparturesInit * 2, nDeparturesTest);
 	}
 
 	@Test
 	public void mergeSchedulesOffsetTimeLimit() {
 		TransitSchedule baseSchedule = initSchedule();
 		TransitSchedule testSchedule = initSchedule();
-		ScheduleTools.mergeSchedules(testSchedule, baseSchedule, 24*3600, 24*3600+12.5*3600);
+		ScheduleTools.mergeSchedules(testSchedule, baseSchedule, 24 * 3600, 24 * 3600 + 12.5 * 3600);
 
-		int nRoutesTest=0, nRoutesInit=0, nDeparturesTest=0, nDeparturesInit=0;
+		int nRoutesTest = 0, nRoutesInit = 0, nDeparturesTest = 0, nDeparturesInit = 0;
 		for(TransitLine l : testSchedule.getTransitLines().values()) {
 			for(TransitRoute tr : l.getRoutes().values()) {
 				nRoutesTest++;
@@ -213,6 +217,6 @@ public class ScheduleToolsTest {
 		Assert.assertEquals(testSchedule.getTransitLines().size(), initSchedule().getTransitLines().size());
 		Assert.assertEquals(nRoutesInit, nRoutesTest);
 		Assert.assertEquals(testSchedule.getFacilities().size(), initSchedule().getFacilities().size());
-		Assert.assertEquals(nDeparturesInit+6, nDeparturesTest);
+		Assert.assertEquals(nDeparturesInit + 6, nDeparturesTest);
 	}
 }

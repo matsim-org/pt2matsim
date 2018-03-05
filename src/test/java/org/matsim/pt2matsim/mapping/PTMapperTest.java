@@ -35,7 +35,7 @@ public class PTMapperTest {
 		config.getModesToKeepOnCleanUp().add("car");
 		config.setNumOfThreads(2);
 		config.setNLinkThreshold(4);
-		config.setMaxLinkCandidateDistance(99.0);
+		config.setMaxLinkCandidateDistance(999.0);
 		config.setCandidateDistanceMultiplier(1.0);
 
 		PublicTransitMappingConfigGroup.TransportModeAssignment mraBus = new PublicTransitMappingConfigGroup.TransportModeAssignment("bus");

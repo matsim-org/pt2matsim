@@ -9,17 +9,16 @@ import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
-import org.matsim.pt2matsim.tools.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.PTMapper;
+import org.matsim.pt2matsim.mapping.PTMapperTest;
 import org.matsim.pt2matsim.tools.NetworkToolsTest;
 import org.matsim.pt2matsim.tools.ScheduleToolsTest;
 import org.matsim.pt2matsim.tools.ShapeToolsTest;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
+import org.matsim.pt2matsim.tools.lib.RouteShape;
 
 import java.util.Map;
 import java.util.TreeMap;
-
-import static org.matsim.pt2matsim.mapping.PTMapperTest.initPTMConfig;
 
 /**
  * @author polettif
@@ -33,10 +32,9 @@ public class MappingAnalysisTest {
 	private Id<TransitRoute> routeA2 = Id.create("routeA2", TransitRoute.class);
 	private Id<TransitRoute> routeB = Id.create("routeB", TransitRoute.class);
 
-
 	@Before
 	public void prepare() {
-		PublicTransitMappingConfigGroup ptmConfig = initPTMConfig();
+		PublicTransitMappingConfigGroup ptmConfig = PTMapperTest.initPTMConfig();
 		Network network = NetworkToolsTest.initNetwork();
 		TransitSchedule schedule = ScheduleToolsTest.initSchedule();
 		ScheduleCleaner.combineChildStopsToParentStop(schedule);
@@ -44,6 +42,7 @@ public class MappingAnalysisTest {
 		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
 
 		new PTMapper(schedule, network).run(ptmConfig);
+
 		Map<Id<RouteShape>, RouteShape> shapes = ShapeToolsTest.initShapes();
 		analysis = new MappingAnalysis(schedule, network, shapes);
 		analysis.run();

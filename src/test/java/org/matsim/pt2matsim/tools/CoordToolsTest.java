@@ -15,18 +15,18 @@ import static org.junit.Assert.assertTrue;
  */
 public class CoordToolsTest {
 
-	public static final Coord coordA = new Coord(0.0, 	0.0);
-	public static final Coord coordB = new Coord(20.0, 	0.0);
-	public static final Coord coordC = new Coord(20.0, 	20.0);
-	public static final Coord coordD = new Coord(0.0, 	20.0);
-	public static final Coord coordE = new Coord(-20.0, 	20.0);
-	public static final Coord coordF = new Coord(-20.0, 	0.0);
-	public static final Coord coordG = new Coord(-20.0, 	-20.0);
-	public static final Coord coordH = new Coord(0.0, 	-10.0);
-	public static final Coord coordI = new Coord(20.0, 	-20.0);
-	public static final Coord coordW = new Coord(-10.0, 	30.0);
-	public static final Coord coordX = new Coord(10.0, 	5.0);
-	public static final Coord coordZ = new Coord(10.0, 	-30.0);
+	public static final Coord coordA = new Coord(2600040.0, 	1200040.0);
+	public static final Coord coordB = new Coord(2600060.0, 	1200040.0);
+	public static final Coord coordC = new Coord(2600060.0, 	1200060.0);
+	public static final Coord coordD = new Coord(2600040.0, 	1200060.0);
+	public static final Coord coordE = new Coord(2600020.0, 	1200060.0);
+	public static final Coord coordF = new Coord(2600020.0, 	1200040.0);
+	public static final Coord coordG = new Coord(2600020.0, 	1200020.0);
+	public static final Coord coordH = new Coord(2600040.0, 	1200030.0);
+	public static final Coord coordI = new Coord(2600060.0, 	1200020.0);
+	public static final Coord coordW = new Coord(2600030.0, 	1200070.0);
+	public static final Coord coordX = new Coord(2600050.0, 	1200045.0);
+	public static final Coord coordZ = new Coord(2600050.0, 	1200010.0);
 
 	private final double testDelta = 1/1000.;
 
