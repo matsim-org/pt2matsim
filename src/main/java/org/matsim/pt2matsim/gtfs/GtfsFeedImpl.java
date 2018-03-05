@@ -19,9 +19,9 @@
 package org.matsim.pt2matsim.gtfs;
 
 import com.opencsv.CSVReader;
-import org.apache.commons.io.input.BOMInputStream;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
+import org.apache.commons.io.input.BOMInputStream;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;

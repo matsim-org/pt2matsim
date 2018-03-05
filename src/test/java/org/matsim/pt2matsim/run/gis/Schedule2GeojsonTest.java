@@ -3,6 +3,7 @@ package org.matsim.pt2matsim.run.gis;
 import org.junit.Before;
 import org.junit.Test;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.tools.NetworkToolsTest;
 import org.matsim.pt2matsim.tools.ScheduleToolsTest;
@@ -25,7 +26,7 @@ public class Schedule2GeojsonTest {
 
 	@Test
 	public void run() {
-		Schedule2Geojson.run("Atlantis", "test/schedule.geojson", this.schedule, this.network);
+		Schedule2Geojson.run(TransformationFactory.CH1903_LV03_Plus, "test/schedule.geojson", this.schedule, this.network);
 		new File("test/schedule.geojson").delete();
 	}
 }

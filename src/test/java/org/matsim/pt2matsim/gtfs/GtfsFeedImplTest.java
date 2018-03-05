@@ -4,16 +4,22 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.Id;
+import org.matsim.core.utils.geometry.transformations.CH1903LV03PlustoWGS84;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt2matsim.gtfs.lib.Service;
 import org.matsim.pt2matsim.gtfs.lib.Stop;
 import org.matsim.pt2matsim.gtfs.lib.StopImpl;
 import org.matsim.pt2matsim.tools.GtfsTools;
 import org.matsim.pt2matsim.tools.ShapeToolsTest;
+import org.matsim.pt2matsim.tools.lib.RouteShape;
 
 import java.io.File;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * @author polettif
@@ -29,7 +35,24 @@ public class GtfsFeedImplTest {
 
 	@Test
 	public void compareShapes() {
-		Assert.assertEquals(ShapeToolsTest.initShapes(), feed.getShapes());
+		feed.transform(TransformationFactory.CH1903_LV03_Plus);
+		for(Map.Entry<Id<RouteShape>, RouteShape> entry : ShapeToolsTest.initShapes().entrySet()) {
+			RouteShape feedShape = feed.getShapes().get(entry.getKey());
+			for(Map.Entry<Integer, Coord> coordEntry : entry.getValue().getCoordsSorted().entrySet()) {
+				Assert.assertEquals(coordEntry.getValue(), feedShape.getCoordsSorted().get(coordEntry.getKey()));
+			}
+		}
+	}
+
+	@Test
+	public void transformData() {
+		CH1903LV03PlustoWGS84 ct = new CH1903LV03PlustoWGS84();
+		for(Map.Entry<Id<RouteShape>, RouteShape> entry : ShapeToolsTest.initShapes().entrySet()) {
+			for(Map.Entry<Integer, Coord> integerCoordEntry : entry.getValue().getCoordsSorted().entrySet()) {
+				Coord c = ct.transform(integerCoordEntry.getValue());
+				// System.out.println(entry.getKey().toString() + "," + c.getX() + "," + c.getY() + "," + integerCoordEntry.getKey());
+			}
+		}
 	}
 
 	@Test
@@ -60,7 +83,7 @@ public class GtfsFeedImplTest {
 		Map<String, Coord> stopCoords1 = cloneFeedStopCoords();
 
 		// transform
-		feed.transform(TransformationFactory.ATLANTIS);
+		feed.transform(TransformationFactory.CH1903_LV03_Plus);
 		Map<String, Coord> stopCoords2 = cloneFeedStopCoords();
 		testCoordsEqual(stopCoords1, stopCoords2, false);
 

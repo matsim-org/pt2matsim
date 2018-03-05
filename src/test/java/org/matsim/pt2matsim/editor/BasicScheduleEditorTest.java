@@ -82,14 +82,4 @@ public class BasicScheduleEditorTest {
 		Assert.assertEquals(linkIdsExpected, linkIds);
 	}
 
-	@Test
-	public void refreshTransitRoute() {
-
-	}
-
-	@Test
-	public void refreshSchedule() {
-
-	}
-
 }

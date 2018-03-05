@@ -10,10 +10,12 @@ import org.junit.Test;
 public class GtfsRealFeedTest {
 
 	private GtfsFeed feed;
+	private GtfsConverter converter;
 
 	@Before
 	public void loadAndConvert() {
 		feed = new GtfsFeedImpl("test/stib-mivb-gtfs.zip");
+		converter = new GtfsConverter(feed);
 	}
 
 	@Test
@@ -27,7 +29,6 @@ public class GtfsRealFeedTest {
 
 	@Test
 	public void convert() {
-		GtfsConverter converter = new GtfsConverter(feed);
 		converter.convert(GtfsConverter.DAY_WITH_MOST_TRIPS, "EPSG:32631");
 	}
 
