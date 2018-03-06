@@ -21,7 +21,10 @@ package org.matsim.pt2matsim.tools;
 import com.opencsv.CSVWriter;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.core.utils.collections.MapUtils;
+import org.matsim.core.utils.geometry.CoordinateTransformation;
+import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
@@ -45,9 +48,11 @@ public final class GtfsTools {
 	}
 
 	public static void writeShapesToGeojson(GtfsFeed feed, String file) {
+		CoordinateTransformation ct = TransformationFactory.getCoordinateTransformation(feed.getCurrentCoordSystem(), TransformationFactory.WGS84);
 		FeatureCollection features = new FeatureCollection();
 		for(RouteShape routeShape : feed.getShapes().values()) {
-			Feature lineFeature = GeojsonTools.createLineFeature(routeShape.getCoords());
+			List<Coord> coords = ShapeTools.transformCoords(ct, routeShape.getCoords());
+			Feature lineFeature = GeojsonTools.createLineFeature(coords);
 			lineFeature.setProperty("id", routeShape.getId().toString());
 			features.add(lineFeature);
 		}
