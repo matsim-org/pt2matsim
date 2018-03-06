@@ -110,6 +110,9 @@ public class StopImpl implements Stop {
 		trips.add(trip);
 	}
 
+	/**
+	 * Coords are ignored, stops are equal even if they've been transformed
+	 */
 	@Override
 	public boolean equals(Object o) {
 		if(this == o) return true;

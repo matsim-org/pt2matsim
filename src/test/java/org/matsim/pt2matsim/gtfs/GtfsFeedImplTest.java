@@ -33,6 +33,7 @@ public class GtfsFeedImplTest {
 	@Before
 	public void prepare() {
 		feed = new GtfsFeedImpl("test/gtfs-feed/");
+		Assert.assertEquals(TransformationFactory.WGS84, feed.getCurrentCoordSystem());
 	}
 
 	@Test
@@ -47,21 +48,6 @@ public class GtfsFeedImplTest {
 	}
 
 	@Test
-	public void transformData() {
-		CH1903LV03PlustoWGS84 ct = new CH1903LV03PlustoWGS84();
-		for(Map.Entry<Id<RouteShape>, RouteShape> entry : ShapeToolsTest.initShapes().entrySet()) {
-			for(Map.Entry<Integer, Coord> integerCoordEntry : entry.getValue().getCoordsSorted().entrySet()) {
-				Coord c = ct.transform(integerCoordEntry.getValue());
-				// System.out.println(entry.getKey().toString() + "," + c.getX() + "," + c.getY() + "," + integerCoordEntry.getKey());
-			}
-		}
-		for(TransitStopFacility stopFacility : ScheduleToolsTest.initUnmappedSchedule().getFacilities().values()) {
-			Coord c = ct.transform(stopFacility.getCoord());
-			System.out.println(stopFacility.getId().toString() + "," + c.getY() + "," + c.getX());
-		}
-	}
-
-	@Test
 	public void statistics() {
 		Assert.assertEquals(6, feed.getStops().size());
 		Assert.assertEquals(2, feed.getRoutes().size());
@@ -69,39 +55,38 @@ public class GtfsFeedImplTest {
 		Assert.assertEquals(3, feed.getShapes().size());
 		Assert.assertEquals(6, feed.getTrips().size());
 		Assert.assertEquals(2, feed.getTransfers().size());
-		Assert.assertEquals(TransformationFactory.WGS84, feed.getCurrentCoordSystem());
 		Assert.assertTrue(feed.usesFrequencies());
 	}
 
 	@Test
-	public void stopsEqualAfterTransform() {
+	public void stopsAndCoordsEqualAfterRetransform() {
+		Map<String, Coord> stopCoords1 = cloneFeedStopCoords(feed);
+
+		// transform
+		feed.transform(TransformationFactory.CH1903_LV03_Plus);
+		Map<String, Coord> stopCoords2 = cloneFeedStopCoords(feed);
+
+		// check if coords have been transformed
+		testCoordsEqual(stopCoords1, stopCoords2, false);
+
+		// check if StopImpl is still equal for one example stop
 		Stop testStop = feed.getStops().values().stream().findFirst().
 				<Stop>map(s -> new StopImpl(s.getId(), s.getName(), s.getLon(), s.getLat(), s.getLocationType(), s.getParentStationId())).
 				orElse(null);
 		Assert.assertNotNull(testStop);
-		feed.transform(TransformationFactory.ATLANTIS);
 		Assert.assertEquals(testStop, feed.getStops().get(testStop.getId()));
-		Assert.assertEquals(TransformationFactory.ATLANTIS, feed.getCurrentCoordSystem());
-	}
-
-	@Test
-	public void coordEqualAfterRetransform() {
-		Map<String, Coord> stopCoords1 = cloneFeedStopCoords();
-
-		// transform
-		feed.transform(TransformationFactory.CH1903_LV03_Plus);
-		Map<String, Coord> stopCoords2 = cloneFeedStopCoords();
-		testCoordsEqual(stopCoords1, stopCoords2, false);
+		Assert.assertEquals(TransformationFactory.CH1903_LV03_Plus, feed.getCurrentCoordSystem());
 
 		// retransform
 		feed.transform(TransformationFactory.WGS84);
-		Map<String, Coord> stopCoords3 = cloneFeedStopCoords();
+		Map<String, Coord> stopCoords3 = cloneFeedStopCoords(feed);
+		// check if coords are equal again
 		testCoordsEqual(stopCoords1, stopCoords3, true);
 	}
 
-	private Map<String, Coord> cloneFeedStopCoords() {
+	private Map<String, Coord> cloneFeedStopCoords(GtfsFeed feed) {
 		Map<String, Coord> cloned = new HashMap<>();
-		for(Stop stop : this.feed.getStops().values()) {
+		for(Stop stop : feed.getStops().values()) {
 			cloned.put(stop.getId(), new Coord(stop.getCoord().getX(), stop.getCoord().getY()));
 		}
 		return cloned;

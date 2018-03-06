@@ -291,4 +291,12 @@ public final class ShapeTools {
 		}
 		return shapes;
 	}
+
+	public static List<Coord> transformCoords(CoordinateTransformation ct, List<Coord> coords) {
+		List<Coord> transformed = new ArrayList<>();
+		for(Coord coord : coords) {
+			transformed.add(ct.transform(coord));
+		}
+		return transformed;
+	}
 }
