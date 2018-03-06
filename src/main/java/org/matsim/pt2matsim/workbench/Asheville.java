@@ -46,6 +46,7 @@ import java.util.Set;
  *
  * @author polettif
  */
+@Deprecated
 public class Asheville {
 
 	public static final String EPSG = "EPSG:3631";

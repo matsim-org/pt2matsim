@@ -172,7 +172,7 @@ public final class MiscUtils {
 		List<Map.Entry<K, V>> list = new LinkedList<>(unsortedMap.entrySet());
 
 		// Sort list with comparator, to compare the Map values
-		Collections.sort(list, (o1, o2) -> -(o1.getValue()).compareTo(o2.getValue()));
+		list.sort((o1, o2) -> -(o1.getValue()).compareTo(o2.getValue()));
 
 		// Convert sorted map back to a Map
 		Map<K, V> sortedMap = new LinkedHashMap<>();
