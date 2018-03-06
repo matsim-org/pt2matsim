@@ -218,8 +218,7 @@ public final class ScheduleTools {
 		for(Id<Link> transitLinkId : transitLinkIds) {
 			Link transitLink = networkLinks.get(transitLinkId);
 			if(!transitLink.getAllowedModes().contains(TransportMode.pt)) {
-				Set<String> modes = new HashSet<>();
-				modes.addAll(transitLink.getAllowedModes());
+				Set<String> modes = new HashSet<>(transitLink.getAllowedModes());
 				modes.add(TransportMode.pt);
 				transitLink.setAllowedModes(modes);
 			}
@@ -319,11 +318,10 @@ public final class ScheduleTools {
 
 		for(Link link : network.getLinks().values()) {
 			if(transitLinkNetworkModes.containsKey(link.getId())) {
-				Set<String> modes = new HashSet<>();
 				Set<String> linkModes = transitLinkNetworkModes.get(link.getId());
 				linkModes.addAll(link.getAllowedModes());
 
-				modes.addAll(linkModes);
+				Set<String> modes = new HashSet<>(linkModes);
 
 				link.setAllowedModes(modes);
 			}

@@ -26,6 +26,7 @@ import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.mapping.PTMapper;
 import org.matsim.pt2matsim.plausibility.MappingAnalysis;
+import org.matsim.pt2matsim.run.CheckMappedSchedulePlausibility;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ShapeTools;
@@ -43,10 +44,13 @@ public class MappingAnalysisExample {
 		String input = "example/";
 		String coordinateSystem = "EPSG:2032";
 
+		new File(input+"output/").mkdir();
+		new File(input+"output/plausibility/").mkdir();
+
 		// convert schedule
 		TransitSchedule schedule = ScheduleTools.createSchedule();
 		Vehicles vehicles = VehicleUtils.createVehiclesContainer();
-		GtfsFeed gtfsFeed = new GtfsFeedImpl(input + "addisoncounty-vt-us-gtfs/");
+		GtfsFeed gtfsFeed = new GtfsFeedImpl(input + "addisoncounty-vt-us-gtfs.zip");
 		GtfsConverter gtfsConverter = new GtfsConverter(gtfsFeed);
 		gtfsConverter.convert(GtfsConverter.ALL_SERVICE_IDS, coordinateSystem, schedule, vehicles);
 
@@ -60,20 +64,23 @@ public class MappingAnalysisExample {
 
 		new OsmMultimodalNetworkConverter(osmConfig).run();
 		*/
-		Network network = NetworkTools.readNetwork(input + "network/addison.xml.gz");
+		Network network = NetworkTools.readNetwork(input + "addison_network.xml.gz");
 
 		// Run PublicTransitMapping
 		PublicTransitMappingConfigGroup ptmConfig = PublicTransitMappingConfigGroup.createDefaultConfig();
 		PTMapper.mapScheduleToNetwork(schedule, network, ptmConfig);
 
-		NetworkTools.writeNetwork(network, input+"output/addison_network.xml.gz");
-		ScheduleTools.writeTransitSchedule(schedule, input+"output/addison_schedule.xml.gz");
+		NetworkTools.writeNetwork(network, input + "output/addison_network.xml.gz");
+		ScheduleTools.writeTransitSchedule(schedule, input + "output/addison_schedule.xml.gz");
 
 		// Analyse
 		new File(input + "output/").mkdirs();
 		MappingAnalysis analysis = new MappingAnalysis(schedule, network, ShapeTools.readShapesFile(input + "addisoncounty-vt-us-gtfs/shapes.txt", coordinateSystem));
 		analysis.run();
-		analysis.writeAllDistancesCsv(input+"output/DistancesAll.csv");
-		analysis.writeQuantileDistancesCsv(input+"output/DistancesQuantile.csv");
+		analysis.writeAllDistancesCsv(input + "output/DistancesAll.csv");
+		analysis.writeQuantileDistancesCsv(input + "output/DistancesQuantile.csv");
+
+		// plausibility check
+		CheckMappedSchedulePlausibility.run(input + "output/addison_schedule.xml.gz", input + "output/addison_network.xml.gz", coordinateSystem, input + "output/plausibility/");
 	}
 }

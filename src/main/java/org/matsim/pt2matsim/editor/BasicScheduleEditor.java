@@ -278,9 +278,8 @@ public class BasicScheduleEditor implements ScheduleEditor {
 		LeastCostPathCalculator.Path path1 = routers.calcLeastCostPath(cutFromLink.getToNode().getId(), viaLink.getFromNode().getId(), transitLine, transitRoute);
 		LeastCostPathCalculator.Path path2 = routers.calcLeastCostPath(viaLink.getToNode().getId(), cutToLink.getFromNode().getId(), transitLine, transitRoute);
 
-		List<Id<Link>> newLinkSequence = new ArrayList<>();
 		if(path1 != null && path2 != null) {
-			newLinkSequence.addAll(routeBeforeCut.getLinkIds());
+			List<Id<Link>> newLinkSequence = new ArrayList<>(routeBeforeCut.getLinkIds());
 			newLinkSequence.add(routeBeforeCut.getEndLinkId());
 			newLinkSequence.addAll(PTMapperTools.getLinkIdsFromPath(path1));
 			newLinkSequence.add(viaLinkId);

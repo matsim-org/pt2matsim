@@ -5,14 +5,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
-import org.matsim.core.utils.geometry.transformations.CH1903LV03PlustoWGS84;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
-import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.pt2matsim.gtfs.lib.Service;
 import org.matsim.pt2matsim.gtfs.lib.Stop;
 import org.matsim.pt2matsim.gtfs.lib.StopImpl;
 import org.matsim.pt2matsim.tools.GtfsTools;
-import org.matsim.pt2matsim.tools.ScheduleToolsTest;
 import org.matsim.pt2matsim.tools.ShapeToolsTest;
 import org.matsim.pt2matsim.tools.lib.RouteShape;
 

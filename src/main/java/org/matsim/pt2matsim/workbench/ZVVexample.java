@@ -33,7 +33,9 @@ import java.util.*;
  * Transit schedule is available on opentransportdata.swiss
  *
  * @author polettif
+ * @deprecated input files not in repository
  */
+@Deprecated
 public class ZVVexample {
 
 	private static String base = "zvv/";

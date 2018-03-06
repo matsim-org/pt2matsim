@@ -131,7 +131,7 @@ The converter can be run by calling the main() method of
 with the following arguments:
 
     [0] hafasFolder
-    [1] outputCoordinateSystem. Use "WGS84" for no transformation. EPGS:* codes are supported.
+    [1] outputCoordinateSystem. Use "WGS84" for no transformation. EPSG:* codes are supported.
     [2] outputScheduleFile
     [3] outputVehicleFile
 
