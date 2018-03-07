@@ -12,7 +12,7 @@ import org.matsim.pt2matsim.osm.lib.OsmFileReader;
 public class OsmMultimodalNetworkConverterTest {
 
 	@Test
-	public void convert() throws Exception {
+	public void convert() {
 		// setup config
 		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.createDefaultConfig();
 		osmConfig.setOutputCoordinateSystem("WGS84");
