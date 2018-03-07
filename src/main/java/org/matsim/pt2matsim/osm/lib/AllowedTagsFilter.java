@@ -36,33 +36,6 @@ public class AllowedTagsFilter {
 	private final Map<Osm.ElementType, Map<String, Set<String>>> keyValueExceptions = new HashMap<>();
 
 	/**
-	 * @return a filter that contains the usual pt elements
-	 */
-	public static AllowedTagsFilter getDefaultPTFilter() {
-		AllowedTagsFilter filter = new AllowedTagsFilter();
-		filter.add(Osm.ElementType.WAY, Osm.Key.HIGHWAY, null);
-		filter.add(Osm.ElementType.WAY, Osm.Key.RAILWAY, null);
-		filter.addException(Osm.ElementType.WAY, Osm.Key.SERVICE, null);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.BUS);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TROLLEYBUS);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.RAIL);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TRAM);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.LIGHT_RAIL);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.FUNICULAR);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.MONORAIL);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.SUBWAY);
-
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.BUS);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.TROLLEYBUS);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.TRAM);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.MONORAIL);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.SUBWAY);
-		filter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.FERRY);
-
-		return filter;
-	}
-
-	/**
 	 * @return <code>true</code> if at least one of the given tags matches any one of the specified filter-tags.
 	 * Also returns true if no tags have been defined for the given element type.
 	 */

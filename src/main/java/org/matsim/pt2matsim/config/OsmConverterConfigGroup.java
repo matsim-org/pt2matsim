@@ -22,7 +22,6 @@ package org.matsim.pt2matsim.config;
 import org.matsim.core.api.internal.MatsimParameters;
 import org.matsim.core.config.*;
 import org.matsim.core.utils.collections.CollectionUtils;
-import org.matsim.pt2matsim.osm.lib.AllowedTagsFilter;
 import org.matsim.pt2matsim.osm.lib.Osm;
 
 import java.util.Collections;
@@ -55,6 +54,7 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	private static final String SCALE_MAX_SPEED = "scaleMaxSpeed";
 	private static final String GUESS_FREE_SPEED = "guessFreeSpeed";
 	private static final String KEEP_TAGS_AS_ATTRIBUTES = "keepTagsAsAttributes";
+	private static final String KEEP_WAYS_WITH_PUBLIC_TRANSIT = "keepWaysWithPublicTransit";
 
 	private String osmFile;
 	private String outputNetworkFile;
@@ -65,6 +65,8 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	private boolean scaleMaxSpeed = false;
 	private boolean guessFreeSpeed = false;
 	private boolean keepTagsAsAttributes = true;
+	private boolean keepWaysWithPublicTransit = true;
+
 
 	public OsmConverterConfigGroup() {
 		super(GROUP_NAME);
@@ -76,7 +78,6 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	public static OsmConverterConfigGroup createDefaultConfig() {
 		Set<String> carSingleton = Collections.singleton("car");
 		Set<String> railSingleton = Collections.singleton("rail");
-		Set<String> busSingleton = Collections.singleton("bus");
 
 		OsmConverterConfigGroup defaultConfig = new OsmConverterConfigGroup();
 		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MOTORWAY, 2, 120.0 / 3.6, 1.0, 2000, true, carSingleton));
@@ -98,10 +99,6 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.RAIL, 1, 160.0 / 3.6, 1.0, 9999, false, railSingleton));
 		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.TRAM, 1, 40.0 / 3.6, 1.0, 9999, true, railSingleton));
 		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.LIGHT_RAIL, 1, 80.0 / 3.6, 1.0, 9999, false, railSingleton));
-
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.PSV, Osm.Value.YES, 1, 50.0 / 3.6, 1.0, 9999, false, busSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.PSV, Osm.Value.DESIGNATED, 1, 50.0 / 3.6, 1.0, 9999, false, busSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.BUS, Osm.Value.DESIGNATED, 1, 50.0 / 3.6, 1.0, 9999, false, busSingleton));
 
 		return defaultConfig;
 	}
@@ -194,6 +191,16 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		this.outputCoordinateSystem = outputCoordinateSystem;
 	}
 
+	@StringGetter(KEEP_WAYS_WITH_PUBLIC_TRANSIT)
+	public boolean keepHighwaysWithPT() {
+		return keepWaysWithPublicTransit;
+	}
+
+	@StringSetter(KEEP_WAYS_WITH_PUBLIC_TRANSIT)
+	public void setKeepHighwaysWithPT(boolean b) {
+		this.keepWaysWithPublicTransit = b;
+	}
+
 	@Override
 	public final Map<String, String> getComments() {
 		Map<String, String> map = super.getComments();
@@ -214,6 +221,8 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 				"In case the speed limit allowed does not represent the speed a vehicle can actually realize, e.g. by constrains of\n" +
 				"\t\ttraffic lights not explicitly modeled, a kind of \"average simulated speed\" can be used.\n" +
 				"\t\tDefaults to false. Set true to scale the speed limit down by the value specified by the wayValues)");
+		map.put(KEEP_WAYS_WITH_PUBLIC_TRANSIT,
+				"Keep all ways (highway=* and railway=*) with public transit even if they don't have wayDefaultParams defined");
 		return map;
 	}
 
@@ -227,15 +236,6 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		}
 	}
 
-	public AllowedTagsFilter getWayFilter() {
-		AllowedTagsFilter filter = new AllowedTagsFilter();
-		for(ConfigGroup e : this.getParameterSets(OsmConverterConfigGroup.OsmWayParams.SET_NAME)) {
-			OsmConverterConfigGroup.OsmWayParams w = (OsmConverterConfigGroup.OsmWayParams) e;
-			filter.add(Osm.ElementType.WAY, w.getOsmKey(), w.getOsmValue());
-		}
-		return filter;
-	}
-
 	/**
 	 * Defines link attributes for converting OSM highway paths
 	 * into MATSim links.
@@ -243,7 +243,7 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	 */
 	public static class OsmWayParams extends ReflectiveConfigGroup implements MatsimParameters {
 
-		public final static String SET_NAME = "wayParams";
+		public final static String SET_NAME = "wayDefaultParams";
 
 		private String osmKey;
 		private String osmValue;
@@ -274,10 +274,10 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 			this.osmValue = osmValue;
 			this.lanes = lanes;
 			this.freespeed = freespeed;
-			this.freespeedFactor = freespeedFactor;
 			this.laneCapacity = laneCapacity;
 			this.oneway = oneway;
 			this.allowedTransportModes = allowedTransportModes;
+			this.freespeedFactor = freespeedFactor;
 		}
 
 		@StringGetter("osmValue")
