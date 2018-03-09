@@ -107,7 +107,7 @@ public class OsmFileReader extends MatsimXmlParser {
 		}
 	}
 
-	/*pckg*/ static class ParsedNode implements Osm.Element {
+	public static class ParsedNode implements Osm.Element {
 		public final long id;
 		public final Coord coord;
 		public final Map<String, String> tags = new HashMap<>(5, 0.9f);
@@ -133,7 +133,7 @@ public class OsmFileReader extends MatsimXmlParser {
 		}
 	}
 
-	/*pckg*/ static class ParsedWay implements Osm.Element {
+	public static class ParsedWay implements Osm.Element {
 		public final long id;
 		public final List<Long> nodes = new ArrayList<>(6);
 		public final Map<String, String> tags = new HashMap<>(5, 0.9f);
@@ -158,7 +158,7 @@ public class OsmFileReader extends MatsimXmlParser {
 		}
 	}
 
-	/*pckg*/ static class ParsedRelation implements Osm.Element {
+	public static class ParsedRelation implements Osm.Element {
 		public final long id;
 		public final List<ParsedRelationMember> members = new ArrayList<>(8);
 		public final Map<String, String> tags = new HashMap<>(5, 0.9f);
@@ -183,7 +183,7 @@ public class OsmFileReader extends MatsimXmlParser {
 		}
 	}
 
-	/*pckg*/ static class ParsedRelationMember {
+	public static class ParsedRelationMember {
 		public final Osm.ElementType type;
 		public final long refId;
 		public final String role;

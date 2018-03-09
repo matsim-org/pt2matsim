@@ -31,15 +31,15 @@ public class OsmDataImpl implements OsmData {
 
 	private final static Logger log = Logger.getLogger(OsmData.class);
 
-	private final Map<Id<Osm.Node>, Osm.Node> nodes = new HashMap<>();
-	private final Map<Id<Osm.Way>, Osm.Way> ways = new HashMap<>();
-	private final Map<Id<Osm.Relation>, Osm.Relation> relations = new HashMap<>();
+	protected final Map<Id<Osm.Node>, Osm.Node> nodes = new HashMap<>();
+	protected final Map<Id<Osm.Way>, Osm.Way> ways = new HashMap<>();
+	protected final Map<Id<Osm.Relation>, Osm.Relation> relations = new HashMap<>();
 
-	private Map<Long, OsmFileReader.ParsedRelation> parsedRelations = null;
-	private Map<Long, OsmFileReader.ParsedWay> parsedWays = null;
+	protected Map<Long, OsmFileReader.ParsedRelation> parsedRelations = null;
+	protected Map<Long, OsmFileReader.ParsedWay> parsedWays = null;
 
 	// Filters
-	private AllowedTagsFilter filter = new AllowedTagsFilter();
+	protected AllowedTagsFilter filter = new AllowedTagsFilter();
 
 	/**
 	 * @param filters are used when reading an osm file, tags not specified in filters are skipped
