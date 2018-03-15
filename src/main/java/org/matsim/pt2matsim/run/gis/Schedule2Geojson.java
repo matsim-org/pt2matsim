@@ -30,6 +30,7 @@ import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
+import org.matsim.core.utils.misc.Time;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.tools.GeojsonTools;
 import org.matsim.pt2matsim.tools.NetworkTools;
@@ -97,6 +98,15 @@ public class Schedule2Geojson {
 	private FeatureCollection stopRefLinks = new FeatureCollection();
 	private FeatureCollection scheduleFeatureCollection;
 
+	public Schedule2Geojson(String originalCoordRefSys, final TransitSchedule schedule) {
+		this.ct = originalCoordRefSys == null ? new IdentityTransformation() : TransformationFactory.getCoordinateTransformation(originalCoordRefSys, TransformationFactory.WGS84);
+		this.schedule = schedule;
+		this.network = null;
+
+		convertTransitRoutes(false);
+		convertStopFacilities();
+		combineFeatures();
+	}
 
 	public Schedule2Geojson(String originalCoordRefSys, final TransitSchedule schedule, final Network network) {
 		this.ct = originalCoordRefSys == null ? new IdentityTransformation() : TransformationFactory.getCoordinateTransformation(originalCoordRefSys, TransformationFactory.WGS84);
@@ -181,8 +191,8 @@ public class Schedule2Geojson {
 					MapUtils.getSet(stop.getStopFacility(), routesOnStopFacility).add(transitRoute.getId());
 				}
 
+				// create coordinates
 				List<Coord> coords;
-
 				double simLength = 0.0;
 				if(useNetworkLinks) {
 					coords = getCoordFromRoute(transitRoute);
@@ -194,12 +204,20 @@ public class Schedule2Geojson {
 					coords = getCoordsFromStopFacilities(transitRoute);
 				}
 
+				// departures
+				Set<String> deps = new TreeSet<>();
+				for(Departure departure : transitRoute.getDepartures().values()) {
+					deps.add(Time.writeTime(departure.getDepartureTime()));
+				}
+
 				Feature f = GeojsonTools.createLineFeature(coords);
 				f.setProperty("transitLineId", transitLine.getId().toString());
+				f.setProperty("transitLineName", transitLine.getName());
 				f.setProperty("transitRouteId", transitRoute.getId().toString());
 				f.setProperty("transportMode", transitRoute.getTransportMode());
 				f.setProperty("transitRouteDescription", transitRoute.getDescription());
 				f.setProperty("transitRouteSimLength", simLength);
+				f.setProperty("departures", CollectionUtils.setToString(deps));
 				transitRouteFeatures.add(f);
 			}
 		}
