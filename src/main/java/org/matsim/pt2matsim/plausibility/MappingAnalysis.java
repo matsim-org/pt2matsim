@@ -35,8 +35,6 @@ import org.matsim.pt2matsim.tools.*;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * Analyses the mapping results if the shapes from a gtfs feed are available. Calculates the distances between
@@ -56,8 +54,8 @@ public class MappingAnalysis {
 	private final Map<Id<RouteShape>, RouteShape> shapes;
 	private final Network network;
 
-	private final ConcurrentMap<Tuple<Id<TransitLine>, Id<TransitRoute>>, List<Double>> routeDistances = new ConcurrentHashMap<>();
-	private final ConcurrentMap<Id<TransitLine>, Map<Id<TransitRoute>, Double>> lengthRatios = new ConcurrentHashMap<>();
+	private final Map<Tuple<Id<TransitLine>, Id<TransitRoute>>, List<Double>> routeDistances = new HashMap<>();
+	private final Map<Id<TransitLine>, Map<Id<TransitRoute>, Double>> lengthRatios = new HashMap<>();
 	private final Map<Tuple<Id<TransitLine>, Id<TransitRoute>>, Id<RouteShape>> shapeAssignment = new HashMap<>();
 
 	private final Set<Tuple<Id<TransitLine>, Id<TransitRoute>>> noAnalysis = new HashSet<>();
@@ -77,7 +75,7 @@ public class MappingAnalysis {
 			mappingAnalyser[i] = new MappingAnalyser();
 		}
 
-		int t=0; // spread on threads
+		int t = 0; // spread on threads
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				Id<RouteShape> shapeId = ScheduleTools.getShapeId(transitRoute);
@@ -91,7 +89,7 @@ public class MappingAnalysis {
 					noAnalysis.add(new Tuple<>(transitLine.getId(), transitRoute.getId()));
 				}
 
-				if(t >= numThreads) t=0;
+				if(t >= numThreads) t = 0;
 			}
 		}
 
@@ -102,7 +100,11 @@ public class MappingAnalysis {
 			threads[i].start();
 		}
 		for(Thread thread : threads) {
-			try { thread.join(); } catch (InterruptedException e) { e.printStackTrace(); }
+			try {
+				thread.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 
 		if(noAnalysis.size() > 0) {
@@ -181,12 +183,12 @@ public class MappingAnalysis {
 
 		int line = 2;
 		for(Map.Entry<Tuple<Id<TransitLine>, Id<TransitRoute>>, List<Double>> e : routeDistances.entrySet()) {
-				for(Double dist : e.getValue()) {
-					keyTable.put(new Tuple<>(line, 1), e.getKey().getFirst().toString());
-					keyTable.put(new Tuple<>(line, 2), e.getKey().getSecond().toString());
-					keyTable.put(new Tuple<>(line, 3), dist.toString());
-					line++;
-				}
+			for(Double dist : e.getValue()) {
+				keyTable.put(new Tuple<>(line, 1), e.getKey().getFirst().toString());
+				keyTable.put(new Tuple<>(line, 2), e.getKey().getSecond().toString());
+				keyTable.put(new Tuple<>(line, 3), dist.toString());
+				line++;
+			}
 		}
 		List<String> csvLines = CsvTools.convertToCsvLines(keyTable, ';');
 		try {
@@ -245,7 +247,7 @@ public class MappingAnalysis {
 	 * @return the quantiles for the distance between transitRoute and shape for the given transit transitRoute
 	 */
 	TreeMap<Integer, Double> getQuantiles(Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId) {
-		List<Double> values = routeDistances.get(new Tuple<>(transitLineId,transitRouteId));
+		List<Double> values = routeDistances.get(new Tuple<>(transitLineId, transitRouteId));
 		values.sort(Double::compareTo);
 		int n = values.size();
 
@@ -305,7 +307,7 @@ public class MappingAnalysis {
 
 					// look for shortest distance to shape
 					double minDistanceToShape = ShapeTools.calcMinDistanceToShape(currentPoint, shape);
-					MapUtils.getList(new Tuple<>(transitLine.getId(),transitRoute.getId()), routeDistances).add(minDistanceToShape);
+					addMinDistance(transitLine.getId(), transitRoute.getId(), minDistanceToShape);
 					lengthOnLink += MEASURE_INTERVAL;
 				}
 				lengthOnLink = lengthOnLink - linkLength;
@@ -325,9 +327,17 @@ public class MappingAnalysis {
 				log.warn("Transit transitRoute " + transitRoute.getId() + " on transit transitLine " + transitLine.getId() + " is inconsistent, links not connected");
 			}
 			double ratio = (routeLength - shapeLength) / shapeLength;
-			MapUtils.getMap(transitLine.getId(), lengthRatios).put(transitRoute.getId(), ratio);
+			putLengthRatio(transitLine.getId(), transitRoute.getId(), ratio);
 		}
-
 	}
+
+	private synchronized void putLengthRatio(Id<TransitLine> lineId, Id<TransitRoute> routeId, double value) {
+		MapUtils.getMap(lineId, this.lengthRatios).put(routeId, value);
+	}
+
+	private synchronized void addMinDistance(Id<TransitLine> lineId, Id<TransitRoute> routeId, double minDistanceToShape) {
+		MapUtils.getList(new Tuple<>(lineId, routeId), this.routeDistances).add(minDistanceToShape);
+	}
+
 
 }
