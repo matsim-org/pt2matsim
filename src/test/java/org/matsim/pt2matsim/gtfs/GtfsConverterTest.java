@@ -3,16 +3,17 @@ package org.matsim.pt2matsim.gtfs;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt2matsim.tools.GtfsTools;
+import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ScheduleToolsTest;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author polettif
@@ -110,6 +111,46 @@ public class GtfsConverterTest {
 			Assert.assertEquals(expectedStopFac.getCoord(), actualStopFac.getCoord());
 			Assert.assertEquals(expectedStopFac.getName(), actualStopFac.getName());
 		}
+	}
+
+	@Test
+	public void combineRoutes() {
+		TransitSchedule test = ScheduleTools.createSchedule();
+		TransitScheduleFactory f = test.getFactory();
+		Id<TransitLine> lineId = Id.create("L", TransitLine.class);
+		TransitLine line = f.createTransitLine(lineId);
+		test.addTransitLine(line);
+
+		Id<TransitStopFacility> stopId1 = Id.create("s1", TransitStopFacility.class);
+		Id<TransitStopFacility> stopId2 = Id.create("s2", TransitStopFacility.class);
+		Id<TransitStopFacility> stopId3 = Id.create("s3", TransitStopFacility.class);
+		test.addStopFacility(f.createTransitStopFacility(stopId1, new Coord(1, 1), true));
+		test.addStopFacility(f.createTransitStopFacility(stopId2, new Coord(2, 2), true));
+		test.addStopFacility(f.createTransitStopFacility(stopId3, new Coord(3, 3), true));
+
+		List<TransitRouteStop> routeStops1 = new LinkedList<>();
+		List<TransitRouteStop> routeStops2 = new LinkedList<>();
+		List<TransitRouteStop> routeStops3 = new LinkedList<>();
+		int t = 0;
+		for(TransitStopFacility stopFacility : test.getFacilities().values()) {
+			routeStops1.add(f.createTransitRouteStop(stopFacility, t * 60, t * 60 + 30));
+			routeStops2.add(f.createTransitRouteStop(stopFacility, t * 40, t * 40 + 10));
+			routeStops3.add(f.createTransitRouteStop(stopFacility, t * 40, t * 40 + 10));
+		}
+		TransitRoute route1 = f.createTransitRoute(Id.create("R1", TransitRoute.class), null, routeStops1, "bus");
+		route1.addDeparture(f.createDeparture(Id.create("dep1", Departure.class), 0.0));
+		TransitRoute route2 = f.createTransitRoute(Id.create("R2", TransitRoute.class), null, routeStops2, "bus");
+		route1.addDeparture(f.createDeparture(Id.create("dep2", Departure.class), 0.0));
+		TransitRoute route3 = f.createTransitRoute(Id.create("R3", TransitRoute.class), null, routeStops3, "bus");
+		route1.addDeparture(f.createDeparture(Id.create("dep3", Departure.class), 4200.0));
+		line.addRoute(route1);
+		line.addRoute(route2);
+		line.addRoute(route3);
+
+		Assert.assertEquals(3, line.getRoutes().size());
+		// only routes with identical stop sequence (1, 2, 3) and departure sequence (2, 3) are combined.
+		gtfsConverter.combineTransitRoutes(test);
+		Assert.assertEquals(2, line.getRoutes().size());
 	}
 
 }
