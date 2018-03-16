@@ -220,7 +220,7 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		map.put(SCALE_MAX_SPEED,
 				"In case the speed limit allowed does not represent the speed a vehicle can actually realize, e.g. by constrains of\n" +
 				"\t\ttraffic lights not explicitly modeled, a kind of \"average simulated speed\" can be used.\n" +
-				"\t\tDefaults to false. Set true to scale the speed limit down by the value specified by the wayValues)");
+				"\t\tDefaults to false. Set true to scale the speed limit down by the value specified by the wayDefaultParams)");
 		map.put(KEEP_WAYS_WITH_PUBLIC_TRANSIT,
 				"Keep all ways (highway=* and railway=*) with public transit even if they don't have wayDefaultParams defined");
 		return map;

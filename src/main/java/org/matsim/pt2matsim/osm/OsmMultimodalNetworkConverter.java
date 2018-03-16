@@ -51,26 +51,27 @@ import java.util.*;
 public class OsmMultimodalNetworkConverter {
 
 	private final static Logger log = Logger.getLogger(OsmMultimodalNetworkConverter.class);
-	private final Map<String, Map<String, OsmConverterConfigGroup.OsmWayParams>> wayParams = new HashMap<>();
+
+	protected final OsmData osmData;
+	protected final Map<String, Map<String, OsmConverterConfigGroup.OsmWayParams>> wayParams = new HashMap<>();
 	/**
 	 * Maps for unknown entities
 	 */
-	private final Set<String> unknownHighways = new HashSet<>();
-	private final Set<String> unknownRailways = new HashSet<>();
-	private final Set<String> unknownWays = new HashSet<>();
-	private final Set<String> unknownMaxspeedTags = new HashSet<>();
-	private final Set<String> unknownLanesTags = new HashSet<>();
+	protected final Set<String> unknownHighways = new HashSet<>();
+	protected final Set<String> unknownRailways = new HashSet<>();
+	protected final Set<String> unknownWays = new HashSet<>();
+	protected final Set<String> unknownMaxspeedTags = new HashSet<>();
+	protected final Set<String> unknownLanesTags = new HashSet<>();
 	/**
 	 * connects osm way ids and link ids of the generated network
 	 **/
-	private final Map<Id<Link>, Id<Osm.Way>> osmIds = new HashMap<>();
-	private OsmConverterConfigGroup config;
-	private OsmData osmData;
-	private Network network;
-	private long id = 0;
+	protected final Map<Id<Link>, Id<Osm.Way>> osmIds = new HashMap<>();
+	protected OsmConverterConfigGroup config;
+	protected Network network;
+	protected long id = 0;
 
-	private AllowedTagsFilter ptFilter;
-	private OsmConverterConfigGroup.OsmWayParams ptDefaultParams;
+	protected AllowedTagsFilter ptFilter;
+	protected OsmConverterConfigGroup.OsmWayParams ptDefaultParams;
 
 	public OsmMultimodalNetworkConverter(OsmData osmData) {
 		this.osmData = osmData;
@@ -88,7 +89,7 @@ public class OsmMultimodalNetworkConverter {
 		initPT();
 		readWayParams();
 		convertToNetwork(transformation);
-		cleanRoadNetwork();
+		cleanNetwork();
 		if(config.getKeepTagsAsAttributes()) addAttributes();
 	}
 
@@ -106,7 +107,7 @@ public class OsmMultimodalNetworkConverter {
 	/**
 	 * Converts the parsed osm data to MATSim nodes and links.
 	 */
-	private void convertToNetwork(CoordinateTransformation transformation) {
+	protected void convertToNetwork(CoordinateTransformation transformation) {
 
 		log.info("Converting OSM to MATSim network...");
 
@@ -267,7 +268,7 @@ public class OsmMultimodalNetworkConverter {
 	/**
 	 * Creates a MATSim link from osm data
 	 */
-	private void createLink(final Osm.Way way, final Osm.Node fromNode, final Osm.Node toNode, final double length) {
+	protected void createLink(final Osm.Way way, final Osm.Node fromNode, final Osm.Node toNode, final double length) {
 		boolean oneway;
 		boolean onewayReverse = false;
 		double freespeedFactor;
@@ -433,7 +434,7 @@ public class OsmMultimodalNetworkConverter {
 				false, Collections.singleton(TransportMode.pt));
 	}
 
-	private boolean wayHasPublicTransit(Osm.Way way) {
+	protected boolean wayHasPublicTransit(Osm.Way way) {
 		if(ptFilter.matches(way)) {
 			return true;
 		}
@@ -445,7 +446,7 @@ public class OsmMultimodalNetworkConverter {
 		return false;
 	}
 
-	private OsmConverterConfigGroup.OsmWayParams getWayDefaultParams(Osm.Way way) {
+	protected OsmConverterConfigGroup.OsmWayParams getWayDefaultParams(Osm.Way way) {
 		Map<String, String> tags = way.getTags();
 		String highwayValue = tags.get(Osm.Key.HIGHWAY);
 		String railwayValue = tags.get(Osm.Key.RAILWAY);
@@ -476,9 +477,9 @@ public class OsmMultimodalNetworkConverter {
 
 	/**
 	 * Adds attributes to the network link. Cannot be added directly upon link creation since we need to
-	 * clean the road network and attributes are not be copied while filtering
+	 * clean the road network and attributes are not copied while filtering
 	 */
-	private void addAttributes() {
+	protected void addAttributes() {
 		for(Link link : this.network.getLinks().values()) {
 			Osm.Way way = osmData.getWays().get(osmIds.get(link.getId()));
 
@@ -520,7 +521,7 @@ public class OsmMultimodalNetworkConverter {
 	/**
 	 * Runs the network cleaner on the street network.
 	 */
-	private void cleanRoadNetwork() {
+	protected void cleanNetwork() {
 		Set<String> roadModes = CollectionUtils.stringToSet("car,bus");
 		Network roadNetwork = NetworkTools.createFilteredNetworkByLinkMode(network, roadModes);
 		Network restNetwork = NetworkTools.createFilteredNetworkExceptLinkMode(network, roadModes);

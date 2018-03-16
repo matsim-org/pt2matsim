@@ -45,36 +45,36 @@ import java.util.*;
  */
 public class GtfsFeedImpl implements GtfsFeed {
 
-	private static final Logger log = Logger.getLogger(GtfsFeedImpl.class);
+	protected static final Logger log = Logger.getLogger(GtfsFeedImpl.class);
 
 	/**
 	 * Path to the folder where the gtfs files are located
 	 */
-	private String root;
+	protected String root;
 
 	/**
 	 * whether the gtfs feed uses frequencies.txt or not
 	 */
-	private boolean usesFrequencies = false;
+	protected boolean usesFrequencies = false;
 
 	/**
 	 * whether the gtfs feed uses shapes or not
 	 */
-	private boolean usesShapes = false;
+	protected boolean usesShapes = false;
 
 	/**
 	 * Set of service ids not defined in calendar.txt (only in calendar_dates.txt)
 	 */
-	private Set<String> serviceIdsNotInCalendarTxt = new HashSet<>();
+	protected Set<String> serviceIdsNotInCalendarTxt = new HashSet<>();
 
 	// containers for storing gtfs data
-	private Map<String, Stop> stops = new HashMap<>();
-	private Map<String, Route> routes = new TreeMap<>();
-	private Map<String, Service> services = new HashMap<>();
-	private Map<String, Trip> trips = new HashMap<>();
-	private Map<Id<RouteShape>, RouteShape> shapes = new HashMap<>();
-	private Collection<Transfer> transfers = new HashSet<>();
-	private String coordSys = TransformationFactory.WGS84;
+	protected Map<String, Stop> stops = new HashMap<>();
+	protected Map<String, Route> routes = new TreeMap<>();
+	protected Map<String, Service> services = new HashMap<>();
+	protected Map<String, Trip> trips = new HashMap<>();
+	protected Map<Id<RouteShape>, RouteShape> shapes = new HashMap<>();
+	protected Collection<Transfer> transfers = new HashSet<>();
+	protected String coordSys = TransformationFactory.WGS84;
 
 	public GtfsFeedImpl(String gtfsFolder) {
 		if(gtfsFolder.endsWith(".zip")) {
@@ -92,7 +92,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 * @param requiredColumns array of attributes you need the indices of
 	 * @return the index for each attribute given in columnNames
 	 */
-	private static Map<String, Integer> getIndices(String[] header, String[] requiredColumns, String[] optionalColumns) {
+	protected static Map<String, Integer> getIndices(String[] header, String[] requiredColumns, String[] optionalColumns) {
 		Map<String, Integer> indices = new HashMap<>();
 		Set<String> requiredNotFound = new HashSet<>();
 
@@ -128,7 +128,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	/**
 	 * Calls all methods to load the gtfs files. Order is critical
 	 */
-	private void loadFiles(String inputPath) {
+	protected void loadFiles(String inputPath) {
 		if(!inputPath.endsWith("/")) inputPath += "/";
 		this.root = inputPath;
 
@@ -173,7 +173,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 *
 	 * @throws FileNotFoundException
 	 */
-	private CSVReader createCSVReader(String path) throws FileNotFoundException {
+	protected CSVReader createCSVReader(String path) throws FileNotFoundException {
 		InputStream stream = new BOMInputStream(new FileInputStream(path));
 		return new CSVReader(new InputStreamReader(stream));
 	}
@@ -187,7 +187,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 *
 	 * @throws IOException
 	 */
-	private void loadStops() throws IOException {
+	protected void loadStops() throws IOException {
 		log.info("Loading stops.txt");
 
 		try {
@@ -237,7 +237,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 *
 	 * @throws IOException
 	 */
-	private void loadCalendar() throws IOException {
+	protected void loadCalendar() throws IOException {
 		log.info("Loading calendar.txt");
 		try {
 			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.CALENDAR.fileName);
@@ -274,7 +274,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 * Exceptions for the service IDs defined in the calendar.txt file. If calendar_dates.txt includes ALL
 	 * dates of service, this file may be specified instead of calendar.txt.
 	 */
-	private void loadCalendarDates() {
+	protected void loadCalendarDates() {
 		// calendar dates are optional
 		log.info("Looking for calendar_dates.txt");
 
@@ -322,7 +322,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 * shapes.txt <i>[https://developers.google.com/transit/gtfs/reference]</i><br/>
 	 * Rules for drawing lines on a map to represent a transit organization's routes.
 	 */
-	private void loadShapes() {
+	protected void loadShapes() {
 		// shapes are optional
 		log.info("Looking for shapes.txt");
 
@@ -356,7 +356,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 		}
 	}
 
-	final private Set<String> ignoredRoutes = new HashSet<>();
+	final protected Set<String> ignoredRoutes = new HashSet<>();
 
 	/**
 	 * Basically just reads all routeIds and their corresponding names and types and puts them in {@link #routes}.
@@ -367,7 +367,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 *
 	 * @throws IOException
 	 */
-	private void loadRoutes() throws IOException {
+	protected void loadRoutes() throws IOException {
 		log.info("Loading routes.txt");
 		try {
 			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.ROUTES.fileName);
@@ -400,7 +400,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 		log.info("...     routes.txt loaded");
 	}
 
-	final private Set<String> ignoredTrips = new HashSet<>();
+	final protected Set<String> ignoredTrips = new HashSet<>();
 
 	/**
 	 * Generates a trip with trip_id and adds it to the corresponding route (referenced by route_id) in {@link #routes}.
@@ -412,7 +412,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 *
 	 * @throws IOException
 	 */
-	private void loadTrips() throws IOException {
+	protected void loadTrips() throws IOException {
 		log.info("Loading trips.txt");
 		try {
 			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.TRIPS.fileName);
@@ -466,7 +466,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 *
 	 * @throws IOException
 	 */
-	private void loadStopTimes() throws IOException {
+	protected void loadStopTimes() throws IOException {
 		log.info("Loading stop_times.txt");
 		try {
 			boolean warnStopTimes = true;
@@ -547,7 +547,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 * frequencies.txt <i>[https://developers.google.com/transit/gtfs/reference]</i><br/>
 	 * Headway (time between trips) for routes with variable frequency of service.
 	 */
-	private void loadFrequencies() {
+	protected void loadFrequencies() {
 		log.info("Looking for frequencies.txt");
 		// frequencies are optional
 		try {
@@ -590,7 +590,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 		}
 	}
 
-	private void loadTransfers() {
+	protected void loadTransfers() {
 		log.info("Looking for transfers.txt");
 		boolean transfersFileFound = true;
 		// transfers are optional
@@ -633,7 +633,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 		}
 	}
 
-	private String unzip(String compressedZip) {
+	protected String unzip(String compressedZip) {
 		String unzippedFolder = compressedZip.substring(0, compressedZip.length() - 4) + "/";
 		log.info("Unzipping " + compressedZip + " to " + unzippedFolder);
 

@@ -44,15 +44,15 @@ import java.util.*;
  */
 public class OsmTransitScheduleConverter {
 
-	private static final Logger log = Logger.getLogger(OsmTransitScheduleConverter.class);
+	protected static final Logger log = Logger.getLogger(OsmTransitScheduleConverter.class);
 
-	private final OsmData osmData;
+	protected final OsmData osmData;
 
-	private CoordinateTransformation transformation;
-	private TransitSchedule transitSchedule;
-	private TransitScheduleFactory factory;
+	protected CoordinateTransformation transformation;
+	protected TransitSchedule transitSchedule;
+	protected TransitScheduleFactory factory;
 
-	private int routeNr = 0;
+	protected int routeNr = 0;
 
 	public OsmTransitScheduleConverter(OsmData osmData) {
 		this.osmData = osmData;
@@ -186,7 +186,7 @@ public class OsmTransitScheduleConverter {
 	 *
 	 * @return the created facility
 	 */
-	private TransitStopFacility createStopFacilityFromOsmNode(Osm.Node node, String stopPostAreaId) {
+	protected TransitStopFacility createStopFacilityFromOsmNode(Osm.Node node, String stopPostAreaId) {
 		Id<TransitStopFacility> id = Id.create(node.getId(), TransitStopFacility.class);
 		Coord coord = transformation.transform(node.getCoord());
 		TransitStopFacility newStopFacility = factory.createTransitStopFacility(id, coord, false);
@@ -197,7 +197,7 @@ public class OsmTransitScheduleConverter {
 		return newStopFacility;
 	}
 
-	private TransitStopFacility createStopFacilityFromOsmNode(Osm.Node node) {
+	protected TransitStopFacility createStopFacilityFromOsmNode(Osm.Node node) {
 		return createStopFacilityFromOsmNode(node, null);
 	}
 
@@ -206,7 +206,7 @@ public class OsmTransitScheduleConverter {
 	 *
 	 * @return <code>null</code> if the route has stops outside of the area
 	 */
-	private TransitRoute createTransitRoute(Osm.Relation relation) {
+	protected TransitRoute createTransitRoute(Osm.Relation relation) {
 		List<TransitRouteStop> stopSequenceForward = new ArrayList<>();
 		List<Id<Link>> linkSequenceForward = new ArrayList<>();
 
@@ -253,14 +253,14 @@ public class OsmTransitScheduleConverter {
 		return newTransitRoute;
 	}
 
-	private Id<TransitLine> createLineId(Osm.Relation relation) {
+	protected Id<TransitLine> createLineId(Osm.Relation relation) {
 		return Id.create(createStringId(relation), TransitLine.class);
 	}
 
 	/**
 	 * Creates a transitLine id from a relation's tags
 	 */
-	private String createStringId(Osm.Relation relation) {
+	protected String createStringId(Osm.Relation relation) {
 		String id;
 		boolean ref = false, operator = false, name = false;
 

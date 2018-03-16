@@ -40,19 +40,19 @@ import java.util.*;
  */
 public class GtfsConverter {
 
-	private final boolean AWAIT_DEPARTURE_TIME_DEFAULT = true;
-	private final boolean BLOCKS_DEFAULT = false;
+	protected final boolean AWAIT_DEPARTURE_TIME_DEFAULT = true;
+	protected final boolean BLOCKS_DEFAULT = false;
 
 	public static final String ALL_SERVICE_IDS = "all";
 	public static final String DAY_WITH_MOST_TRIPS = "dayWithMostTrips";
 	public static final String DAY_WITH_MOST_SERVICES = "dayWithMostServices";
 
 	protected static Logger log = Logger.getLogger(GtfsConverter.class);
-	private final GtfsFeed feed;
-	private final TransitScheduleFactory scheduleFactory = ScheduleTools.createSchedule().getFactory();
+	protected final GtfsFeed feed;
+	protected final TransitScheduleFactory scheduleFactory = ScheduleTools.createSchedule().getFactory();
 
-	private TransitSchedule transitSchedule;
-	private Vehicles vehiclesContainer;
+	protected TransitSchedule transitSchedule;
+	protected Vehicles vehiclesContainer;
 
 	public GtfsConverter(GtfsFeed gtfsFeed) {
 		this.feed = gtfsFeed;
