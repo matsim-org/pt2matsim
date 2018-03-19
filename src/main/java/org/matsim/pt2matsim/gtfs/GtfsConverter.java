@@ -26,6 +26,7 @@ import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.gtfs.lib.*;
 import org.matsim.pt2matsim.tools.GtfsTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
+import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 import org.matsim.pt2matsim.tools.lib.RouteShape;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
@@ -98,36 +99,16 @@ public class GtfsConverter {
 		if(extractDate != null) log.info("     Extracting schedule from date " + extractDate);
 
 		// generate TransitStopFacilities from gtfsStops and add them to the schedule
-		for(Stop stop : this.feed.getStops().values()) {
-			TransitStopFacility stopFacility = createStopFacility(stop);
-			schedule.addStopFacility(stopFacility);
-		}
+		createStopFacilities(schedule);
 
-		// info
-		log.info("    Creating TransitLines from routes and TransitRoutes from trips...");
-		if(this.feed.usesFrequencies()) {
-			log.info("    Using frequencies.txt to generate departures");
-		} else {
-			log.info("    Using stop_times.txt to generate departures");
-		}
-
-		for(Route gtfsRoute : this.feed.getRoutes().values()) {
-			// create a MATSim TransitLine for each Route
-			TransitLine newTransitLine = createTransitLine(gtfsRoute);
-			schedule.addTransitLine(newTransitLine);
-
-			// create TransitRoute for each trip
-			for(Trip trip : gtfsRoute.getTrips().values()) {
-				// check if the trip actually runs on the extract date
-				if(trip.getService().runsOnDate(extractDate)) {
-					TransitRoute transitRoute = createTransitRoute(trip, schedule.getFacilities());
-					newTransitLine.addRoute(transitRoute);
-				}
-			}
-		}
+		// Creating TransitLines from routes and TransitRoutes from trips
+		createTransitLines(schedule, extractDate);
 
 		// combine TransitRoutes with identical stop/time sequences, add departures
 		combineTransitRoutes(schedule);
+
+		// clean the schedule
+		cleanSchedule(schedule);
 
 		// create default vehicles
 		createVehicles(schedule, vehicles);
@@ -148,35 +129,68 @@ public class GtfsConverter {
 		this.vehiclesContainer = vehicles;
 	}
 
-	protected void combineTransitRoutes(TransitSchedule schedule) {
-		log.info("Combining TransitRoutes with equal stop sequence and departure offsets...");
-		int combined = 0;
-		for(TransitLine transitLine : schedule.getTransitLines().values()) {
-			Map<List<String>, List<TransitRoute>> profiles = new HashMap<>();
-			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
-				List<String> sequence = new LinkedList<>();
-				for(TransitRouteStop routeStop : transitRoute.getStops()) {
-					String s = routeStop.getStopFacility().getId().toString() + "-" + (int) routeStop.getDepartureOffset();
-					sequence.add(s);
-				}
-				MapUtils.getList(sequence, profiles).add(transitRoute);
+	protected void createStopFacilities(TransitSchedule schedule) {
+		for(Stop stop : this.feed.getStops().values()) {
+			TransitStopFacility stopFacility = createStopFacility(stop);
+			if(stopFacility != null) {
+				schedule.addStopFacility(stopFacility);
 			}
+		}
+	}
 
-			for(List<TransitRoute> routeList : profiles.values()) {
-				if(routeList.size() > 1) {
-					TransitRoute finalRoute = routeList.get(0);
-					for(int i = 1; i < routeList.size(); i++) {
-						TransitRoute routeToRemove = routeList.get(i);
-						routeToRemove.getDepartures().values().forEach(finalRoute::addDeparture);
-						transitLine.removeRoute(routeToRemove);
-						combined++;
+	/**
+	 * @return null if stop should not be converted
+	 */
+	protected TransitStopFacility createStopFacility(Stop stop) {
+		Id<TransitStopFacility> id = createStopFacilityId(stop);
+		TransitStopFacility stopFacility = this.scheduleFactory.createTransitStopFacility(id, stop.getCoord(), BLOCKS_DEFAULT);
+		stopFacility.setName(stop.getName());
+		stopFacility.setStopPostAreaId(stop.getParentStationId());
+		return stopFacility;
+	}
+
+	protected void createTransitLines(TransitSchedule schedule, LocalDate extractDate) {
+		// info
+		log.info("    Creating TransitLines from routes and TransitRoutes from trips...");
+		if(this.feed.usesFrequencies()) {
+			log.info("    Using frequencies.txt to generate departures");
+		} else {
+			log.info("    Using stop_times.txt to generate departures");
+		}
+
+		for(Route gtfsRoute : this.feed.getRoutes().values()) {
+			// create a MATSim TransitLine for each Route
+			TransitLine newTransitLine = createTransitLine(gtfsRoute);
+			if(newTransitLine != null) {
+				schedule.addTransitLine(newTransitLine);
+
+				// create TransitRoute for each trip
+				for(Trip trip : gtfsRoute.getTrips().values()) {
+					// check if the trip actually runs on the extract date
+					if(trip.getService().runsOnDate(extractDate)) {
+						TransitRoute transitRoute = createTransitRoute(trip, schedule.getFacilities());
+						if(transitRoute != null) {
+							newTransitLine.addRoute(transitRoute);
+						}
 					}
 				}
 			}
 		}
-		log.info("... Combined " + combined + " transit routes");
 	}
 
+	/**
+	 * @return null if route should not be converted
+	 */
+	protected TransitLine createTransitLine(Route gtfsRoute) {
+		Id<TransitLine> id = createTransitLineId(gtfsRoute);
+		TransitLine line = this.scheduleFactory.createTransitLine(id);
+		line.setName(gtfsRoute.getShortName());
+		return line;
+	}
+
+	/**
+	 * @return null if route should not be converted
+	 */
 	protected TransitRoute createTransitRoute(Trip trip, Map<Id<TransitStopFacility>, TransitStopFacility> stopFacilities) {
 		Id<RouteShape> shapeId = trip.getShape() != null ? trip.getShape().getId() : null;
 
@@ -239,19 +253,37 @@ public class GtfsConverter {
 		return newTransitRouteStop;
 	}
 
-	protected TransitLine createTransitLine(Route gtfsRoute) {
-		Id<TransitLine> id = createTransitLineId(gtfsRoute);
-		TransitLine line = this.scheduleFactory.createTransitLine(id);
-		line.setName(gtfsRoute.getShortName());
-		return line;
+	protected void combineTransitRoutes(TransitSchedule schedule) {
+		log.info("Combining TransitRoutes with equal stop sequence and departure offsets...");
+		int combined = 0;
+		for(TransitLine transitLine : schedule.getTransitLines().values()) {
+			Map<List<String>, List<TransitRoute>> profiles = new HashMap<>();
+			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
+				List<String> sequence = new LinkedList<>();
+				for(TransitRouteStop routeStop : transitRoute.getStops()) {
+					String s = routeStop.getStopFacility().getId().toString() + "-" + (int) routeStop.getDepartureOffset();
+					sequence.add(s);
+				}
+				MapUtils.getList(sequence, profiles).add(transitRoute);
+			}
+
+			for(List<TransitRoute> routeList : profiles.values()) {
+				if(routeList.size() > 1) {
+					TransitRoute finalRoute = routeList.get(0);
+					for(int i = 1; i < routeList.size(); i++) {
+						TransitRoute routeToRemove = routeList.get(i);
+						routeToRemove.getDepartures().values().forEach(finalRoute::addDeparture);
+						transitLine.removeRoute(routeToRemove);
+						combined++;
+					}
+				}
+			}
+		}
+		log.info("... Combined " + combined + " transit routes");
 	}
 
-	protected TransitStopFacility createStopFacility(Stop stop) {
-		Id<TransitStopFacility> id = createStopFacilityId(stop);
-		TransitStopFacility stopFacility = this.scheduleFactory.createTransitStopFacility(id, stop.getCoord(), BLOCKS_DEFAULT);
-		stopFacility.setName(stop.getName());
-		stopFacility.setStopPostAreaId(stop.getParentStationId());
-		return stopFacility;
+	protected void cleanSchedule(TransitSchedule schedule) {
+		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
 	}
 
 	protected Id<TransitLine> createTransitLineId(Route gtfsRoute) {
