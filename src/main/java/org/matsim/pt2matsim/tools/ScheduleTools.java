@@ -35,8 +35,8 @@ import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
-import org.matsim.pt2matsim.tools.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
+import org.matsim.pt2matsim.tools.lib.RouteShape;
 import org.matsim.vehicles.*;
 
 import java.util.*;
@@ -88,8 +88,8 @@ public final class ScheduleTools {
 	 * that run longer than 24h for simulation purposes.
 	 *
 	 * @param mergeOffset offset in seconds added to the departures of mergeschedule
-	 * @param timeLimit departures are not added if they are after this timelimit (in seconds), starting from
-	 *                  0.0 of the baseschedulel
+	 * @param timeLimit   departures are not added if they are after this timelimit (in seconds), starting from
+	 *                    0.0 of the baseschedulel
 	 */
 	public static void mergeSchedules(TransitSchedule baseSchedule, TransitSchedule mergeSchedule, double mergeOffset, double timeLimit) {
 		// merge stops
@@ -113,8 +113,8 @@ public final class ScheduleTools {
 						if(transitRouteStopSequenceIsEqual(baseTR, mergeTR)) {
 							if(mergeOffset > 0) {
 								for(Departure departure : mergeTR.getDepartures().values()) {
-									if(departure.getDepartureTime()+mergeOffset < timeLimit) {
-										Id<Departure> newDepartureId = Id.create(departure.getId() + "+" + mergeOffset/(3600)+"h", Departure.class);
+									if(departure.getDepartureTime() + mergeOffset < timeLimit) {
+										Id<Departure> newDepartureId = Id.create(departure.getId() + "+" + mergeOffset / (3600) + "h", Departure.class);
 										Departure newDeparture = baseSchedule.getFactory().createDeparture(newDepartureId, departure.getDepartureTime() + mergeOffset);
 										baseTR.addDeparture(newDeparture);
 
@@ -139,7 +139,7 @@ public final class ScheduleTools {
 			return false;
 		}
 
-		for(int i=0; i<stops1.size(); i++) {
+		for(int i = 0; i < stops1.size(); i++) {
 			TransitRouteStop s1 = stops1.get(i);
 			TransitRouteStop s2 = stops2.get(i);
 			if(!s1.getStopFacility().getId().equals(s2.getStopFacility().getId()) ||
@@ -393,7 +393,9 @@ public final class ScheduleTools {
 	 */
 	public static List<Id<Link>> getTransitRouteLinkIds(TransitRoute transitRoute) {
 		List<Id<Link>> list = new ArrayList<>();
-		if(transitRoute.getRoute() == null) { return list;	}
+		if(transitRoute.getRoute() == null) {
+			return list;
+		}
 		NetworkRoute networkRoute = transitRoute.getRoute();
 		list.add(networkRoute.getStartLinkId());
 		list.addAll(networkRoute.getLinkIds());
@@ -531,21 +533,18 @@ public final class ScheduleTools {
 				List<Link> links = NetworkTools.getLinksFromIds(network, linkIds);
 
 				List<Id<Link>> linkIdsUpToCurrentStop = new ArrayList<>();
-				TransitRouteStop previousStop = stopsIterator.next();
-				TransitRouteStop nextStop = stopsIterator.next();
 				double lengthUpToCurrentStop = 0;
-				double departTime = previousStop.getDepartureOffset();
 
-				for(int i = 0; i < links.size() - 2; i++) {
-					Link linkFrom = links.get(i);
-					Link linkTo = links.get(i + 1);
+				TransitRouteStop stop = stopsIterator.next();
+				double departTime = 0;
 
-					linkIdsUpToCurrentStop.add(linkFrom.getId());
+				for(Link link : links) {
+					linkIdsUpToCurrentStop.add(link.getId());
 
 					// get schedule travel time and necessary freespeed
-					lengthUpToCurrentStop += linkFrom.getLength();
-					if(nextStop.getStopFacility().getLinkId().equals(linkTo.getId())) {
-						double ttSchedule = nextStop.getArrivalOffset() - departTime;
+					lengthUpToCurrentStop += link.getLength();
+					if(stop.getStopFacility().getLinkId().equals(link.getId())) {
+						double ttSchedule = stop.getArrivalOffset() - departTime;
 						double theoreticalMinSpeed = (lengthUpToCurrentStop / ttSchedule) * 1.02;
 
 						for(Id<Link> linkId : linkIdsUpToCurrentStop) {
@@ -558,10 +557,9 @@ public final class ScheduleTools {
 						// reset
 						lengthUpToCurrentStop = 0;
 						linkIdsUpToCurrentStop = new ArrayList<>();
-						previousStop = nextStop;
-						departTime = previousStop.getDepartureOffset();
-						if(!nextStop.equals(transitRoute.getStops().get(transitRoute.getStops().size() - 1))) {
-							nextStop = stopsIterator.next();
+						departTime = stop.getDepartureOffset();
+						if(stopsIterator.hasNext()) {
+							stop = stopsIterator.next();
 						}
 					}
 				}
