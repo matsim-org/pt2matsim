@@ -308,4 +308,4 @@ The following files are created in the output folder:
 - _shp/schedule/StopFacilities.shp_: Stop Facilities as point shapefile
 - _shp/schedule/StopFacilities_refLinks.shp_: The stop facilities' reference links as polyline shapefile
 
-Shapefiles can be viewed in a GIS, a recommended open source application is [QGIS](https://www.qgis.org). It is also possible to view them in [senozon via](https://via.senozon.com/). However, no line attributes can be displayed or viewed there.
+Shapefiles can be viewed in a GIS, a recommended open source application is [QGIS](https://www.qgis.org). It is also possible to view them in [via](https://www.simunto.com/via/). However, no line attributes can be displayed or viewed there.
