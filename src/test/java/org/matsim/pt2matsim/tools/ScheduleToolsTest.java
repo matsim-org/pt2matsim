@@ -5,16 +5,20 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt.utils.TransitScheduleValidator;
+import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.mapping.pseudoRouter.LinkSequence;
+import org.matsim.pt2matsim.run.gis.Network2Geojson;
+import org.matsim.pt2matsim.run.gis.Schedule2Geojson;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 import org.matsim.pt2matsim.tools.lib.RouteShape;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author polettif
@@ -239,5 +243,29 @@ public class ScheduleToolsTest {
 		Assert.assertEquals(nRoutesInit, nRoutesTest);
 		Assert.assertEquals(testSchedule.getFacilities().size(), initSchedule().getFacilities().size());
 		Assert.assertEquals(nDeparturesInit + 6, nDeparturesTest);
+	}
+
+	@Test
+	public void freespeedBasedOnSchedule() {
+		TransitSchedule schedule = initSchedule();
+		Network network = NetworkToolsTest.initNetwork();
+		Network baseNetwork = NetworkToolsTest.initNetwork();
+
+		Set<Id<Link>> linksUsedBySchedule = new HashSet<>();
+		for(TransitLine transitLine : schedule.getTransitLines().values()) {
+			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
+				linksUsedBySchedule.addAll(ScheduleTools.getTransitRouteLinkIds(transitRoute));
+			}
+		}
+
+		Set<Id<Link>> linksChanged = new HashSet<>();
+		ScheduleTools.setFreeSpeedBasedOnSchedule(network, schedule, Collections.singleton("car"));
+
+		for(Link link : network.getLinks().values()) {
+			if(link.getFreespeed() != baseNetwork.getLinks().get(link.getId()).getFreespeed()) {
+				linksChanged.add(link.getId());
+			}
+		}
+		Assert.assertEquals(linksUsedBySchedule, linksChanged);
 	}
 }

@@ -533,16 +533,21 @@ public final class ScheduleTools {
 				List<Link> links = NetworkTools.getLinksFromIds(network, linkIds);
 
 				List<Id<Link>> linkIdsUpToCurrentStop = new ArrayList<>();
-				double lengthUpToCurrentStop = 0;
 
+				/*
+				Since transit stops are handled at the end of a link, changing the route's first link's
+				freespeed (i.e. the first stop link) has no effect. The freespeed of the first link
+				is adjusted according to the necessary travel time to the second stop.
+				 */
+				double lengthUpToCurrentStop = -links.get(0).getLength();
+				stopsIterator.next();
 				TransitRouteStop stop = stopsIterator.next();
 				double departTime = 0;
 
 				for(Link link : links) {
 					linkIdsUpToCurrentStop.add(link.getId());
-
-					// get schedule travel time and necessary freespeed
 					lengthUpToCurrentStop += link.getLength();
+
 					if(stop.getStopFacility().getLinkId().equals(link.getId())) {
 						double ttSchedule = stop.getArrivalOffset() - departTime;
 						double theoreticalMinSpeed = (lengthUpToCurrentStop / ttSchedule) * 1.02;
