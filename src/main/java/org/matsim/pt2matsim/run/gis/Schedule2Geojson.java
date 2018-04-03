@@ -69,7 +69,7 @@ public class Schedule2Geojson {
 	 * Converts the given schedule based on the given network
 	 * to a geojson file containing the stops and transit routes.
 	 *
-	 * @param crs          coordinate reference system (EPSG:*, coordinates are transformed to WGS83)
+	 * @param crs          coordinate reference system (EPSG:*, coordinates are transformed to WGS84)
 	 * @param outputFile   output schedule folder
 	 * @param scheduleFile input schedule file
 	 * @param networkFile  input network file (<tt>null</tt> if not available)
@@ -82,7 +82,17 @@ public class Schedule2Geojson {
 		s2s.writeSchedule(outputFile);
 	}
 
-	public static void run(String crs, String outputFile, TransitSchedule schedule, Network network) {
+	public static void run(TransitSchedule schedule, String outputFile) {
+		Schedule2Geojson s2s = new Schedule2Geojson(null, schedule, null);
+		s2s.writeSchedule(outputFile);
+	}
+
+	public static void run(String crs, TransitSchedule schedule, String outputFile) {
+		Schedule2Geojson s2s = new Schedule2Geojson(crs, schedule, null);
+		s2s.writeSchedule(outputFile);
+	}
+
+	public static void run(String crs, TransitSchedule schedule, Network network, String outputFile) {
 		Schedule2Geojson s2s = new Schedule2Geojson(crs, schedule, network);
 		s2s.writeSchedule(outputFile);
 	}

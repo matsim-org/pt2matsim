@@ -26,7 +26,7 @@ public class Schedule2GeojsonTest {
 
 	@Test
 	public void run() {
-		Schedule2Geojson.run(TransformationFactory.CH1903_LV03_Plus, "test/schedule.geojson", this.schedule, this.network);
+		Schedule2Geojson.run(TransformationFactory.CH1903_LV03_Plus, this.schedule, this.network, "test/schedule.geojson");
 		new File("test/schedule.geojson").delete();
 	}
 }

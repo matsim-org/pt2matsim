@@ -57,6 +57,10 @@ public class Network2Geojson {
 		}
 	}
 
+	public static void run(Network network, String outputFile) {
+		run(null, network, outputFile);
+	}
+
 	public static void run(String networkCoordSys, String networkFile, String linksOutputFile, String nodesOutputFile) {
 		run(networkCoordSys, NetworkTools.readNetwork(networkFile), linksOutputFile, nodesOutputFile);
 	}
