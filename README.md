@@ -1,4 +1,4 @@
-# PT2MATSim
+# PT2MATSim (v18.3 – depends on MATSim 0.9.0)
 
 [![Build Status](https://travis-ci.org/matsim-org/pt2matsim.svg?branch=master)](https://travis-ci.org/matsim-org/pt2matsim)
 
