@@ -161,7 +161,7 @@ public class Schedule2Geojson {
 			Feature pf = GeojsonTools.createPointFeature(ct.transform(stopCoord));
 			pf.setProperty("stopFacilityId", stopFacility.getId().toString());
 			pf.setProperty("stopFacilityName", stopFacility.getName());
-			pf.setProperty("stopFacilityPostAreaId", stopFacility.getStopPostAreaId());
+			pf.setProperty("stopFacilityPostAreaId", stopFacility.getStopAreaId());
 			pf.setProperty("stopFacilityIsBlocking", stopFacility.getIsBlockingLane());
 
 			if(stopFacility.getLinkId() != null) pf.setProperty("stopFacilityLinkId", stopFacility.getLinkId().toString());
@@ -183,7 +183,7 @@ public class Schedule2Geojson {
 				lf.setProperty("id", stopFacility.getId().toString());
 				lf.setProperty("name", stopFacility.getName());
 				lf.setProperty("linkId", stopFacility.getLinkId().toString());
-				lf.setProperty("postAreaId", stopFacility.getStopPostAreaId());
+				lf.setProperty("postAreaId", stopFacility.getStopAreaId());
 				lf.setProperty("isBlocking", stopFacility.getIsBlockingLane());
 				stopRefLinks.add(lf);
 			}

@@ -28,6 +28,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
+import org.matsim.pt.transitSchedule.api.TransitStopArea;
 import org.matsim.pt2matsim.gtfs.lib.*;
 import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions.RouteType;
 import org.matsim.pt2matsim.tools.lib.RouteShape;
@@ -214,7 +215,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 				// parent station
 				if(col.get(GtfsDefinitions.PARENT_STATION) != null && !line[col.get(GtfsDefinitions.PARENT_STATION)].isEmpty()) {
-					((StopImpl) stop).setParentStation(line[col.get(GtfsDefinitions.PARENT_STATION)]);
+					((StopImpl) stop).setParentStation(Id.create(line[col.get(GtfsDefinitions.PARENT_STATION)], TransitStopArea.class));
 				}
 
 				line = reader.readNext();

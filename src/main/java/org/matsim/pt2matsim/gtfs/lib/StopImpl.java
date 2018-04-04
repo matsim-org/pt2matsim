@@ -21,6 +21,8 @@
 package org.matsim.pt2matsim.gtfs.lib;
 
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.Id;
+import org.matsim.pt.transitSchedule.api.TransitStopArea;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -35,7 +37,7 @@ public class StopImpl implements Stop {
 	/** optional **/
 	private GtfsDefinitions.LocationType locationType = null;
 	/** optional **/
-	private String parentStationId = null;
+	private Id<TransitStopArea> parentStationId = null;
 
 	private Coord coord;
 	private final Collection<Trip> trips = new HashSet<>();
@@ -48,7 +50,7 @@ public class StopImpl implements Stop {
 		this.name = name;
 	}
 
-	public StopImpl(String id, String name, double lon, double lat, GtfsDefinitions.LocationType locationType, String parentStationId) {
+	public StopImpl(String id, String name, double lon, double lat, GtfsDefinitions.LocationType locationType, Id<TransitStopArea> parentStationId) {
 		this.id = id;
 		this.lon = lon;
 		this.lat = lat;
@@ -89,7 +91,7 @@ public class StopImpl implements Stop {
 	}
 
 	@Override
-	public String getParentStationId() {
+	public Id<TransitStopArea> getParentStationId() {
 		return parentStationId;
 	}
 
@@ -102,7 +104,7 @@ public class StopImpl implements Stop {
 		this.locationType = type;
 	}
 
-	public void setParentStation(String id) {
+	public void setParentStation(Id<TransitStopArea> id) {
 		this.parentStationId = id;
 	}
 

@@ -145,7 +145,7 @@ public class GtfsConverter {
 		Id<TransitStopFacility> id = createStopFacilityId(stop);
 		TransitStopFacility stopFacility = this.scheduleFactory.createTransitStopFacility(id, stop.getCoord(), BLOCKS_DEFAULT);
 		stopFacility.setName(stop.getName());
-		stopFacility.setStopPostAreaId(stop.getParentStationId());
+		stopFacility.setStopAreaId(stop.getParentStationId());
 		return stopFacility;
 	}
 

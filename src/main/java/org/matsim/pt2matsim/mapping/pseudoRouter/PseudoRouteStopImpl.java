@@ -22,6 +22,7 @@ import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
+import org.matsim.pt.transitSchedule.api.TransitStopArea;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 
@@ -46,7 +47,7 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 	private final Coord coord;
 	private final boolean isBlockingLane;
 	private final String facilityName;
-	private final String stopPostAreaId;
+	private final Id<TransitStopArea> stopAreaId;
 	private final Id<TransitStopFacility> parentStopFacilityId;
 	public double travelCostToSource = Double.MAX_VALUE;
 	public PseudoRouteStop previous = null;
@@ -64,7 +65,7 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 		this.parentStopFacilityId = routeStop.getStopFacility().getId();
 		this.isBlockingLane = routeStop.getStopFacility().getIsBlockingLane();
 		this.facilityName = routeStop.getStopFacility().getName();
-		this.stopPostAreaId = routeStop.getStopFacility().getStopPostAreaId();
+		this.stopAreaId = routeStop.getStopFacility().getStopAreaId();
 
 		// route stop values
 		this.departureOffset = routeStop.getDepartureOffset();
@@ -95,7 +96,7 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 		this.parentStopFacilityId = null;
 		this.isBlockingLane = false;
 		this.facilityName = null;
-		this.stopPostAreaId = null;
+		this.stopAreaId = null;
 
 		// route stop values
 		this.departureOffset = 0.0;
@@ -190,8 +191,8 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 	}
 
 	@Override
-	public String getStopPostAreaId() {
-		return stopPostAreaId;
+	public Id<TransitStopArea> getStopAreaId() {
+		return stopAreaId;
 	}
 
 	@Override

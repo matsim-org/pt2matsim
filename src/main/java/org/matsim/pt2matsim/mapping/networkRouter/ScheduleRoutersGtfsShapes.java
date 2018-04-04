@@ -6,7 +6,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.core.router.util.FastAStarEuclideanFactory;
+import org.matsim.core.router.FastAStarEuclideanFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
@@ -105,7 +105,7 @@ public class ScheduleRoutersGtfsShapes implements ScheduleRouters {
 						NetworkTools.cutNetwork(cutNetwork, nodesWithinBuffer);
 
 						ShapeRouter r = new ShapeRouter(shape);
-						pathCalculator = new PathCalculator(new FastAStarEuclideanFactory(cutNetwork, r).createPathCalculator(cutNetwork, r, r));
+						pathCalculator = new PathCalculator(new FastAStarEuclideanFactory().createPathCalculator(cutNetwork, r, r));
 
 						pathCalculatorsByShape.put(shapeId, pathCalculator);
 						networksByShape.put(shapeId, cutNetwork);
