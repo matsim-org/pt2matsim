@@ -3,11 +3,11 @@ package org.matsim.pt2matsim.hafas;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
-import org.matsim.pt.transitSchedule.api.TransitLine;
-import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.pt.transitSchedule.TransitScheduleWriterV2;
+import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
@@ -45,6 +45,30 @@ public class HafasConverterTest {
 			}
 		}
 		Assert.assertEquals(2, nRoutes);
+	}
+
+	@Test
+	public void minimalTransferTimes() {
+		int nbMinimalTransferTimes = 0;
+		MinimalTransferTimes transferTimes = schedule.getMinimalTransferTimes();
+		MinimalTransferTimes.MinimalTransferTimesIterator iterator = transferTimes.iterator();
+		while (iterator.hasNext()) {
+			iterator.next();
+			nbMinimalTransferTimes += 1;
+		}
+		Assert.assertEquals(3, nbMinimalTransferTimes);
+
+		Assert.assertEquals(5*60.0, transferTimes.get(
+				Id.create("8508350", TransitStopFacility.class),
+				Id.create("8508350", TransitStopFacility.class)), 0.00001);
+
+		Assert.assertEquals(6*60.0, transferTimes.get(
+				Id.create("8508351", TransitStopFacility.class),
+				Id.create("8508351", TransitStopFacility.class)), 0.00001);
+
+		Assert.assertEquals(60*60.0, transferTimes.get(
+				Id.create("8508350", TransitStopFacility.class),
+				Id.create("8508351", TransitStopFacility.class)), 0.00001);
 	}
 
 	@Test

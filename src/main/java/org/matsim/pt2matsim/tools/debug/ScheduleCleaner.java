@@ -103,6 +103,31 @@ public final class ScheduleCleaner {
 	}
 
 	/**
+	 * Removes all minimal transfer times from not used transit stops. Modifies the schedule.
+	 *
+	 * @param schedule the schedule in which the minimal transfer times should be removed
+	 */
+	public static void removeNotUsedMinimalTransferTimes(TransitSchedule schedule) {
+		log.info("... Removing not used minimal transfer times");
+
+		Set<Id<TransitStopFacility>> usedStopFacilitiesId = schedule.getFacilities().keySet();
+
+		MinimalTransferTimes transferTimes = schedule.getMinimalTransferTimes();
+		MinimalTransferTimes.MinimalTransferTimesIterator iterator = transferTimes.iterator();
+
+		int removed = 0;
+
+		while (iterator.hasNext()) {
+			iterator.next();
+			if (!usedStopFacilitiesId.contains(iterator.getFromStopId()) || !usedStopFacilitiesId.contains(iterator.getToStopId())) {
+				transferTimes.remove(iterator.getFromStopId(), iterator.getToStopId());
+				removed += 1;
+			}
+		}
+		log.info("    " + removed + " not used minimal transfer times facilities removed");
+	}
+
+	/**
 	 * Removes routes without link sequences
 	 */
 	public static int removeTransitRoutesWithoutLinkSequences(TransitSchedule schedule) {

@@ -59,6 +59,11 @@ public class HafasConverter {
 		StopReader.run(schedule, transformation, hafasFolder + "BFKOORD_GEO");
 		log.info("  Read transit stops... done.");
 
+		// 1.a Read minimal transfer times
+		log.info("  Read minimal transfer times...");
+		MinimalTransferTimesReader.run(schedule, hafasFolder, "UMSTEIGB","METABHF");
+		log.info("  Read minimal transfer times... done.");
+
 		// 2. Read all operators from BETRIEB_DE
 		log.info("  Read operators...");
 		Map<String, String> operators = OperatorReader.readOperators(hafasFolder + "BETRIEB_DE");
@@ -80,6 +85,7 @@ public class HafasConverter {
 
 		// 5. Clean schedule
 		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
+		ScheduleCleaner.removeNotUsedMinimalTransferTimes(schedule);
 		ScheduleCleaner.combineIdenticalTransitRoutes(schedule);
 		ScheduleCleaner.cleanDepartures(schedule);
 		ScheduleCleaner.cleanVehicles(schedule, vehicles);
