@@ -137,7 +137,7 @@ public class Schedule2ShapeFile {
 				lf.setAttribute("id", stopFacility.getId().toString());
 				lf.setAttribute("name", stopFacility.getName());
 				lf.setAttribute("linkId", stopFacility.getLinkId().toString());
-				lf.setAttribute("postAreaId", stopFacility.getStopPostAreaId());
+				lf.setAttribute("postAreaId", stopFacility.getStopAreaId());
 				lf.setAttribute("isBlocking", stopFacility.getIsBlockingLane());
 				lineFeatures.add(lf);
 			}
@@ -169,7 +169,7 @@ public class Schedule2ShapeFile {
 			SimpleFeature pf = pointFeatureFactory.createPoint(MGC.coord2Coordinate(stopFacility.getCoord()));
 			pf.setAttribute("id", stopFacility.getId().toString());
 			pf.setAttribute("name", stopFacility.getName());
-			pf.setAttribute("postAreaId", stopFacility.getStopPostAreaId());
+			pf.setAttribute("postAreaId", stopFacility.getStopAreaId());
 			pf.setAttribute("isBlocking", stopFacility.getIsBlockingLane());
 
 			if(stopFacility.getLinkId() != null) pf.setAttribute("linkId", stopFacility.getLinkId().toString());

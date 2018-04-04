@@ -71,7 +71,7 @@ public class PseudoScheduleImpl implements PseudoSchedule {
 					);
 					newFacility.setLinkId(pseudoStop.getLinkId());
 					newFacility.setName(pseudoStop.getFacilityName());
-					newFacility.setStopPostAreaId(pseudoStop.getStopPostAreaId());
+					newFacility.setStopAreaId(pseudoStop.getStopAreaId());
 					schedule.addStopFacility(newFacility);
 				}
 

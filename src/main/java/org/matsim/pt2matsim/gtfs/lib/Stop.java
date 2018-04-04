@@ -19,6 +19,8 @@
 package org.matsim.pt2matsim.gtfs.lib;
 
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.Id;
+import org.matsim.pt.transitSchedule.api.TransitStopArea;
 
 import java.util.Collection;
 
@@ -54,7 +56,7 @@ public interface Stop {
 	 * with the stop. To use this field, stops.txt must also contain a row where this stop ID is assigned
 	 * location type=1.
 	 */
-	String getParentStationId();
+	Id<TransitStopArea> getParentStationId();
 
 	Collection<Trip> getTrips();
 

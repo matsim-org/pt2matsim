@@ -20,8 +20,8 @@ package org.matsim.pt2matsim.mapping.pseudoRouter;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
+import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.vehicles.Vehicle;
 
 import java.util.List;
@@ -174,9 +174,7 @@ public class LinkSequence implements NetworkRoute {
 			}
 		}
 
-		// todo matsim 0.10.0
-		// NetworkRoute ret = RouteUtils.createLinkNetworkRouteImpl(fromLinkId, toLinkId);
-		LinkNetworkRouteImpl ret = new LinkNetworkRouteImpl(fromLinkId, toLinkId);
+		 NetworkRoute ret = RouteUtils.createLinkNetworkRouteImpl(fromLinkId, toLinkId);
 		if(toIndex > fromIndex) {
 			ret.setLinkIds(fromLinkId, this.route.subList(fromIndex, toIndex), toLinkId);
 		} else {

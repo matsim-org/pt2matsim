@@ -198,7 +198,7 @@ public final class PTMapperTools {
 			} else {
 				newChildStopFacility = schedule.getFactory().createTransitStopFacility(newChildStopFacilityId, stopFacility.getCoord(), false);
 				newChildStopFacility.setName(stopFacility.getName());
-				newChildStopFacility.setStopPostAreaId(stopFacility.getStopPostAreaId());
+				newChildStopFacility.setStopAreaId(stopFacility.getStopAreaId());
 				newChildStopFacility.setLinkId(minLink.getId());
 				schedule.addStopFacility(newChildStopFacility);
 			}

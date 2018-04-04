@@ -593,7 +593,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			if(newChildStopFacilty == null) {
 				newChildStopFacilty = createStopFacility(newChildStopId, this.coord, this.name, refLinkId);
 				newChildStopFacilty.setLinkId(refLinkId);
-				newChildStopFacilty.setStopPostAreaId(this.id);
+				newChildStopFacilty.setStopAreaId(Id.create(this.id, TransitStopArea.class));
 				schedule.addStopFacility(newChildStopFacilty);
 			}
 			children.put(newChildStopFacilty.getLinkId(), newChildStopFacilty);

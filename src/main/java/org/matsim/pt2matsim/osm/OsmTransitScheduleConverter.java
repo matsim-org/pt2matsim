@@ -186,13 +186,13 @@ public class OsmTransitScheduleConverter {
 	 *
 	 * @return the created facility
 	 */
-	protected TransitStopFacility createStopFacilityFromOsmNode(Osm.Node node, String stopPostAreaId) {
+	protected TransitStopFacility createStopFacilityFromOsmNode(Osm.Node node, String stopAreaIdString) {
 		Id<TransitStopFacility> id = Id.create(node.getId(), TransitStopFacility.class);
 		Coord coord = transformation.transform(node.getCoord());
 		TransitStopFacility newStopFacility = factory.createTransitStopFacility(id, coord, false);
 		newStopFacility.setName(node.getValue(Osm.Key.NAME));
-		if(stopPostAreaId != null) {
-			newStopFacility.setStopPostAreaId(stopPostAreaId);
+		if(stopAreaIdString != null) {
+			newStopFacility.setStopAreaId(Id.create(stopAreaIdString, TransitStopArea.class));
 		}
 		return newStopFacility;
 	}
