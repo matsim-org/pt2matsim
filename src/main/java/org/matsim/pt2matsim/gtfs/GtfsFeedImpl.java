@@ -215,7 +215,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 				// parent station
 				if(col.get(GtfsDefinitions.PARENT_STATION) != null && !line[col.get(GtfsDefinitions.PARENT_STATION)].isEmpty()) {
-					((StopImpl) stop).setParentStation(Id.create(line[col.get(GtfsDefinitions.PARENT_STATION)], TransitStopArea.class));
+					((StopImpl) stop).setParentStation(line[col.get(GtfsDefinitions.PARENT_STATION)]);
 				}
 
 				line = reader.readNext();

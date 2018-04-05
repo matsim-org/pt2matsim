@@ -56,7 +56,7 @@ public interface Stop {
 	 * with the stop. To use this field, stops.txt must also contain a row where this stop ID is assigned
 	 * location type=1.
 	 */
-	Id<TransitStopArea> getParentStationId();
+	String getParentStationId();
 
 	Collection<Trip> getTrips();
 

@@ -37,7 +37,7 @@ public class StopImpl implements Stop {
 	/** optional **/
 	private GtfsDefinitions.LocationType locationType = null;
 	/** optional **/
-	private Id<TransitStopArea> parentStationId = null;
+	private String parentStationId = null;
 
 	private Coord coord;
 	private final Collection<Trip> trips = new HashSet<>();
@@ -50,7 +50,7 @@ public class StopImpl implements Stop {
 		this.name = name;
 	}
 
-	public StopImpl(String id, String name, double lon, double lat, GtfsDefinitions.LocationType locationType, Id<TransitStopArea> parentStationId) {
+	public StopImpl(String id, String name, double lon, double lat, GtfsDefinitions.LocationType locationType, String parentStationId) {
 		this.id = id;
 		this.lon = lon;
 		this.lat = lat;
@@ -91,7 +91,7 @@ public class StopImpl implements Stop {
 	}
 
 	@Override
-	public Id<TransitStopArea> getParentStationId() {
+	public String getParentStationId() {
 		return parentStationId;
 	}
 
@@ -104,7 +104,7 @@ public class StopImpl implements Stop {
 		this.locationType = type;
 	}
 
-	public void setParentStation(Id<TransitStopArea> id) {
+	public void setParentStation(String id) {
 		this.parentStationId = id;
 	}
 

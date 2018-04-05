@@ -86,8 +86,7 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
      */
     private void load() {
         log.info("Initiating network and router for transit routes...");
-        // todo matsim 0.10.0
-        // LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory();
+        LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory();
         for (TransitLine transitLine : schedule.getTransitLines().values()) {
             for (TransitRoute transitRoute : transitLine.getRoutes().values()) {
                 String scheduleMode = transitRoute.getTransportMode();
@@ -100,9 +99,6 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 
                     OsmRouter r = new OsmRouter(scheduleMode);
 
-					/**/
-                    LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory();
-                    /**/
                     tmpRouter = new PathCalculator(factory.createPathCalculator(filteredNetwork, r, r));
 
                     pathCalculatorsByMode.put(scheduleMode, tmpRouter);

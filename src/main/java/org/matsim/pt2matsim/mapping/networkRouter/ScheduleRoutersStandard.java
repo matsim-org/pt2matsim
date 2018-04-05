@@ -69,6 +69,7 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
         log.info("==============================================");
         log.info("Creating network routers for transit routes...");
         log.info("Initiating network and router for transit routes...");
+        LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory();
         for (TransitLine transitLine : schedule.getTransitLines().values()) {
             for (TransitRoute transitRoute : transitLine.getRoutes().values()) {
                 String scheduleMode = transitRoute.getTransportMode();
@@ -81,9 +82,6 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 
                     LocalRouter r = new LocalRouter();
 
-					/**/
-                    LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory();
-                    /**/
                     tmpRouter = new PathCalculator(factory.createPathCalculator(filteredNetwork, r, r));
 
                     pathCalculatorsByMode.put(scheduleMode, tmpRouter);
