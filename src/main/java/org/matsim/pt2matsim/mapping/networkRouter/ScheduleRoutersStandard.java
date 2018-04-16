@@ -28,124 +28,124 @@ import java.util.Set;
 
 /**
  * Creates a Router for each transportMode of a schedule.
- *
+ * <p>
  * Default ScheduleRouters
  *
  * @author polettif
  */
 public class ScheduleRoutersStandard implements ScheduleRouters {
 
-    protected static Logger log = Logger.getLogger(ScheduleRoutersStandard.class);
+	protected static Logger log = Logger.getLogger(ScheduleRoutersStandard.class);
 
-    // standard fields
-    private final TransitSchedule schedule;
-    private final Network network;
-    private final Map<String, Set<String>> transportModeAssignment;
-    private final PublicTransitMappingConfigGroup.TravelCostType travelCostType;
+	// standard fields
+	private final TransitSchedule schedule;
+	private final Network network;
+	private final Map<String, Set<String>> transportModeAssignment;
+	private final PublicTransitMappingConfigGroup.TravelCostType travelCostType;
 
-    // path calculators
-    private final Map<String, PathCalculator> pathCalculatorsByMode = new HashMap<>();
-    private final Map<String, Network> networksByMode = new HashMap<>();
-    private final boolean considerCandidateDist;
+	// path calculators
+	private final Map<String, PathCalculator> pathCalculatorsByMode = new HashMap<>();
+	private final Map<String, Network> networksByMode = new HashMap<>();
+	private final boolean considerCandidateDist;
 
-    public ScheduleRoutersStandard(TransitSchedule schedule, Network network, Map<String, Set<String>> transportModeAssignment, PublicTransitMappingConfigGroup.TravelCostType costType, boolean routingWithCandidateDistance) {
-        this.schedule = schedule;
-        this.network = network;
-        this.transportModeAssignment = transportModeAssignment;
-        this.travelCostType = costType;
-        this.considerCandidateDist = routingWithCandidateDistance;
+	public ScheduleRoutersStandard(TransitSchedule schedule, Network network, Map<String, Set<String>> transportModeAssignment, PublicTransitMappingConfigGroup.TravelCostType costType, boolean routingWithCandidateDistance) {
+		this.schedule = schedule;
+		this.network = network;
+		this.transportModeAssignment = transportModeAssignment;
+		this.travelCostType = costType;
+		this.considerCandidateDist = routingWithCandidateDistance;
 
-        load();
-    }
+		load();
+	}
 
-    public ScheduleRoutersStandard(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
-        this(schedule, network, config.getTransportModeAssignment(), config.getTravelCostType(), config.getRoutingWithCandidateDistance());
-    }
+	public ScheduleRoutersStandard(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
+		this(schedule, network, config.getTransportModeAssignment(), config.getTravelCostType(), config.getRoutingWithCandidateDistance());
+	}
 
-    /**
-     * Load path calculators for all transit routes
-     */
-    private void load() {
-        log.info("==============================================");
-        log.info("Creating network routers for transit routes...");
-        log.info("Initiating network and router for transit routes...");
-        LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory();
-        for (TransitLine transitLine : schedule.getTransitLines().values()) {
-            for (TransitRoute transitRoute : transitLine.getRoutes().values()) {
-                String scheduleMode = transitRoute.getTransportMode();
-                PathCalculator tmpRouter = pathCalculatorsByMode.get(scheduleMode);
-                if (tmpRouter == null) {
-                    log.info("New router for schedule mode " + scheduleMode);
-                    Set<String> networkTransportModes = transportModeAssignment.get(scheduleMode);
+	/**
+	 * Load path calculators for all transit routes
+	 */
+	private void load() {
+		log.info("==============================================");
+		log.info("Creating network routers for transit routes...");
+		log.info("Initiating network and router for transit routes...");
+		LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory();
+		for(TransitLine transitLine : schedule.getTransitLines().values()) {
+			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
+				String scheduleMode = transitRoute.getTransportMode();
+				PathCalculator tmpRouter = pathCalculatorsByMode.get(scheduleMode);
+				if(tmpRouter == null) {
+					log.info("New router for schedule mode " + scheduleMode);
+					Set<String> networkTransportModes = transportModeAssignment.get(scheduleMode);
 
-                    Network filteredNetwork = NetworkTools.createFilteredNetworkByLinkMode(this.network, networkTransportModes);
+					Network filteredNetwork = NetworkTools.createFilteredNetworkByLinkMode(this.network, networkTransportModes);
 
-                    LocalRouter r = new LocalRouter();
+					LocalRouter r = new LocalRouter();
 
-                    tmpRouter = new PathCalculator(factory.createPathCalculator(filteredNetwork, r, r));
+					tmpRouter = new PathCalculator(factory.createPathCalculator(filteredNetwork, r, r));
 
-                    pathCalculatorsByMode.put(scheduleMode, tmpRouter);
-                    networksByMode.put(scheduleMode, filteredNetwork);
-                }
-            }
-        }
-    }
+					pathCalculatorsByMode.put(scheduleMode, tmpRouter);
+					networksByMode.put(scheduleMode, filteredNetwork);
+				}
+			}
+		}
+	}
 
 
-    @Override
-    public LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, TransitLine transitLine, TransitRoute transitRoute) {
-        return this.calcLeastCostPath(fromLinkCandidate.getLink().getToNode().getId(), toLinkCandidate.getLink().getFromNode().getId(), transitLine, transitRoute);
-    }
+	@Override
+	public LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, TransitLine transitLine, TransitRoute transitRoute) {
+		return this.calcLeastCostPath(fromLinkCandidate.getLink().getToNode().getId(), toLinkCandidate.getLink().getFromNode().getId(), transitLine, transitRoute);
+	}
 
-    @Override
-    public LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNodeId, Id<Node> toNodeId, TransitLine transitLine, TransitRoute transitRoute) {
-        Network n = networksByMode.get(transitRoute.getTransportMode());
-        if (n == null) return null;
+	@Override
+	public LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNodeId, Id<Node> toNodeId, TransitLine transitLine, TransitRoute transitRoute) {
+		Network n = networksByMode.get(transitRoute.getTransportMode());
+		if(n == null) return null;
 
-        Node fromNode = n.getNodes().get(fromNodeId);
-        Node toNode = n.getNodes().get(toNodeId);
-        if (fromNode == null || toNode == null) return null;
+		Node fromNode = n.getNodes().get(fromNodeId);
+		Node toNode = n.getNodes().get(toNodeId);
+		if(fromNode == null || toNode == null) return null;
 
-        return pathCalculatorsByMode.get(transitRoute.getTransportMode()).calcPath(fromNode, toNode);
-    }
+		return pathCalculatorsByMode.get(transitRoute.getTransportMode()).calcPath(fromNode, toNode);
+	}
 
-    @Override
-    public double getMinimalTravelCost(TransitRouteStop fromTransitRouteStop, TransitRouteStop toTransitRouteStop, TransitLine transitLine, TransitRoute transitRoute) {
-        double minTC = PTMapperTools.calcMinTravelCost(fromTransitRouteStop, toTransitRouteStop, travelCostType);
-        if (minTC == 0)
-            minTC = CoordUtils.calcEuclideanDistance(fromTransitRouteStop.getStopFacility().getCoord(), toTransitRouteStop.getStopFacility().getCoord()) / 10;
-        return minTC;
-    }
+	@Override
+	public double getMinimalTravelCost(TransitRouteStop fromTransitRouteStop, TransitRouteStop toTransitRouteStop, TransitLine transitLine, TransitRoute transitRoute) {
+		double minTC = PTMapperTools.calcMinTravelCost(fromTransitRouteStop, toTransitRouteStop, travelCostType);
+		if(minTC == 0)
+			minTC = CoordUtils.calcEuclideanDistance(fromTransitRouteStop.getStopFacility().getCoord(), toTransitRouteStop.getStopFacility().getCoord()) / 10;
+		return minTC;
+	}
 
-    @Override
-    public double getLinkCandidateTravelCost(LinkCandidate linkCandidateCurrent) {
-        double dist = 0;
-        if (considerCandidateDist) {
-            dist += (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? linkCandidateCurrent.getStopFacilityDistance() / linkCandidateCurrent.getLink().getFreespeed() : linkCandidateCurrent.getStopFacilityDistance());
-            dist *= 2;
-        }
-        return dist + PTMapperTools.calcTravelCost(linkCandidateCurrent.getLink(), travelCostType);
-    }
+	@Override
+	public double getLinkCandidateTravelCost(LinkCandidate linkCandidateCurrent) {
+		double dist = 0;
+		if(considerCandidateDist) {
+			dist += (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? linkCandidateCurrent.getStopFacilityDistance() / linkCandidateCurrent.getLink().getFreespeed() : linkCandidateCurrent.getStopFacilityDistance());
+			dist *= 2;
+		}
+		return dist + PTMapperTools.calcTravelCost(linkCandidateCurrent.getLink(), travelCostType);
+	}
 
-    /**
-     * Class is sent to path calculator factory
-     */
-    private class LocalRouter implements TravelDisutility, TravelTime {
+	/**
+	 * Class is sent to path calculator factory
+	 */
+	private class LocalRouter implements TravelDisutility, TravelTime {
 
-        @Override
-        public double getLinkTravelDisutility(Link link, double time, Person person, Vehicle vehicle) {
-            return this.getLinkMinimumTravelDisutility(link);
-        }
+		@Override
+		public double getLinkTravelDisutility(Link link, double time, Person person, Vehicle vehicle) {
+			return this.getLinkMinimumTravelDisutility(link);
+		}
 
-        @Override
-        public double getLinkMinimumTravelDisutility(Link link) {
-            return PTMapperTools.calcTravelCost(link, travelCostType);
-        }
+		@Override
+		public double getLinkMinimumTravelDisutility(Link link) {
+			return PTMapperTools.calcTravelCost(link, travelCostType);
+		}
 
-        @Override
-        public double getLinkTravelTime(Link link, double time, Person person, Vehicle vehicle) {
-            return link.getLength() / link.getFreespeed();
-        }
-    }
+		@Override
+		public double getLinkTravelTime(Link link, double time, Person person, Vehicle vehicle) {
+			return link.getLength() / link.getFreespeed();
+		}
+	}
 
 }

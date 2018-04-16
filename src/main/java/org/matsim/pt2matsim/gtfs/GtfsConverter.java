@@ -102,6 +102,9 @@ public class GtfsConverter {
 		// generate TransitStopFacilities from gtfsStops and add them to the schedule
 		createStopFacilities(schedule);
 
+		// create transfers
+		createTransfers(schedule);
+
 		// Creating TransitLines from routes and TransitRoutes from trips
 		createTransitLines(schedule, extractDate);
 
@@ -136,6 +139,16 @@ public class GtfsConverter {
 			if(stopFacility != null) {
 				schedule.addStopFacility(stopFacility);
 			}
+		}
+	}
+
+	private void createTransfers(TransitSchedule schedule) {
+		MinimalTransferTimes minimalTransferTimes = schedule.getMinimalTransferTimes();
+
+		for(Transfer transfer : feed.getTransfers()) {
+			Id<TransitStopFacility> fromStop = Id.create(transfer.getFromStopId(), TransitStopFacility.class);
+			Id<TransitStopFacility> toStop = Id.create(transfer.getFromStopId(), TransitStopFacility.class);
+			minimalTransferTimes.set(fromStop, toStop, transfer.getMinTransferTime());
 		}
 	}
 
