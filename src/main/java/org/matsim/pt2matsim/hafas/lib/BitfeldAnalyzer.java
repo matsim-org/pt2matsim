@@ -27,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -146,5 +147,30 @@ public class BitfeldAnalyzer {
 		}
 		log.info("Selected HAFAS-4day-block: " + posMaxFNumber);
 		return posMaxFNumber;
+	}
+
+	public static Set<Integer> getBitfieldsAtValidDay(final int dayNr, final String hafasFolder) throws IOException {
+        /*
+        Spalte          Typ                 Bedeutung                                                       Hinweis
+        1-6             INT32               Bitfeldnummer                                                   Nicht durchgehend nummeriert.
+        8-103           CHAR                Bitfeld, bestehend aus 96 hexadezimalen Ziffern (ASCII-lesbar)  Die Bitfelder korrespondieren mit der in der Datei [ECKDATEN] hinterlegten Fahrplanperiode.
+         */
+		int offset_bitstring = 2; // number of bits to ignore at start of each bitfield
+		log.info("start: Read bitfields (BITFELD) at day: " + dayNr);
+		String pathFile = hafasFolder + "BITFELD";
+
+		Set<Integer> validBitfields = new HashSet<>();
+
+		BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathFile), "utf-8"));
+		String newLine = readsLines.readLine();
+		while (newLine != null) {
+			int id = Integer.valueOf(newLine.substring(0, 6));
+			String bitfield = new BigInteger(newLine.substring(7), 16).toString(2).substring(offset_bitstring);
+			if (bitfield.charAt(dayNr)== '1') validBitfields.add(id);
+			newLine = readsLines.readLine();
+		}
+		readsLines.close();
+		log.info("end: Read bitfields (BITFELD) at day: " + dayNr);
+		return validBitfields;
 	}
 }
