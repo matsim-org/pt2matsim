@@ -18,6 +18,8 @@
 
 package org.matsim.pt2matsim.tools.debug;
 
+import com.google.common.collect.Lists;
+import javafx.util.Pair;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -292,11 +294,13 @@ public final class ScheduleCleaner {
 		log.info("Combining TransitRoutes with identical stop sequence...");
 		int combined = 0;
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
-			Map<List<String>, List<TransitRoute>> profiles = new HashMap<>();
+
+			Map<List<Pair<Id<TransitRouteStop>, Pair<Integer, Integer>>>, List<TransitRoute>> profiles = new HashMap<>();
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
-				List<String> stopFacilitySequence = new LinkedList<>();
+				List<Pair<Id<TransitRouteStop>, Pair<Integer, Integer>>> stopFacilitySequence = new LinkedList<>();
 				for(TransitRouteStop routeStop : transitRoute.getStops()) {
-					stopFacilitySequence.add(routeStop.getStopFacility().getId().toString());
+					stopFacilitySequence.add(new Pair(routeStop.getStopFacility().getId(),
+							new Pair(routeStop.getArrivalOffset(), routeStop.getDepartureOffset())));
 				}
 				MapUtils.getList(stopFacilitySequence, profiles).add(transitRoute);
 			}
