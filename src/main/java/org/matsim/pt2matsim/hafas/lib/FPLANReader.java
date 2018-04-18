@@ -119,6 +119,7 @@ public class FPLANReader {
 							int localBitfeldnr = 0;
 							if(newLine.substring(22, 28).trim().length() > 0) {
 								localBitfeldnr = Integer.parseInt(newLine.substring(22, 28));
+								// TODO there may be more than one *A VE line per *Z block (when the bitfield changes during the route). This is an important issue in HAFAS!
 							}
 							if(!bitfeldNummern.contains(localBitfeldnr)) {
 								// Linie gefunden, die nicht werktäglich verkehrt... => Ignorieren wir...

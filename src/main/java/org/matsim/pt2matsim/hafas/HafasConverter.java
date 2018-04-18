@@ -79,6 +79,8 @@ public class HafasConverter {
 		List<FPLANRoute> routes = FPLANReader.parseFPLAN(bitfeldNummern, operators, hafasFolder + "FPLAN");
 		log.info("  Read transit lines... done.");
 
+		// TODO another important HAFAS-file is DURCHBI. This feature is not supported by MATSim yet (but in Switzerland, for example, locally very important.
+
 		log.info("  Creating transit routes...");
 		createTransitRoutesFromFPLAN(routes, schedule, vehicles);
 		log.info("  Creating transit routes... done.");
