@@ -18,8 +18,6 @@
 
 package org.matsim.pt2matsim.tools.debug;
 
-import com.google.common.collect.Lists;
-import javafx.util.Pair;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -291,30 +289,29 @@ public final class ScheduleCleaner {
 	 * a transit line are combined.
 	 */
 	public static void combineIdenticalTransitRoutes(TransitSchedule schedule) {
-		log.info("Combining TransitRoutes with identical stop sequence...");
+		log.info("Combining TransitRoutes with equal stop sequence and arrival/departure offsets...");
 		int combined = 0;
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
-
-			Map<List<Pair<Id<TransitRouteStop>, Pair<Integer, Integer>>>, List<TransitRoute>> profiles = new HashMap<>();
+			Map<List<String>, List<TransitRoute>> profiles = new HashMap<>();
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
-				List<Pair<Id<TransitRouteStop>, Pair<Integer, Integer>>> stopFacilitySequence = new LinkedList<>();
+				List<String> sequence = new LinkedList<>();
 				for(TransitRouteStop routeStop : transitRoute.getStops()) {
-					stopFacilitySequence.add(new Pair(routeStop.getStopFacility().getId(),
-							new Pair(routeStop.getArrivalOffset(), routeStop.getDepartureOffset())));
+					String s = routeStop.getStopFacility().getId().toString()
+							+ "-" + (int) routeStop.getArrivalOffset()
+							+ "-" + (int) routeStop.getDepartureOffset();
+					sequence.add(s);
 				}
-				MapUtils.getList(stopFacilitySequence, profiles).add(transitRoute);
+				MapUtils.getList(sequence, profiles).add(transitRoute);
 			}
 
 			for(List<TransitRoute> routeList : profiles.values()) {
 				if(routeList.size() > 1) {
 					TransitRoute finalRoute = routeList.get(0);
 					for(int i = 1; i < routeList.size(); i++) {
-
+						TransitRoute routeToRemove = routeList.get(i);
+						routeToRemove.getDepartures().values().forEach(finalRoute::addDeparture);
+						transitLine.removeRoute(routeToRemove);
 						combined++;
-						transitLine.removeRoute(routeList.get(i));
-						for(Departure departure : routeList.get(i).getDepartures().values()) {
-							finalRoute.addDeparture(departure);
-						}
 					}
 				}
 			}

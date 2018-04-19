@@ -20,7 +20,6 @@ package org.matsim.pt2matsim.gtfs;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
-import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.gtfs.lib.*;
@@ -32,7 +31,9 @@ import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Converts a GTFS feed to a MATSim transit schedule
@@ -256,32 +257,7 @@ public class GtfsConverter {
 	}
 
 	protected void combineTransitRoutes(TransitSchedule schedule) {
-		log.info("Combining TransitRoutes with equal stop sequence and departure offsets...");
-		int combined = 0;
-		for(TransitLine transitLine : schedule.getTransitLines().values()) {
-			Map<List<String>, List<TransitRoute>> profiles = new HashMap<>();
-			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
-				List<String> sequence = new LinkedList<>();
-				for(TransitRouteStop routeStop : transitRoute.getStops()) {
-					String s = routeStop.getStopFacility().getId().toString() + "-" + (int) routeStop.getDepartureOffset();
-					sequence.add(s);
-				}
-				MapUtils.getList(sequence, profiles).add(transitRoute);
-			}
-
-			for(List<TransitRoute> routeList : profiles.values()) {
-				if(routeList.size() > 1) {
-					TransitRoute finalRoute = routeList.get(0);
-					for(int i = 1; i < routeList.size(); i++) {
-						TransitRoute routeToRemove = routeList.get(i);
-						routeToRemove.getDepartures().values().forEach(finalRoute::addDeparture);
-						transitLine.removeRoute(routeToRemove);
-						combined++;
-					}
-				}
-			}
-		}
-		log.info("... Combined " + combined + " transit routes");
+		ScheduleCleaner.combineIdenticalTransitRoutes(schedule);
 	}
 
 	protected void cleanSchedule(TransitSchedule schedule) {
