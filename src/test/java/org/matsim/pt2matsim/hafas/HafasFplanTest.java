@@ -12,9 +12,6 @@ import org.matsim.vehicles.Vehicles;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
-/**
- * Created by Johannes Lieberherr on 18.04.2018.
- */
 public class HafasFplanTest {
     @Test
     public void simpleFplanTest() throws IOException {
@@ -32,5 +29,6 @@ public class HafasFplanTest {
         int nbDeps = schedule.getTransitLines().values().stream().
                 flatMap(l -> l.getRoutes().values().stream().flatMap(r -> r.getDepartures().values().stream())).collect(Collectors.toList()).size();
         Assert.assertEquals(3, nbDeps);
+
     }
 }
