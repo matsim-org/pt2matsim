@@ -18,14 +18,6 @@ import java.util.stream.Collectors;
 public class HafasFplanTest {
     @Test
     public void simpleFplanTest() throws IOException {
-//        String hafasFolder = "test/FPLAN_HAFAS/";
-//        Set<Integer> bitfields = new HashSet<>();
-//        bitfields.add(0);
-//        Map<String, String> operators = new HashMap<>();
-//        List<FPLANRoute> fplanRoutes = FPLANReader.parseFPLAN(bitfields, operators, hafasFolder + "FPLAN");
-//        for (Object entry: fplanRoutes.get(0).get)
-//        System.out.println("stop here");
-
 
         TransitSchedule schedule = ScheduleTools.createSchedule();
         Vehicles vehicles = VehicleUtils.createVehiclesContainer();
