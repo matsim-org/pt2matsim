@@ -170,6 +170,8 @@ public class BitfeldAnalyzer {
 			newLine = readsLines.readLine();
 		}
 		readsLines.close();
+        // TODO this error-prone and should be removed by a stable solution
+        validBitfields.add(0); // default if bitfield is not defined in *A VE line of FPLAN, see parseFPLAN from FPLANReader
 		log.info("end: Read bitfields (BITFELD) at day: " + dayNr);
 		return validBitfields;
 	}
