@@ -490,8 +490,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 					if(!line[col.get(GtfsDefinitions.ARRIVAL_TIME)].equals("")) {
 						// get position and times
 						int sequencePosition = Integer.parseInt(line[col.get(GtfsDefinitions.STOP_SEQUENCE)]);
-						int arrivalTime = (int) Time.parseTime(line[col.get(GtfsDefinitions.ARRIVAL_TIME)]);
-						int departureTime = (int) Time.parseTime(line[col.get(GtfsDefinitions.DEPARTURE_TIME)]);
+						int arrivalTime = (int) Time.parseTime(line[col.get(GtfsDefinitions.ARRIVAL_TIME)].trim());
+						int departureTime = (int) Time.parseTime(line[col.get(GtfsDefinitions.DEPARTURE_TIME)].trim());
 
 						// create StopTime
 						StopTime newStopTime = new StopTimeImpl(sequencePosition,
@@ -565,8 +565,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 					if(trip != null) {
 						try {
 							Frequency newFreq = new FrequencyImpl(
-									(int) Time.parseTime(line[col.get(GtfsDefinitions.START_TIME)]),
-									(int) Time.parseTime(line[col.get(GtfsDefinitions.END_TIME)]),
+									(int) Time.parseTime(line[col.get(GtfsDefinitions.START_TIME)].trim()),
+									(int) Time.parseTime(line[col.get(GtfsDefinitions.END_TIME)].trim()),
 									Integer.parseInt(line[col.get(GtfsDefinitions.HEADWAY_SECS)]));
 							((TripImpl) trip).addFrequency(newFreq);
 						} catch (NumberFormatException e) {
