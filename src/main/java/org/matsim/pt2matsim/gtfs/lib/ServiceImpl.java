@@ -85,6 +85,9 @@ public class ServiceImpl implements Service {
 	 * parses the date format YYYYMMDD to LocalDate
 	 */
 	private LocalDate parseDateFormat(String yyyymmdd) {
+		if(yyyymmdd.length() != 8) {
+			throw new IllegalArgumentException("Invalid date format YYYYMMDD: \"" + yyyymmdd + "\"");
+		}
 		return LocalDate.of(Integer.parseInt(yyyymmdd.substring(0, 4)), Integer.parseInt(yyyymmdd.substring(4, 6)), Integer.parseInt(yyyymmdd.substring(6, 8)));
 	}
 

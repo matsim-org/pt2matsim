@@ -25,6 +25,5 @@ public class HafasFplanTest {
         int nbDeps = schedule.getTransitLines().values().stream().
                 flatMap(l -> l.getRoutes().values().stream().flatMap(r -> r.getDepartures().values().stream())).collect(Collectors.toList()).size();
         Assert.assertEquals(3, nbDeps);
-
     }
 }

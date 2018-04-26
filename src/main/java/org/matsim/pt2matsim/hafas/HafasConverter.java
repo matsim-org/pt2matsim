@@ -50,6 +50,10 @@ public class HafasConverter {
 	protected static Logger log = Logger.getLogger(HafasConverter.class);
 
 	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles) throws IOException {
+		run(hafasFolder, schedule, transformation, vehicles, -1);
+	}
+
+	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, int dayNr) throws IOException {
 		if(!hafasFolder.endsWith("/")) hafasFolder += "/";
 
 		log.info("Creating the schedule based on HAFAS...");
@@ -71,7 +75,15 @@ public class HafasConverter {
 
 		// 3. Read all ids for work-day-routes from HAFAS-BITFELD
 		log.info("  Read bitfeld numbers...");
-		Set<Integer> bitfeldNummern = BitfeldAnalyzer.findBitfeldnumbersOfBusiestDay(hafasFolder + "FPLAN", hafasFolder + "BITFELD");
+		Set<Integer> bitfeldNummern;
+		if (dayNr < 0) {
+			bitfeldNummern = BitfeldAnalyzer.findBitfeldnumbersOfBusiestDay(hafasFolder + "FPLAN", hafasFolder + "BITFELD");
+			log.info("      nb of bitfields at busiest day: " + bitfeldNummern.size());
+		} else {
+			// TODO: check if dayNr is within the timetable period defined in ECKDATEN
+			bitfeldNummern = BitfeldAnalyzer.getBitfieldsAtValidDay(dayNr, hafasFolder);
+			log.info("      nb of bitfields valid at day " + dayNr + ": " + bitfeldNummern.size());
+		}
 		log.info("  Read bitfeld numbers... done.");
 
 		// 4. Create all lines from HAFAS-Schedule
