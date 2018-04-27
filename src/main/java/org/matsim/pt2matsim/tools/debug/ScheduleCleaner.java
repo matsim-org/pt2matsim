@@ -53,6 +53,7 @@ public final class ScheduleCleaner {
 
 	/**
 	 * Removes transit routes without link sequences and not used stop facilities from the schedule.
+	 *
 	 * @param args [0] schedule file, [1] output schedule file (if original file should not be overwritten)
 	 */
 	public static void main(String[] args) {
@@ -117,9 +118,9 @@ public final class ScheduleCleaner {
 
 		int removed = 0;
 
-		while (iterator.hasNext()) {
+		while(iterator.hasNext()) {
 			iterator.next();
-			if (!usedStopFacilitiesId.contains(iterator.getFromStopId()) || !usedStopFacilitiesId.contains(iterator.getToStopId())) {
+			if(!usedStopFacilitiesId.contains(iterator.getFromStopId()) || !usedStopFacilitiesId.contains(iterator.getToStopId())) {
 				transferTimes.remove(iterator.getFromStopId(), iterator.getToStopId());
 				removed += 1;
 			}
@@ -424,6 +425,7 @@ public final class ScheduleCleaner {
 
 	/**
 	 * Removes the given route from the schedule
+	 *
 	 * @return true if the route could be removed
 	 */
 	public static boolean removeRoute(TransitSchedule schedule, Id<TransitLine> transitLineId, Id<TransitRoute> transitRouteId) {
@@ -436,7 +438,7 @@ public final class ScheduleCleaner {
 	 */
 	public static void cutSchedule(TransitSchedule schedule, Coord center, double radius) {
 		Set<Id<TransitStopFacility>> stopsInArea = new HashSet<>();
-		for (TransitStopFacility stopFacility : schedule.getFacilities().values()) {
+		for(TransitStopFacility stopFacility : schedule.getFacilities().values()) {
 			if(CoordUtils.calcEuclideanDistance(center, stopFacility.getCoord()) <= radius) {
 				stopsInArea.add(stopFacility.getId());
 			}
@@ -450,7 +452,7 @@ public final class ScheduleCleaner {
 	 */
 	public static void cutSchedule(TransitSchedule schedule, Coord SWcorner, Coord NEcorner) {
 		Set<Id<TransitStopFacility>> stopsInArea = new HashSet<>();
-		for (TransitStopFacility stopFacility : schedule.getFacilities().values()) {
+		for(TransitStopFacility stopFacility : schedule.getFacilities().values()) {
 			if(CoordTools.isInArea(stopFacility.getCoord(), SWcorner, NEcorner)) {
 				stopsInArea.add(stopFacility.getId());
 			}
@@ -468,26 +470,26 @@ public final class ScheduleCleaner {
 		// Identify all routes not crossing area and therefore to remove:
 		int routesRemoved = 0;
 		Set<TransitLine> linesToRemove = new HashSet<>();
-		for (TransitLine transitLine : schedule.getTransitLines().values()) {
-			for (TransitRoute transitRoute : new HashSet<>(transitLine.getRoutes().values())) {
+		for(TransitLine transitLine : schedule.getTransitLines().values()) {
+			for(TransitRoute transitRoute : new HashSet<>(transitLine.getRoutes().values())) {
 				boolean toKeep = false;
-				for (TransitRouteStop stop : transitRoute.getStops()) {
-					if (stopsInArea.contains(stop.getStopFacility().getId())) {
+				for(TransitRouteStop stop : transitRoute.getStops()) {
+					if(stopsInArea.contains(stop.getStopFacility().getId())) {
 						toKeep = true;
 					}
 				}
-				if (!toKeep) {
+				if(!toKeep) {
 					transitLine.removeRoute(transitRoute);
 					routesRemoved++;
 				}
 			}
-			if (transitLine.getRoutes().isEmpty()) {
+			if(transitLine.getRoutes().isEmpty()) {
 				linesToRemove.add(transitLine);
 			}
 		}
 		log.info("   routes removed: " + routesRemoved);
 
-		for (TransitLine lineToRemove : linesToRemove) {
+		for(TransitLine lineToRemove : linesToRemove) {
 			schedule.removeTransitLine(lineToRemove);
 		}
 		log.info("   lines removed: " + linesToRemove.size());
@@ -510,6 +512,7 @@ public final class ScheduleCleaner {
 
 	/**
 	 * Removes all invalid transit routes based on a TransitScheduleValidator result.
+	 *
 	 * @deprecated Experimental. Guesses the ids based on the error strings, might not always work
 	 */
 	@Deprecated

@@ -604,18 +604,18 @@ public class GtfsFeedImpl implements GtfsFeed {
 			while(line != null) {
 				String fromStopId = line[col.get(GtfsDefinitions.FROM_STOP_ID)];
 				String toStopId = line[col.get(GtfsDefinitions.TO_STOP_ID)];
-				GtfsDefinitions.TransferType tt = GtfsDefinitions.TransferType.values()[Integer.parseInt(line[col.get(GtfsDefinitions.TRANSFER_TYPE)])];
+				GtfsDefinitions.TransferType transferType = GtfsDefinitions.TransferType.values()[Integer.parseInt(line[col.get(GtfsDefinitions.TRANSFER_TYPE)])];
 
-				if(tt.equals(GtfsDefinitions.TransferType.REQUIRES_MIN_TRANSFER_TIME)) {
+				if(transferType.equals(GtfsDefinitions.TransferType.REQUIRES_MIN_TRANSFER_TIME)) {
 					try {
 						int minTransferTime = Integer.parseInt(line[col.get(GtfsDefinitions.TRANSFER_TYPE)]);
-						transfers.add(new TransferImpl(fromStopId, toStopId, tt, minTransferTime));
+						transfers.add(new TransferImpl(fromStopId, toStopId, transferType, minTransferTime));
 					} catch (NumberFormatException e) {
 						throw new IllegalArgumentException("No required minimal transfer time set for transfer " + line[col.get(GtfsDefinitions.FROM_STOP_ID)] + " -> " + line[col.get(GtfsDefinitions.TO_STOP_ID)] + "!");
 					}
 				} else {
 					// store transfer
-					transfers.add(new TransferImpl(fromStopId, toStopId, tt));
+					transfers.add(new TransferImpl(fromStopId, toStopId, transferType));
 				}
 
 				line = reader.readNext();
