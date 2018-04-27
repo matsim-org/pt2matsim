@@ -154,6 +154,13 @@ public class ScheduleToolsTest {
 		ScheduleTools.setShapeId(routeB, Id.create("B", RouteShape.class));
 		lineB.addRoute(routeB);
 
+		// transferTimes
+		MinimalTransferTimes minimalTransferTimes = transitSchedule.getMinimalTransferTimes();
+		minimalTransferTimes.set(Id.create("stop2", TransitStopFacility.class), Id.create("stop3", TransitStopFacility.class), 0);
+		minimalTransferTimes.set(Id.create("stop3", TransitStopFacility.class), Id.create("stop2", TransitStopFacility.class), 0);
+		minimalTransferTimes.set(Id.create("stop3", TransitStopFacility.class), Id.create("stop4", TransitStopFacility.class), 10);
+		minimalTransferTimes.set(Id.create("stop4", TransitStopFacility.class), Id.create("stop3", TransitStopFacility.class), 10);
+
 		return transitSchedule;
 	}
 

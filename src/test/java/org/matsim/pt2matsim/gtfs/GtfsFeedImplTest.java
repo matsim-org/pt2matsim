@@ -51,7 +51,7 @@ public class GtfsFeedImplTest {
 		Assert.assertEquals(4, feed.getServices().size());
 		Assert.assertEquals(3, feed.getShapes().size());
 		Assert.assertEquals(6, feed.getTrips().size());
-		Assert.assertEquals(2, feed.getTransfers().size());
+		Assert.assertEquals(6, feed.getTransfers().size());
 		Assert.assertTrue(feed.usesFrequencies());
 	}
 

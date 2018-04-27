@@ -608,7 +608,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 				if(transferType.equals(GtfsDefinitions.TransferType.REQUIRES_MIN_TRANSFER_TIME)) {
 					try {
-						int minTransferTime = Integer.parseInt(line[col.get(GtfsDefinitions.TRANSFER_TYPE)]);
+						int minTransferTime = Integer.parseInt(line[col.get(GtfsDefinitions.MIN_TRANSFER_TIME)]);
 						transfers.add(new TransferImpl(fromStopId, toStopId, transferType, minTransferTime));
 					} catch (NumberFormatException e) {
 						throw new IllegalArgumentException("No required minimal transfer time set for transfer " + line[col.get(GtfsDefinitions.FROM_STOP_ID)] + " -> " + line[col.get(GtfsDefinitions.TO_STOP_ID)] + "!");

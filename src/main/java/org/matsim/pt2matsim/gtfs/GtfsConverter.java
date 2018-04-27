@@ -150,6 +150,7 @@ public class GtfsConverter {
 				Id<TransitStopFacility> fromStop = Id.create(transfer.getFromStopId(), TransitStopFacility.class);
 				Id<TransitStopFacility> toStop = Id.create(transfer.getToStopId(), TransitStopFacility.class);
 
+				// Note: Timed transfer points (type 1) cannot be represented with minimalTransferTimes only
 				double minTransferTime = 0;
 				if(transfer.getTransferType().equals(GtfsDefinitions.TransferType.REQUIRES_MIN_TRANSFER_TIME)) {
 					minTransferTime = transfer.getMinTransferTime();
