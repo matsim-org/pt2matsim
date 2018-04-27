@@ -153,4 +153,27 @@ public class GtfsConverterTest {
 		Assert.assertEquals(2, line.getRoutes().size());
 	}
 
+	@Test
+	public void testTransfers() {
+		Set<String> expectedTransferTimes = new TreeSet<>();
+		MinimalTransferTimes.MinimalTransferTimesIterator iter1 = ScheduleToolsTest.initUnmappedSchedule().getMinimalTransferTimes().iterator();
+		while(iter1.hasNext()) {
+			iter1.next();
+			expectedTransferTimes.add(getTransferTimeTestString(iter1));
+		}
+
+		Set<String> actualTransferTime = new TreeSet<>();
+		MinimalTransferTimes.MinimalTransferTimesIterator iter2 = convertedSchedule.getMinimalTransferTimes().iterator();
+		while(iter2.hasNext()) {
+			iter2.next();
+			actualTransferTime.add(getTransferTimeTestString(iter2));
+		}
+
+		Assert.assertEquals(expectedTransferTimes, actualTransferTime);
+	}
+
+	private String getTransferTimeTestString(MinimalTransferTimes.MinimalTransferTimesIterator iterator) {
+		return iterator.getFromStopId().toString() + "-" + iterator.getToStopId().toString() + "-" + String.valueOf(iterator.getSeconds());
+	}
+
 }
