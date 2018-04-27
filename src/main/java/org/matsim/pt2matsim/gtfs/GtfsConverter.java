@@ -142,13 +142,20 @@ public class GtfsConverter {
 		}
 	}
 
-	private void createTransfers(TransitSchedule schedule) {
+	protected void createTransfers(TransitSchedule schedule) {
 		MinimalTransferTimes minimalTransferTimes = schedule.getMinimalTransferTimes();
 
 		for(Transfer transfer : feed.getTransfers()) {
-			Id<TransitStopFacility> fromStop = Id.create(transfer.getFromStopId(), TransitStopFacility.class);
-			Id<TransitStopFacility> toStop = Id.create(transfer.getFromStopId(), TransitStopFacility.class);
-			minimalTransferTimes.set(fromStop, toStop, transfer.getMinTransferTime());
+			if(!transfer.getTransferType().equals(GtfsDefinitions.TransferType.TRANSFER_NOT_POSSIBLE)) {
+				Id<TransitStopFacility> fromStop = Id.create(transfer.getFromStopId(), TransitStopFacility.class);
+				Id<TransitStopFacility> toStop = Id.create(transfer.getToStopId(), TransitStopFacility.class);
+
+				double minTransferTime = 0;
+				if(transfer.getTransferType().equals(GtfsDefinitions.TransferType.REQUIRES_MIN_TRANSFER_TIME)) {
+					minTransferTime = transfer.getMinTransferTime();
+				}
+				minimalTransferTimes.set(fromStop, toStop, minTransferTime);
+			}
 		}
 	}
 
