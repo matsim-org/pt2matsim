@@ -255,6 +255,7 @@ public class PTMapper {
 		if(removeNotUsedStopFacilities) {
 			ScheduleCleaner.removeNotUsedStopFacilities(schedule);
 		}
+		ScheduleCleaner.removeNotUsedMinimalTransferTimes(schedule);
 
 		// change the network transport modes
 		ScheduleTools.assignScheduleModesToLinks(schedule, network);
