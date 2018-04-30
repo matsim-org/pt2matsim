@@ -237,8 +237,7 @@ public final class ScheduleCleaner {
 	 */
 	public static void combineChildStopsToParentStop(TransitSchedule schedule) {
 		for(TransitStopFacility transitStopFacility : new HashSet<>(schedule.getFacilities().values())) {
-			String parentIdStr = ScheduleTools.getParentId(transitStopFacility.getId().toString());
-			Id<TransitStopFacility> parentId = Id.create(parentIdStr, TransitStopFacility.class);
+			Id<TransitStopFacility> parentId = ScheduleTools.createParentStopFacilityId(transitStopFacility);
 			TransitStopFacility parentStop = schedule.getFacilities().get(parentId);
 
 			if(parentStop == null) {
@@ -253,7 +252,7 @@ public final class ScheduleCleaner {
 		for(TransitLine line : schedule.getTransitLines().values()) {
 			for(TransitRoute route : line.getRoutes().values()) {
 				for(TransitRouteStop stop : route.getStops()) {
-					Id<TransitStopFacility> parentId = Id.create(ScheduleTools.getParentId(stop.getStopFacility().getId().toString()), TransitStopFacility.class);
+					Id<TransitStopFacility> parentId = Id.create(ScheduleTools.createParentStopFacilityId(stop.getStopFacility().getId().toString()), TransitStopFacility.class);
 					TransitStopFacility parentStopFacility = schedule.getFacilities().get(parentId);
 					stop.setStopFacility(parentStopFacility);
 				}

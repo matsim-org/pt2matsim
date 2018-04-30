@@ -32,7 +32,6 @@ import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.pt.transitSchedule.api.*;
-import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.PTMapperTools;
@@ -51,8 +50,6 @@ import java.util.stream.Collectors;
  */
 public class BasicScheduleEditor implements ScheduleEditor {
 
-	private static final String SUFFIX_PATTERN = PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES_REGEX;
-	private static final String SUFFIX = PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES;
 	protected static Logger log = Logger.getLogger(RunScheduleEditor.class);
 	// fields
 	private final Network network;
@@ -300,7 +297,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	 */
 	private TransitStopFacility getChildStopInRoute(TransitRoute transitRoute, String parentId) {
 		for(TransitRouteStop routeStop : transitRoute.getStops()) {
-			if(parentId.equals(getParentId(routeStop.getStopFacility()))) {
+			if(parentId.equals(ScheduleTools.createParentStopFacilityId(routeStop.getStopFacility()))) {
 				return routeStop.getStopFacility();
 			}
 		}
@@ -329,14 +326,6 @@ public class BasicScheduleEditor implements ScheduleEditor {
 		return getRouteStop(transitRoute, createStopFacilityId(stopFacilityIdStr));
 	}
 
-
-	/**
-	 * Creates a standard child facility id
-	 */
-	private Id<TransitStopFacility> createChildStopFacilityId(String stopIdStr, String refLinkId) {
-		return Id.create(getParentId(stopIdStr) + SUFFIX + refLinkId, TransitStopFacility.class);
-	}
-
 	/**
 	 * Shortcut to create a stop facility id
 	 */
@@ -350,13 +339,13 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	@Override
 	public void changeRefLink(Id<TransitStopFacility> stopFacilityId, Id<Link> newRefLinkId) {
 		TransitStopFacility oldStopFacility = schedule.getFacilities().get(stopFacilityId);
-		TransitStopFacility newChildStopFacility = parentStops.getChildStopFacility(getParentId(stopFacilityId), newRefLinkId.toString());
+		TransitStopFacility newChildStopFacility = parentStops.getChildStopFacility(ScheduleTools.createParentStopFacilityId(stopFacilityId.toString()), newRefLinkId.toString());
 		replaceStopFacilityInAllRoutes(oldStopFacility, newChildStopFacility);
 	}
 
 	private void changeRefLink(String stopFacilityIdStr, String newRefLinkIdStr) {
 		TransitStopFacility oldStopFacility = schedule.getFacilities().get(createStopFacilityId(stopFacilityIdStr));
-		TransitStopFacility newChildStopFacility = parentStops.getChildStopFacility(getParentId(stopFacilityIdStr), newRefLinkIdStr);
+		TransitStopFacility newChildStopFacility = parentStops.getChildStopFacility(ScheduleTools.createParentStopFacilityId(stopFacilityIdStr), newRefLinkIdStr);
 		replaceStopFacilityInAllRoutes(oldStopFacility, newChildStopFacility);
 	}
 
@@ -365,7 +354,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	 */
 	private void changeRefLink(TransitLine transitLine, TransitRoute transitRoute, String childStopFacilityIdStr, String newRefLinkIdStr) {
 		TransitStopFacility childStopToReplace = schedule.getFacilities().get(Id.create(childStopFacilityIdStr, TransitStopFacility.class));
-		TransitStopFacility childStopReplaceWith = parentStops.getChildStopFacility(getParentId(childStopFacilityIdStr), newRefLinkIdStr);
+		TransitStopFacility childStopReplaceWith = parentStops.getChildStopFacility(ScheduleTools.createParentStopFacilityId(childStopFacilityIdStr), newRefLinkIdStr);
 
 		replaceStopFacilityInRoute(transitLine, transitRoute, childStopToReplace, childStopReplaceWith);
 	}
@@ -508,30 +497,17 @@ public class BasicScheduleEditor implements ScheduleEditor {
 		}
 	}
 
-	private String getParentId(String stopFacilityIdStr) {
-		String[] childStopSplit = stopFacilityIdStr.split(SUFFIX_PATTERN);
-		return childStopSplit[0];
-	}
-
-	private String getParentId(TransitStopFacility stopFacility) {
-		return getParentId(stopFacility.getId().toString());
-	}
-
-	private String getParentId(Id<TransitStopFacility> stopFacility) {
-		return getParentId(stopFacility.toString());
-	}
-
 	/**
 	 * Container class for all parent stop facilities
 	 */
 	private class ParentStops {
 
-		final Map<String, ParentStopFacility> fac = new HashMap<>();
+		final Map<Id<TransitStopFacility>, ParentStopFacility> fac = new HashMap<>();
 
 		public ParentStops() {
 			for(TransitStopFacility stopFacility : schedule.getFacilities().values()) {
-				String parentId = getParentId(stopFacility);
-				if(!fac.containsKey(getParentId(stopFacility))) {
+				Id<TransitStopFacility> parentId = ScheduleTools.createParentStopFacilityId(stopFacility);
+				if(!fac.containsKey(parentId)) {
 					fac.put(parentId, new ParentStopFacility(stopFacility));
 				} else {
 					fac.get(parentId).getChildStopFacility(stopFacility);
@@ -539,17 +515,10 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			}
 		}
 
-		private ParentStopFacility get(String parentId) {
-			return fac.get(parentId);
+		private TransitStopFacility getChildStopFacility(Id<TransitStopFacility> parentId, String newRefLinkIdStr) {
+			return fac.get(parentId).getChildStopFacility(newRefLinkIdStr);
 		}
 
-		private TransitStopFacility getChildStopFacility(String parentIdStr, String newRefLinkIdStr) {
-			return fac.get(parentIdStr).getChildStopFacility(newRefLinkIdStr);
-		}
-
-		private TransitStopFacility getChildStopFacility(Id<TransitStopFacility> parentId, Id<Link> newRefLinkId) {
-			return fac.get(parentId.toString()).getChildStopFacility(newRefLinkId);
-		}
 	}
 
 	/**
@@ -570,7 +539,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 		}
 
 		public ParentStopFacility(TransitStopFacility childStopFacility) {
-			this.id = getParentId(childStopFacility);
+			this.id = ScheduleTools.createParentStopFacilityId(childStopFacility).toString();
 			this.name = childStopFacility.getName();
 			this.coord = childStopFacility.getCoord();
 
@@ -588,7 +557,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 		 * @return the childStopFacility
 		 */
 		public TransitStopFacility getChildStopFacility(Id<Link> refLinkId) {
-			Id<TransitStopFacility> newChildStopId = createChildStopFacilityId(id, refLinkId.toString());
+			Id<TransitStopFacility> newChildStopId = ScheduleTools.createChildStopFacilityId(id, refLinkId.toString());
 			TransitStopFacility newChildStopFacilty = schedule.getFacilities().get(newChildStopId);
 			if(newChildStopFacilty == null) {
 				newChildStopFacilty = createStopFacility(newChildStopId, this.coord, this.name, refLinkId);
