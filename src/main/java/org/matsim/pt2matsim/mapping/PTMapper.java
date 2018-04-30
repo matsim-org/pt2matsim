@@ -213,7 +213,12 @@ public class PTMapper {
 			nPulled = PTMapperTools.pullChildStopFacilitiesTogether(this.schedule, this.network);
 		}
 
-		/* [5]
+		/* [5] */
+		log.info("==========================================");
+		log.info("Add transfers for child stop facilities...");
+		PTMapperTools.addTransfersForChildStopFacilities(this.schedule);
+
+		/* [6]
 		  After all lines are created, clean the schedule and network. Removing
 		  not used transit links includes removing artificial links that
 		  needed to be added to the network for routing purposes.
@@ -222,7 +227,7 @@ public class PTMapper {
 		log.info("Clean schedule and network...");
 		cleanScheduleAndNetwork(scheduleFreespeedModes, modesToKeepOnCleanup, removeNotUsedStopFacilities);
 
-		/* [6]
+		/* [7]
 		  Validate the schedule
 		 */
 		log.info("======================");

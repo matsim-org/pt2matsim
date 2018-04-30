@@ -500,21 +500,44 @@ public final class ScheduleTools {
 	public static boolean routeHasStopSequenceLoop(TransitRoute transitRoute) {
 		Set<String> parentFacilities = new HashSet<>();
 		for(TransitRouteStop stop : transitRoute.getStops()) {
-			if(!parentFacilities.add(getParentId(stop.getStopFacility().getId().toString()))) {
+			if(!parentFacilities.add(getParentStopFacilityId(stop.getStopFacility().getId().toString()))) {
 				return true;
 			}
 		}
 		return false;
 	}
 
+	public static Id<TransitStopFacility> createParentStopFacilityId(TransitStopFacility stopFacility) {
+		String str = getParentStopFacilityId(stopFacility.getId().toString());
+		return Id.create(str, TransitStopFacility.class);
+	}
+
+	public static Id<TransitStopFacility> createParentStopFacilityId(String stopFacilityId) {
+		String str = getParentStopFacilityId(stopFacilityId);
+		return Id.create(str, TransitStopFacility.class);
+	}
+
+	public static Id<TransitStopFacility> createChildStopFacilityId(Id<TransitStopFacility> stopFacilityId, Id<Link> linkId) {
+		String str = getChildStopFacilityId(stopFacilityId.toString(), linkId.toString());
+		return Id.create(str, TransitStopFacility.class);
+	}
+
+	public static Id<TransitStopFacility> createChildStopFacilityId(String stopFacilityId, String linkId) {
+		String str = getChildStopFacilityId(stopFacilityId, linkId);
+		return Id.create(str, TransitStopFacility.class);
+	}
 
 	/**
 	 * @return the parent id of a stop facility id. This is the part left to the
 	 * child stop facility suffix ".link:"
 	 */
-	public static String getParentId(String stopFacilityId) {
+	public static String getParentStopFacilityId(String stopFacilityId) {
 		String[] childStopSplit = stopFacilityId.split(PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES_REGEX);
 		return childStopSplit[0];
+	}
+
+	public static String getChildStopFacilityId(String stopFacilityId, String linkId) {
+		return stopFacilityId + PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES + linkId;
 	}
 
 	/**
@@ -589,7 +612,7 @@ public final class ScheduleTools {
 	 */
 	public static boolean idsContainChildStopString(TransitSchedule schedule) {
 		for(TransitStopFacility stopFacility : schedule.getFacilities().values()) {
-			if(getParentId(stopFacility.getId().toString()).length() != stopFacility.getId().toString().length()) {
+			if(createParentStopFacilityId(stopFacility.getId().toString()).toString().length() != stopFacility.getId().toString().length()) {
 				return true;
 			}
 		}

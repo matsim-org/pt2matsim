@@ -23,7 +23,6 @@ import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
-import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.tools.CsvTools;
 import org.matsim.pt2matsim.tools.MiscUtils;
 import org.matsim.pt2matsim.tools.ScheduleTools;
@@ -47,9 +46,6 @@ public class StopFacilityHistogram {
 	private Map<String, Integer> histMap = new TreeMap<>();
 	private double[] hist;
 	private double[] histNr;
-
-	private static final String SUFFIX_PATTERN = PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES_REGEX;
-	private static final String SUFFIX = PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES;
 
 	/**
 	 * @param args [0] schedule file, [1] output file (csv or png), [2] output file (csv or png, optional)
@@ -82,7 +78,7 @@ public class StopFacilityHistogram {
 		Map<String, Integer> stopStat = new TreeMap<>();
 
 		for(TransitStopFacility stopFacility : this.schedule.getFacilities().values()) {
-			String parentFacility = stopFacility.getId().toString().split(SUFFIX_PATTERN)[0];
+			String parentFacility = ScheduleTools.createParentStopFacilityId(stopFacility).toString();
 			int count = MapUtils.getInteger(parentFacility, stopStat, 0);
 			stopStat.put(parentFacility, ++count);
 		}

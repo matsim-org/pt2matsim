@@ -45,8 +45,6 @@ import java.util.stream.Collectors;
  */
 public final class PTMapperTools {
 
-	private static final String suffixChildStopFacilities = PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES;
-	private static final String suffixChildStopFacilitiesRegex = PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES_REGEX;
 	protected static Logger log = Logger.getLogger(PTMapperTools.class);
 
 	private PTMapperTools() {
@@ -191,8 +189,8 @@ public final class PTMapperTools {
 
 		if(minLink != null) {
 			TransitStopFacility newChildStopFacility;
-			String[] split = stopFacility.getId().toString().split(suffixChildStopFacilitiesRegex);
-			Id<TransitStopFacility> newChildStopFacilityId = Id.create(split[0] + suffixChildStopFacilities + minLink.getId(), TransitStopFacility.class);
+			Id<TransitStopFacility> parentId = ScheduleTools.createParentStopFacilityId(stopFacility);
+			Id<TransitStopFacility> newChildStopFacilityId = ScheduleTools.createChildStopFacilityId(parentId, minLink.getId());
 			if(schedule.getFacilities().containsKey(newChildStopFacilityId)) {
 				newChildStopFacility = schedule.getFacilities().get(newChildStopFacilityId);
 			} else {
@@ -281,5 +279,12 @@ public final class PTMapperTools {
 
 			return dummyLink;
 		}
+	}
+
+	/**
+	 * Adds transfers for all child stop facilities
+	 */
+	public static void addTransfersForChildStopFacilities(TransitSchedule schedule) {
+		// TODO
 	}
 }
