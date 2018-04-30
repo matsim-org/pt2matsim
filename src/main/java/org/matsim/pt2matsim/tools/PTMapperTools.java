@@ -285,6 +285,22 @@ public final class PTMapperTools {
 	 * Adds transfers for all child stop facilities
 	 */
 	public static void addTransfersForChildStopFacilities(TransitSchedule schedule) {
-		// TODO
+		Map<Id<TransitStopFacility>, Set<TransitStopFacility>> parentChilds = new HashMap<>();
+
+		for(TransitStopFacility transitStopFacility : schedule.getFacilities().values()) {
+			Set<TransitStopFacility> childSet = parentChilds.computeIfAbsent(ScheduleTools.createParentStopFacilityId(transitStopFacility), k -> new HashSet<>());
+			childSet.add(transitStopFacility);
+		}
+
+		MinimalTransferTimes mininmalTransferTimes = schedule.getMinimalTransferTimes();
+		for(Set<TransitStopFacility> entry : parentChilds.values()) {
+			for(TransitStopFacility from : entry) {
+				for(TransitStopFacility to : entry) {
+					if(!from.equals(to)) {
+						mininmalTransferTimes.set(from.getId(), to.getId(), 0);
+					}
+				}
+			}
+		}
 	}
 }
