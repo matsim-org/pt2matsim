@@ -169,9 +169,15 @@ public final class ScheduleTools {
 					Id<VehicleType> vehicleTypeId = Id.create(route.getTransportMode(), VehicleType.class);
 					VehicleType vehicleType = vf.createVehicleType(vehicleTypeId);
 					VehicleCapacity capacity = new VehicleCapacityImpl();
-					capacity.setSeats(50);
-					capacity.setStandingRoom(0);
-					vehicleType.setCapacity(capacity);
+					if(route.getTransportMode().equals("rail")){
+						capacity.setSeats(200);
+						capacity.setStandingRoom(0);
+						vehicleType.setCapacity(capacity);
+					} else {
+						capacity.setSeats(50);
+						capacity.setStandingRoom(0);
+						vehicleType.setCapacity(capacity);
+					}
 					vehicles.addVehicleType(vehicleType);
 					vehicleTypes.put(route.getTransportMode(), vehicleType);
 				}
