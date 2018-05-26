@@ -204,8 +204,8 @@ public final class GtfsDefinitions {
 		/**
 		 * Determines the route type of a given route type index
 		 */
-		public static RouteType getRouteType(int routeType) {
-			return ExtendedRouteType.getExtendedRouteType(routeType).routeType;
+		public static ExtendedRouteType getExtendedRouteType(int routeType) {
+			return ExtendedRouteType.getExtendedRouteType(routeType);
 		}
 	}
 
@@ -364,9 +364,9 @@ public final class GtfsDefinitions {
 		Miscellaneous_Service                 (1700, "Miscellaneous Service", 	null),
 		Horse_drawn_Carriage                  (1701, "Horse-drawn Carriage", 	null);
 
-		private final int index;
-		private final String name;
-		private final RouteType routeType;
+		public final int index;
+		public final String name;
+		public final RouteType routeType;
 
 		ExtendedRouteType(int index, String name, RouteType routeType) {
 			this.index = index;
@@ -389,6 +389,10 @@ public final class GtfsDefinitions {
 				throw new IllegalArgumentException("Invalid GTFS route type: " + routeType);
 			}
 			return extendedRouteTypes.get(routeType);
+		}
+
+		public static ExtendedRouteType getExtendedRouteType(RouteType routeType) {
+			return getExtendedRouteType(routeType.index);
 		}
 
 	}

@@ -32,6 +32,7 @@ public class RouteImpl implements Route {
 	private final String shortName;
 	private final String longName;
 	private final RouteType routeType;
+	private final GtfsDefinitions.ExtendedRouteType extendedRouteType;
 
 	private final Map<String, Trip> trips = new HashMap<>();
 
@@ -40,6 +41,15 @@ public class RouteImpl implements Route {
 		this.shortName = shortName;
 		this.longName = longName;
 		this.routeType = routeType;
+		this.extendedRouteType = GtfsDefinitions.ExtendedRouteType.getExtendedRouteType(routeType);
+	}
+
+	public RouteImpl(String routeId, String shortName, String longName, GtfsDefinitions.ExtendedRouteType extendedRouteType) {
+		this.routeId = routeId;
+		this.shortName = shortName;
+		this.longName = longName;
+		this.routeType = extendedRouteType.routeType;
+		this.extendedRouteType = extendedRouteType;
 	}
 
 	/**
@@ -77,6 +87,11 @@ public class RouteImpl implements Route {
 	@Override
 	public Map<String, Trip> getTrips() {
 		return Collections.unmodifiableMap(trips);
+	}
+
+	@Override
+	public GtfsDefinitions.ExtendedRouteType getExtendedRouteType() {
+		return extendedRouteType;
 	}
 
 	@Override
