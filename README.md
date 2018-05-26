@@ -301,11 +301,9 @@ The following files are created in the output folder:
 - _allPlausibilityWarnings.csv_: shows all plausibility warnings in a csv file
 - _stopfacilities.csv_: the number of child stop facilities for all stop facilities as csv
 - _stopfacilities_histogram.png_: a histogram as png showing the number of child stop facilities
-- _shp/warnings/WarningsLoops.shp_: Loops warnings as polyline shapefile
-- _shp/warnings/WarningsTravelTime.shp_: Travel time warnings as polyline shapefile
-- _shp/warnings/WarningsDirectionChange.shp_: Direction change warnings as polyline shapefile
-- _shp/schedule/TransitRoutes.shp_: Transit routes of the schedule as polyline shapefile
-- _shp/schedule/StopFacilities.shp_: Stop Facilities as point shapefile
-- _shp/schedule/StopFacilities_refLinks.shp_: The stop facilities' reference links as polyline shapefile
+- _PlausibilityWarnings.geojson_: Contains all warnings for groups of links
+- _schedule/TransitRoutes.geojson_: Transit routes of the schedule as lines
+- _schedule/StopFacilities.geojson_: Stop Facilities as points
+- _schedule/StopFacilities_refLinks.geojson_: The stop facilities' reference links as polyline shapefile
 
-Shapefiles can be viewed in a GIS, a recommended open source application is [QGIS](https://www.qgis.org). It is also possible to view them in [via](https://www.simunto.com/via/). However, no line attributes can be displayed or viewed there.
+Geojson files can be viewed in a GIS, a recommended open source application is [QGIS](https://www.qgis.org).

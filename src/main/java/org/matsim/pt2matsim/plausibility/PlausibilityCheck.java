@@ -105,7 +105,7 @@ public class PlausibilityCheck {
 		this.thresholds = new HashMap<>();
 		this.thresholds.put("bus", 0.7 * PI);
 		this.thresholds.put("rail", 0.3 * PI);
-		this.ttRange = 60;
+		this.ttRange = 65;
 
 		this.warnings.put(PlausibilityWarning.Type.ArtificialLinkWarning, new HashSet<>());
 		this.warnings.put(PlausibilityWarning.Type.DirectionChangeWarning, new HashSet<>());
