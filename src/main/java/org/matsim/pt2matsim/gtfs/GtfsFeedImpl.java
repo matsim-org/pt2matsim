@@ -28,8 +28,8 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
-import org.matsim.pt.transitSchedule.api.TransitStopArea;
 import org.matsim.pt2matsim.gtfs.lib.*;
+import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions.ExtendedRouteType;
 import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions.RouteType;
 import org.matsim.pt2matsim.tools.lib.RouteShape;
 
@@ -379,16 +379,16 @@ public class GtfsFeedImpl implements GtfsFeed {
 			while(line != null) {
 				int routeTypeNr = Integer.parseInt(line[col.get(GtfsDefinitions.ROUTE_TYPE)]);
 
-				RouteType routeType = RouteType.getRouteType(routeTypeNr);
+				ExtendedRouteType extendedRouteType = RouteType.getExtendedRouteType(routeTypeNr);
 
-				if(routeType == null) {
+				if(extendedRouteType == null) {
 					log.warn("Route " + line[col.get(GtfsDefinitions.ROUTE_ID)] + " of type " + routeTypeNr + " will be ignored");
 					ignoredRoutes.add(line[col.get(GtfsDefinitions.ROUTE_ID)]);
 				} else {
 					String routeId = line[col.get(GtfsDefinitions.ROUTE_ID)];
 					String shortName = line[col.get(GtfsDefinitions.ROUTE_SHORT_NAME)];
 					String longName = line[col.get(GtfsDefinitions.ROUTE_LONG_NAME)];
-					Route newGtfsRoute = new RouteImpl(routeId, shortName, longName, routeType);
+					Route newGtfsRoute = new RouteImpl(routeId, shortName, longName, extendedRouteType);
 					routes.put(line[col.get(GtfsDefinitions.ROUTE_ID)], newGtfsRoute);
 				}
 

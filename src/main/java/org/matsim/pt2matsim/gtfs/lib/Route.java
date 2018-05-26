@@ -38,4 +38,6 @@ public interface Route {
 	GtfsDefinitions.RouteType getRouteType();
 
 	Map<String, Trip> getTrips();
+
+	GtfsDefinitions.ExtendedRouteType getExtendedRouteType();
 }

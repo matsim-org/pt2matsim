@@ -25,13 +25,14 @@ import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.gtfs.lib.*;
 import org.matsim.pt2matsim.tools.GtfsTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
+import org.matsim.pt2matsim.tools.VehicleDefaults;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 import org.matsim.pt2matsim.tools.lib.RouteShape;
-import org.matsim.vehicles.VehicleUtils;
-import org.matsim.vehicles.Vehicles;
+import org.matsim.vehicles.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -304,7 +305,55 @@ public class GtfsConverter {
 	}
 
 	protected void createVehicles(TransitSchedule schedule, Vehicles vehicles) {
-		ScheduleTools.createVehicles(schedule, vehicles);
+		VehiclesFactory vf = vehicles.getFactory();
+		Map<GtfsDefinitions.ExtendedRouteType, VehicleType> vehicleTypes = new HashMap<>();
+		long vehId = 0;
+
+		for(TransitLine line : schedule.getTransitLines().values()) {
+			// get extended route type
+			Route gtfsRoute = feed.getRoutes().get(line.getId().toString());
+			GtfsDefinitions.ExtendedRouteType extType = gtfsRoute.getExtendedRouteType();
+			// create vehicle type for each extended route type
+			if(!vehicleTypes.containsKey(extType)) {
+				Id<VehicleType> vehicleTypeId = Id.create(extType.name, VehicleType.class);
+
+				// using default values for vehicle type
+				VehicleDefaults.Vehicles defaultValues = VehicleDefaults.Vehicles.ZUG;
+				try {
+					defaultValues = VehicleDefaults.Vehicles.valueOf(vehicleTypeId.toString().toUpperCase());
+				} catch (IllegalArgumentException e) {
+					log.warn("Vehicle category '" + vehicleTypeId.toString() + "' is unknown. Falling back to generic ZUG and adding to schedule.");
+				}
+
+				VehicleType vehicleType = vf.createVehicleType(vehicleTypeId);
+				vehicleType.setLength(defaultValues.length);
+				vehicleType.setWidth(defaultValues.width);
+				vehicleType.setAccessTime(defaultValues.accessTime);
+				vehicleType.setEgressTime(defaultValues.egressTime);
+				vehicleType.setDoorOperationMode(defaultValues.doorOperation);
+				vehicleType.setPcuEquivalents(defaultValues.pcuEquivalents);
+
+				VehicleCapacity capacity = vf.createVehicleCapacity();
+				capacity.setSeats(defaultValues.capacitySeats);
+				capacity.setStandingRoom(defaultValues.capacityStanding);
+				vehicleType.setCapacity(capacity);
+
+				vehicles.addVehicleType(vehicleType);
+				vehicleTypes.put(extType, vehicleType);
+			}
+
+			VehicleType vehicleType = vehicleTypes.get(extType);
+
+			for(TransitRoute route : line.getRoutes().values()) {
+				// create a vehicle for each departure
+				for(Departure departure : route.getDepartures().values()) {
+					Vehicle veh = vf.createVehicle(Id.create("veh_" + Long.toString(vehId++) + "_" + route.getTransportMode(), Vehicle.class), vehicleType);
+					vehicles.addVehicle(veh);
+					departure.setVehicleId(veh.getId());
+				}
+
+			}
+		}
 	}
 
 	/**
