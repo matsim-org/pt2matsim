@@ -29,9 +29,9 @@ import static org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions.*;
  *
  * @author polettif
  */
-public final class VehicleDefaults {
+public final class VehicleTypeDefaults {
 
-	public enum Vehicles {
+	public enum Type {
 		//								add		DEFAULT VALUES
 		//								to		length	width	accT	egrT	doorOp									capSeat	capSt	pcuEq	usesRN	description
 		//								sched.	[m]		[m]		s/pers	s/pers
@@ -102,7 +102,7 @@ public final class VehicleDefaults {
 		public boolean usesRoadNetwork, addToSchedule;
 		public RouteType transportMode;
 
-		Vehicles(String name, RouteType transportMode, boolean addToSchedule, double length, double width, double accessTime, double egressTime, VehicleType.DoorOperationMode doorOperation, int capacitySeats, int capacityStanding, double pcuEquivalents, boolean usesRoadNetwork, String description) {
+		Type(String name, RouteType transportMode, boolean addToSchedule, double length, double width, double accessTime, double egressTime, VehicleType.DoorOperationMode doorOperation, int capacitySeats, int capacityStanding, double pcuEquivalents, boolean usesRoadNetwork, String description) {
 			this.name = name;
 			this.transportMode = transportMode;
 			this.addToSchedule = addToSchedule;
