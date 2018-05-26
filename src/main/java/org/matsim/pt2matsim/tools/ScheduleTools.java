@@ -41,6 +41,8 @@ import org.matsim.vehicles.*;
 
 import java.util.*;
 
+import static org.matsim.vehicles.VehicleUtils.createVehiclesContainer;
+
 /**
  * Methods to load and modify transit schedules. Also provides
  * methods to get information from transit routes.
@@ -164,28 +166,19 @@ public final class ScheduleTools {
 		long vehId = 0;
 		for(TransitLine line : schedule.getTransitLines().values()) {
 			for(TransitRoute route : line.getRoutes().values()) {
+				String transportMode = route.getTransportMode();
 				// create vehicle type
-				if(!vehicleTypes.containsKey(route.getTransportMode())) {
-					Id<VehicleType> vehicleTypeId = Id.create(route.getTransportMode(), VehicleType.class);
-					VehicleType vehicleType = vf.createVehicleType(vehicleTypeId);
-					VehicleCapacity capacity = new VehicleCapacityImpl();
-					if(route.getTransportMode().equals("rail")){
-						capacity.setSeats(200);
-						capacity.setStandingRoom(0);
-						vehicleType.setCapacity(capacity);
-					} else {
-						capacity.setSeats(50);
-						capacity.setStandingRoom(0);
-						vehicleType.setCapacity(capacity);
-					}
+				if(!vehicleTypes.containsKey(transportMode)) {
+					VehicleType vehicleType = createDefaultVehicleType(transportMode);
 					vehicles.addVehicleType(vehicleType);
-					vehicleTypes.put(route.getTransportMode(), vehicleType);
+					vehicleTypes.put(transportMode, vehicleType);
 				}
-				VehicleType vehicleType = vehicleTypes.get(route.getTransportMode());
 
+				VehicleType vehicleType = vehicleTypes.get(transportMode);
 				// create a vehicle for each departure
 				for(Departure departure : route.getDepartures().values()) {
-					Vehicle veh = vf.createVehicle(Id.create("veh_" + Long.toString(vehId++) + "_" + route.getTransportMode(), Vehicle.class), vehicleType);
+					String vehicleId = "veh_" + Long.toString(vehId++) + "_" + route.getTransportMode();
+					Vehicle veh = vf.createVehicle(Id.create(vehicleId, Vehicle.class), vehicleType);
 					vehicles.addVehicle(veh);
 					departure.setVehicleId(veh.getId());
 				}
@@ -193,11 +186,39 @@ public final class ScheduleTools {
 		}
 	}
 
+	public static VehicleType createDefaultVehicleType(String vehicleTypeId) {
+		VehiclesFactory vf = VehicleUtils.createVehiclesContainer().getFactory();
+		Id<VehicleType> vTypeId = Id.create(vehicleTypeId, VehicleType.class);
+
+		// using default values for vehicle type
+		VehicleTypeDefaults.Type defaultValues = VehicleTypeDefaults.Type.ZUG;
+		try {
+			defaultValues = VehicleTypeDefaults.Type.valueOf(vehicleTypeId.toUpperCase());
+		} catch (IllegalArgumentException e) {
+			log.warn("Vehicle category '" + vTypeId.toString() + "' is unknown. Falling back to generic ZUG and adding to schedule.");
+		}
+
+		VehicleType vehicleType = vf.createVehicleType(vTypeId);
+		vehicleType.setLength(defaultValues.length);
+		vehicleType.setWidth(defaultValues.width);
+		vehicleType.setAccessTime(defaultValues.accessTime);
+		vehicleType.setEgressTime(defaultValues.egressTime);
+		vehicleType.setDoorOperationMode(defaultValues.doorOperation);
+		vehicleType.setPcuEquivalents(defaultValues.pcuEquivalents);
+
+		VehicleCapacity capacity = vf.createVehicleCapacity();
+		capacity.setSeats(defaultValues.capacitySeats);
+		capacity.setStandingRoom(defaultValues.capacityStanding);
+		vehicleType.setCapacity(capacity);
+
+		return vehicleType;
+	}
+
 	/**
 	 * @return the vehicles from a given vehicles file.
 	 */
 	public static Vehicles readVehicles(String vehiclesFile) {
-		Vehicles vehicles = VehicleUtils.createVehiclesContainer();
+		Vehicles vehicles = createVehiclesContainer();
 		new VehicleReaderV1(vehicles).readFile(vehiclesFile);
 		return vehicles;
 	}
