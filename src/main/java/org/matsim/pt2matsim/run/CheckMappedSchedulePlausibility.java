@@ -56,7 +56,6 @@ public final class CheckMappedSchedulePlausibility {
 		}
 	}
 
-	// TODO update readme
 	/**
 	 * Performs a plausibility check on the given schedule and network files
 	 * and writes the results to the output folder. The following files are
@@ -73,9 +72,9 @@ public final class CheckMappedSchedulePlausibility {
 	 * Geojson can be viewed in an GIS, a recommended open source GIS is QGIS.
 	 *
 	 * @param scheduleFile     the schedule file
-	 * @param networkFile      network file
+	 * @param networkFile      the network file
 	 * @param coordinateSystem A name used by {@link MGC}. Use EPSG:* code to avoid problems.
-	 * @param outputFolder     the output folder where all csv and shapefiles are written
+	 * @param outputFolder     the output folder where all files are written to
 	 */
 	public static void run(String scheduleFile, String networkFile, String coordinateSystem, String outputFolder) {
 		PlausibilityCheck.setLogLevels();
@@ -102,6 +101,11 @@ public final class CheckMappedSchedulePlausibility {
 		check.writeCsv(outputFolder + "allPlausibilityWarnings.csv");
 		check.writeResultsGeojson( outputFolder + "PlausibilityWarnings.geojson");
 
+		// Uncomment for shapefile output
+//		new File(outputFolder + "warnings_shp/").mkdir();
+//		check.writeResultShapeFiles(outputFolder + "warnings_shp/");
+
+		// transit schedule as geojson
 		Schedule2Geojson schedule2geojson = new Schedule2Geojson(coordinateSystem, schedule, network);
 		schedule2geojson.writeTransitRoutes(outputFolder + "schedule/TransitRoutes.geojson");
 		schedule2geojson.writeStopFacilities(outputFolder + "schedule/StopFacilities.geojson");
