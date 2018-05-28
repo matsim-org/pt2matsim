@@ -191,7 +191,11 @@ public final class GtfsDefinitions {
 		/**
 		 * Funicular. Any rail system designed for steep inclines.
 		 */
-		FUNICULAR(7, "funicular");
+		FUNICULAR(7, "funicular"),
+		/**
+		 * Non-standard route type for extended route services like air services, bike, miscellaneous etc.
+		 */
+		OTHER(9999, "other");
 
 		public int index;
 		public String name;
@@ -315,21 +319,21 @@ public final class GtfsDefinitions {
 		Shuttle_Ferry_Service                 (1020, "Shuttle Ferry Service",				RouteType.FERRY),
 		All_Water_Transport_Services          (1021, "All Water Transport Services", 		RouteType.FERRY),
 
-		Air_Service                           (1100, "Air Service", 						null),
-		International_Air_Service             (1101, "International Air Service", 			null),
-		Domestic_Air_Service                  (1102, "Domestic Air Service", 				null),
-		Intercontinental_Air_Service          (1103, "Intercontinental Air Service", 		null),
-		Domestic_Scheduled_Air_Service        (1104, "Domestic Scheduled Air Service", 		null),
-		Shuttle_Air_Service                   (1105, "Shuttle Air Service", 				null),
-		Intercontinental_Charter_Air_Service  (1106, "Intercontinental Charter Air Service",null),
-		International_Charter_Air_Service     (1107, "International Charter Air Service", 	null),
-		Round_Trip_Charter_Air_Service        (1108, "Round-Trip Charter Air Service", 		null),
-		Sightseeing_Air_Service               (1109, "Sightseeing Air Service", 			null),
-		Helicopter_Air_Service                (1110, "Helicopter Air Service", 				null),
-		Domestic_Charter_Air_Service          (1111, "Domestic Charter Air Service",		null),
-		Schengen_Area_Air_Service             (1112, "Schengen-Area Air Service", 			null),
-		Airship_Service                       (1113, "Airship Service", 					null),
-		All_Air_Services                      (1114, "All Air Services", 					null),
+		Air_Service                           (1100, "Air Service", 						RouteType.OTHER),
+		International_Air_Service             (1101, "International Air Service", 			RouteType.OTHER),
+		Domestic_Air_Service                  (1102, "Domestic Air Service", 				RouteType.OTHER),
+		Intercontinental_Air_Service          (1103, "Intercontinental Air Service", 		RouteType.OTHER),
+		Domestic_Scheduled_Air_Service        (1104, "Domestic Scheduled Air Service", 		RouteType.OTHER),
+		Shuttle_Air_Service                   (1105, "Shuttle Air Service", 				RouteType.OTHER),
+		Intercontinental_Charter_Air_Service  (1106, "Intercontinental Charter Air Service",RouteType.OTHER),
+		International_Charter_Air_Service     (1107, "International Charter Air Service", 	RouteType.OTHER),
+		Round_Trip_Charter_Air_Service        (1108, "Round-Trip Charter Air Service", 		RouteType.OTHER),
+		Sightseeing_Air_Service               (1109, "Sightseeing Air Service", 			RouteType.OTHER),
+		Helicopter_Air_Service                (1110, "Helicopter Air Service", 				RouteType.OTHER),
+		Domestic_Charter_Air_Service          (1111, "Domestic Charter Air Service",		RouteType.OTHER),
+		Schengen_Area_Air_Service             (1112, "Schengen-Area Air Service", 			RouteType.OTHER),
+		Airship_Service                       (1113, "Airship Service", 					RouteType.OTHER),
+		All_Air_Services                      (1114, "All Air Services", 					RouteType.OTHER),
 
 		Ferry_Service                         (1200, "Ferry Service", 				RouteType.FERRY),
 
@@ -346,23 +350,23 @@ public final class GtfsDefinitions {
 		Funicular_Service                     (1401, "Funicular Service", 			RouteType.FUNICULAR),
 		All_Funicular_Service                 (1402, "All Funicular Service", 		RouteType.FUNICULAR),
 
-		Taxi_Service                          (1500, "Taxi Service", 				null),
+		Taxi_Service                          (1500, "Taxi Service", 				RouteType.OTHER),
 		Communal_Taxi_Service                 (1501, "Communal Taxi Service", 		RouteType.BUS),
 		Water_Taxi_Service                    (1502, "Water Taxi Service", 			RouteType.FERRY),
 		Rail_Taxi_Service                     (1503, "Rail Taxi Service", 			RouteType.RAIL),
-		Bike_Taxi_Service                     (1504, "Bike Taxi Service", 			null),
-		Licensed_Taxi_Service                 (1505, "Licensed Taxi Service", 		null),
-		Private_Hire_Service_Vehicle          (1506, "Private Hire Service Vehicle",null),
-		All_Taxi_Services                     (1507, "All Taxi Services", 			null),
+		Bike_Taxi_Service                     (1504, "Bike Taxi Service", 			RouteType.OTHER),
+		Licensed_Taxi_Service                 (1505, "Licensed Taxi Service", 		RouteType.OTHER),
+		Private_Hire_Service_Vehicle          (1506, "Private Hire Service Vehicle",RouteType.OTHER),
+		All_Taxi_Services                     (1507, "All Taxi Services", 			RouteType.OTHER),
 
-		Self_Drive                            (1600, "Self Drive", 		null),
-		Hire_Car                              (1601, "Hire Car", 		null),
-		Hire_Van                              (1602, "Hire Van", 		null),
-		Hire_Motorbike                        (1603, "Hire Motorbike", 	null),
-		Hire_Cycle                            (1604, "Hire Cycle", 		null),
+		Self_Drive                            (1600, "Self Drive", 		RouteType.OTHER),
+		Hire_Car                              (1601, "Hire Car", 		RouteType.OTHER),
+		Hire_Van                              (1602, "Hire Van", 		RouteType.OTHER),
+		Hire_Motorbike                        (1603, "Hire Motorbike", 	RouteType.OTHER),
+		Hire_Cycle                            (1604, "Hire Cycle", 		RouteType.OTHER),
 
-		Miscellaneous_Service                 (1700, "Miscellaneous Service", 	null),
-		Horse_drawn_Carriage                  (1701, "Horse-drawn Carriage", 	null);
+		Miscellaneous_Service                 (1700, "Miscellaneous Service", 	RouteType.OTHER),
+		Horse_drawn_Carriage                  (1701, "Horse-drawn Carriage", 	RouteType.OTHER);
 
 		public final int index;
 		public final String name;

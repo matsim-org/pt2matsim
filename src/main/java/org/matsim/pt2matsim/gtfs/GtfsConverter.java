@@ -315,7 +315,7 @@ public class GtfsConverter {
 
 			// create vehicle type for each extended route type
 			if(!vehicleTypes.containsKey(extType)) {
-				VehicleType defaultVehicleType = ScheduleTools.createDefaultVehicleType(extType.name);
+				VehicleType defaultVehicleType = ScheduleTools.createDefaultVehicleType(extType.name, extType.routeType.name);
 				vehicles.addVehicleType(defaultVehicleType);
 				vehicleTypes.put(extType, defaultVehicleType);
 			}
@@ -324,7 +324,7 @@ public class GtfsConverter {
 			for(TransitRoute route : line.getRoutes().values()) {
 				// create a vehicle for each departure
 				for(Departure departure : route.getDepartures().values()) {
-					String vehicleId = "veh_" + Long.toString(vehId++) + "_" + route.getTransportMode();
+					String vehicleId = "veh_" + Long.toString(vehId++) + "_" + route.getTransportMode().replace(" ", "_");
 					Vehicle veh = vf.createVehicle(Id.create(vehicleId, Vehicle.class), vehicleType);
 					vehicles.addVehicle(veh);
 					departure.setVehicleId(veh.getId());

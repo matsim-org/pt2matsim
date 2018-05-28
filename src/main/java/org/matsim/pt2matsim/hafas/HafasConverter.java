@@ -28,7 +28,6 @@ import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.hafas.lib.*;
-import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.VehicleTypeDefaults;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 import org.matsim.vehicles.VehicleCapacity;
@@ -122,12 +121,12 @@ public class HafasConverter {
 		for(FPLANRoute fplanRoute : routes) {
 			Id<VehicleType> vehicleTypeId = fplanRoute.getVehicleTypeId();
 
-			VehicleTypeDefaults.Type defaultVehicleType = VehicleTypeDefaults.Type.ZUG;
+			VehicleTypeDefaults.Type defaultVehicleType = VehicleTypeDefaults.Type.OTHER;
 
 			try {
 				defaultVehicleType = VehicleTypeDefaults.Type.valueOf(vehicleTypeId.toString());
 			} catch (IllegalArgumentException e) {
-				log.warn("Vehicle category '" + vehicleTypeId.toString() + "' is unknown. Falling back to generic ZUG and adding to schedule.");
+				log.warn("Vehicle category '" + vehicleTypeId.toString() + "' is unknown. Falling back to generic OTHER and adding to schedule.");
 			}
 
 			// get wheter the route using this vehicle type should be added & set transport mode

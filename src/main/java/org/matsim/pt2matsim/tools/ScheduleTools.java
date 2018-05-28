@@ -169,7 +169,7 @@ public final class ScheduleTools {
 				String transportMode = route.getTransportMode();
 				// create vehicle type
 				if(!vehicleTypes.containsKey(transportMode)) {
-					VehicleType vehicleType = createDefaultVehicleType(transportMode);
+					VehicleType vehicleType = createDefaultVehicleType(transportMode, transportMode);
 					vehicles.addVehicleType(vehicleType);
 					vehicleTypes.put(transportMode, vehicleType);
 				}
@@ -186,16 +186,21 @@ public final class ScheduleTools {
 		}
 	}
 
-	public static VehicleType createDefaultVehicleType(String vehicleTypeId) {
+	/**
+	 * Creates a vehicle type with id and parameters of defaultVehicleType. Used to create different default
+	 * vehicle types for schedules which can later changed manually in vehicles.xml
+	 */
+	public static VehicleType createDefaultVehicleType(String id, String defaultVehicleType) {
+		String defVehType = defaultVehicleType.toUpperCase().replace(" ", "_");
 		VehiclesFactory vf = VehicleUtils.createVehiclesContainer().getFactory();
-		Id<VehicleType> vTypeId = Id.create(vehicleTypeId, VehicleType.class);
+		Id<VehicleType> vTypeId = Id.create(id, VehicleType.class);
 
 		// using default values for vehicle type
-		VehicleTypeDefaults.Type defaultValues = VehicleTypeDefaults.Type.ZUG;
+		VehicleTypeDefaults.Type defaultValues = VehicleTypeDefaults.Type.OTHER;
 		try {
-			defaultValues = VehicleTypeDefaults.Type.valueOf(vehicleTypeId.toUpperCase());
+			defaultValues = VehicleTypeDefaults.Type.valueOf(defVehType);
 		} catch (IllegalArgumentException e) {
-			log.warn("Vehicle category '" + vTypeId.toString() + "' is unknown. Falling back to generic ZUG and adding to schedule.");
+			log.warn("Vehicle category '" + defVehType + "' is unknown. Falling back to generic OTHER and adding to schedule.");
 		}
 
 		VehicleType vehicleType = vf.createVehicleType(vTypeId);
