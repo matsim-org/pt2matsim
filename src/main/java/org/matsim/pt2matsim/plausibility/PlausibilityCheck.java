@@ -103,8 +103,8 @@ public class PlausibilityCheck {
 		this.coordinateSystem = coordinateSystem;
 
 		this.thresholds = new HashMap<>();
-		this.thresholds.put("bus", 0.7 * PI);
-		this.thresholds.put("rail", 0.3 * PI);
+		this.thresholds.put("bus", 0.6667 * PI);
+		this.thresholds.put("rail", 0.3333 * PI);
 		this.ttRange = 65;
 
 		this.warnings.put(PlausibilityWarning.Type.ArtificialLinkWarning, new HashSet<>());

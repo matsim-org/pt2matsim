@@ -10,7 +10,7 @@ import org.matsim.pt2matsim.mapping.PTMapper;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersGtfsShapes;
 import org.matsim.pt2matsim.plausibility.MappingAnalysis;
-import org.matsim.pt2matsim.run.gis.Schedule2Geojson;
+import org.matsim.pt2matsim.run.CheckMappedSchedulePlausibility;
 import org.matsim.pt2matsim.tools.GtfsTools;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
@@ -33,7 +33,7 @@ public class PTMapperShapesExample {
 
 	private static GtfsFeed gtfsFeed;
 
-	private static String unmappedScheduleFile = base + "unmapped_schedule.xml.gz";
+	private static String unmappedScheduleFile = outputFolder + "unmapped_schedule.xml.gz";
 	private static String networkOutput1 = outputFolder + "normal_network.xml.gz";
 	private static String scheduleOutput1 = outputFolder + "normal_schedule.xml.gz";
 	private static String networkOutput2 = outputFolder + "shapes_network.xml.gz";
@@ -44,8 +44,9 @@ public class PTMapperShapesExample {
 
 		convertGtfs();
 		mappingAnalysisNormal();
+		checkPlausibility();
 		mappingAnalysisWithShapes();
-		writeShapes();
+		writeGtfsShapes();
 	}
 
 	public static PublicTransitMappingConfigGroup createTestPTMConfig() {
@@ -126,9 +127,14 @@ public class PTMapperShapesExample {
 		analysis.writeQuantileDistancesCsv(outputFolder + "Shapes_DistancesQuantile.csv");
 	}
 
-	public static void writeShapes() {
+	private static void checkPlausibility() {
+		new File(outputFolder + "plausibility/").mkdir();
+		CheckMappedSchedulePlausibility.run(scheduleOutput1, networkOutput1, coordSys, outputFolder + "plausibility/");
+	}
+
+	public static void writeGtfsShapes() {
 		GtfsTools.writeShapesToGeojson(gtfsFeed, outputFolder + "gtfsShapes.geojson");
-		Schedule2Geojson.run(coordSys, outputFolder + "schedule.geojson", outputFolder + "shapes_schedule.xml.gz", outputFolder + "shapes_network.xml.gz");
+//		Schedule2Geojson.run(coordSys, outputFolder + "schedule.geojson", outputFolder + "shapes_schedule.xml.gz", outputFolder + "shapes_network.xml.gz");
 
 //		Map<Id<RouteShape>, RouteShape> shapes = ShapeTools.readShapesFile(gtfsFolder + "shapes.txt", coordSys);
 

@@ -28,7 +28,7 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
 import java.util.List;
 
 /**
- * Plausibility warning if a link sequence passes a node twice
+ * Plausibility warning if a link sequence passes a node twice.
  *
  * @author polettif
  */
