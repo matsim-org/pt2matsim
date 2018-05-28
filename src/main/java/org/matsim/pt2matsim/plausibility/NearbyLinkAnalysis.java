@@ -40,6 +40,7 @@ import java.util.*;
  */
 public class NearbyLinkAnalysis {
 
+	/** Example code/paths **/
 	public static void main(String[] args) {
 		String base = "zvv/";
 		String inputNetworkFile = base + "network/network_unmapped.xml.gz";

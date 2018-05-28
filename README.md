@@ -301,9 +301,30 @@ The following files are created in the output folder:
 - _allPlausibilityWarnings.csv_: shows all plausibility warnings in a csv file
 - _stopfacilities.csv_: the number of child stop facilities for all stop facilities as csv
 - _stopfacilities_histogram.png_: a histogram as png showing the number of child stop facilities
-- _PlausibilityWarnings.geojson_: Contains all warnings for groups of links
-- _schedule/TransitRoutes.geojson_: Transit routes of the schedule as lines
-- _schedule/StopFacilities.geojson_: Stop Facilities as points
-- _schedule/StopFacilities_refLinks.geojson_: The stop facilities' reference links as polyline shapefile
+- _plausibilityWarnings.geojson_: Contains all warnings for groups of links
+- _schedule_transitRoutes.geojson_: Transit routes of the schedule as lines
+- _schedule_stopFacilities.geojson_: Stop Facilities as points
+- _schedule_stopFacilities_refLinks.geojson_: The stop facilities' reference links as lines
+- _network.geojson_: Network as geojson file containing nodes and links
 
-Geojson files can be viewed in a GIS, a recommended open source application is [QGIS](https://www.qgis.org).
+Geojson files can be viewed in a GIS, a recommended open source application is [QGIS](https://www.qgis.org). It
+allows drag and drop loading and viewing of the plausibility results, network and schedule files.
+
+#### Travel Time Warning
+Warns if the travel time given by the schedule cannot be achieved by a transit route. This indicates that the
+network's freespeed values or link lengths are not suitable for the given transit route. A warning can also point
+to large detours due to one-way or missing links.
+
+#### Artificial Link Warning
+Warns if a link is an artificial link (i.e. created by the pt mapper). To prevent these warnings, edit
+the network before pt mapping in a way that every stop - that should not use artificial links - has a feasible
+link nearby.
+
+#### Loop warning
+Warns if a transit route's link sequence passes a node twice. This might be intended behaviour if a route really has
+loops. Otherwise it might indicate detours due to wrongly chosen link candidates.
+
+#### Direction Change Warning
+Warns if a link sequence has abrupt direction changes. This means by default >60° for bus and >30° for rail.
+Whether they point to real problems depends on network accuracy. Abrupt direction changes in itself do not impact
+a simulation.

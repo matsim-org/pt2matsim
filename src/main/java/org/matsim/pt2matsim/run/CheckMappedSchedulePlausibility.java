@@ -25,8 +25,8 @@ import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt2matsim.plausibility.PlausibilityCheck;
 import org.matsim.pt2matsim.plausibility.StopFacilityHistogram;
+import org.matsim.pt2matsim.run.gis.Network2Geojson;
 import org.matsim.pt2matsim.run.gis.Schedule2Geojson;
-import org.matsim.pt2matsim.run.gis.Schedule2ShapeFile;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
@@ -64,11 +64,13 @@ public final class CheckMappedSchedulePlausibility {
 	 * <li>allPlausibilityWarnings.csv: shows all plausibility warnings in a csv file</li>
 	 * <li>stopfacilities.csv: the number of child stop facilities for all stop facilities as csv</li>
 	 * <li>stopfacilities_histogram.png: a histogram as png showing the number of child stop facilities</li>
-	 * <li>PlausibilityWarnings.geojson: Contains all warnings for groups of links</li>
-	 * <li>schedule/TransitRoutes.geojson: Transit routes of the schedule as lines</li>
-	 * <li>schedule/StopFacilities.geojson: Stop Facilities as points</li>
-	 * <li>schedule/StopFacilities_refLinks.geojson: The stop facilities' reference links as polyline shapefile</li>
+	 * <li>plausibilityWarnings.geojson: Contains all warnings for groups of links</li>
+	 * <li>schedule_TransitRoutes.geojson: Transit routes of the schedule as lines</li>
+	 * <li>schedule_TtopFacilities.geojson: Stop Facilities as points</li>
+	 * <li>schedule_StopFacilities_refLinks.geojson: The stop facilities' reference links as lines</li>
+	 * <li>network.geojson: Network as geojson file containing nodes and links</li>
 	 * </ul>
+	 *
 	 * Geojson can be viewed in an GIS, a recommended open source GIS is QGIS.
 	 *
 	 * @param scheduleFile     the schedule file
@@ -97,24 +99,28 @@ public final class CheckMappedSchedulePlausibility {
 		}
 
 		new File(outputFolder).mkdir();
-		new File(outputFolder + "schedule/").mkdir();
 		check.writeCsv(outputFolder + "allPlausibilityWarnings.csv");
-		check.writeResultsGeojson( outputFolder + "PlausibilityWarnings.geojson");
+		check.writeResultsGeojson( outputFolder + "plausibilityWarnings.geojson");
 
-		// Uncomment for shapefile output
-//		new File(outputFolder + "warnings_shp/").mkdir();
-//		check.writeResultShapeFiles(outputFolder + "warnings_shp/");
+		// "legacy" shapefile output
+		if(false) {
+			new File(outputFolder + "warnings_shp/").mkdir();
+			check.writeResultShapeFiles(outputFolder + "warnings_shp/");
+		}
 
 		// transit schedule as geojson
 		Schedule2Geojson schedule2geojson = new Schedule2Geojson(coordinateSystem, schedule, network);
-		schedule2geojson.writeTransitRoutes(outputFolder + "schedule/TransitRoutes.geojson");
-		schedule2geojson.writeStopFacilities(outputFolder + "schedule/StopFacilities.geojson");
-		schedule2geojson.writeStopRefLinks(outputFolder + "schedule/StopFacilities_refLinks.geojson");
+		schedule2geojson.writeTransitRoutes(outputFolder + "schedule_TransitRoutes.geojson");
+		schedule2geojson.writeStopFacilities(outputFolder + "schedule_StopFacilities.geojson");
+		schedule2geojson.writeStopRefLinks(outputFolder + "schedule_StopFacilities_refLinks.geojson");
 
 		// stop facility histogram
 		StopFacilityHistogram histogram = new StopFacilityHistogram(schedule);
 		histogram.createCsv(outputFolder + "stopfacilities.csv");
 		histogram.createPng(outputFolder + "stopfacilities_histogram.png");
+
+		// write network
+		Network2Geojson.run(network, outputFolder + "network.geojson");
 
 		check.printStatisticsLog();
 	}

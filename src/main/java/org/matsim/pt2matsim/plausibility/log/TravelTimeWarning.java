@@ -29,7 +29,7 @@ import java.util.Map;
 
 /**
  * Plausibility warning if the travel time given by the schedule
- * cannot be achieved by a transit route
+ * cannot be achieved by a transit route.
  *
  * @author polettif
  */

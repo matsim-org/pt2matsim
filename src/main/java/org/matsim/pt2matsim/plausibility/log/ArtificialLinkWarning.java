@@ -25,7 +25,7 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
 import java.util.ArrayList;
 
 /**
- * Plausibility warning if a link sequence has abrupt direction changes
+ * Plausibility warning if a link is an artificial link (i.e. created by the pt mapper).
  *
  * @author polettif
  */
