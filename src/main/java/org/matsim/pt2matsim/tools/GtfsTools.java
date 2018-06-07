@@ -208,7 +208,7 @@ public final class GtfsTools {
 			String[] line = new String[header.length];
 			line[0] = transfer.getFromStopId();
 			line[1] = transfer.getToStopId();
-			line[2] = transfer.getTransferType().toString();
+			line[2] = String.valueOf(transfer.getTransferType().index);
 			String minTransferTime = (transfer.getMinTransferTime() != null ? transfer.getMinTransferTime().toString() : "");
 			line[3] = minTransferTime;
 			transfersWiter.writeNext(line);

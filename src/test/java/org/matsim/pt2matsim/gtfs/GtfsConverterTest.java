@@ -8,11 +8,9 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt.utils.TransitScheduleValidator;
-import org.matsim.pt2matsim.tools.GtfsTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ScheduleToolsTest;
 
-import java.time.LocalDate;
 import java.util.*;
 
 /**
@@ -38,16 +36,6 @@ public class GtfsConverterTest {
 		TransitSchedule schedule = gtfsConverter.convert(GtfsConverter.ALL_SERVICE_IDS, coordSystem);
 		Assert.assertTrue(TransitScheduleValidator.validateAllStopsExist(schedule).isValid());
 		Assert.assertTrue(TransitScheduleValidator.validateOffsets(schedule).isValid());
-	}
-
-	@Test
-	public void getDayWithMostServices() {
-		Assert.assertEquals(LocalDate.of(2018, 10, 2), GtfsTools.getDayWithMostServices(gtfsFeed));
-	}
-
-	@Test
-	public void getDayWithMostTrips() {
-		Assert.assertEquals(LocalDate.of(2018, 10, 5), GtfsTools.getDayWithMostTrips(gtfsFeed));
 	}
 
 	@Test
