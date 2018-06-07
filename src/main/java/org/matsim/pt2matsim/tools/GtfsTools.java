@@ -38,6 +38,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * @author polettif
@@ -159,8 +160,8 @@ public final class GtfsTools {
 	/**
 	 * Experimental class to write stops.txt (i.e. after filtering for one date)
 	 */
-	public static void writeStops(Collection<Stop> stops, String folder) throws IOException {
-		CSVWriter stopsWriter = new CSVWriter(new FileWriter(folder + GtfsDefinitions.Files.STOPS.fileName), ',');
+	public static void writeStops(Collection<Stop> stops, String path) throws IOException {
+		CSVWriter stopsWriter = new CSVWriter(new FileWriter(path + GtfsDefinitions.Files.STOPS.fileName), ',');
 		String[] header = GtfsDefinitions.Files.STOPS.columns;
 		stopsWriter.writeNext(header, true);
 		for(Stop stop : stops) {
@@ -178,8 +179,8 @@ public final class GtfsTools {
 	/**
 	 * Experimental class to write trips.txt (i.e. after filtering for one date)
 	 */
-	public static void writeTrips(Collection<Trip> trips, String folder) throws IOException {
-		CSVWriter tripsWriter = new CSVWriter(new FileWriter(folder + GtfsDefinitions.Files.TRIPS.fileName), ',');
+	public static void writeTrips(Collection<Trip> trips, String path) throws IOException {
+		CSVWriter tripsWriter = new CSVWriter(new FileWriter(path + GtfsDefinitions.Files.TRIPS.fileName), ',');
 		String[] header = GtfsDefinitions.Files.TRIPS.columns;
 		tripsWriter.writeNext(header, true);
 		for(Trip trip : trips) {
@@ -191,6 +192,28 @@ public final class GtfsTools {
 			tripsWriter.writeNext(line);
 		}
 		tripsWriter.close();
+	}
+
+	/**
+	 * Experimental class to write transfers.txt (i.e. after creating additional walk transfer)
+	 */
+	public static void writeTransfers(Collection<Transfer> transfers, String path) throws IOException {
+		CSVWriter transfersWiter = new CSVWriter(new FileWriter(path + GtfsDefinitions.Files.TRANSFERS.fileName), ',');
+		String[] columns = GtfsDefinitions.Files.TRANSFERS.columns;
+		String[] optionalColumns = GtfsDefinitions.Files.TRANSFERS.optionalColumns;
+		String[] header = Stream.concat(Arrays.stream(columns), Arrays.stream(optionalColumns)).toArray(String[]::new);
+		transfersWiter.writeNext(header, true);
+		for(Transfer transfer : transfers) {
+			// FROM_STOP_ID, TO_STOP_ID, TRANSFER_TYPE, (MIN_TRANSFER_TIME)
+			String[] line = new String[header.length];
+			line[0] = transfer.getFromStopId();
+			line[1] = transfer.getToStopId();
+			line[2] = transfer.getTransferType().toString();
+			String minTransferTime = (transfer.getMinTransferTime() != null ? transfer.getMinTransferTime().toString() : "");
+			line[3] = minTransferTime;
+			transfersWiter.writeNext(line);
+		}
+		transfersWiter.close();
 	}
 
 	/**
