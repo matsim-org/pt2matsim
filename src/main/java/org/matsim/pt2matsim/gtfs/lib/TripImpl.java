@@ -77,11 +77,6 @@ public class TripImpl implements Trip {
 		return service;
 	}
 
-	@Override
-	public boolean hasShape() {
-		return shape != null;
-	}
-
 	/** required */
 	@Override
 	public RouteShape getShape() {

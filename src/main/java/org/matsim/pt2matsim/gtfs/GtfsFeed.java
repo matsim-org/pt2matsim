@@ -43,8 +43,6 @@ public interface GtfsFeed {
 
 	Map<Id<RouteShape>, RouteShape> getShapes();
 
-	boolean usesFrequencies();
-
 	Collection<Transfer> getTransfers();
 
 	/**

@@ -39,5 +39,8 @@ public interface Route {
 
 	Map<String, Trip> getTrips();
 
+	/**
+	 * The base route types are part of the extended set, does not return <tt>null</tt>
+	 */
 	GtfsDefinitions.ExtendedRouteType getExtendedRouteType();
 }

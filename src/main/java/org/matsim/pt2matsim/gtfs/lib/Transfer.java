@@ -35,6 +35,8 @@ public interface Transfer {
 
 	/**
 	 * optional, necessary if transferType is REQUIRES_MIN_TRANSFER_TIME
+	 *
+	 * @return <tt>null</tt> when not defined
 	 */
 	Integer getMinTransferTime();
 }

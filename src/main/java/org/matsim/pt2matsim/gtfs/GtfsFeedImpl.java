@@ -666,11 +666,6 @@ public class GtfsFeedImpl implements GtfsFeed {
 	}
 
 	@Override
-	public boolean usesFrequencies() {
-		return usesFrequencies;
-	}
-
-	@Override
 	public Collection<Transfer> getTransfers() {
 		return transfers;
 	}
