@@ -34,11 +34,15 @@ public interface Trip {
 
 	Service getService();
 
-	Collection<Frequency> getFrequencies();
-
 	Route getRoute();
 
-	boolean hasShape();
+	/**
+	 * @return Empty collection if trip has no frequencies defined
+	 */
+	Collection<Frequency> getFrequencies();
 
+	/**
+	 * @return <tt>null</tt> if no shape is available
+	 */
 	RouteShape getShape();
 }

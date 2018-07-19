@@ -24,7 +24,6 @@ public class GtfsRealFeedTest {
 		Assert.assertEquals(92, feed.getRoutes().size());
 		Assert.assertEquals(139, feed.getServices().size());
 		Assert.assertEquals(806, feed.getShapes().size());
-		Assert.assertFalse(feed.usesFrequencies());
 	}
 
 	@Test

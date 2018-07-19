@@ -19,8 +19,6 @@
 package org.matsim.pt2matsim.gtfs.lib;
 
 import org.matsim.api.core.v01.Coord;
-import org.matsim.api.core.v01.Id;
-import org.matsim.pt.transitSchedule.api.TransitStopArea;
 
 import java.util.Collection;
 
@@ -48,6 +46,8 @@ public interface Stop {
 
 	/**
 	 * [optional] Identifies whether this stop represents a stop or station.
+	 *
+	 * @return <tt>null</tt> when not defined
 	 */
 	GtfsDefinitions.LocationType getLocationType();
 
@@ -55,6 +55,8 @@ public interface Stop {
 	 * [optional] For stops that are physically located inside stations, this field identifies the station associated
 	 * with the stop. To use this field, stops.txt must also contain a row where this stop ID is assigned
 	 * location type=1.
+	 *
+	 * @return <tt>null</tt> when not defined
 	 */
 	String getParentStationId();
 
