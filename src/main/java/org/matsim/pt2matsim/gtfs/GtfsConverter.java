@@ -56,6 +56,8 @@ public class GtfsConverter {
 	protected TransitSchedule transitSchedule;
 	protected Vehicles vehiclesContainer;
 
+	protected int noStopTimeTrips;
+
 	public GtfsConverter(GtfsFeed gtfsFeed) {
 		this.feed = gtfsFeed;
 	}
@@ -176,11 +178,6 @@ public class GtfsConverter {
 	protected void createTransitLines(TransitSchedule schedule, LocalDate extractDate) {
 		// info
 		log.info("    Creating TransitLines from routes and TransitRoutes from trips...");
-		if(this.feed.usesFrequencies()) {
-			log.info("    Using frequencies.txt to generate departures");
-		} else {
-			log.info("    Using stop_times.txt to generate departures");
-		}
 
 		for(Route gtfsRoute : this.feed.getRoutes().values()) {
 			// create a MATSim TransitLine for each Route
@@ -200,6 +197,10 @@ public class GtfsConverter {
 				}
 			}
 		}
+
+		if(noStopTimeTrips > 0) {
+			log.warn(noStopTimeTrips + " trips without stop times were not converted");
+		}
 	}
 
 	/**
@@ -218,8 +219,14 @@ public class GtfsConverter {
 	protected TransitRoute createTransitRoute(Trip trip, Map<Id<TransitStopFacility>, TransitStopFacility> stopFacilities) {
 		Id<RouteShape> shapeId = trip.getShape() != null ? trip.getShape().getId() : null;
 
+		if(trip.getStopTimes().size() == 0) {
+			noStopTimeTrips++;
+			return null;
+		}
+
 		// Get the stop sequence (with arrivalOffset and departureOffset) of the trip.
 		List<TransitRouteStop> transitRouteStops = new ArrayList<>();
+
 		// create transit route stops
 		for(StopTime stopTime : trip.getStopTimes()) {
 			TransitRouteStop newTransitRouteStop = createTransitRouteStop(stopTime, trip, stopFacilities);
@@ -228,7 +235,7 @@ public class GtfsConverter {
 
 		// Calculate departures from frequencies (if available)
 		TransitRoute transitRoute;
-		if(this.feed.usesFrequencies()) {
+		if(trip.getFrequencies().size() > 0) {
 			transitRoute = this.scheduleFactory.createTransitRoute(createTransitRouteId(trip), null, transitRouteStops, trip.getRoute().getRouteType().name);
 
 			for(Frequency frequency : trip.getFrequencies()) {
