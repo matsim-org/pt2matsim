@@ -77,11 +77,11 @@ public final class PT2MATSimExample {
 	 */
 	public static void gtfsToSchedule() {
 		String[] gtfsConverterArgs = new String[]{
-				// [0] folder where the gtfs files are located (a single zip file is not supported)
+				// [0] folder where the gtfs files are located
 				example + "addisoncounty-vt-us-gtfs/",
 				// [1] which service ids should be used. One of the following:
-				//		dayWithMostServices, date in the format yyyymmdd, dayWithMostTrips, all
-				"dayWithMostServices",
+				//		dayWithMostTrips, date in the format yyyymmdd, , dayWithMostServices, all
+				"dayWithMostTrips",
 				// [2] the output coordinate system. Use WGS84 for no transformation.
 				addisonCountyEPSG,
 				// [3] output transit schedule file

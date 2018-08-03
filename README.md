@@ -43,7 +43,7 @@ To include pt2matsim in your own maven project, add this snippet to your pom.xml
         <dependency>
             <groupId>org.matsim</groupId>
             <artifactId>pt2matsim</artifactId>
-            <version>18.5</version>
+            <version>18.7</version>
         </dependency>
     </dependencies>
 
