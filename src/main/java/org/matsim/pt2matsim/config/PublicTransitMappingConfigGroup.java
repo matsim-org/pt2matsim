@@ -111,7 +111,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	public void writeToFile(String filename) {
 		Config matsimConfig = ConfigUtils.createConfig();
 		matsimConfig.addModule(this);
-		Set<String> toRemove = matsimConfig.getModules().keySet().stream().filter(module -> !module.equals(OsmConverterConfigGroup.GROUP_NAME)).collect(Collectors.toSet());
+		Set<String> toRemove = matsimConfig.getModules().keySet().stream().filter(module -> !module.equals(PublicTransitMappingConfigGroup.GROUP_NAME)).collect(Collectors.toSet());
 		toRemove.forEach(matsimConfig::removeModule);
 		new ConfigWriter(matsimConfig).write(filename);
 	}

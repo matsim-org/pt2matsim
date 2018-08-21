@@ -172,7 +172,7 @@ public class Schedule2Geojson {
 			stopFacilityFeatures.add(pf);
 
 			// convert stop ref links (not written to combined file)
-			if(stopFacility.getLinkId() != null) {
+			if(stopFacility.getLinkId() != null && this.network != null) {
 				Link refLink = network.getLinks().get(stopFacility.getLinkId());
 
 				List<Coord> coords = new ArrayList<>();
