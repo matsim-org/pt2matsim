@@ -290,6 +290,7 @@ public class GtfsConverter {
 
 	protected void cleanSchedule(TransitSchedule schedule) {
 		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
+		ScheduleCleaner.removeNotUsedMinimalTransferTimes(schedule);
 	}
 
 	protected Id<TransitLine> createTransitLineId(Route gtfsRoute) {
