@@ -77,7 +77,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 		this.parentStops = new ParentStops();
 
 		log.info("Guessing routers based on schedule transport modes and used network transport modes.");
-		this.routers = NetworkTools.guessRouters(schedule, network);
+		this.routers = NetworkTools.guessRouters(schedule, network).createInstance();
 	}
 
 	public Network getNetwork() {

@@ -13,6 +13,7 @@ import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersFactory;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersGtfsShapes;
 import org.matsim.pt2matsim.tools.NetworkToolsTest;
 import org.matsim.pt2matsim.tools.ScheduleTools;
@@ -42,9 +43,9 @@ public class PTMapperShapesTest {
 		schedule = ScheduleToolsTest.initUnmappedSchedule();
 
 		Map<Id<RouteShape>, RouteShape> shapes = ShapeToolsTest.initShapes();
-		ScheduleRouters scheduleRouters = new ScheduleRoutersGtfsShapes(schedule, network, shapes, ptmConfig.getTransportModeAssignment(), PublicTransitMappingConfigGroup.TravelCostType.linkLength, 10.0, 99);
+		ScheduleRoutersFactory scheduleRoutersFactory = new ScheduleRoutersGtfsShapes.Factory(schedule, network, shapes, ptmConfig.getTransportModeAssignment(), PublicTransitMappingConfigGroup.TravelCostType.linkLength, 10.0, 99);
 
-		new PTMapper(schedule, network).run(ptmConfig, scheduleRouters);
+		new PTMapper(schedule, network).run(ptmConfig, null, scheduleRoutersFactory);
 
 		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
 	}
