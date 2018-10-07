@@ -520,7 +520,7 @@ public final class NetworkTools {
 		// find origin links
 		Set<Link> found = new HashSet<>();
 		for(Link currentLink : singleFileLinks) {
-			if(!found.contains(currentLink)) {
+			if(!found.contains(currentLink) && !currentLink.getFromNode().equals(currentLink.getToNode())) {
 				Link actual = currentLink;
 				Link precedingLink;
 				do {
