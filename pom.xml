@@ -22,9 +22,38 @@
             <id>matsim</id>
             <url>http://dl.bintray.com/matsim/matsim</url>
         </repository>
+        <repository>
+        	<id>osgeo</id>
+			<url>http://download.osgeo.org/webdav/geotools</url>
+        </repository>
     </repositories>
 
+	<properties>
+		<geotools.version>19.0</geotools.version>
+	</properties>
+
     <dependencies>
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-main</artifactId>
+			<version>${geotools.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-referencing</artifactId>
+			<version>${geotools.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-shapefile</artifactId>
+			<version>${geotools.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-epsg-hsql</artifactId>
+			<version>${geotools.version}</version>
+			<scope>runtime</scope>
+		</dependency>
         <dependency>
             <groupId>org.matsim</groupId>
             <artifactId>matsim</artifactId>
