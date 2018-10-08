@@ -48,7 +48,7 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 	private final Map<String, Network> networksByMode = new HashMap<>();
 	private final boolean considerCandidateDist;
 
-	public ScheduleRoutersStandard(TransitSchedule schedule, Network network, Map<String, Set<String>> transportModeAssignment, PublicTransitMappingConfigGroup.TravelCostType costType, boolean routingWithCandidateDistance) {
+	private ScheduleRoutersStandard(TransitSchedule schedule, Network network, Map<String, Set<String>> transportModeAssignment, PublicTransitMappingConfigGroup.TravelCostType costType, boolean routingWithCandidateDistance) {
 		this.schedule = schedule;
 		this.network = network;
 		this.transportModeAssignment = transportModeAssignment;
@@ -56,10 +56,6 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 		this.considerCandidateDist = routingWithCandidateDistance;
 
 		load();
-	}
-
-	public ScheduleRoutersStandard(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
-		this(schedule, network, config.getTransportModeAssignment(), config.getTravelCostType(), config.getRoutingWithCandidateDistance());
 	}
 
 	/**
@@ -148,4 +144,32 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 		}
 	}
 
+	/**
+	 * Factory for a ScheduleRoutersStandard instance
+	 */
+	public static class Factory implements ScheduleRoutersFactory {
+		private final TransitSchedule schedule;
+		private final Network network;
+		private final Map<String, Set<String>> transportModeAssignment;
+		private final PublicTransitMappingConfigGroup.TravelCostType costType;
+		private boolean routingWithCandidateDistance;
+		
+		public Factory(TransitSchedule schedule, Network network, Map<String, Set<String>> transportModeAssignment, PublicTransitMappingConfigGroup.TravelCostType costType, boolean routingWithCandidateDistance) {
+			this.schedule = schedule;
+			this.network = network;
+			this.transportModeAssignment = transportModeAssignment;
+			this.costType = costType;
+			this.routingWithCandidateDistance = routingWithCandidateDistance;
+		}
+		
+		public Factory(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
+			this(schedule, network, config.getTransportModeAssignment(), config.getTravelCostType(), config.getRoutingWithCandidateDistance());
+		}
+
+		@Override
+		public ScheduleRouters createInstance() {
+			return new ScheduleRoutersStandard(schedule, network, transportModeAssignment, costType, routingWithCandidateDistance);
+		}
+
+	}
 }

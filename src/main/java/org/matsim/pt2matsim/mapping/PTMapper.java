@@ -34,6 +34,7 @@ import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorStandard;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersFactory;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersStandard;
 import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoSchedule;
 import org.matsim.pt2matsim.mapping.pseudoRouter.PseudoScheduleImpl;
@@ -89,18 +90,14 @@ public class PTMapper {
 		this.network = network;
 	}
 
+	public void run(PublicTransitMappingConfigGroup config) {
+		run(config, null, null);
+	}
+	
 	/**
 	 * Maps the schedule to the network with parameters defined in config
 	 */
-	public void run(PublicTransitMappingConfigGroup config, MapperModule... modules) {
-		LinkCandidateCreator linkCandidateCreator = null;
-		ScheduleRouters scheduleRouters = null;
-
-		for(MapperModule m : modules) {
-			if(m instanceof LinkCandidateCreator) linkCandidateCreator = (LinkCandidateCreator) m;
-			if(m instanceof ScheduleRouters) scheduleRouters = (ScheduleRouters) m;
-		}
-
+	public void run(PublicTransitMappingConfigGroup config, LinkCandidateCreator linkCandidateCreator, ScheduleRoutersFactory scheduleRoutersFactory) {
 		// use defaults
 		if(linkCandidateCreator == null) {
 			linkCandidateCreator = new LinkCandidateCreatorStandard(schedule, network,
@@ -109,12 +106,13 @@ public class PTMapper {
 					config.getMaxLinkCandidateDistance(),
 					config.getTransportModeAssignment());
 		}
-		if(scheduleRouters == null) {
-			scheduleRouters = new ScheduleRoutersStandard(schedule, network, config.getTransportModeAssignment(), config.getTravelCostType(), config.getRoutingWithCandidateDistance());
+		
+		if(scheduleRoutersFactory == null) {
+			scheduleRoutersFactory = new ScheduleRoutersStandard.Factory(schedule, network, config.getTransportModeAssignment(), config.getTravelCostType(), config.getRoutingWithCandidateDistance());
 		}
 
 		run(linkCandidateCreator,
-			scheduleRouters,
+			scheduleRoutersFactory,
 			config.getNumOfThreads(), config.getMaxTravelCostFactor(),
 			config.getScheduleFreespeedModes(), config.getModesToKeepOnCleanUp(),
 			config.getRemoveNotUsedStopFacilities());
@@ -123,12 +121,12 @@ public class PTMapper {
 	/**
 	 * Maps the schedule to the network
 	 */
-	public void run(LinkCandidateCreator linkCandidates, ScheduleRouters scheduleRouters, int numThreads, double maxTravelCostFactor, Set<String> scheduleFreespeedModes, Set<String> modesToKeepOnCleanup, boolean removeNotUsedStopFacilities) {
+	public void run(LinkCandidateCreator linkCandidates, ScheduleRoutersFactory scheduleRoutersFactory, int numThreads, double maxTravelCostFactor, Set<String> scheduleFreespeedModes, Set<String> modesToKeepOnCleanup, boolean removeNotUsedStopFacilities) {
 		if(schedule == null) throw new RuntimeException("No schedule defined!");
 		if(network == null) throw new RuntimeException("No network defined!");
 
 		if(linkCandidates == null) throw new RuntimeException("No LinkCandidates defined!");
-		if(scheduleRouters == null) throw new RuntimeException("No ScheduleRouters defined!");
+		if(scheduleRoutersFactory == null) throw new RuntimeException("No ScheduleRoutersFactory defined!");
 
 		if(ScheduleTools.idsContainChildStopString(schedule)) {
 			throw new RuntimeException("Some stopFacility ids contain the string \"" + PublicTransitMappingStrings.SUFFIX_CHILD_STOP_FACILITIES + "\"! Schedule cannot be mapped.");
@@ -163,10 +161,12 @@ public class PTMapper {
 		log.info("==================================");
 		log.info("Calculating pseudoTransitRoutes... (" + nTransitRoutes + " transit routes in " + schedule.getTransitLines().size() + " transit lines)");
 
+		Progress progress = new Progress(nTransitRoutes, "Calculating pesudoTransitRoutes ...");
+		
 		// initiate pseudoRouting
 		PseudoRouting[] pseudoRoutingRunnables = new PseudoRouting[numThreads];
 		for(int i = 0; i < numThreads; i++) {
-			pseudoRoutingRunnables[i] = new PseudoRoutingImpl(scheduleRouters, linkCandidates, maxTravelCostFactor);
+			pseudoRoutingRunnables[i] = new PseudoRoutingImpl(scheduleRoutersFactory, linkCandidates, maxTravelCostFactor, progress);
 		}
 		// spread transit lines on runnables
 		int thr = 0;

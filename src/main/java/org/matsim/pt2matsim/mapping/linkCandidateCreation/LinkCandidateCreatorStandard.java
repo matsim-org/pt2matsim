@@ -30,6 +30,7 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
+import org.matsim.pt2matsim.mapping.Progress;
 import org.matsim.pt2matsim.tools.MiscUtils;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.PTMapperTools;
@@ -85,6 +86,14 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 		Map<String, Set<Link>> closeLinksMap = new HashMap<>();
 
 		Map<Id<PublicTransitStop>, Set<Link>> candidates = new HashMap<>();
+		
+		long totalNumberOfRoutes = 0;
+		
+		for(TransitLine transitLine : schedule.getTransitLines().values()) {
+			totalNumberOfRoutes += transitLine.getRoutes().size();
+		}
+		
+		Progress progress = new Progress(totalNumberOfRoutes, "Getting closest links ...");
 
 		/*
 		  get closest links for each stop facility (separated by mode)
@@ -147,11 +156,15 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 					previousLinks = currentLinks;
 					previousRouteStop = currentRouteStop;
 				}
+				
+				progress.update();
 			}
 		}
 
 		Map<Id<PublicTransitStop>, Double> maxStopDist = new HashMap<>();
 		Map<Id<PublicTransitStop>, Double> minStopDist = new HashMap<>();
+		
+		progress = new Progress(candidates.size(), "Creating link candidates ...");
 
 		/*
 		  create and store link candidates
@@ -181,12 +194,16 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 			maxStopDist.put(stop.getId(), maxDist);
 			minStopDist.put(stop.getId(), minDist);
+			
+			progress.update();
 		}
 
 		/*
 		Set priorities
 		 */
 		int nLC = 0;
+		progress = new Progress(linkCandidates.size(), "Setting candidate priorities ...");
+		
 		for(Map.Entry<Id<PublicTransitStop>, SortedSet<LinkCandidate>> entry : linkCandidates.entrySet()) {
 			double minDist = minStopDist.get(entry.getKey());
 			double maxDist = maxStopDist.get(entry.getKey());

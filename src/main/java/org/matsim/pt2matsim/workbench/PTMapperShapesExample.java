@@ -8,6 +8,7 @@ import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.mapping.PTMapper;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersFactory;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersGtfsShapes;
 import org.matsim.pt2matsim.plausibility.MappingAnalysis;
 import org.matsim.pt2matsim.run.CheckMappedSchedulePlausibility;
@@ -90,12 +91,12 @@ public class PTMapperShapesExample {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(unmappedScheduleFile);
 		Network network = NetworkTools.readNetwork(networkInput);
 
-		ScheduleRouters routers = new ScheduleRoutersGtfsShapes(schedule, network,
+		ScheduleRoutersFactory routersFactory = new ScheduleRoutersGtfsShapes.Factory(schedule, network,
 				ShapeTools.readShapesFile(gtfsFolder + "shapes.txt", coordSys), config.getTransportModeAssignment(), config.getTravelCostType(),
 				50, 200);
 
 		PTMapper ptMapper = new PTMapper(schedule, network);
-		ptMapper.run(config, routers);
+		ptMapper.run(config, null, routersFactory);
 
 		NetworkTools.writeNetwork(network, networkOutput2);
 		ScheduleTools.writeTransitSchedule(ptMapper.getSchedule(), scheduleOutput2);

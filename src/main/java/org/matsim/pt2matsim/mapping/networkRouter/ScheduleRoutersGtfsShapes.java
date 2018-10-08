@@ -61,7 +61,7 @@ public class ScheduleRoutersGtfsShapes implements ScheduleRouters {
 	private final Map<TransitLine, Map<TransitRoute, ShapeRouter>> shapeRouters = new HashMap<>();
 
 
-	public ScheduleRoutersGtfsShapes(TransitSchedule schedule, Network network, Map<Id<RouteShape>, RouteShape> shapes, Map<String, Set<String>> transportModeAssignment, PublicTransitMappingConfigGroup.TravelCostType travelCostType, double maxWeightDistance, double cutBuffer) {
+	private ScheduleRoutersGtfsShapes(TransitSchedule schedule, Network network, Map<Id<RouteShape>, RouteShape> shapes, Map<String, Set<String>> transportModeAssignment, PublicTransitMappingConfigGroup.TravelCostType travelCostType, double maxWeightDistance, double cutBuffer) {
 		this.schedule = schedule;
 		this.network = network;
 		this.transportModeAssignment = transportModeAssignment;
@@ -188,4 +188,29 @@ public class ScheduleRoutersGtfsShapes implements ScheduleRouters {
 		}
 	}
 
+	static public class Factory implements ScheduleRoutersFactory {
+		final private TransitSchedule schedule;
+		final private Network network;
+		final private Map<Id<RouteShape>, RouteShape> shapes;
+		final private Map<String, Set<String>> transportModeAssignment;
+		final private PublicTransitMappingConfigGroup.TravelCostType travelCostType;
+		final private double maxWeightDistance;
+		final private double cutBuffer;
+		
+		public Factory(TransitSchedule schedule, Network network, Map<Id<RouteShape>, RouteShape> shapes, Map<String, Set<String>> transportModeAssignment, PublicTransitMappingConfigGroup.TravelCostType travelCostType, double maxWeightDistance, double cutBuffer) {
+			this.schedule = schedule;
+			this.network = network;
+			this.shapes = shapes;
+			this.transportModeAssignment = transportModeAssignment;
+			this.travelCostType = travelCostType;
+			this.maxWeightDistance = maxWeightDistance;
+			this.cutBuffer = cutBuffer;
+		}
+
+		@Override
+		public ScheduleRouters createInstance() {
+			return new ScheduleRoutersGtfsShapes(schedule, network, shapes, transportModeAssignment, travelCostType, maxWeightDistance, cutBuffer);
+		}
+		
+	}
 }

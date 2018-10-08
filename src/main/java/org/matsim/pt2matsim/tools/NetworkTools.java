@@ -40,6 +40,7 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersFactory;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersStandard;
 
 import java.util.*;
@@ -414,7 +415,7 @@ public final class NetworkTools {
 	/**
 	 * Creates mode dependent routers based on the actual network modes used.
 	 */
-	public static ScheduleRouters guessRouters(TransitSchedule schedule, Network network) {
+	public static ScheduleRoutersFactory guessRouters(TransitSchedule schedule, Network network) {
 		// for each schedule modes, look which network modes are used
 		Map<String, Set<String>> modeAssignments = new HashMap<>();
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
@@ -435,7 +436,7 @@ public final class NetworkTools {
 			config.addParameterSet(mra);
 		}
 
-		return new ScheduleRoutersStandard(schedule, network, modeAssignments, PublicTransitMappingConfigGroup.TravelCostType.linkLength, true);
+		return new ScheduleRoutersStandard.Factory(schedule, network, modeAssignments, PublicTransitMappingConfigGroup.TravelCostType.linkLength, true);
 	}
 
 	/**

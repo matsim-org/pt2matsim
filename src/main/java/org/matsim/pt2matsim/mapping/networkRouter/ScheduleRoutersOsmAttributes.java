@@ -179,4 +179,24 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
         }
     }
 
+    public static class Factory implements ScheduleRoutersFactory {
+    	final private TransitSchedule schedule;
+    	final private Network network;
+    	final private Map<String, Set<String>> transportModeAssignment;
+    	final private PublicTransitMappingConfigGroup.TravelCostType travelCostType;
+    	final private double osmPtLinkTravelCostFactor;
+    	
+    	public Factory(TransitSchedule schedule, Network network, Map<String, Set<String>> transportModeAssignment, PublicTransitMappingConfigGroup.TravelCostType travelCostType, double osmPtLinkTravelCostFactor) {
+    		this.schedule = schedule;
+    		this.network = network;
+    		this.transportModeAssignment = transportModeAssignment;
+    		this.travelCostType = travelCostType;
+    		this.osmPtLinkTravelCostFactor = osmPtLinkTravelCostFactor;
+    	}
+
+		@Override
+		public ScheduleRouters createInstance() {
+			return new ScheduleRoutersOsmAttributes(schedule, network, transportModeAssignment, travelCostType, osmPtLinkTravelCostFactor);
+		}
+    }
 }

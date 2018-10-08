@@ -29,6 +29,7 @@ import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersFactory;
 import org.matsim.pt2matsim.mapping.pseudoRouter.*;
 
 import java.util.ArrayList;
@@ -47,12 +48,12 @@ import java.util.Set;
 public class PseudoRoutingImpl implements PseudoRouting {
 
 	protected static Logger log = Logger.getLogger(PseudoRoutingImpl.class);
+	private final Progress progress;
 
-	private static Counter counterPseudoRouting = new Counter("route # ");
 	private static boolean warnMinTravelCost = true;
 
 	private final LinkCandidateCreator linkCandidates;
-	private final ScheduleRouters scheduleRouters;
+	private final ScheduleRoutersFactory scheduleRoutersFactory;
 	private final List<TransitLine> queue = new ArrayList<>();
 
 	private final Set<ArtificialLink> necessaryArtificialLinks = new HashSet<>();
@@ -60,10 +61,11 @@ public class PseudoRoutingImpl implements PseudoRouting {
 	private final PseudoSchedule threadPseudoSchedule = new PseudoScheduleImpl();
 	private double maxTravelCostFactor;
 
-	public PseudoRoutingImpl(ScheduleRouters scheduleRouters, LinkCandidateCreator linkCandidates, double maxTravelCostFactor) {
+	public PseudoRoutingImpl(ScheduleRoutersFactory scheduleRoutersFactory, LinkCandidateCreator linkCandidates, double maxTravelCostFactor, Progress progress) {
 		this.maxTravelCostFactor = maxTravelCostFactor;
-		this.scheduleRouters = scheduleRouters;
+		this.scheduleRoutersFactory = scheduleRoutersFactory;
 		this.linkCandidates = linkCandidates;
+		this.progress = progress;
 	}
 
 	@Override
@@ -73,9 +75,10 @@ public class PseudoRoutingImpl implements PseudoRouting {
 
 	@Override
 	public void run() {
+		ScheduleRouters scheduleRouters = scheduleRoutersFactory.createInstance();
+		
 		for(TransitLine transitLine : queue) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
-
 				/* [1]
 				  Initiate pseudoGraph and Dijkstra algorithm for the current transitRoute.
 
@@ -102,7 +105,7 @@ public class PseudoRoutingImpl implements PseudoRouting {
 						log.warn("There are stop pairs where minTravelCost is 0.0! This might happen if two stops are on the same coordinate or if departure and arrival time of two subsequent stops are identical. Further messages are suppressed.");
 						warnMinTravelCost = false;
 					}
-
+					
 					/* [3]
 					  Calculate the shortest path between all link candidates.
 					 */
@@ -185,7 +188,8 @@ public class PseudoRoutingImpl implements PseudoRouting {
 					necessaryArtificialLinks.addAll(pseudoGraph.getArtificialNetworkLinks());
 					threadPseudoSchedule.addPseudoRoute(transitLine, transitRoute, pseudoPath, pseudoGraph.getNetworkLinkIds());
 				}
-				increaseCounter();
+				
+				progress.update();
 			}
 		}
 	}
@@ -211,10 +215,6 @@ public class PseudoRoutingImpl implements PseudoRouting {
 				network.addLink(a);
 			}
 		}
-	}
-
-	private synchronized void increaseCounter() {
-		counterPseudoRouting.incCounter();
 	}
 
 }

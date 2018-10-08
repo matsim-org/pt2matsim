@@ -14,6 +14,7 @@ import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions;
 import org.matsim.pt2matsim.tools.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.PTMapper;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
+import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersFactory;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersGtfsShapes;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersOsmAttributes;
 import org.matsim.pt2matsim.osm.OsmMultimodalNetworkConverter;
@@ -212,10 +213,10 @@ public class ZVVexample {
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
 		Map<Id<RouteShape>, RouteShape> shapes = ShapeTools.readShapesFile(gtfsShapeFile, coordSys);
 
-		ScheduleRouters router = new ScheduleRoutersGtfsShapes(schedule, network, shapes, config.getTransportModeAssignment(), config.getTravelCostType(), 50, 250);
+		ScheduleRoutersFactory routerFactory = new ScheduleRoutersGtfsShapes.Factory(schedule, network, shapes, config.getTransportModeAssignment(), config.getTravelCostType(), 50, 250);
 
 		PTMapper ptMapper = new PTMapper(schedule, network);
-		ptMapper.run(config, router);
+		ptMapper.run(config, null, routerFactory);
 
 		NetworkTools.writeNetwork(network, outputNetwork2);
 		ScheduleTools.writeTransitSchedule(schedule, outputSchedule2);
@@ -249,10 +250,10 @@ public class ZVVexample {
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.createDefaultConfig();
 
 		// Initiate Router that uses osm data
-		ScheduleRouters router = new ScheduleRoutersOsmAttributes(schedule, network, config.getTransportModeAssignment(), PublicTransitMappingConfigGroup.TravelCostType.linkLength, 0.5);
+		ScheduleRoutersFactory routerFactory = new ScheduleRoutersOsmAttributes.Factory(schedule, network, config.getTransportModeAssignment(), PublicTransitMappingConfigGroup.TravelCostType.linkLength, 0.5);
 
 		PTMapper ptMapper = new PTMapper(schedule, network);
-		ptMapper.run(config, router);
+		ptMapper.run(config, null, routerFactory);
 
 		NetworkTools.writeNetwork(network, outputNetwork3);
 		ScheduleTools.writeTransitSchedule(schedule, outputSchedule3);
