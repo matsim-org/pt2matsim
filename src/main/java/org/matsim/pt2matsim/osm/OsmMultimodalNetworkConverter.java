@@ -522,7 +522,7 @@ public class OsmMultimodalNetworkConverter {
 	 * Runs the network cleaner on the street network.
 	 */
 	protected void cleanNetwork() {
-		Set<String> roadModes = CollectionUtils.stringToSet("car,bus");
+		Set<String> roadModes = CollectionUtils.stringToSet("car");
 		Network roadNetwork = NetworkTools.createFilteredNetworkByLinkMode(network, roadModes);
 		Network restNetwork = NetworkTools.createFilteredNetworkExceptLinkMode(network, roadModes);
 		this.network = null;
