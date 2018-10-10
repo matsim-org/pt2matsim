@@ -28,6 +28,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.config.ConfigGroup;
+import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
@@ -522,14 +523,22 @@ public class OsmMultimodalNetworkConverter {
 	 * Runs the network cleaner on the street network.
 	 */
 	protected void cleanNetwork() {
-		Set<String> roadModes = CollectionUtils.stringToSet("car,bus");
-		Network roadNetwork = NetworkTools.createFilteredNetworkByLinkMode(network, roadModes);
-		Network restNetwork = NetworkTools.createFilteredNetworkExceptLinkMode(network, roadModes);
-		this.network = null;
-
-		new NetworkCleaner().run(roadNetwork);
-		NetworkTools.integrateNetwork(restNetwork, roadNetwork);
-		this.network = restNetwork;
+		Network carNetwork = NetworkTools.createFilteredNetworkByLinkMode(network, Collections.singleton("car"));
+		new NetworkCleaner().run(carNetwork);
+		
+		Set<String> busModes = new HashSet<>(Arrays.asList("car", "bus"));
+		Network busNetwork = NetworkTools.createFilteredNetworkByLinkMode(network, busModes);
+		new NetworkCleaner().run(busNetwork);
+		busNetwork.getLinks().values().forEach(l -> l.setAllowedModes(Collections.singleton("bus")));
+		
+		Network restNetwork = NetworkTools.createFilteredNetworkExceptLinkMode(network, busModes);
+		
+		Network combinedNetwork = NetworkUtils.createNetwork();
+		NetworkTools.integrateNetwork(combinedNetwork, restNetwork, true);
+		NetworkTools.integrateNetwork(combinedNetwork, busNetwork, true);
+		NetworkTools.integrateNetwork(combinedNetwork, carNetwork, true);
+		
+		this.network = combinedNetwork;
 	}
 
 
