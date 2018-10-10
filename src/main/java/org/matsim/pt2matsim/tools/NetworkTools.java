@@ -334,7 +334,7 @@ public final class NetworkTools {
 		int numberOfNodesBefore = baseNetwork.getNodes().size();
 
 		for(Network currentNetwork : networks) {
-			integrateNetwork(baseNetwork, currentNetwork);
+			integrateNetwork(baseNetwork, currentNetwork, true);
 		}
 
 		log.info("... Total number of links added to network: " + (baseNetwork.getLinks().size() - numberOfLinksBefore));
@@ -347,7 +347,7 @@ public final class NetworkTools {
 	 * A contains all links and nodes of both networks
 	 * after integration.
 	 */
-	public static void integrateNetwork(final Network networkA, final Network networkB) {
+	public static void integrateNetwork(final Network networkA, final Network networkB, boolean mergeModes) {
 		final NetworkFactory factory = networkA.getFactory();
 
 		// Nodes
@@ -373,6 +373,30 @@ public final class NetworkTools {
 				newLink.setLength(link.getLength());
 				newLink.setNumberOfLanes(link.getNumberOfLanes());
 				networkA.addLink(newLink);
+			} else if (mergeModes) {
+				Link existingLink = networkA.getLinks().get(linkId);
+				
+				Set<String> allowedModes = new HashSet<>();
+				allowedModes.addAll(existingLink.getAllowedModes());
+				allowedModes.addAll(link.getAllowedModes());
+				
+				existingLink.setAllowedModes(allowedModes);
+				
+				if (link.getCapacity() * capacityFactor != existingLink.getCapacity()) {
+					throw new IllegalStateException("Capacity must be equal for integration");
+				}
+				
+				if (link.getFreespeed() != existingLink.getFreespeed()) {
+					throw new IllegalStateException("Freespeed must be equal for integration");
+				}
+				
+				if (link.getLength() != existingLink.getLength()) {
+					throw new IllegalStateException("Length must be equal for integration");
+				}
+				
+				if (link.getNumberOfLanes() != existingLink.getNumberOfLanes()) {
+					throw new IllegalStateException("Number of lanes must be equal for integration");
+				}
 			}
 		}
 	}
@@ -517,11 +541,11 @@ public final class NetworkTools {
 				singleFileLinks.add(l);
 			}
 		}
-
+		
 		// find origin links
-		Set<Link> found = new HashSet<>();
+		Set<Link> found = new HashSet<>();		
 		for(Link currentLink : singleFileLinks) {
-			if(!found.contains(currentLink) && !currentLink.getFromNode().equals(currentLink.getToNode())) {
+			if(!found.contains(currentLink)) {
 				Link actual = currentLink;
 				Link precedingLink;
 				do {
@@ -530,6 +554,11 @@ public final class NetworkTools {
 					if(precedingLink != null && links.contains(precedingLink)) {
 						linkSequence.put(precedingLink, actual);
 						actual = precedingLink;
+						
+						if (actual.equals(currentLink)) {
+							// We found a closed loop and arrived back at the starting point.
+							break;
+						}
 					}
 				} while(precedingLink != null && links.contains(precedingLink));
 				originLinks.add(actual);
@@ -542,6 +571,11 @@ public final class NetworkTools {
 					if(succeedingLink != null && links.contains(succeedingLink)) {
 						linkSequence.put(actual, succeedingLink);
 						actual = succeedingLink;
+						
+						if (actual.equals(currentLink)) {
+							// We found a closed loop and arrived back at the starting point.
+							break;
+						}
 					}
 				} while(succeedingLink != null && links.contains(succeedingLink));
 			}
