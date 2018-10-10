@@ -543,19 +543,23 @@ public final class NetworkTools {
 		}
 		
 		// find origin links
-		Set<Link> found = new HashSet<>();		
+		Set<Link> found = new HashSet<>();	
+		Set<Link> visited = new HashSet<>();
+		
 		for(Link currentLink : singleFileLinks) {
 			if(!found.contains(currentLink)) {
 				Link actual = currentLink;
 				Link precedingLink;
+				visited.clear();
 				do {
 					found.add(actual);
+					visited.add(actual);
 					precedingLink = getSingleFilePrecedingLink(actual);
 					if(precedingLink != null && links.contains(precedingLink)) {
 						linkSequence.put(precedingLink, actual);
 						actual = precedingLink;
 						
-						if (actual.equals(currentLink)) {
+						if (visited.contains(actual)) {
 							// We found a closed loop and arrived back at the starting point.
 							break;
 						}
@@ -565,14 +569,16 @@ public final class NetworkTools {
 
 				actual = currentLink;
 				Link succeedingLink;
+				visited.clear();
 				do {
 					found.add(actual);
+					visited.add(actual);
 					succeedingLink = getSingleFileSucceedingLink(actual);
 					if(succeedingLink != null && links.contains(succeedingLink)) {
 						linkSequence.put(actual, succeedingLink);
 						actual = succeedingLink;
 						
-						if (actual.equals(currentLink)) {
+						if (visited.contains(actual)) {
 							// We found a closed loop and arrived back at the starting point.
 							break;
 						}
