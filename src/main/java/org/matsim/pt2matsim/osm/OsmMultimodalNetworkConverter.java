@@ -269,7 +269,7 @@ public class OsmMultimodalNetworkConverter {
 	/**
 	 * Creates a MATSim link from osm data
 	 */
-	protected void createLink(final Osm.Way way, final Osm.Node fromNode, final Osm.Node toNode, final double length) {
+	protected void createLink(final Osm.Way way, final Osm.Node fromNode, final Osm.Node toNode, double length) {
 		boolean oneway;
 		boolean onewayReverse = false;
 		double freespeedFactor;
@@ -375,6 +375,12 @@ public class OsmMultimodalNetworkConverter {
 				modes.add(mode);
 				modes.add(TransportMode.pt);
 			}
+		}
+		
+		// LENGTH
+		if (length == 0.0) {
+			log.warn("Attempting to create a link of length 0.0, which will mess up the routing. Fixing to 1.0!");
+			length = 1.0;
 		}
 
 		// CREATE LINK
