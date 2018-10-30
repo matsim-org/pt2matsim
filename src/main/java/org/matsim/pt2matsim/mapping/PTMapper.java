@@ -185,6 +185,7 @@ public class PTMapper {
 				thread.join();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
+				throw new RuntimeException(e);
 			}
 		}
 
