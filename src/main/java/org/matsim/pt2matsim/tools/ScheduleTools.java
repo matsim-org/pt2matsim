@@ -583,43 +583,45 @@ public final class ScheduleTools {
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				List<Id<Link>> linkIds = getTransitRouteLinkIds(transitRoute);
-
-				Iterator<TransitRouteStop> stopsIterator = transitRoute.getStops().iterator();
-				List<Link> links = NetworkTools.getLinksFromIds(network, linkIds);
-
-				List<Id<Link>> linkIdsUpToCurrentStop = new ArrayList<>();
-
-				/*
-				Since transit stops are handled at the end of a link, changing the route's first link's
-				freespeed (i.e. the first stop link) has no effect. The freespeed of the first link
-				is adjusted according to the necessary travel time to the second stop.
-				 */
-				double lengthUpToCurrentStop = -links.get(0).getLength();
-				stopsIterator.next();
-				TransitRouteStop stop = stopsIterator.next();
-				double departTime = 0;
-
-				for(Link link : links) {
-					linkIdsUpToCurrentStop.add(link.getId());
-					lengthUpToCurrentStop += link.getLength();
-
-					if(stop.getStopFacility().getLinkId().equals(link.getId())) {
-						double ttSchedule = stop.getArrivalOffset() - departTime;
-						double theoreticalMinSpeed = (lengthUpToCurrentStop / ttSchedule) * 1.02;
-
-						for(Id<Link> linkId : linkIdsUpToCurrentStop) {
-							double setMinSpeed = MapUtils.getDouble(linkId, necessaryMinSpeeds, 0);
-							if(theoreticalMinSpeed > setMinSpeed) {
-								necessaryMinSpeeds.put(linkId, theoreticalMinSpeed);
+				
+				if (linkIds.size() > 0) {
+					Iterator<TransitRouteStop> stopsIterator = transitRoute.getStops().iterator();
+					List<Link> links = NetworkTools.getLinksFromIds(network, linkIds);
+	
+					List<Id<Link>> linkIdsUpToCurrentStop = new ArrayList<>();
+	
+					/*
+					Since transit stops are handled at the end of a link, changing the route's first link's
+					freespeed (i.e. the first stop link) has no effect. The freespeed of the first link
+					is adjusted according to the necessary travel time to the second stop.
+					 */
+					double lengthUpToCurrentStop = -links.get(0).getLength();
+					stopsIterator.next();
+					TransitRouteStop stop = stopsIterator.next();
+					double departTime = 0;
+	
+					for(Link link : links) {
+						linkIdsUpToCurrentStop.add(link.getId());
+						lengthUpToCurrentStop += link.getLength();
+	
+						if(stop.getStopFacility().getLinkId().equals(link.getId())) {
+							double ttSchedule = stop.getArrivalOffset() - departTime;
+							double theoreticalMinSpeed = (lengthUpToCurrentStop / ttSchedule) * 1.02;
+	
+							for(Id<Link> linkId : linkIdsUpToCurrentStop) {
+								double setMinSpeed = MapUtils.getDouble(linkId, necessaryMinSpeeds, 0);
+								if(theoreticalMinSpeed > setMinSpeed) {
+									necessaryMinSpeeds.put(linkId, theoreticalMinSpeed);
+								}
 							}
-						}
-
-						// reset
-						lengthUpToCurrentStop = 0;
-						linkIdsUpToCurrentStop = new ArrayList<>();
-						departTime = stop.getDepartureOffset();
-						if(stopsIterator.hasNext()) {
-							stop = stopsIterator.next();
+	
+							// reset
+							lengthUpToCurrentStop = 0;
+							linkIdsUpToCurrentStop = new ArrayList<>();
+							departTime = stop.getDepartureOffset();
+							if(stopsIterator.hasNext()) {
+								stop = stopsIterator.next();
+							}
 						}
 					}
 				}
