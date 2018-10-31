@@ -48,12 +48,12 @@ public class ArtificialLinkImpl implements ArtificialLink {
 	private Set<String> transportModes = PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE_AS_SET;
 	private Attributes attributes = new Attributes();
 
-	public ArtificialLinkImpl(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, double freespeed, double linklength) {
+	public ArtificialLinkImpl(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, double freespeed, double linkLength) {
 		this.id = PTMapperTools.createArtificialLinkId(fromLinkCandidate, toLinkCandidate);
 		this.fromNodeId = fromLinkCandidate.getLink().getToNode().getId();
 		this.toNodeId = toLinkCandidate.getLink().getFromNode().getId();
 		this.freespeed = freespeed;
-		this.linkLength = linklength;
+		this.linkLength = Math.max(1, linkLength);
 
 		this.fromNode = fromLinkCandidate.getLink().getToNode();
 		this.toNode = toLinkCandidate.getLink().getFromNode();
