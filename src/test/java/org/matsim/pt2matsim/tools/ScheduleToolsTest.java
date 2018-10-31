@@ -254,6 +254,13 @@ public class ScheduleToolsTest {
 		Network network = NetworkToolsTest.initNetwork();
 		Network baseNetwork = NetworkToolsTest.initNetwork();
 
+		for(Link link : network.getLinks().values()) {
+			link.setFreespeed(0.1);
+		}
+		for(Link link : baseNetwork.getLinks().values()) {
+			link.setFreespeed(0.1);
+		}
+
 		Set<Id<Link>> linksUsedBySchedule = new HashSet<>();
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
