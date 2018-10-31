@@ -24,8 +24,8 @@ import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.api.core.v01.network.NetworkFactory;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.utils.geometry.CoordUtils;
@@ -262,19 +262,10 @@ public final class PTMapperTools {
 		if(dummyLink != null) {
 			return dummyLink;
 		} else {
-			NetworkFactory networkFactory = network.getFactory();
-
-			Coord coord = stopFacility.getCoord();
-
-			Node dummyNode = networkFactory.createNode(Id.createNodeId(prefix + stopFacility.getId()), coord);
-			dummyLink = networkFactory.createLink(dummyLinkId, dummyNode, dummyNode);
-
-			dummyLink.setAllowedModes(transportModes);
-			dummyLink.setLength(10);
-			dummyLink.setFreespeed(freespeed);
-			dummyLink.setCapacity(9999);
-
+			Node dummyNode = NetworkUtils.createNode(Id.createNodeId(prefix + stopFacility.getId()), stopFacility.getCoord());
 			network.addNode(dummyNode);
+			dummyLink = NetworkUtils.createLink(dummyLinkId, dummyNode, dummyNode, network, 10, freespeed, 9999, 1);
+			dummyLink.setAllowedModes(transportModes);
 			network.addLink(dummyLink);
 
 			return dummyLink;
