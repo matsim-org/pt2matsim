@@ -56,17 +56,17 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 	private final int nLinks;
 	private final double distanceMultiplier;
 	private final double maxDistance;
-	private final Map<String, Set<String>> routingAssignment;
+	private final Map<String, Set<String>> transportModeAssignments;
 	private double nodeSearchRadius;
 
 
-	public LinkCandidateCreatorStandard(TransitSchedule schedule, Network network, int nLinks, double distanceMultiplier, double maxDistance, Map<String, Set<String>> routingAssignment) {
+	public LinkCandidateCreatorStandard(TransitSchedule schedule, Network network, int nLinks, double distanceMultiplier, double maxDistance, Map<String, Set<String>> transportModeAssignments) {
 		this.schedule = schedule;
 		this.network = network;
 		this.nLinks = nLinks;
 		this.distanceMultiplier = distanceMultiplier;
 		this.maxDistance = maxDistance;
-		this.routingAssignment = routingAssignment;
+		this.transportModeAssignments = transportModeAssignments;
 
 		load();
 	}
@@ -101,7 +101,14 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				String scheduleTransportMode = transitRoute.getTransportMode();
-				Set<String> networkModes = routingAssignment.get(scheduleTransportMode);
+				Set<String> networkModes = transportModeAssignments.get(scheduleTransportMode);
+
+				// If no transportModes have been defined in the config, no links should be found by findClosestLink (which requires an empty set)
+				if(networkModes == null) {
+					log.warn("No transportModeAssignment found for schedule mode " + scheduleTransportMode);
+					networkModes = new HashSet<>();
+					transportModeAssignments.put(scheduleTransportMode, networkModes);
+				}
 
 				TransitRouteStop previousRouteStop = transitRoute.getStops().get(0);
 

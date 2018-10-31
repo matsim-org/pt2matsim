@@ -9,6 +9,7 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
@@ -99,5 +100,33 @@ public class PTMapperTest {
 		// 1 loop link, 3 artificial links
 		Assert.assertEquals(NetworkToolsTest.initNetwork().getLinks().size()+4, network2.getLinks().size());
 		Assert.assertEquals(9, schedule2.getFacilities().size());
+	}
+	@Test
+	public void noTransportModeAssignment() {
+		PublicTransitMappingConfigGroup noTMAConfig = new PublicTransitMappingConfigGroup();
+		noTMAConfig.getModesToKeepOnCleanUp().add("car");
+		noTMAConfig.setNumOfThreads(2);
+		noTMAConfig.setNLinkThreshold(4);
+		noTMAConfig.setMaxLinkCandidateDistance(999.0);
+		noTMAConfig.setCandidateDistanceMultiplier(1.0);
+
+		TransitSchedule schedule2 = ScheduleToolsTest.initUnmappedSchedule();
+		Network network2 = NetworkToolsTest.initNetwork();
+
+		new PTMapper(schedule2, network2).run(noTMAConfig);
+
+		// only artificial links
+		for(TransitLine transitLine : schedule2.getTransitLines().values()) {
+			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
+				List<Id<Link>> linkIds = ScheduleTools.getTransitRouteLinkIds(transitRoute);
+				for(Id<Link> linkId : linkIds) {
+					Assert.assertTrue(linkId.toString().contains("pt_"));
+				}
+			}
+		}
+		// only artificial stop links
+		for(TransitStopFacility transitStopFacility : schedule2.getFacilities().values()) {
+			Assert.assertTrue(transitStopFacility.getLinkId().toString().contains("pt_"));
+		}
 	}
 }

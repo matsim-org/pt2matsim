@@ -245,4 +245,21 @@ public class NetworkToolsTest {
 		Assert.assertEquals(80.0, NetworkTools.calcRouteLength(seq, true), 0.0001);
 	}
 
+	@Test
+	public void findClosestLinks() {
+		Node node = network.getNodes().get(Id.createNodeId("G"));
+		Coord coordToLookFrom = new Coord(node.getCoord().getX() + 2, node.getCoord().getY() + 2);
+
+		Map<Double, Set<Link>> cars = NetworkTools.findClosestLinks(network, coordToLookFrom, 3, Collections.singleton("car"));
+		Assert.assertEquals(1, cars.keySet().size());
+		Assert.assertEquals(4, cars.get(2.0).size());
+
+		Map<Double, Set<Link>> nullTransportModes = NetworkTools.findClosestLinks(network, coordToLookFrom, 3, null);
+		Assert.assertEquals(1, nullTransportModes.keySet().size());
+		Assert.assertEquals(4, nullTransportModes.get(2.0).size());
+
+	}
+
+
+
 }
