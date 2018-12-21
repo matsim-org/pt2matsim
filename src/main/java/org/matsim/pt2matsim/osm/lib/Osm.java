@@ -22,12 +22,14 @@ import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Identifiable;
 
+import com.google.common.base.Joiner;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Definitions for Osm including interfaces for elements
+ * Definitions for OpenStreetMap (OSM) including interfaces for elements
  *
  * @author polettif
  */
@@ -138,6 +140,10 @@ public final class Osm {
 		public final static String ACCESS = "access";
 		public static final String PSV = "psv";
 		public static final String BUS = "bus";
+		public static final String TAXI = "taxi";
+		
+		public final static String FORWARD = "forward";
+		public final static String BACKWARD = "backward";
 
 		// rarely used
 		public static final String TYPE = "type";
@@ -153,8 +159,13 @@ public final class Osm {
 		public static final List<String> DEFAULT_KEYS = Arrays.asList(
 				NAME, ROUTE, ROUTE_MASTER, PUBLIC_TRANSPORT, RAILWAY, HIGHWAY, SERVICE, LANES, JUNCTION, ONEWAY, ACCESS, PSV,
 				TYPE, NETWORK, VEHICLE, TUNNEL, TRAFFIC_CALMING, PASSING_PLACES, MOTORCYCLE, FOOTWAY, CROSSING);
+		public static final List<String> DIRECTIONS = Arrays.asList(FORWARD, BACKWARD);
+		
+		public static String combinedKey(String... keyParts) {
+			return Joiner.on(":").join(keyParts);
+		}
 	}
-
+	
 	/**
 	 * OSM values used by the converters
 	 */
@@ -201,6 +212,10 @@ public final class Osm {
 		// values for psv=*
 		public static final String YES = "yes";
 		public static final String DESIGNATED = "designated";
+		
+		// values for maxspeed=*
+		public static final String WALK = "walk";
+		public static final String NONE = "none";
 	}
 
 
