@@ -52,13 +52,20 @@ import java.util.*;
  * <dl>
  * <dt>lanes</dt>
  * <dd>https://wiki.openstreetmap.org/wiki/Key:lanes</dd>
+ * <dt>freespeed / maxspeed</dt>
+ * <dd>https://wiki.openstreetmap.org/wiki/Key:maxspeed</dd>
  * </dl>
  *
  * @author polettif
+ * @author mstraub - Austrian Institute of Technology
  */
 public class OsmMultimodalNetworkConverter {
 
 	private final static Logger log = Logger.getLogger(OsmMultimodalNetworkConverter.class);
+	
+	static final int SPEED_LIMIT_WALK_KPH = 10;
+	// // no speed limit (Germany) .. assume 200kph
+	static final int SPEED_LIMIT_NONE_KPH = 200;
 
 	protected final OsmData osmData;
 	protected final Map<String, Map<String, OsmConverterConfigGroup.OsmWayParams>> wayParams = new HashMap<>();
@@ -86,7 +93,7 @@ public class OsmMultimodalNetworkConverter {
 	}
 
 	/**
-	 * Converts the osm data according to the parameters defined in config.
+	 * Converts the OSM data according to the parameters defined in config.
 	 */
 	public void convert(OsmConverterConfigGroup config) {
 		this.config = config;
@@ -279,18 +286,12 @@ public class OsmMultimodalNetworkConverter {
 	protected void createLink(final Osm.Way way, final Osm.Node fromNode, final Osm.Node toNode, double length) {
 		boolean oneway;
 		boolean onewayReverse = false;
-		double freespeedFactor;
-		double freespeed;
-		double nofLanes;
 		double laneCapacity;
 		Set<String> modes;
 
 		// load defaults
 		OsmConverterConfigGroup.OsmWayParams wayDefaultParams = getWayDefaultParams(way);
-		nofLanes = wayDefaultParams.getLanes();
 		laneCapacity = wayDefaultParams.getLaneCapacity();
-		freespeed = wayDefaultParams.getFreespeed();
-		freespeedFactor = wayDefaultParams.getFreespeedFactor();
 		oneway = wayDefaultParams.getOneway();
 		modes = new HashSet<>(wayDefaultParams.getAllowedTransportModes());
 
@@ -319,57 +320,25 @@ public class OsmMultimodalNetworkConverter {
 				oneway = false; // may be used to overwrite defaults
 			}
 		}
-		// check tag "oneway" with trunks, primary and secondary roads
-		// (if they are marked as such, the default number of lanes should be two instead of one)
-		if(Osm.Value.TRUNK.equals(highwayValue) || Osm.Value.PRIMARY.equals(highwayValue) || Osm.Value.SECONDARY.equals(highwayValue)) {
-			if(oneway && nofLanes == 1.0) {
-				nofLanes = 2.0;
-			}
-		}
-
+		
 		// FREESPEED
-		String maxspeedTag = way.getTags().get(Osm.Key.MAXSPEED);
-		if(maxspeedTag != null) {
-			try {
-				freespeed = Double.parseDouble(maxspeedTag) / 3.6; // convert km/h to m/s
-			} catch (NumberFormatException e) {
-				boolean message = true;
-				if(config.getGuessFreeSpeed()) {
-					try {
-						message = false;
-						freespeed = Double.parseDouble(maxspeedTag.substring(0, 2)) / 3.6;
-					} catch (NumberFormatException e1) {
-						message = true;
-					}
-				}
-				if(!unknownMaxspeedTags.contains(maxspeedTag) && message) {
-					unknownMaxspeedTags.add(maxspeedTag);
-					log.warn("Could not parse maxspeed tag: " + e.getMessage() + " (way " + way.getId() + ") Ignoring it.");
-				}
-			}
-		}
+		double freeSpeedDefault = wayDefaultParams.getFreespeed();
+		double freeSpeedForward = calculateFreeSpeed(way, true, oneway || onewayReverse, freeSpeedDefault);
+		double freeSpeedBackward = calculateFreeSpeed(way, false, oneway || onewayReverse, freeSpeedDefault);
+		
 		if(config.getScaleMaxSpeed()) {
-			freespeed = freespeed * freespeedFactor;
+			double freeSpeedFactor = wayDefaultParams.getFreespeedFactor();
+			freeSpeedForward = freeSpeedForward * freeSpeedFactor;
+			freeSpeedBackward = freeSpeedBackward * freeSpeedFactor;
 		}
 
 		// LANES
-		String lanesTag = way.getTags().get(Osm.Key.LANES);
-		if(lanesTag != null) {
-			try {
-				double tmp = Double.parseDouble(lanesTag);
-				if(tmp > 0) {
-					nofLanes = tmp;
-				}
-			} catch (Exception e) {
-				if(!this.unknownLanesTags.contains(lanesTag)) {
-					this.unknownLanesTags.add(lanesTag);
-					log.warn("Could not parse lanes tag: " + e.getMessage() + ". Ignoring it.");
-				}
-			}
-		}
+		double laneCountDefault = wayDefaultParams.getLanes();
+		double laneCountForward = calculateLaneCount(way, true, oneway || onewayReverse, laneCountDefault);
+		double laneCountBackward = calculateLaneCount(way, false, oneway || onewayReverse, laneCountDefault);
 
 		// CAPACITY
-		double capacity = nofLanes * laneCapacity;
+		//double capacity = laneCountDefault * laneCapacity;
 
 		// MODES
 		// public transport: get relation which this way is part of, then get the relations route=* (-> the mode)
@@ -395,30 +364,150 @@ public class OsmMultimodalNetworkConverter {
 		Id<Node> fromId = Id.create(fromNode.getId(), Node.class);
 		Id<Node> toId = Id.create(toNode.getId(), Node.class);
 		if(network.getNodes().get(fromId) != null && network.getNodes().get(toId) != null) {
+			// forward link
 			if(!onewayReverse) {
 				Link l = network.getFactory().createLink(Id.create(this.id, Link.class), network.getNodes().get(fromId), network.getNodes().get(toId));
 				l.setLength(length);
-				l.setFreespeed(freespeed);
-				l.setCapacity(capacity);
-				l.setNumberOfLanes(nofLanes);
+				l.setFreespeed(freeSpeedForward);
+				l.setCapacity(laneCountForward * laneCapacity); // TODO test capacity calculation
+				l.setNumberOfLanes(laneCountForward);
 				l.setAllowedModes(modes);
 
 				network.addLink(l);
 				osmIds.put(l.getId(), way.getId());
 				this.id++;
 			}
+			// backward link
 			if(!oneway) {
 				Link l = network.getFactory().createLink(Id.create(this.id, Link.class), network.getNodes().get(toId), network.getNodes().get(fromId));
 				l.setLength(length);
-				l.setFreespeed(freespeed);
-				l.setCapacity(capacity);
-				l.setNumberOfLanes(nofLanes);
+				l.setFreespeed(freeSpeedBackward);
+				l.setCapacity(laneCountBackward * laneCapacity);
+				l.setNumberOfLanes(laneCountBackward);
 				l.setAllowedModes(modes);
 
 				network.addLink(l);
 				osmIds.put(l.getId(), way.getId());
 				this.id++;
 			}
+		}
+	}
+	
+	private double calculateFreeSpeed(final Osm.Way way, boolean forward, boolean isOneway, double defaultFreeSpeed) {
+		// TODO config.getGuessFreeSpeed is no longer required?
+//		try {
+//			freespeed = Double.parseDouble(maxspeedTag) / 3.6; // convert km/h to m/s
+//		} catch (NumberFormatException e) {
+//			boolean message = true;
+//			if(config.getGuessFreeSpeed()) {
+//				try {
+//					message = false;
+//					freespeed = Double.parseDouble(maxspeedTag.substring(0, 2)) / 3.6;
+//				} catch (NumberFormatException e1) {
+//					message = true;
+//				}
+//			}
+//			if(!unknownMaxspeedTags.contains(maxspeedTag) && message) {
+//				unknownMaxspeedTags.add(maxspeedTag);
+//				log.warn("Could not parse maxspeed tag: " + e.getMessage() + " (way " + way.getId() + ") Ignoring it.");
+//			}
+//		}
+		
+		double maxspeed = parseMaxspeedValueAsMs(way, Osm.Key.MAXSPEED).orElse(defaultFreeSpeed);
+		
+		// in case a specific maxspeed per direction is available this overrules the standard maxspeed
+		String direction = forward ? Osm.Key.FORWARD : Osm.Key.BACKWARD;
+		Optional<Double> directedMaxspeed = parseMaxspeedValueAsMs(way, Osm.Key.combinedKey(Osm.Key.MAXSPEED, direction));
+		if(directedMaxspeed.isPresent()) {
+			maxspeed = directedMaxspeed.get();
+		}
+		
+		return maxspeed;
+	}
+	
+	/**
+	 * @return speed in meters per second
+	 */
+	private Optional<Double> parseMaxspeedValueAsMs(final Osm.Way way, String key) {
+		String value = way.getTags().get(key);
+		if(value == null)
+			return Optional.empty();
+		
+		// take first value if more values are given
+		if(value.contains(";"))
+			value = value.split(";")[0];
+		
+		double conversionDivisor = 3.6;
+		if(value.contains("mph")) {
+			conversionDivisor = 2.237;
+			value = value.replaceAll("mph", "");
+		} else if(value.contains("knots")) {
+			conversionDivisor = 1.944;
+			value = value.replaceAll("knots", "");
+		}
+		
+		if(Osm.Value.NONE.equals(value)) {
+			return Optional.of(SPEED_LIMIT_NONE_KPH / conversionDivisor);
+		}
+		else if(Osm.Value.WALK.equals(value)) {
+			return Optional.of(SPEED_LIMIT_WALK_KPH / conversionDivisor);
+		}
+		
+		try {
+			return Optional.of(Double.parseDouble(value) / conversionDivisor);
+		} catch (NumberFormatException e) {
+			if(!unknownMaxspeedTags.contains(value)) {
+				unknownMaxspeedTags.add(value);
+				log.warn("Could not parse '" + key + "': " + e.getMessage() + " (way " + way.getId() + ")");
+			}
+			return Optional.empty();
+		}
+	}
+	
+	private double calculateLaneCount(final Osm.Way way, boolean forward, boolean isOneway, double defaultLaneCount) {
+		double laneCount = parseLanesValue(way, Osm.Key.LANES).orElse(defaultLaneCount);
+
+		// subtract lanes not accessible for cars
+		List<String> blockingMots = Arrays.asList(Osm.Key.BUS, Osm.Key.PSV, Osm.Key.TAXI);
+		for(String blockingMot : blockingMots)
+			laneCount -= parseLanesValue(way, Osm.Key.combinedKey(Osm.Key.LANES, blockingMot)).orElse(0d);
+		
+		if(!isOneway)
+			laneCount /= 2;
+		
+		// in case a specific lane count per direction is available this overrules the standard lanes
+		String direction = forward ? Osm.Key.FORWARD : Osm.Key.BACKWARD;
+		Optional<Double> directedLaneCount = parseLanesValue(way, Osm.Key.combinedKey(Osm.Key.LANES, direction));
+		if(directedLaneCount.isPresent()) {
+			laneCount = directedLaneCount.get();
+			for(String blockingMot : blockingMots)
+				laneCount -= parseLanesValue(way, Osm.Key.combinedKey(Osm.Key.LANES, blockingMot, direction)).orElse(0d);
+		}
+
+		// sanitize
+		if(laneCount < 1)
+			laneCount = 1;
+		
+		return laneCount;
+	}
+	
+	private Optional<Double> parseLanesValue(final Osm.Way way, String key) {
+		String value = way.getTags().get(key);
+		if(value == null)
+			return Optional.empty();
+		
+		// take first value if more values are given
+		if(value.contains(";"))
+			value = value.split(";")[0];
+		
+		try {
+			return Optional.of(Double.parseDouble(value));
+		} catch (NumberFormatException e) {
+			if(!unknownLanesTags.contains(value)) {
+				unknownLanesTags.add(value);
+				log.warn("Could not parse '" + key + "': " + e.getMessage() + " (way " + way.getId() + ")");
+			}
+			return Optional.empty();
 		}
 	}
 

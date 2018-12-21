@@ -1,6 +1,7 @@
 package org.matsim.pt2matsim.osm;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -23,7 +25,7 @@ import org.matsim.pt2matsim.osm.lib.OsmFileReader;
  */
 public class OsmMultimodalNetworkConverterTest {
 	private static Map<Long, Set<Link>> osmid2link;
-	private static final double DELTA = 0.000001;
+	private static final double DELTA = 0.001;
 	
 	@BeforeClass
 	public static void convertGerasdorfArtificialLanesAndMaxspeed() {
@@ -103,26 +105,28 @@ public class OsmMultimodalNetworkConverterTest {
 	public void testPrimaryWithForwardAndBackwardLanesAndMaxspeed() {
 		Set<Link> links = osmid2link.get(7994887L);
 		assertEquals("bidirectional", 2, links.size());
-		assertMaxspeed(links, 70);
 
 		Set<Link> linksToNorth = getLinksTowardsNode(links, 59836731L);
 		assertLanes(linksToNorth, 3);
+		assertMaxspeed(linksToNorth, 70);
 
 		Set<Link> linksToSouth = getLinksTowardsNode(links, 59836730L);
 		assertLanes(linksToSouth, 4);
+		assertMaxspeed(linksToSouth, 100);
 	}
 	
 	@Test
 	public void testPrimaryWithForwardAndBackwardSpecialLanesAndMaxspeed() {
 		Set<Link> links = osmid2link.get(7994886L);
 		assertEquals("bidirectional", 2, links.size());
-		assertMaxspeed(links, 70);
 
-		Set<Link> linksToNorth = getLinksTowardsNode(links, 59836731L);
+		Set<Link> linksToNorth = getLinksTowardsNode(links, 57443579L);
 		assertLanes("4 minus one bus lane", linksToNorth, 3);
+		assertMaxspeed(linksToNorth, 70);
 
-		Set<Link> linksToSouth = getLinksTowardsNode(links, 59836730L);
+		Set<Link> linksToSouth = getLinksTowardsNode(links, 59836729L);
 		assertLanes("5 minus one psv lane", linksToSouth, 4);
+		assertMaxspeed(linksToSouth, 100);
 	}
 
 	@Test
@@ -141,6 +145,15 @@ public class OsmMultimodalNetworkConverterTest {
 		assertLanes(links, 1);
 //		assertMaxspeed(links, 30); // TODO expected behavior?
 	}
+	
+	@Test
+	public void testResidentialInvalidLanesAndMaxspeed() {
+		Set<Link> links = osmid2link.get(7994891L);
+		assertEquals("bidirectional", 2, links.size());
+		assertLanes(links, 1);
+//		assertMaxspeed(links, 30); // TODO expected behavior?
+	}
+	
 
 	@Test
 	public void testDefaultPrimaryOneway() {
@@ -196,23 +209,66 @@ public class OsmMultimodalNetworkConverterTest {
 		assertMaxspeed(links, 70);
 	}
 	
-
+	@Test
+	public void testMotorwayWithoutMaxspeedAndOneway() {
+		Set<Link> links = osmid2link.get(7994932L);
+		assertEquals("oneway is implied by motorways", 1, links.size()); // TODO where is this achieved in the code??
+		assertEquals("oneway up north", 1, getLinksTowardsNode(links, 59836844L).size());
+		assertLanes(links, 2);
+		assertMaxspeed(links, OsmMultimodalNetworkConverter.SPEED_LIMIT_NONE_KPH);
+	}
+	
+	@Test
+	public void testResidentialWithMaxspeedWalk() {
+		Set<Link> links = osmid2link.get(7994934L);
+		assertEquals("bidirectional", 2, links.size());
+		assertMaxspeed(links, OsmMultimodalNetworkConverter.SPEED_LIMIT_WALK_KPH);
+	}
+	
+	@Test
+	public void testResidentialWithMaxspeedMiles() {
+		Set<Link> links = osmid2link.get(7994935L);
+		assertEquals("bidirectional", 2, links.size());
+		assertMaxspeed(links, 20 * 1.609344);
+	}
+	
+	@Test
+	public void testResidentialWithMaxspeedKnots() {
+		Set<Link> links = osmid2link.get(7994935L);
+		assertEquals("bidirectional", 2, links.size());
+		assertMaxspeed(links, 20 * 1.609344);
+	}
+	
+	@Test
+	public void testResidentialMultipleSpeedLimits() {
+		Set<Link> links = osmid2link.get(7999581L);
+		assertEquals("bidirectional", 2, links.size());
+		assertMaxspeed("second speed limit is ignored", links, 40);
+	}
+	
 	private static void assertLanes(Set<Link> links, double expectedLanes) {
 		assertLanes("", links, expectedLanes);
 	}
 
 	private static void assertLanes(String message, Set<Link> links, double expectedLanes) {
+		assertFalse("at least one link expected", links.isEmpty());
 		for (Link link : links) {
 			assertEquals("lanes (in one direction): " + message, expectedLanes, link.getNumberOfLanes(), DELTA);
 		}
 	}
-
+	
 	private static void assertMaxspeed(Set<Link> links, double expectedFreespeedKph) {
+		assertMaxspeed("", links, expectedFreespeedKph);
+	}
+
+	private static void assertMaxspeed(String message, Set<Link> links, double expectedFreespeedKph) {
+		assertFalse("at least one link expected", links.isEmpty());
 		for (Link link : links) {
-			assertEquals("freespeed m/s", expectedFreespeedKph / 3.6, link.getFreespeed(), DELTA);
+			assertEquals("freespeed m/s: message", expectedFreespeedKph / 3.6, link.getFreespeed(), DELTA);
 		}
 	}
 
+	@Ignore
 	@Test
 	public void convertWaterlooCityCentre() {
 		// setup config

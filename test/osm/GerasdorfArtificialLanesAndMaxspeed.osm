@@ -648,21 +648,23 @@
     <nd ref="59836729"/>
     <nd ref="57443579"/>
     <tag k="highway" v="primary"/>
-    <tag k="maxspeed" v="70"/>
     <tag k="name" v="PrimaryWithForwardAndBackwardSpecialLanesAndMaxspeed"/>
     <tag k="lanes:forward" v="4"/>
     <tag k="lanes:backward" v="5"/>
     <tag k="lanes:bus:forward" v="1"/>
     <tag k="lanes:psv:backward" v="1"/>
+    <tag k="maxspeed" v="70"/>
+    <tag k="maxspeed:backward" v="100"/>
   </way>
   <way id="7994887" version="9" timestamp="2018-07-01T07:20:09Z" uid="2641694" user="JM82" changeset="60315902">
     <nd ref="59836730"/>
     <nd ref="59836731"/>
     <tag k="highway" v="primary"/>
-    <tag k="maxspeed" v="70"/>
     <tag k="name" v="PrimaryWithForwardAndBackwardLanesAndMaxspeed"/>
     <tag k="lanes:forward" v="3"/>
     <tag k="lanes:backward" v="4"/>
+    <tag k="maxspeed:forward" v="70"/>
+    <tag k="maxspeed:backward" v="100"/>
   </way>
   <way id="7994888" version="10" timestamp="2018-07-01T07:20:09Z" uid="2641694" user="JM82" changeset="60315902">
     <nd ref="59836733"/>
@@ -791,8 +793,9 @@
     <nd ref="1085424117"/>
     <nd ref="59836838"/>
     <tag k="highway" v="residential"/>
-    <tag k="maxspeed" v="30"/>
-    <tag k="name" v="Sängerknabenweg"/>
+    <tag k="maxspeed" v="impossibleToParse"/>
+    <tag k="lanes" v="impossibleToParse"/>
+    <tag k="name" v="ResidentialInvalidLanesAndMaxspeed"/>
   </way>
   <way id="7994932" version="10" timestamp="2018-10-14T16:40:22Z" uid="2248331" user="Volker Fröhlich" changeset="63513914">
     <nd ref="59836843"/>
@@ -800,9 +803,9 @@
     <nd ref="1085424075"/>
     <nd ref="1085423886"/>
     <nd ref="59836844"/>
-    <tag k="highway" v="residential"/>
-    <tag k="maxspeed" v="30"/>
-    <tag k="name" v="Schubertweg"/>
+    <tag k="highway" v="motorway"/>
+    <tag k="maxspeed" v="none"/>
+    <tag k="name" v="MotorwayWithoutMaxspeedAndOneway"/>
   </way>
   <way id="7994934" version="10" timestamp="2018-10-14T16:40:22Z" uid="2248331" user="Volker Fröhlich" changeset="63513914">
     <nd ref="59836878"/>
@@ -811,8 +814,8 @@
     <nd ref="1085423982"/>
     <nd ref="59836879"/>
     <tag k="highway" v="residential"/>
-    <tag k="maxspeed" v="30"/>
-    <tag k="name" v="Beethovenweg"/>
+    <tag k="maxspeed" v="walk"/>
+    <tag k="name" v="ResidentialWithMaxspeedWalk"/>
   </way>
   <way id="7994935" version="10" timestamp="2018-07-01T07:20:11Z" uid="2641694" user="JM82" changeset="60315902">
     <nd ref="59836928"/>
@@ -821,8 +824,8 @@
     <nd ref="1085424241"/>
     <nd ref="59836929"/>
     <tag k="highway" v="residential"/>
-    <tag k="maxspeed" v="30"/>
-    <tag k="name" v="Haydnweg"/>
+    <tag k="maxspeed" v="20 mph"/>
+    <tag k="name" v="ResidentialWithMaxspeedMiles"/>
   </way>
   <way id="7994938" version="14" timestamp="2018-07-01T07:20:11Z" uid="2641694" user="JM82" changeset="60315902">
     <nd ref="59836962"/>
@@ -992,8 +995,8 @@
     <nd ref="1085423819"/>
     <nd ref="59860646"/>
     <tag k="highway" v="residential"/>
-    <tag k="maxspeed" v="30"/>
-    <tag k="name" v="Lindenweg"/>
+    <tag k="maxspeed" v="40;50"/>
+    <tag k="name" v="ResidentialMultipleSpeedLimits"/>
   </way>
   <way id="7999611" version="12" timestamp="2018-07-01T07:20:13Z" uid="2641694" user="JM82" changeset="60315902">
     <nd ref="59860648"/>
