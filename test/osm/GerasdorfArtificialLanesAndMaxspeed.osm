@@ -64,7 +64,6 @@
   <node id="59836960" version="3" timestamp="2016-02-03T09:56:22Z" uid="495146" user="moszkva ter" changeset="36973621" lat="48.2919974" lon="16.4403995"/>
   <node id="59836961" version="2" timestamp="2011-01-06T11:29:07Z" uid="12295" user="mapper_07" changeset="6880999" lat="48.2954399" lon="16.4404034"/>
   <node id="59836962" version="4" timestamp="2012-03-04T18:34:19Z" uid="48437" user="svd" changeset="10872167" lat="48.2962482" lon="16.440365"/>
-  <node id="59836967" version="2" timestamp="2011-01-06T11:28:53Z" uid="12295" user="mapper_07" changeset="6880999" lat="48.295463" lon="16.4415102"/>
   <node id="59836979" version="2" timestamp="2011-01-06T11:28:43Z" uid="12295" user="mapper_07" changeset="6880999" lat="48.2962058" lon="16.454529"/>
   <node id="59836980" version="3" timestamp="2012-05-11T14:41:49Z" uid="473925" user="caigner" changeset="11568630" lat="48.2961648" lon="16.4556684"/>
   <node id="59836981" version="3" timestamp="2012-05-11T14:41:49Z" uid="473925" user="caigner" changeset="11568630" lat="48.2959181" lon="16.458213"/>
@@ -721,7 +720,7 @@
     <tag k="maxspeed" v="70"/>
     <tag k="name" v="PrimaryWithSpecialLanes"/>
     <tag k="lanes" v="8"/>
-    <tag k="lanes:bus" v="2"/>
+    <tag k="lanes:taxi" v="2"/>
   </way>
   <way id="7994914" version="9" timestamp="2018-07-01T07:20:10Z" uid="2641694" user="JM82" changeset="60315902">
     <nd ref="59836793"/>
@@ -744,6 +743,7 @@
     <tag k="maxspeed" v="70"/>
     <tag k="name" v="PrimaryOnewayWithForwardLanesAndMaxspeed"/>
     <tag k="lanes:forward" v="3"/>
+    <tag k="oneway" v="yes"/>
   </way>
   <way id="7994925" version="9" timestamp="2018-10-14T16:40:21Z" uid="2248331" user="Volker Fröhlich" changeset="63513914">
     <nd ref="59836815"/>
@@ -757,6 +757,7 @@
     <tag k="name" v="PrimaryOnewayWithForwardSpecialLanesAndMaxspeed"/>
     <tag k="lanes:forward" v="4"/>
     <tag k="lanes:bus:forward" v ="1"/>
+    <tag k="oneway" v="yes"/>
   </way>
   <way id="7994927" version="9" timestamp="2018-10-14T16:40:22Z" uid="2248331" user="Volker Fröhlich" changeset="63513914">
     <nd ref="59836819"/>
@@ -768,6 +769,7 @@
     <tag k="name" v="PrimaryOnewayWithSpecialLane"/>
     <tag k="lanes" v="4"/>
     <tag k="lanes:bus" v ="1"/>
+    <tag k="oneway" v="yes"/>
   </way>
   <way id="7994930" version="10" timestamp="2018-10-14T16:40:22Z" uid="2248331" user="Volker Fröhlich" changeset="63513914">
     <nd ref="59836834"/>
@@ -776,9 +778,11 @@
     <nd ref="1085423944"/>
     <nd ref="1085423697"/>
     <nd ref="59836836"/>
-    <tag k="highway" v="residential"/>
-    <tag k="maxspeed" v="30"/>
-    <tag k="name" v="Roseggerweg"/>
+    <tag k="highway" v="primary"/>
+    <tag k="maxspeed" v="70"/>
+    <tag k="name" v="PrimaryDefaultReversedOneway"/>
+    <tag k="lanes" v="3"/>
+    <tag k="oneway" v="-1"/>
   </way>
   <way id="7994931" version="10" timestamp="2018-10-14T16:40:22Z" uid="2248331" user="Volker Fröhlich" changeset="63513914">
     <nd ref="59836837"/>
@@ -855,14 +859,6 @@
     <tag k="highway" v="tertiary"/>
     <tag k="maxspeed" v="30"/>
     <tag k="name" v="Grenzweg"/>
-  </way>
-  <way id="7994943" version="10" timestamp="2018-07-01T07:20:11Z" uid="2641694" user="JM82" changeset="60315902">
-    <nd ref="112138045"/>
-    <nd ref="59836967"/>
-    <nd ref="59836961"/>
-    <tag k="highway" v="residential"/>
-    <tag k="maxspeed" v="30"/>
-    <tag k="name" v="Johann-Kruder-Weg"/>
   </way>
   <way id="7994949" version="10" timestamp="2018-10-14T16:40:22Z" uid="2248331" user="Volker Fröhlich" changeset="63513914">
     <nd ref="59836984"/>

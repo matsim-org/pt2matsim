@@ -44,8 +44,15 @@ import org.matsim.pt2matsim.tools.NetworkTools;
 import java.util.*;
 
 /**
- * Converts {@link OsmData} to a MATSim network, uses a config file ({@link OsmConverterConfigGroup})
- * to store conversion parameters and default values
+ * Converts {@link OsmData} to a MATSim network, uses a config file
+ * ({@link OsmConverterConfigGroup}) to store conversion parameters and default
+ * values.
+ * <p>
+ * See OSM wiki for more documentation on the consumed data:
+ * <dl>
+ * <dt>lanes</dt>
+ * <dd>https://wiki.openstreetmap.org/wiki/Key:lanes</dd>
+ * </dl>
  *
  * @author polettif
  */
@@ -106,7 +113,7 @@ public class OsmMultimodalNetworkConverter {
 	}
 
 	/**
-	 * Converts the parsed osm data to MATSim nodes and links.
+	 * Converts the parsed OSM data to MATSim nodes and links.
 	 */
 	protected void convertToNetwork(CoordinateTransformation transformation) {
 
@@ -267,7 +274,7 @@ public class OsmMultimodalNetworkConverter {
 	}
 
 	/**
-	 * Creates a MATSim link from osm data
+	 * Creates a MATSim link from OSM data
 	 */
 	protected void createLink(final Osm.Way way, final Osm.Node fromNode, final Osm.Node toNode, double length) {
 		boolean oneway;
