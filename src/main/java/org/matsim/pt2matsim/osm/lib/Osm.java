@@ -190,7 +190,7 @@ public final class Osm {
 		public static final String SECONDARY_LINK = "secondary_link";
 		public static final String TERTIARY = "tertiary";
 		public static final String TERTIARY_LINK = "tertiary_link";
-		public static final String MINOR = "minor";
+		public static final String MINOR = "minor"; // FIXME this is not a valid highway in OSM - remove?
 		public static final String UNCLASSIFIED = "unclassified";
 		public static final String RESIDENTIAL = "residential";
 		public static final String LIVING_STREET = "living_street";
