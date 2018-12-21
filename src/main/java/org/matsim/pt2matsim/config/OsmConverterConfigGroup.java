@@ -52,7 +52,6 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	private static final String KEEP_PATHS ="keepPaths";
 	private static final String MAX_LINK_LENGTH = "maxLinkLength";
 	private static final String SCALE_MAX_SPEED = "scaleMaxSpeed";
-	private static final String GUESS_FREE_SPEED = "guessFreeSpeed";
 	private static final String KEEP_TAGS_AS_ATTRIBUTES = "keepTagsAsAttributes";
 	private static final String KEEP_WAYS_WITH_PUBLIC_TRANSIT = "keepWaysWithPublicTransit";
 
@@ -63,7 +62,6 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	private double maxLinkLength = 500.0;
 	private boolean keepPaths = false;
 	private boolean scaleMaxSpeed = false;
-	private boolean guessFreeSpeed = false;
 	private boolean keepTagsAsAttributes = true;
 	private boolean keepWaysWithPublicTransit = true;
 
@@ -128,16 +126,6 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	@StringSetter(KEEP_PATHS)
 	public void setKeepPaths(boolean keepPaths) {
 		this.keepPaths = keepPaths;
-	}
-
-	@StringGetter(GUESS_FREE_SPEED)
-	public boolean getGuessFreeSpeed() {
-		return guessFreeSpeed;
-	}
-
-	@StringSetter(GUESS_FREE_SPEED)
-	public void setGuessFreeSpeed(boolean guessFreeSpeed) {
-		this.guessFreeSpeed = guessFreeSpeed;
 	}
 
 	@StringGetter(MAX_LINK_LENGTH)
@@ -212,8 +200,6 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 				"\t\tor branchings are kept as nodes. This reduces the number of nodes and links in the network, but can in some rare\n" +
 				"\t\tcases generate extremely long links (e.g. for motorways with only a few ramps every few kilometers).\n" +
 				"\t\tDefaults to <code>false</code>.");
-		map.put(GUESS_FREE_SPEED,
-				"If true: The first two digits of the maxspeed tag are used if it cannot be parsed (e.g. \"50; 80\" or similar).");
 		map.put(KEEP_TAGS_AS_ATTRIBUTES,
 				"If true: The osm tags for ways and containing relations are saved as link attributes in the network. Increases filesize. Default: true.");
 		map.put(SCALE_MAX_SPEED,
