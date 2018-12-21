@@ -394,25 +394,6 @@ public class OsmMultimodalNetworkConverter {
 	}
 	
 	private double calculateFreeSpeed(final Osm.Way way, boolean forward, boolean isOneway, double defaultFreeSpeed) {
-		// TODO config.getGuessFreeSpeed is no longer required?
-//		try {
-//			freespeed = Double.parseDouble(maxspeedTag) / 3.6; // convert km/h to m/s
-//		} catch (NumberFormatException e) {
-//			boolean message = true;
-//			if(config.getGuessFreeSpeed()) {
-//				try {
-//					message = false;
-//					freespeed = Double.parseDouble(maxspeedTag.substring(0, 2)) / 3.6;
-//				} catch (NumberFormatException e1) {
-//					message = true;
-//				}
-//			}
-//			if(!unknownMaxspeedTags.contains(maxspeedTag) && message) {
-//				unknownMaxspeedTags.add(maxspeedTag);
-//				log.warn("Could not parse maxspeed tag: " + e.getMessage() + " (way " + way.getId() + ") Ignoring it.");
-//			}
-//		}
-		
 		double maxspeed = parseMaxspeedValueAsMs(way, Osm.Key.MAXSPEED).orElse(defaultFreeSpeed);
 		
 		// in case a specific maxspeed per direction is available this overrules the standard maxspeed
