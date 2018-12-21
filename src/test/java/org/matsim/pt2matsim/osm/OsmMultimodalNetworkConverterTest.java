@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -36,7 +35,7 @@ public class OsmMultimodalNetworkConverterTest {
 		osmConfig.setOutputNetworkFile("test/osm/GerasdorfArtificialLanesAndMaxspeed.xml.gz");
 		osmConfig.setMaxLinkLength(1000);
 
-		// read osm file
+		// read OSM file
 		OsmData osm = new OsmDataImpl();
 		new OsmFileReader(osm).readFile(osmConfig.getOsmFile());
 
@@ -74,15 +73,15 @@ public class OsmMultimodalNetworkConverterTest {
 		Set<Link> links = osmid2link.get(7994891L);
 		assertEquals("bidirectional", 2, links.size());
 		assertLanes(links, 1);
-//		assertMaxspeed(links, 30); // TODO expected behavior?
+		assertMaxspeed("taken from OsmConverterConfigGroup.createDefaultConfig", links, 15);
 	}
 	
 	@Test
 	public void testDefaultPrimary() {
 		Set<Link> links = osmid2link.get(7994890L);
 		assertEquals("bidirectional", 2, links.size()); 
-//		assertLanes(links, 2); // TODO expected behavior?
-//		assertMaxspeed(links, 50); // TODO expected behavior?
+		assertLanes("taken from OsmConverterConfigGroup.createDefaultConfig", links, 1);
+		assertMaxspeed("taken from OsmConverterConfigGroup.createDefaultConfig", links, 80);
 	}
 	
 	@Test
@@ -143,15 +142,15 @@ public class OsmMultimodalNetworkConverterTest {
 		assertEquals("oneway", 1, links.size());
 		assertEquals("oneway up north", 1, getLinksTowardsNode(links, 59836794L).size());
 		assertLanes(links, 1);
-//		assertMaxspeed(links, 30); // TODO expected behavior?
+		assertMaxspeed("taken from OsmConverterConfigGroup.createDefaultConfig", links, 15);
 	}
 	
 	@Test
 	public void testResidentialInvalidLanesAndMaxspeed() {
 		Set<Link> links = osmid2link.get(7994891L);
 		assertEquals("bidirectional", 2, links.size());
-		assertLanes(links, 1);
-//		assertMaxspeed(links, 30); // TODO expected behavior?
+		assertLanes("taken from OsmConverterConfigGroup.createDefaultConfig", links, 1);
+		assertMaxspeed("taken from OsmConverterConfigGroup.createDefaultConfig", links, 15);
 	}
 	
 
@@ -160,8 +159,8 @@ public class OsmMultimodalNetworkConverterTest {
 		Set<Link> links = osmid2link.get(7994919L);
 		assertEquals("oneway", 1, links.size());
 		assertEquals("oneway up north", 1, getLinksTowardsNode(links, 59836804L).size());
-//		assertLanes(links, 2); // TODO expected behavior?
-//		assertMaxspeed(links, 50); // TODO expected behavior?
+		assertLanes("taken from OsmConverterConfigGroup.createDefaultConfig", links, 1);
+		assertMaxspeed("taken from OsmConverterConfigGroup.createDefaultConfig", links, 80);
 	}
 
 	@Test
@@ -212,9 +211,9 @@ public class OsmMultimodalNetworkConverterTest {
 	@Test
 	public void testMotorwayWithoutMaxspeedAndOneway() {
 		Set<Link> links = osmid2link.get(7994932L);
-		assertEquals("oneway is implied by motorways", 1, links.size());
+		assertEquals("oneway by default - taken from OsmConverterConfigGroup.createDefaultConfig", 1, links.size());
 		assertEquals("oneway up north", 1, getLinksTowardsNode(links, 59836844L).size());
-		assertLanes(links, 2);
+		assertLanes("taken from OsmConverterConfigGroup.createDefaultConfig", links, 2);
 		assertMaxspeed(links, OsmMultimodalNetworkConverter.SPEED_LIMIT_NONE_KPH);
 	}
 	
@@ -268,7 +267,6 @@ public class OsmMultimodalNetworkConverterTest {
 		}
 	}
 
-	@Ignore
 	@Test
 	public void convertWaterlooCityCentre() {
 		// setup config
@@ -278,7 +276,7 @@ public class OsmMultimodalNetworkConverterTest {
 		osmConfig.setOutputNetworkFile("test/output/WaterlooCityCentre.xml.gz");
 		osmConfig.setMaxLinkLength(20);
 
-		// read osm file
+		// read OSM file
 		OsmData osm = new OsmDataImpl();
 		new OsmFileReader(osm).readFile(osmConfig.getOsmFile());
 
