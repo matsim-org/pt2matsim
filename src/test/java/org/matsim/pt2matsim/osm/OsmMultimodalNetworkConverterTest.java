@@ -212,7 +212,7 @@ public class OsmMultimodalNetworkConverterTest {
 	@Test
 	public void testMotorwayWithoutMaxspeedAndOneway() {
 		Set<Link> links = osmid2link.get(7994932L);
-		assertEquals("oneway is implied by motorways", 1, links.size()); // TODO where is this achieved in the code??
+		assertEquals("oneway is implied by motorways", 1, links.size());
 		assertEquals("oneway up north", 1, getLinksTowardsNode(links, 59836844L).size());
 		assertLanes(links, 2);
 		assertMaxspeed(links, OsmMultimodalNetworkConverter.SPEED_LIMIT_NONE_KPH);
