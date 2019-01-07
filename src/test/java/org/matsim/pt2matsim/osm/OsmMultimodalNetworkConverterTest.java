@@ -23,6 +23,7 @@ import org.matsim.pt2matsim.osm.lib.OsmFileReader;
  * @author mstraub - Austrian Institute of Technology
  */
 public class OsmMultimodalNetworkConverterTest {
+	/** MATSim links created from the Gerasdorf test file */
 	private static Map<Long, Set<Link>> osmid2link;
 	private static final double DELTA = 0.001;
 	

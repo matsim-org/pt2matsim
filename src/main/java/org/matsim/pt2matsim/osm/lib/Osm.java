@@ -55,7 +55,7 @@ public final class Osm {
 	}
 
 	/**
-	 * Parent class for a basic osm element node, way or relation
+	 * Parent class for a basic OSM element node, way or relation
 	 */
 	public interface Element {
 
@@ -70,7 +70,7 @@ public final class Osm {
 	}
 
 	/**
-	 * osm node
+	 * OSM node
 	 */
 	public interface Node extends Element, Identifiable<Node> {
 		Coord getCoord();
@@ -89,7 +89,7 @@ public final class Osm {
 	}
 
 	/**
-	 * osm way
+	 * OSM way
 	 */
 	public interface Way extends Element, Identifiable<Way> {
 		List<Node> getNodes();
@@ -101,7 +101,7 @@ public final class Osm {
 	}
 
 	/**
-	 * osm relation
+	 * OSM relation
 	 */
 	public interface Relation extends Element, Identifiable<Relation> {
 		List<Element> getMembers();
