@@ -295,7 +295,7 @@ public class OsmMultimodalNetworkConverter {
 		oneway = wayDefaultParams.getOneway();
 		modes = new HashSet<>(wayDefaultParams.getAllowedTransportModes());
 
-		// Overwrite defaults with osm data
+		// Overwrite defaults with OSM data
 		Map<String, String> tags = way.getTags();
 		String highwayValue = tags.get(Osm.Key.HIGHWAY);
 		String railwayValue = tags.get(Osm.Key.RAILWAY);
@@ -364,12 +364,12 @@ public class OsmMultimodalNetworkConverter {
 		Id<Node> fromId = Id.create(fromNode.getId(), Node.class);
 		Id<Node> toId = Id.create(toNode.getId(), Node.class);
 		if(network.getNodes().get(fromId) != null && network.getNodes().get(toId) != null) {
-			// forward link
+			// forward link (in OSM digitization direction)
 			if(!onewayReverse) {
 				Link l = network.getFactory().createLink(Id.create(this.id, Link.class), network.getNodes().get(fromId), network.getNodes().get(toId));
 				l.setLength(length);
 				l.setFreespeed(freeSpeedForward);
-				l.setCapacity(laneCountForward * laneCapacity); // TODO test capacity calculation
+				l.setCapacity(laneCountForward * laneCapacity);
 				l.setNumberOfLanes(laneCountForward);
 				l.setAllowedModes(modes);
 
