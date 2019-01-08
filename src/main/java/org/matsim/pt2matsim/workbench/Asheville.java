@@ -109,7 +109,6 @@ public class Asheville {
 		config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.PRIMARY_LINK, 1, 60.0 / 3.6, 1.0, 1500, false, carSingleton));
 		config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.SECONDARY, 1, 60.0 / 3.6, 1.0, 1000, false, carSingleton));
 		config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.TERTIARY, 1, 50.0 / 3.6, 1.0, 600, false, carSingleton));
-		config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MINOR, 1, 40.0 / 3.6, 1.0, 600, false, carSingleton));
 		config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.UNCLASSIFIED, 1, 50.0 / 3.6, 1.0, 600, false, carSingleton));
 		config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.RESIDENTIAL, 1, 30.0 / 3.6, 1.0, 600, false, carSingleton));
 		config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.LIVING_STREET, 1, 15.0 / 3.6, 1.0, 300, false, carSingleton));

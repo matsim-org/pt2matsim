@@ -89,7 +89,6 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.TERTIARY, 1, 25.0 / 3.6, 1.0, 600, false, carSingleton));
 		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.TERTIARY_LINK, 1, 25.0 / 3.6, 1.0, 600, false, carSingleton));
 		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.UNCLASSIFIED, 1, 25.0 / 3.6, 1.0, 600, false, carSingleton));
-		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.MINOR, 1, 40.0 / 3.6, 1.0, 600, false, carSingleton));
 		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.RESIDENTIAL, 1, 15.0 / 3.6, 1.0, 600, false, carSingleton));
 		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.LIVING_STREET, 1, 10.0 / 3.6, 1.0, 300, false, carSingleton));
 
