@@ -171,7 +171,7 @@ public class OsmMultimodalNetworkConverter {
 
 				double length = 0.0;
 				Osm.Node lastNode = way.getNodes().get(0);
-				for(int i = 1; i < way.getNodes().size(); i++) {
+				for(int i = 1; i < way.getNodes().size() - 1; i++) {
 					Osm.Node node = way.getNodes().get(i);
 					if(node.getWays().size() > 1) {
 						length = 0.0;
