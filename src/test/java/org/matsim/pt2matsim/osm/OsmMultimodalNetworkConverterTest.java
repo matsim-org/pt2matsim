@@ -245,6 +245,14 @@ public class OsmMultimodalNetworkConverterTest {
 		assertEquals("bidirectional", 2, links.size());
 		assertMaxspeed("second speed limit is ignored", links, 40);
 	}
+
+	@Test
+	public void testDeadEndStreetsAreContainedInNetwork() {
+		assertEquals(2, osmid2link.get(22971704L).size());
+		assertEquals(2, osmid2link.get(153227314L).size());
+		assertEquals(2, osmid2link.get(95142433L).size());
+		assertEquals(2, osmid2link.get(95142441L).size());
+	}
 	
 	private static void assertLanes(Set<Link> links, double expectedLanes) {
 		assertLanes("", links, expectedLanes);
