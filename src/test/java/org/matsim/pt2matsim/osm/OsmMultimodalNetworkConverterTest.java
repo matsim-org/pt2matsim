@@ -253,7 +253,7 @@ public class OsmMultimodalNetworkConverterTest {
 		assertEquals(2, osmid2link.get(95142433L).size());
 		assertEquals(2, osmid2link.get(95142441L).size());
 	}
-	
+
 	private static void assertLanes(Set<Link> links, double expectedLanes) {
 		assertLanes("", links, expectedLanes);
 	}
