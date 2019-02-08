@@ -611,13 +611,13 @@ public class OsmMultimodalNetworkConverter {
 	    
 	    for (ConfigGroup params : config.getParameterSets(OsmConverterConfigGroup.RouteableSubnetworkParams.SET_NAME)) {
 	        OsmConverterConfigGroup.RouteableSubnetworkParams subnetworkParams = (OsmConverterConfigGroup.RouteableSubnetworkParams) params;
-	        subnetworkModes.add(subnetworkParams.getLayerMode());
+	        subnetworkModes.add(subnetworkParams.getSubnetworkMode());
 	        
-	        log.info(String.format("Creating clean subnetwork for '%s' considering links of: %s", subnetworkParams.getLayerMode(), subnetworkParams.getAllowedTransportModes().toString()));
+	        log.info(String.format("Creating clean subnetwork for '%s' considering links of: %s", subnetworkParams.getSubnetworkMode(), subnetworkParams.getAllowedTransportModes().toString()));
 	        
 	        Network subnetwork = NetworkTools.createFilteredNetworkByLinkMode(network, subnetworkParams.getAllowedTransportModes());
 	        new NetworkCleaner().run(subnetwork);
-	        subnetwork.getLinks().values().forEach(l -> l.setAllowedModes(Collections.singleton(subnetworkParams.getLayerMode())));
+	        subnetwork.getLinks().values().forEach(l -> l.setAllowedModes(Collections.singleton(subnetworkParams.getSubnetworkMode())));
 	        subnetworks.add(subnetwork);
 	    }
 	    

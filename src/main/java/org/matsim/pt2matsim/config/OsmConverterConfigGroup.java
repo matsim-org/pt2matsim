@@ -367,31 +367,31 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	    
 	    public final static String SET_NAME = "routeableSubnetwork";
 	    
-	    /** Network mode, for which the layer is created **/
-	    private String layerMode;
+	    /** Network mode, for which a consistent routeable network is created **/
+	    private String subnetworkMode;
 	    
-	    /** The allowed transport modes that are considered for this layer  **/
+	    /** The allowed transport modes that are considered for this sub-network  **/
 	    private Set<String> allowedTransportModes;
 	    
 	    public RouteableSubnetworkParams() {
 	        super(SET_NAME);
 	    }
 	    
-	    public RouteableSubnetworkParams(String layerMode, Set<String> allowedTransportModes) {
+	    public RouteableSubnetworkParams(String subnetworkMode, Set<String> allowedTransportModes) {
 	        super(SET_NAME);
 	        
-	        this.layerMode = layerMode;
+	        this.subnetworkMode = subnetworkMode;
 	        this.allowedTransportModes = allowedTransportModes;
 	    }
 	    
-	    @StringGetter("layerMode")
-	    public String getLayerMode() {
-	        return layerMode;
+	    @StringGetter("subnetworkMode")
+	    public String getSubnetworkMode() {
+	        return subnetworkMode;
 	    }
 
-	    @StringSetter("layerMode")
-	    public void setLayerMode(String layerMode) {
-	        this.layerMode = layerMode;
+	    @StringSetter("subnetworkMode")
+	    public void setSubnetworkMode(String subNetworkMode) {
+	        this.subnetworkMode = subNetworkMode;
 	    }
 	    
 	    public Set<String> getAllowedTransportModes() {
