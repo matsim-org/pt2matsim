@@ -24,7 +24,9 @@ import org.matsim.core.config.*;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.pt2matsim.osm.lib.Osm;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -96,6 +98,9 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.TRAM, 1, 40.0 / 3.6, 1.0, 9999, true, railSingleton));
 		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.LIGHT_RAIL, 1, 80.0 / 3.6, 1.0, 9999, false, railSingleton));
 
+		defaultConfig.addParameterSet(new NetworkLayerParams("car", carSingleton));
+		defaultConfig.addParameterSet(new NetworkLayerParams("bus", new HashSet<>(Arrays.asList("car", "bus"))));
+		
 		return defaultConfig;
 	}
 
@@ -215,6 +220,8 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		switch(type) {
 			case OsmWayParams.SET_NAME :
 				return new OsmWayParams();
+			case NetworkLayerParams.SET_NAME:
+			    return new NetworkLayerParams();
 			default:
 				throw new IllegalArgumentException("Unknown parameterset name!");
 		}
@@ -351,5 +358,58 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		private void setAllowedTransportModesString(String allowedTransportModesString) {
 			this.allowedTransportModes = CollectionUtils.stringToSet(allowedTransportModesString);
 		}
+	}
+	
+	/**
+	 * Defines for which modes the converter should make sure that a consistent network for routing exists.
+	 */
+	public static class NetworkLayerParams extends ReflectiveConfigGroup implements MatsimParameters {
+	    
+	    public final static String SET_NAME = "networkLayer";
+	    
+	    /** Network mode, for which the layer is created **/
+	    private String layerMode;
+	    
+	    /** The allowed transport modes that are considered for this layer  **/
+	    private Set<String> allowedTransportModes;
+	    
+	    public NetworkLayerParams() {
+	        super(SET_NAME);
+	    }
+	    
+	    public NetworkLayerParams(String layerMode, Set<String> allowedTransportModes) {
+	        super(SET_NAME);
+	        
+	        this.layerMode = layerMode;
+	        this.allowedTransportModes = allowedTransportModes;
+	    }
+	    
+	    @StringGetter("layerMode")
+	    public String getLayerMode() {
+	        return layerMode;
+	    }
+
+	    @StringSetter("layerMode")
+	    public void setLayerMode(String layerMode) {
+	        this.layerMode = layerMode;
+	    }
+	    
+	    public Set<String> getAllowedTransportModes() {
+	        return this.allowedTransportModes;
+	    }
+
+	    public void setAllowedTransportModes(Set<String> allowedTransportModes) {
+	        this.allowedTransportModes = allowedTransportModes;
+	    }
+
+	    @StringGetter("allowedTransportModes")
+	    private String getAllowedTransportModesString() {
+	        return CollectionUtils.setToString(allowedTransportModes);
+	    }
+
+	    @StringSetter("allowedTransportModes")
+	    private void setAllowedTransportModesString(String allowedTransportModesString) {
+	        this.allowedTransportModes = CollectionUtils.stringToSet(allowedTransportModesString);
+	    }
 	}
 }
