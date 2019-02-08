@@ -603,46 +603,46 @@ public class OsmMultimodalNetworkConverter {
 	}
 
 	/**
-	 * Runs the network cleaner on the street network.
+	 * Makes sure that consistent routeable sub networks are created.
 	 */
 	protected void cleanNetwork() {
-	    Set<String> layerModes = new HashSet<>();
-	    List<Network> layerNetworks = new LinkedList<>();
+	    Set<String> subnetworkModes = new HashSet<>();
+	    List<Network> subnetworks = new LinkedList<>();
 	    
-	    for (ConfigGroup params : config.getParameterSets(OsmConverterConfigGroup.NetworkLayerParams.SET_NAME)) {
-	        OsmConverterConfigGroup.NetworkLayerParams layerParams = (OsmConverterConfigGroup.NetworkLayerParams) params;
-	        layerModes.add(layerParams.getLayerMode());
+	    for (ConfigGroup params : config.getParameterSets(OsmConverterConfigGroup.RouteableSubnetworkParams.SET_NAME)) {
+	        OsmConverterConfigGroup.RouteableSubnetworkParams subnetworkParams = (OsmConverterConfigGroup.RouteableSubnetworkParams) params;
+	        subnetworkModes.add(subnetworkParams.getLayerMode());
 	        
-	        log.info(String.format("Creating clean network for '%s' considering links of: %s", layerParams.getLayerMode(), layerParams.getAllowedTransportModes().toString()));
+	        log.info(String.format("Creating clean subnetwork for '%s' considering links of: %s", subnetworkParams.getLayerMode(), subnetworkParams.getAllowedTransportModes().toString()));
 	        
-	        Network layerNetwork = NetworkTools.createFilteredNetworkByLinkMode(network, layerParams.getAllowedTransportModes());
-	        new NetworkCleaner().run(layerNetwork);
-	        layerNetwork.getLinks().values().forEach(l -> l.setAllowedModes(Collections.singleton(layerParams.getLayerMode())));
-	        layerNetworks.add(layerNetwork);
+	        Network subnetwork = NetworkTools.createFilteredNetworkByLinkMode(network, subnetworkParams.getAllowedTransportModes());
+	        new NetworkCleaner().run(subnetwork);
+	        subnetwork.getLinks().values().forEach(l -> l.setAllowedModes(Collections.singleton(subnetworkParams.getLayerMode())));
+	        subnetworks.add(subnetwork);
 	    }
 	    
-	    Set<String> restModes = new HashSet<>();
+	    Set<String> remainingModes = new HashSet<>();
 	    
 	    for (Link link : network.getLinks().values()) {
-	    	restModes.addAll(link.getAllowedModes());
+	    	remainingModes.addAll(link.getAllowedModes());
 	    }
 	    
-	    restModes.removeAll(layerModes);
+	    remainingModes.removeAll(subnetworkModes);
 	    
-	    log.info(String.format("Creating rest network with modes: %s", restModes.toString()));
-	    Network restNetwork = NetworkTools.createFilteredNetworkByLinkMode(network, restModes);
+	    log.info(String.format("Creating remaining network with modes: %s", remainingModes.toString()));
+	    Network remainingNetwork = NetworkTools.createFilteredNetworkByLinkMode(network, remainingModes);
 	    
-	    for (Link link : restNetwork.getLinks().values()) {
-	    	Set<String> newAllowedModes = new HashSet<>(restModes);
+	    for (Link link : remainingNetwork.getLinks().values()) {
+	    	Set<String> newAllowedModes = new HashSet<>(remainingModes);
 	    	newAllowedModes.retainAll(link.getAllowedModes());
 	    	link.setAllowedModes(newAllowedModes);
 	    }
 	    
-	    layerNetworks.add(restNetwork);
+	    subnetworks.add(remainingNetwork);
 	    
 	    log.info("Creating combined network");
 	    Network combinedNetwork = NetworkUtils.createNetwork();
-	    layerNetworks.forEach(n -> NetworkTools.integrateNetwork(combinedNetwork, n, true));
+	    subnetworks.forEach(n -> NetworkTools.integrateNetwork(combinedNetwork, n, true));
 	    
 	    this.network = combinedNetwork;
 	}

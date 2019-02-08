@@ -54,7 +54,7 @@ public class NetworkLayerTest {
 		assertEquals(carLinks + 8, carPassengerLinks);
 		
 		// II) Convert with a network layer for car_passenger
-		osmConfig.addParameterSet(new OsmConverterConfigGroup.NetworkLayerParams("car_passenger", Collections.singleton("car")));
+		osmConfig.addParameterSet(new OsmConverterConfigGroup.RouteableSubnetworkParams("car_passenger", Collections.singleton("car")));
 		
 		OsmMultimodalNetworkConverter converter2 = new OsmMultimodalNetworkConverter(osm);
 		converter2.convert(osmConfig);
