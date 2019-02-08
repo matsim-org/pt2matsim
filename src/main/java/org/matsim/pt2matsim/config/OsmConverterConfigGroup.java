@@ -98,8 +98,8 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.TRAM, 1, 40.0 / 3.6, 1.0, 9999, true, railSingleton));
 		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.LIGHT_RAIL, 1, 80.0 / 3.6, 1.0, 9999, false, railSingleton));
 
-		defaultConfig.addParameterSet(new NetworkLayerParams("car", carSingleton));
-		defaultConfig.addParameterSet(new NetworkLayerParams("bus", new HashSet<>(Arrays.asList("car", "bus"))));
+		defaultConfig.addParameterSet(new RouteableSubnetworkParams("car", carSingleton));
+		defaultConfig.addParameterSet(new RouteableSubnetworkParams("bus", new HashSet<>(Arrays.asList("car", "bus"))));
 		
 		return defaultConfig;
 	}
@@ -220,8 +220,8 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		switch(type) {
 			case OsmWayParams.SET_NAME :
 				return new OsmWayParams();
-			case NetworkLayerParams.SET_NAME:
-			    return new NetworkLayerParams();
+			case RouteableSubnetworkParams.SET_NAME:
+			    return new RouteableSubnetworkParams();
 			default:
 				throw new IllegalArgumentException("Unknown parameterset name!");
 		}
@@ -363,9 +363,9 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	/**
 	 * Defines for which modes the converter should make sure that a consistent network for routing exists.
 	 */
-	public static class NetworkLayerParams extends ReflectiveConfigGroup implements MatsimParameters {
+	public static class RouteableSubnetworkParams extends ReflectiveConfigGroup implements MatsimParameters {
 	    
-	    public final static String SET_NAME = "networkLayer";
+	    public final static String SET_NAME = "routeableSubnetwork";
 	    
 	    /** Network mode, for which the layer is created **/
 	    private String layerMode;
@@ -373,11 +373,11 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	    /** The allowed transport modes that are considered for this layer  **/
 	    private Set<String> allowedTransportModes;
 	    
-	    public NetworkLayerParams() {
+	    public RouteableSubnetworkParams() {
 	        super(SET_NAME);
 	    }
 	    
-	    public NetworkLayerParams(String layerMode, Set<String> allowedTransportModes) {
+	    public RouteableSubnetworkParams(String layerMode, Set<String> allowedTransportModes) {
 	        super(SET_NAME);
 	        
 	        this.layerMode = layerMode;
