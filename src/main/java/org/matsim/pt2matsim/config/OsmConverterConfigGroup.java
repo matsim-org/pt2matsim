@@ -24,11 +24,7 @@ import org.matsim.core.config.*;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.pt2matsim.osm.lib.Osm;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -98,8 +94,8 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.TRAM, 1, 40.0 / 3.6, 1.0, 9999, true, railSingleton));
 		defaultConfig.addParameterSet(new OsmWayParams(Osm.Key.RAILWAY, Osm.Value.LIGHT_RAIL, 1, 80.0 / 3.6, 1.0, 9999, false, railSingleton));
 
-		defaultConfig.addParameterSet(new RouteableSubnetworkParams("car", carSingleton));
-		defaultConfig.addParameterSet(new RouteableSubnetworkParams("bus", new HashSet<>(Arrays.asList("car", "bus"))));
+		defaultConfig.addParameterSet(new RoutableSubnetworkParams("car", carSingleton));
+		defaultConfig.addParameterSet(new RoutableSubnetworkParams("bus", new HashSet<>(Arrays.asList("car", "bus"))));
 		
 		return defaultConfig;
 	}
@@ -220,8 +216,8 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		switch(type) {
 			case OsmWayParams.SET_NAME :
 				return new OsmWayParams();
-			case RouteableSubnetworkParams.SET_NAME:
-			    return new RouteableSubnetworkParams();
+			case RoutableSubnetworkParams.SET_NAME:
+			    return new RoutableSubnetworkParams();
 			default:
 				throw new IllegalArgumentException("Unknown parameterset name!");
 		}
@@ -363,21 +359,21 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	/**
 	 * Defines for which modes the converter should make sure that a consistent network for routing exists.
 	 */
-	public static class RouteableSubnetworkParams extends ReflectiveConfigGroup implements MatsimParameters {
+	public static class RoutableSubnetworkParams extends ReflectiveConfigGroup implements MatsimParameters {
 	    
-	    public final static String SET_NAME = "routeableSubnetwork";
+	    public final static String SET_NAME = "routableSubnetwork";
 	    
-	    /** Network mode, for which a consistent routeable network is created **/
+	    /** Network mode, for which a consistent routable network is created **/
 	    private String subnetworkMode;
 	    
 	    /** The allowed transport modes that are considered for this sub-network  **/
 	    private Set<String> allowedTransportModes;
 	    
-	    public RouteableSubnetworkParams() {
+	    public RoutableSubnetworkParams() {
 	        super(SET_NAME);
 	    }
 	    
-	    public RouteableSubnetworkParams(String subnetworkMode, Set<String> allowedTransportModes) {
+	    public RoutableSubnetworkParams(String subnetworkMode, Set<String> allowedTransportModes) {
 	        super(SET_NAME);
 	        
 	        this.subnetworkMode = subnetworkMode;

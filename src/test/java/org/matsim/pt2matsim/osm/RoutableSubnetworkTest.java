@@ -1,11 +1,5 @@
 package org.matsim.pt2matsim.osm;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.junit.Test;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -15,12 +9,19 @@ import org.matsim.pt2matsim.osm.lib.OsmData;
 import org.matsim.pt2matsim.osm.lib.OsmDataImpl;
 import org.matsim.pt2matsim.osm.lib.OsmFileReader;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+
 /**
  * @author shoerl
  */
-public class NetworkLayerTest {
+public class RoutableSubnetworkTest {
+
 	@Test
-	public void customNetworkLayer() {
+	public void customSubnetworks() {
 		// setup config
 		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.createDefaultConfig();
 		osmConfig.setOutputCoordinateSystem("WGS84");
@@ -43,7 +44,7 @@ public class NetworkLayerTest {
 		OsmData osm = new OsmDataImpl();
 		new OsmFileReader(osm).readFile(osmConfig.getOsmFile());
 
-		// I) Convert without a netowrk layer for car_passenger
+		// I) Convert without a network layer for car_passenger
 		OsmMultimodalNetworkConverter converter = new OsmMultimodalNetworkConverter(osm);
 		converter.convert(osmConfig);
 		
@@ -54,7 +55,7 @@ public class NetworkLayerTest {
 		assertEquals(carLinks + 8, carPassengerLinks);
 		
 		// II) Convert with a network layer for car_passenger
-		osmConfig.addParameterSet(new OsmConverterConfigGroup.RouteableSubnetworkParams("car_passenger", Collections.singleton("car")));
+		osmConfig.addParameterSet(new OsmConverterConfigGroup.RoutableSubnetworkParams("car_passenger", Collections.singleton("car")));
 		
 		OsmMultimodalNetworkConverter converter2 = new OsmMultimodalNetworkConverter(osm);
 		converter2.convert(osmConfig);
