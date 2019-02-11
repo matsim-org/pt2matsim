@@ -603,14 +603,14 @@ public class OsmMultimodalNetworkConverter {
 	}
 
 	/**
-	 * Makes sure that consistent routeable sub networks are created.
+	 * Makes sure that consistent routable sub networks are created.
 	 */
 	protected void cleanNetwork() {
 	    Set<String> subnetworkModes = new HashSet<>();
 	    List<Network> subnetworks = new LinkedList<>();
 	    
-	    for (ConfigGroup params : config.getParameterSets(OsmConverterConfigGroup.RouteableSubnetworkParams.SET_NAME)) {
-	        OsmConverterConfigGroup.RouteableSubnetworkParams subnetworkParams = (OsmConverterConfigGroup.RouteableSubnetworkParams) params;
+	    for (ConfigGroup params : config.getParameterSets(OsmConverterConfigGroup.RoutableSubnetworkParams.SET_NAME)) {
+	        OsmConverterConfigGroup.RoutableSubnetworkParams subnetworkParams = (OsmConverterConfigGroup.RoutableSubnetworkParams) params;
 	        subnetworkModes.add(subnetworkParams.getSubnetworkMode());
 	        
 	        log.info(String.format("Creating clean subnetwork for '%s' considering links of: %s", subnetworkParams.getSubnetworkMode(), subnetworkParams.getAllowedTransportModes().toString()));
