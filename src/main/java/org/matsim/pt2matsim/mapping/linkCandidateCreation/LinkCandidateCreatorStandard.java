@@ -226,7 +226,11 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 			}
 			nLC += entry.getValue().size();
 		}
-		log.info("Average number of link candidates: " + nLC / linkCandidates.size());
+		if(linkCandidates.size() == 0) {
+			log.warn("No link candidates created!");
+		} else {
+			log.info("Average number of link candidates: " + nLC / linkCandidates.size());
+		}
 	}
 
 	private String getCloseLinksKey(TransitRoute transitRoute, TransitRouteStop routeStop) {
