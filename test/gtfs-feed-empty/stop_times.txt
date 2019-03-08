@@ -1,0 +1,1 @@
+trip_id,stop_id,arrival_time,departure_time,stop_sequence,pickup_type,drop_off_type,departure_buffer
