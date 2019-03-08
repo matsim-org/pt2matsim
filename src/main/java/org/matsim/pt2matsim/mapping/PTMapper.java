@@ -135,10 +135,10 @@ public class PTMapper {
 		PTMapperTools.setLogLevels();
 
 		if(schedule.getTransitLines().size() == 0) {
-			throw new IllegalArgumentException("No transit lines available in schedule");
+			log.warn("No transit lines available in schedule");
 		}
 		if(schedule.getFacilities().size() == 0) {
-			throw new IllegalArgumentException("No stop facilities available in schedule");
+			log.warn("No stop facilities available in schedule");
 		}
 
 		log.info("======================================");

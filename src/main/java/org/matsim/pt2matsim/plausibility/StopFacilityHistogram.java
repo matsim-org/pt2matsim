@@ -95,7 +95,9 @@ public class StopFacilityHistogram {
 			i++;
 		}
 
-		histNr = new double[new ArrayList<>(histNrMap.keySet()).get(histNrMap.size()-1)];
+		ArrayList<Integer> list = new ArrayList<>(histNrMap.keySet());
+		int arraySize = list.isEmpty() ? 0 : list.get(histNrMap.size()-1);
+		histNr = new double[arraySize];
 		i=0;
 		for(Map.Entry<Integer, Integer> e : histNrMap.entrySet()) {
 			histNr[i] = e.getValue()-1;
@@ -104,11 +106,17 @@ public class StopFacilityHistogram {
 	}
 
 	public double median() {
+		if(hist.length == 0)
+			return Double.NaN;
+		
 		int m = hist.length / 2;
 		return hist[m];
 	}
 
 	public double average() {
+		if(hist.length == 0)
+			return Double.NaN;
+		
 		double sum = 0;
 		for(double m : hist) {
 			sum += m;
@@ -117,6 +125,9 @@ public class StopFacilityHistogram {
 	}
 
 	public double max() {
+		if(hist.length == 0)
+			return Double.NaN;
+		
 		return hist[hist.length - 1];
 	}
 
