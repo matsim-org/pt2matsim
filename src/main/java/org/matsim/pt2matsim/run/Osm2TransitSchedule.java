@@ -19,6 +19,7 @@
 package org.matsim.pt2matsim.run;
 
 import org.matsim.core.utils.geometry.CoordinateTransformation;
+import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.osm.OsmTransitScheduleConverter;
@@ -53,7 +54,7 @@ public final class Osm2TransitSchedule {
 
 	public static void run(String osmFile, String outputScheduleFile, String outputCoordinateSystem) {
 		TransitSchedule schedule = ScheduleTools.createSchedule();
-		CoordinateTransformation ct = outputCoordinateSystem != null ? TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem) : null;
+		CoordinateTransformation ct = outputCoordinateSystem != null ? TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem) : new IdentityTransformation();
 
 		// load osm file
 		OsmData osmData = new OsmDataImpl();
