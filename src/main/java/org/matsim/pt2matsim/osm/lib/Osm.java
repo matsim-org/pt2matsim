@@ -172,6 +172,7 @@ public final class Osm {
 	public static final class Value {
 
 		public static final String STOP = "stop";
+		public static final String BUS_STOP = "bus_stop";
 		public static final String STOP_FORWARD = "stop_forward";
 		public static final String STOP_BACKWARD = "stop_backward";
 
@@ -202,6 +203,7 @@ public final class Osm {
 
 		// values for railway=*
 		public static final String RAIL = "rail";
+		public static final String TRAIN = "train";
 		public static final String TRAM = "tram";
 		public static final String LIGHT_RAIL = "light_rail";
 		public static final String FUNICULAR = "funicular";
