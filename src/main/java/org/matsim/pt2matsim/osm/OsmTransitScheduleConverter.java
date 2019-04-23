@@ -70,6 +70,7 @@ public class OsmTransitScheduleConverter {
 		// initialize conversion filters
 		AllowedTagsFilter stop_position = new AllowedTagsFilter();
 		stop_position.add(Osm.ElementType.NODE, Osm.Key.PUBLIC_TRANSPORT, Osm.Value.STOP_POSITION);
+		stop_position.add(Osm.ElementType.NODE, Osm.Key.HIGHWAY, Osm.Value.BUS_STOP);
 
 		AllowedTagsFilter stop_area = new AllowedTagsFilter();
 		stop_area.add(Osm.ElementType.RELATION, Osm.Key.PUBLIC_TRANSPORT, Osm.Value.STOP_AREA);
@@ -86,6 +87,7 @@ public class OsmTransitScheduleConverter {
 		ptRoute.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.BUS);
 		ptRoute.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TROLLEYBUS);
 		ptRoute.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.RAIL);
+		ptRoute.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TRAIN);
 		ptRoute.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TRAM);
 		ptRoute.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.LIGHT_RAIL);
 		ptRoute.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.FUNICULAR);

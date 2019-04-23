@@ -503,6 +503,7 @@ public class OsmMultimodalNetworkConverter {
 		ptFilter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.BUS);
 		ptFilter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TROLLEYBUS);
 		ptFilter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.RAIL);
+		ptFilter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TRAIN);
 		ptFilter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.TRAM);
 		ptFilter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.LIGHT_RAIL);
 		ptFilter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.FUNICULAR);
