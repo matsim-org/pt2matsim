@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.matsim</groupId>
     <artifactId>pt2matsim</artifactId>
-    <version>19.2</version>
+    <version>19.3-SNAPSHOT</version>
 
     <name>PT2MATSim</name>
     <description>Public Transport to MATSim</description>
@@ -29,10 +29,12 @@
     </repositories>
 
 	<properties>
-		<geotools.version>19.0</geotools.version>
+		<geotools.version>20.2</geotools.version>
 	</properties>
 
     <dependencies>
+		<!-- geotools is already a dependency of matsim (at least in v11.0), 
+		     so these dependencies could be removed -->
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-main</artifactId>
@@ -57,7 +59,7 @@
         <dependency>
             <groupId>org.matsim</groupId>
             <artifactId>matsim</artifactId>
-            <version>0.10.1</version>
+            <version>11.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

@@ -30,8 +30,6 @@ import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.collections.MapUtils;
-import org.matsim.core.utils.geometry.CoordinateTransformation;
-import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
@@ -365,11 +363,8 @@ public final class ScheduleTools {
 	 */
 	public static void transformScheduleFile(String scheduleFile, String fromCoordinateSystem, String toCoordinateSystem) {
 		log.info("... Transformig schedule from " + fromCoordinateSystem + " to " + toCoordinateSystem);
-
-		final CoordinateTransformation coordinateTransformation = TransformationFactory.getCoordinateTransformation(fromCoordinateSystem, toCoordinateSystem);
 		final Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
-
-		new TransitScheduleReader(coordinateTransformation, scenario).readFile(scheduleFile);
+		new TransitScheduleReader(fromCoordinateSystem, toCoordinateSystem, scenario).readFile(scheduleFile);
 		TransitSchedule schedule = scenario.getTransitSchedule();
 		new TransitScheduleWriter(schedule).writeFile(scheduleFile);
 	}
