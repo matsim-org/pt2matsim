@@ -10,6 +10,8 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt.utils.TransitScheduleValidator;
+import org.matsim.pt.utils.TransitScheduleValidator.ValidationResult;
+import org.matsim.pt.utils.TransitScheduleValidator.ValidationResult.ValidationIssue;
 import org.matsim.pt2matsim.mapping.pseudoRouter.LinkSequence;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 import org.matsim.pt2matsim.tools.lib.RouteShape;
@@ -174,7 +176,12 @@ public class ScheduleToolsTest {
 
 	@Test
 	public void validateTestSchedule() {
-		Assert.assertTrue(TransitScheduleValidator.validateAll(ScheduleToolsTest.initSchedule(), NetworkToolsTest.initNetwork()).isValid());
+		ValidationResult result = TransitScheduleValidator.validateAll(ScheduleToolsTest.initSchedule(), NetworkToolsTest.initNetwork());
+		for(ValidationIssue<?> issue : result.getIssues()) {
+			// TODO fix problems here!
+			System.err.println(issue.getSeverity() + ": " + issue.getMessage());
+		}
+		Assert.assertTrue(result.isValid());
 	}
 
 	@Test

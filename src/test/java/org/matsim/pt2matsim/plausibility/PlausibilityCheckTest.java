@@ -1,6 +1,6 @@
 package org.matsim.pt2matsim.plausibility;
 
-import com.vividsolutions.jts.util.Assert;
+import org.locationtech.jts.util.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

@@ -19,7 +19,7 @@
 package org.matsim.pt2matsim.tools;
 
 import com.opencsv.CSVReader;
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
