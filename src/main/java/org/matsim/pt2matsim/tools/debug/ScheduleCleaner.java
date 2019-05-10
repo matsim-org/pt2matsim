@@ -234,6 +234,7 @@ public final class ScheduleCleaner {
 	/**
 	 * Combines all child stops based on ".link:" to parent stops for debugging.
 	 * Network routes and referenced links of child stop facilities are unchanged.
+	 * Combines transfers as well.
 	 */
 	public static void combineChildStopsToParentStop(TransitSchedule schedule) {
 		for(TransitStopFacility transitStopFacility : new HashSet<>(schedule.getFacilities().values())) {
@@ -252,11 +253,25 @@ public final class ScheduleCleaner {
 		for(TransitLine line : schedule.getTransitLines().values()) {
 			for(TransitRoute route : line.getRoutes().values()) {
 				for(TransitRouteStop stop : route.getStops()) {
-					Id<TransitStopFacility> parentId = Id.create(ScheduleTools.createParentStopFacilityId(stop.getStopFacility().getId().toString()), TransitStopFacility.class);
+					Id<TransitStopFacility> parentId = ScheduleTools.createParentStopFacilityId(stop.getStopFacility().getId().toString());
 					TransitStopFacility parentStopFacility = schedule.getFacilities().get(parentId);
 					stop.setStopFacility(parentStopFacility);
 				}
 			}
+		}
+
+		MinimalTransferTimes transferTimes = schedule.getMinimalTransferTimes();
+		MinimalTransferTimes.MinimalTransferTimesIterator iterator = transferTimes.iterator();
+		List<Object[]> toAdd = new ArrayList<>();
+		while(iterator.hasNext()) {
+			iterator.next();
+			Id<TransitStopFacility> fromParentId = ScheduleTools.createParentStopFacilityId(iterator.getFromStopId().toString());
+			Id<TransitStopFacility> toParentId = ScheduleTools.createParentStopFacilityId(iterator.getToStopId().toString());
+			toAdd.add(new Object[]{fromParentId, toParentId, iterator.getSeconds()});
+			transferTimes.remove(iterator.getFromStopId(), iterator.getToStopId());
+		}
+		for(Object[] o: toAdd) {
+			transferTimes.set((Id<TransitStopFacility>) o[0], (Id<TransitStopFacility>) o[1], (double) o[2]);
 		}
 	}
 
