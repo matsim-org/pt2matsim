@@ -158,10 +158,14 @@ public class ScheduleToolsTest {
 
 		// transferTimes
 		MinimalTransferTimes minimalTransferTimes = transitSchedule.getMinimalTransferTimes();
-		minimalTransferTimes.set(Id.create("stop2", TransitStopFacility.class), Id.create("stop3", TransitStopFacility.class), 0);
-		minimalTransferTimes.set(Id.create("stop3", TransitStopFacility.class), Id.create("stop2", TransitStopFacility.class), 0);
-		minimalTransferTimes.set(Id.create("stop3", TransitStopFacility.class), Id.create("stop4", TransitStopFacility.class), 10);
-		minimalTransferTimes.set(Id.create("stop4", TransitStopFacility.class), Id.create("stop3", TransitStopFacility.class), 10);
+		minimalTransferTimes.set(Id.create("stop2.link:AD", TransitStopFacility.class), Id.create("stop3.link:AX", TransitStopFacility.class), 0);
+		minimalTransferTimes.set(Id.create("stop2.link:DA", TransitStopFacility.class), Id.create("stop3.link:XA", TransitStopFacility.class), 0);
+		minimalTransferTimes.set(Id.create("stop3.link:AX", TransitStopFacility.class), Id.create("stop2.link:AD", TransitStopFacility.class), 0);
+		minimalTransferTimes.set(Id.create("stop3.link:XA", TransitStopFacility.class), Id.create("stop2.link:DA", TransitStopFacility.class), 0);
+		minimalTransferTimes.set(Id.create("stop3.link:AX", TransitStopFacility.class), Id.create("stop4.link:IB", TransitStopFacility.class), 10);
+		minimalTransferTimes.set(Id.create("stop3.link:XA", TransitStopFacility.class), Id.create("stop4.link:BI", TransitStopFacility.class), 10);
+		minimalTransferTimes.set(Id.create("stop4.link:IB", TransitStopFacility.class), Id.create("stop3.link:AX", TransitStopFacility.class), 10);
+		minimalTransferTimes.set(Id.create("stop4.link:BI", TransitStopFacility.class), Id.create("stop3.link:XA", TransitStopFacility.class), 10);
 
 		return transitSchedule;
 	}
