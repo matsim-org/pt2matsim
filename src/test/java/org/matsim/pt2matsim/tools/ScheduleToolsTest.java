@@ -182,7 +182,6 @@ public class ScheduleToolsTest {
 	public void validateTestSchedule() {
 		ValidationResult result = TransitScheduleValidator.validateAll(ScheduleToolsTest.initSchedule(), NetworkToolsTest.initNetwork());
 		for(ValidationIssue<?> issue : result.getIssues()) {
-			// TODO fix problems here!
 			System.err.println(issue.getSeverity() + ": " + issue.getMessage());
 		}
 		Assert.assertTrue(result.isValid());
