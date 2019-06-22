@@ -191,14 +191,15 @@ public class GtfsFeedImpl implements GtfsFeed {
 	protected void loadStops() throws IOException {
 		log.info("Loading stops.txt");
 
+		int l = 1;
 		try {
 			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.STOPS.fileName);
-
 			String[] header = reader.readNext(); // read header
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.STOPS.columns, GtfsDefinitions.Files.STOPS.optionalColumns); // get column numbers for required fields
 
 			String[] line = reader.readNext();
 			while(line != null) {
+				l++;
 				String stopId = line[col.get(GtfsDefinitions.STOP_ID)];
 				Stop stop = new StopImpl(stopId, line[col.get(GtfsDefinitions.STOP_NAME)], Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LON)]), Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LAT)]));
 				stops.put(stopId, stop);
@@ -222,8 +223,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 			}
 
 			reader.close();
-		} catch (ArrayIndexOutOfBoundsException i) {
-			throw new RuntimeException("Emtpy line found in stops.txt");
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new RuntimeException("Line " + l + " in stops.txt is empty or malformed.");
 		}
 		log.info("...     stops.txt loaded");
 	}
@@ -240,9 +241,10 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 */
 	protected void loadCalendar() throws IOException {
 		log.info("Loading calendar.txt");
+
+		int l = 1;
 		try {
 			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.CALENDAR.fileName);
-
 			String[] header = reader.readNext();
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.CALENDAR.columns, GtfsDefinitions.Files.CALENDAR.optionalColumns);
 
@@ -251,6 +253,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 			String[] line = reader.readNext();
 			while(line != null) {
+				l++;
 				boolean[] days = new boolean[7];
 				for(int d = 0; d < 7; d++) {
 					days[d] = line[indexMonday + d].equals("1");
@@ -262,7 +265,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 			reader.close();
 		} catch (ArrayIndexOutOfBoundsException i) {
-			throw new RuntimeException("Emtpy line found in calendar.txt");
+			throw new RuntimeException("Line " + l + " in calendar.txt is empty or malformed.");
 		}
 		log.info("...     calendar.txt loaded");
 	}
@@ -279,14 +282,15 @@ public class GtfsFeedImpl implements GtfsFeed {
 		// calendar dates are optional
 		log.info("Looking for calendar_dates.txt");
 
+		int l = 1;
 		try {
 			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.CALENDAR_DATES.fileName);
-
 			String[] header = reader.readNext();
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.CALENDAR_DATES.columns, GtfsDefinitions.Files.CALENDAR_DATES.optionalColumns);
 
 			String[] line = reader.readNext();
 			while(line != null) {
+				l++;
 				Service currentService = services.get(line[col.get(GtfsDefinitions.SERVICE_ID)]);
 
 				if(currentService == null) {
@@ -312,7 +316,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 		} catch (IOException e) {
 			log.info("...     no calendar dates file found.");
 		} catch (ArrayIndexOutOfBoundsException i) {
-			throw new RuntimeException("Emtpy line found in calendar_dates.txt");
+			throw new RuntimeException("Line " + l + " in calendar_dates.txt is empty or malformed.");
 		}
 	}
 
@@ -327,14 +331,15 @@ public class GtfsFeedImpl implements GtfsFeed {
 		// shapes are optional
 		log.info("Looking for shapes.txt");
 
+		int l = 1;
 		try {
 			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.SHAPES.fileName);
-
 			String[] header = reader.readNext();
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.SHAPES.columns, GtfsDefinitions.Files.SHAPES.optionalColumns);
 
 			String[] line = reader.readNext();
 			while(line != null) {
+				l++;
 				usesShapes = true; // shape file might exists but could be empty
 
 				Id<RouteShape> shapeId = Id.create(line[col.get(GtfsDefinitions.SHAPE_ID)], RouteShape.class);
@@ -353,7 +358,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 		} catch (IOException e) {
 			log.info("...     no shapes file found.");
 		} catch (ArrayIndexOutOfBoundsException i) {
-			throw new RuntimeException("Emtpy line found in shapes.txt");
+			throw new RuntimeException("Line " + l + " in shapes.txt is empty or malformed.");
 		}
 	}
 
@@ -370,6 +375,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 */
 	protected void loadRoutes() throws IOException {
 		log.info("Loading routes.txt");
+
+		int l = 1;
 		try {
 			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.ROUTES.fileName);
 			String[] header = reader.readNext();
@@ -377,6 +384,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 			String[] line = reader.readNext();
 			while(line != null) {
+				l++;
 				int routeTypeNr = Integer.parseInt(line[col.get(GtfsDefinitions.ROUTE_TYPE)]);
 
 				ExtendedRouteType extendedRouteType = RouteType.getExtendedRouteType(routeTypeNr);
@@ -396,7 +404,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 			}
 			reader.close();
 		} catch (ArrayIndexOutOfBoundsException i) {
-			throw new RuntimeException("Emtpy line found in routes.txt");
+			throw new RuntimeException("Line " + l + " in routes.txt is empty or malformed.");
 		}
 		log.info("...     routes.txt loaded");
 	}
@@ -415,6 +423,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 */
 	protected void loadTrips() throws IOException {
 		log.info("Loading trips.txt");
+
+		int l = 1;
 		try {
 			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.TRIPS.fileName);
 			String[] header = reader.readNext();
@@ -422,6 +432,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 			String[] line = reader.readNext();
 			while(line != null) {
+				l++;
 				Trip newTrip;
 
 				String routeId = line[col.get(GtfsDefinitions.ROUTE_ID)];
@@ -453,7 +464,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 			reader.close();
 		} catch (ArrayIndexOutOfBoundsException i) {
-			throw new RuntimeException("Emtpy line found in trips.txt");
+			throw new RuntimeException("Line " + l + " in trips.txt is empty or malformed.");
 		}
 		log.info("...     trips.txt loaded");
 	}
@@ -469,6 +480,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 */
 	protected void loadStopTimes() throws IOException {
 		log.info("Loading stop_times.txt");
+
+		int l = 1;
 		try {
 			boolean warnStopTimes = true;
 			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.STOP_TIMES.fileName);
@@ -477,7 +490,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 			String[] line = reader.readNext();
 			while(line != null) {
-
+				l++;
 				String tripId = line[col.get(GtfsDefinitions.TRIP_ID)];
 				Trip trip = trips.get(tripId);
 				Stop stop = stops.get(line[col.get(GtfsDefinitions.STOP_ID)]);
@@ -536,7 +549,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 			}
 			reader.close();
 		} catch (ArrayIndexOutOfBoundsException i) {
-			throw new RuntimeException("Emtpy line found in stop_times.txt");
+			throw new RuntimeException("Line " + l + " in stop_times.txt is empty or malformed.");
 		}
 		log.info("...     stop_times.txt loaded");
 	}
@@ -551,6 +564,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 	protected void loadFrequencies() {
 		log.info("Looking for frequencies.txt");
 		// frequencies are optional
+
+		int l = 1;
 		try {
 			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.FREQUENCIES.fileName);
 			String[] header = reader.readNext();
@@ -558,6 +573,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 			String[] line = reader.readNext();
 			while(line != null) {
+				l++;
 				usesFrequencies = true;    // frequencies file might exists but could be empty
 
 				for(Route actualGtfsRoute : routes.values()) {
@@ -585,7 +601,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 		} catch (FileNotFoundException e) {
 			log.info("...     no frequencies file found");
 		} catch (ArrayIndexOutOfBoundsException e) {
-			throw new RuntimeException("Emtpy line found in frequencies.txt");
+			throw new RuntimeException("Line " + l + " in frequencies.txt is empty or malformed.");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -595,6 +611,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 		log.info("Looking for transfers.txt");
 		boolean transfersFileFound = true;
 		// transfers are optional
+
+		int l = 1;
 		try {
 			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.TRANSFERS.fileName);
 			String[] header = reader.readNext();
@@ -602,6 +620,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 			String[] line = reader.readNext();
 			while(line != null) {
+				l++;
 				String fromStopId = line[col.get(GtfsDefinitions.FROM_STOP_ID)];
 				String toStopId = line[col.get(GtfsDefinitions.TO_STOP_ID)];
 				GtfsDefinitions.TransferType transferType = GtfsDefinitions.TransferType.values()[Integer.parseInt(line[col.get(GtfsDefinitions.TRANSFER_TYPE)])];
@@ -622,7 +641,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 			}
 			reader.close();
 		} catch (ArrayIndexOutOfBoundsException i) {
-			throw new RuntimeException("Emtpy line found in transfers.txt");
+			throw new RuntimeException("Line " + l + " in transfers.txt is empty or malformed.");
 		} catch (FileNotFoundException e) {
 			log.info("...     no transfers file found");
 			transfersFileFound = false;
