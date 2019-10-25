@@ -538,14 +538,20 @@ public class OsmMultimodalNetworkConverter {
 
 		OsmConverterConfigGroup.OsmWayParams wayDefaults = null;
 		if(highwayValue != null) {
-			wayDefaults = this.wayParams.get(Osm.Key.HIGHWAY).get(highwayValue);
-			if(wayDefaults == null) {
-				unknownHighways.add(highwayValue);
+			Map<String, OsmConverterConfigGroup.OsmWayParams> highwayParams = this.wayParams.get(Osm.Key.HIGHWAY);
+			if(highwayParams != null) {
+				wayDefaults = highwayParams.get(highwayValue);
+				if(wayDefaults == null) {
+					unknownHighways.add(highwayValue);
+				}
 			}
 		} else if(railwayValue != null) {
-			wayDefaults = this.wayParams.get(Osm.Key.RAILWAY).get(railwayValue);
-			if(wayDefaults == null) {
-				unknownRailways.add(railwayValue);
+			Map<String, OsmConverterConfigGroup.OsmWayParams> railwayParams = this.wayParams.get(Osm.Key.RAILWAY);
+			if(railwayParams != null) {
+				wayDefaults = railwayParams.get(railwayValue);
+				if(wayDefaults == null) {
+					unknownRailways.add(railwayValue);
+				}
 			}
 		} else {
 			unknownWays.add(way.getTags().values().toString());
