@@ -31,6 +31,7 @@ import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 
 import java.io.IOException;
+import java.time.LocalDate;
 
 /**
  * Run class to convert (Swiss) HAFAS data to
@@ -52,12 +53,15 @@ public final class Hafas2TransitSchedule {
 	 *             [1] outputCoordinateSystem. Use <tt>null</tt> if no transformation should be applied.<br/>
 	 *             [2] outputScheduleFile<br/>
 	 *             [3] outputVehicleFile<br/>
+	 *             [4] (optional) chosenDate for which to build schedule.<br/>
 	 */
 	public static void main(String[] args) throws IOException {
 		if(args.length == 4) {
-			run(args[0], args[1], args[2], args[3]);
+			run(args[0], args[1], args[2], args[3], null);
+		} else if (args.length == 5) {
+			run(args[0], args[1], args[2], args[3], args[4]);
 		} else {
-			throw new IllegalArgumentException(args.length + " instead of 4 arguments given");
+			throw new IllegalArgumentException(args.length + " instead of 5 arguments given");
 		}
 	}
 
@@ -65,13 +69,13 @@ public final class Hafas2TransitSchedule {
 	 * Converts all files in <tt>hafasFolder</tt> and writes the output schedule and vehicles to the respective
 	 * files. Stop Facility coordinates are transformed from WGS84 to <tt>outputCoordinateSystem</tt>.
 	 */
-	public static void run(String hafasFolder, String outputCoordinateSystem, String outputScheduleFile, String outputVehicleFile) throws IOException {
+	public static void run(String hafasFolder, String outputCoordinateSystem, String outputScheduleFile, String outputVehicleFile, String chosenDateString) throws IOException {
 		TransitSchedule schedule = ScheduleTools.createSchedule();
 		Vehicles vehicles = VehicleUtils.createVehiclesContainer();
 		CoordinateTransformation transformation = !outputCoordinateSystem.equals("null") ?
 				TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem) : new IdentityTransformation();
 
-		HafasConverter.run(hafasFolder, schedule, transformation, vehicles);
+		HafasConverter.run(hafasFolder, schedule, transformation, vehicles, chosenDateString);
 
 		ScheduleTools.writeTransitSchedule(schedule, outputScheduleFile);
 		ScheduleTools.writeVehicles(vehicles, outputVehicleFile);

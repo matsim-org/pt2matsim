@@ -40,6 +40,7 @@ public final class VehicleTypeDefaults {
 		BAT	("BAT",	RouteType.FERRY,	true,	50,		6,		0.5,	0.5,	VehicleType.DoorOperationMode.serial,	250,	0,		7.1,	false,	"Ship"),
 		BAV	("BAV",	RouteType.FERRY,	true,	50,		6,		0.5,	0.5,	VehicleType.DoorOperationMode.serial,	250,	0,		7.1,	false,	"Steam ship"),
 		BEX ("BEX",	RouteType.RAIL,		true,	150,	2.8,	0.5,	0.5,	VehicleType.DoorOperationMode.serial,	240,	0,		20.4,	false,	"Bernina Express"),
+		B	("BUS",	RouteType.BUS,		true,	18,		2.5,	0.5,	0.5,	VehicleType.DoorOperationMode.serial,	70,		0,		2.8,	true,	"Bus"),
 		BUS	("BUS",	RouteType.BUS,		true,	18,		2.5,	0.5,	0.5,	VehicleType.DoorOperationMode.serial,	70,		0,		2.8,	true,	"Bus"),
 		CNL ("CNL",	RouteType.RAIL,		true,	200,	2.8,	0.5,	0.5,	VehicleType.DoorOperationMode.serial,	400,	0,		27.1,	false,	"CityNightLine"),
 		D   ("D",	RouteType.RAIL,		true,	150,	2.8,	0.25,	0.25,	VehicleType.DoorOperationMode.serial,	400,	0,		20.4,	false,	"Fast train"),

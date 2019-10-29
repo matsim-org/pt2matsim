@@ -83,6 +83,9 @@ public final class ScheduleCleaner {
 		for(TransitLine line : schedule.getTransitLines().values()) {
 			for(TransitRoute route : line.getRoutes().values()) {
 				for(TransitRouteStop stop : route.getStops()) {
+					if(stop == null || stop.getStopFacility() == null) {
+						log.error("Stop does not exist");
+					}
 					usedStopFacilities.add(stop.getStopFacility().getId());
 				}
 			}
