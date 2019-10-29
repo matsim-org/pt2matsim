@@ -36,6 +36,9 @@ import org.matsim.vehicles.Vehicles;
 import org.matsim.vehicles.VehiclesFactory;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +55,31 @@ public class HafasConverter {
 
 	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles) throws IOException {
 		run(hafasFolder, schedule, transformation, vehicles, -1);
+	}
+
+	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, String chosenDateString) throws IOException {
+		if(!hafasFolder.endsWith("/")) hafasFolder += "/";
+
+		// 3a. Get start_fahrplan date
+		LocalDate fahrplanStartDate = ECKDATENReader.getFahrPlanStart(hafasFolder);
+		LocalDate fahrplanEndDate = ECKDATENReader.getFahrPlanEnd(hafasFolder);
+		try {
+			LocalDate chosenDate = ECKDATENReader.getDate(chosenDateString);
+
+			if (chosenDate.isBefore(fahrplanStartDate) || chosenDate.isAfter(fahrplanEndDate)) {
+				throw new IllegalArgumentException(
+						String.format("Chosen date %s is outside fahrplan period: (%s, %s)", chosenDate, fahrplanStartDate, fahrplanEndDate)
+				);
+			}
+
+			int dayNr = (int) ChronoUnit.DAYS.between(fahrplanStartDate, chosenDate);
+			run(hafasFolder, schedule, transformation, vehicles, dayNr);
+
+		} catch (DateTimeParseException ex) {
+			throw new IllegalArgumentException(
+					"Format of chosen date (should be dd.MM.yyyy) is invalid: " + chosenDateString
+			);
+		}
 	}
 
 	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, int dayNr) throws IOException {

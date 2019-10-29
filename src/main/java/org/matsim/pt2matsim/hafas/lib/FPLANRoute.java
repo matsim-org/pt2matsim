@@ -189,9 +189,13 @@ public class FPLANRoute {
 			}
 
 			TransitStopFacility stopFacility = schedule.getFacilities().get(stopFacilityId);
-			TransitRouteStop routeStop = scheduleFactory.createTransitRouteStop(stopFacility, arrivalDelay, departureDelay);
-			routeStop.setAwaitDepartureTime(true); // Only *T-Lines (currently not implemented) would have this as false...
-			transitRouteStops.add(routeStop);
+			if (stopFacility == null) {
+				log.warn("StopFacility " + stopFacilityId + " not defined, not adding stop" + fahrtNummer);
+			} else {
+				TransitRouteStop routeStop = scheduleFactory.createTransitRouteStop(stopFacility, arrivalDelay, departureDelay);
+				routeStop.setAwaitDepartureTime(true); // Only *T-Lines (currently not implemented) would have this as false...
+				transitRouteStops.add(routeStop);
+			}
 		}
 
 		return transitRouteStops;
