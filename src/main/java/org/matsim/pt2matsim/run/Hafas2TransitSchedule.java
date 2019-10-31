@@ -53,7 +53,7 @@ public final class Hafas2TransitSchedule {
 	 *             [1] outputCoordinateSystem. Use <tt>null</tt> if no transformation should be applied.<br/>
 	 *             [2] outputScheduleFile<br/>
 	 *             [3] outputVehicleFile<br/>
-	 *             [4] (optional) chosenDate for which to build schedule.<br/>
+	 *             [4] (optional) chosenDate for which to build schedule, formatted as dd.MM.yyyy<br/>
 	 */
 	public static void main(String[] args) throws IOException {
 		if(args.length == 4) {

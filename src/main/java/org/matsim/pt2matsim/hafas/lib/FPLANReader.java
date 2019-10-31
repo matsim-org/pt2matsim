@@ -56,10 +56,6 @@ public class FPLANReader {
 
 			Counter counter = new Counter("FPLAN line # ");
 			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(FPLANfile), "utf-8"));
-//			while (counter.getCounter() < 13873677) {
-//				readsLines.readLine();
-//				counter.incCounter();
-//			}
 
 			String newLine = readsLines.readLine();
 			while(newLine != null) {

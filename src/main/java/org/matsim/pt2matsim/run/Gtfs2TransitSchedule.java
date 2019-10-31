@@ -59,7 +59,7 @@ public final class Gtfs2TransitSchedule {
 	 *                  </ul>
 	 *              [2] the output coordinate system. Use WGS84 for no transformation.<br/>
 	 *              [3] output transit schedule file
-	 *              [4] output default vehicles file (optional)
+	 *              [4] (optional) output default vehicles file
 	 * Calls {@link #run}.
 	 */
 	public static void main(final String[] args) {
