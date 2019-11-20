@@ -127,5 +127,9 @@ public class GtfsFeedImplTest {
 		new File("test/shapes.geojson").delete();
 	}
 
+	@Test
+	public void missingCalendar() {
+		new GtfsFeedImpl("test/gtfs-feed-cal/");
+	}
 
 }
