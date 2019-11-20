@@ -139,12 +139,11 @@ public class GtfsFeedImpl implements GtfsFeed {
 		} catch (IOException e) {
 			throw new RuntimeException("File stops.txt not found!");
 		}
-		try {
-			loadCalendar();
-		} catch (IOException e) {
-			throw new RuntimeException("File calendar.txt not found! ");
+		boolean calendarExists = loadCalendar();
+		boolean calendarDatesExists = loadCalendarDates();
+		if(!calendarExists && !calendarDatesExists) {
+			throw new RuntimeException("Neither calendar.txt nor calendar_dates.txt found!");
 		}
-		loadCalendarDates();
 		loadShapes();
 		try {
 			loadRoutes();
@@ -239,7 +238,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 *
 	 * @throws IOException
 	 */
-	protected void loadCalendar() throws IOException {
+	protected boolean loadCalendar() {
 		log.info("Loading calendar.txt");
 
 		int l = 1;
@@ -264,10 +263,14 @@ public class GtfsFeedImpl implements GtfsFeed {
 			}
 
 			reader.close();
+		} catch (IOException e) {
+			log.info("...     no calendar file found.");
+			return false;
 		} catch (ArrayIndexOutOfBoundsException i) {
 			throw new RuntimeException("Line " + l + " in calendar.txt is empty or malformed.");
 		}
 		log.info("...     calendar.txt loaded");
+		return true;
 	}
 
 	/**
@@ -278,7 +281,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 * Exceptions for the service IDs defined in the calendar.txt file. If calendar_dates.txt includes ALL
 	 * dates of service, this file may be specified instead of calendar.txt.
 	 */
-	protected void loadCalendarDates() {
+	protected boolean loadCalendarDates() {
 		// calendar dates are optional
 		log.info("Looking for calendar_dates.txt");
 
@@ -315,9 +318,11 @@ public class GtfsFeedImpl implements GtfsFeed {
 			log.info("...     calendar_dates.txt loaded");
 		} catch (IOException e) {
 			log.info("...     no calendar dates file found.");
+			return false;
 		} catch (ArrayIndexOutOfBoundsException i) {
 			throw new RuntimeException("Line " + l + " in calendar_dates.txt is empty or malformed.");
 		}
+		return true;
 	}
 
 	/**
