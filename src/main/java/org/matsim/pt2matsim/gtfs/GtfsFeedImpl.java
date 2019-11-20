@@ -442,8 +442,12 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 				String routeId = line[col.get(GtfsDefinitions.ROUTE_ID)];
 				Route route = routes.get(routeId);
-				Service service = services.get(line[col.get(GtfsDefinitions.SERVICE_ID)]);
+				String serviceId = line[col.get(GtfsDefinitions.SERVICE_ID)];
+				Service service = services.get(serviceId);
 
+				if(service == null) {
+					throw new IllegalStateException("Service " + serviceId + " not found");
+				}
 				if(route == null) {
 					if(!ignoredRoutes.contains(routeId)) {
 						throw new IllegalStateException("Route " + routeId + " not found");
