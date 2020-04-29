@@ -36,11 +36,14 @@ import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
+import org.matsim.pt2matsim.osm.NetworkGeometryExporter.LinkDefinition;
 import org.matsim.pt2matsim.osm.lib.AllowedTagsFilter;
 import org.matsim.pt2matsim.osm.lib.Osm;
 import org.matsim.pt2matsim.osm.lib.OsmData;
 import org.matsim.pt2matsim.tools.NetworkTools;
 
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -87,6 +90,7 @@ public class OsmMultimodalNetworkConverter {
 
 	protected AllowedTagsFilter ptFilter;
 	protected OsmConverterConfigGroup.OsmWayParams ptDefaultParams;
+	protected NetworkGeometryExporter geometryExporter;
 
 	public OsmMultimodalNetworkConverter(OsmData osmData) {
 		this.osmData = osmData;
@@ -97,6 +101,7 @@ public class OsmMultimodalNetworkConverter {
 	 */
 	public void convert(OsmConverterConfigGroup config) {
 		this.config = config;
+		this.geometryExporter = new NetworkGeometryExporter();
 		CoordinateTransformation transformation = (config.getOutputCoordinateSystem() == null ?
 				new IdentityTransformation() :
 				TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, config.getOutputCoordinateSystem()));
@@ -106,6 +111,15 @@ public class OsmMultimodalNetworkConverter {
 		convertToNetwork(transformation);
 		cleanNetwork();
 		if(config.getKeepTagsAsAttributes()) addAttributes();
+
+		if (this.config.getOutputNetworkGeometryFile() != null) {
+			try {
+				geometryExporter.writeToFile(Paths.get(this.config.getOutputNetworkGeometryFile()));
+			} catch (IOException e) {
+				log.warn("Error while writing network geometry", e);
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**
@@ -375,6 +389,7 @@ public class OsmMultimodalNetworkConverter {
 
 				network.addLink(l);
 				osmIds.put(l.getId(), way.getId());
+				geometryExporter.addLinkDefinition(id, new LinkDefinition(fromNode, toNode, way));
 				this.id++;
 			}
 			// backward link
@@ -388,6 +403,7 @@ public class OsmMultimodalNetworkConverter {
 
 				network.addLink(l);
 				osmIds.put(l.getId(), way.getId());
+				geometryExporter.addLinkDefinition(id, new LinkDefinition(toNode, fromNode, way));
 				this.id++;
 			}
 		}
