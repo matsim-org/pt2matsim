@@ -114,6 +114,7 @@ public class OsmMultimodalNetworkConverter {
 
 		if (this.config.getOutputNetworkGeometryFile() != null) {
 			try {
+				geometryExporter.onlyKeepGeometryForTheseLinks(network.getLinks().keySet());
 				geometryExporter.writeToFile(Paths.get(this.config.getOutputNetworkGeometryFile()));
 			} catch (IOException e) {
 				log.warn("Error while writing network geometry", e);
@@ -380,7 +381,8 @@ public class OsmMultimodalNetworkConverter {
 		if(network.getNodes().get(fromId) != null && network.getNodes().get(toId) != null) {
 			// forward link (in OSM digitization direction)
 			if(!onewayReverse) {
-				Link l = network.getFactory().createLink(Id.create(this.id, Link.class), network.getNodes().get(fromId), network.getNodes().get(toId));
+				Id<Link> linkId = Id.create(this.id, Link.class);
+				Link l = network.getFactory().createLink(linkId, network.getNodes().get(fromId), network.getNodes().get(toId));
 				l.setLength(length);
 				l.setFreespeed(freeSpeedForward);
 				l.setCapacity(laneCountForward * laneCapacity);
@@ -389,12 +391,13 @@ public class OsmMultimodalNetworkConverter {
 
 				network.addLink(l);
 				osmIds.put(l.getId(), way.getId());
-				geometryExporter.addLinkDefinition(id, new LinkDefinition(fromNode, toNode, way));
+				geometryExporter.addLinkDefinition(linkId, new LinkDefinition(fromNode, toNode, way));
 				this.id++;
 			}
 			// backward link
 			if(!oneway) {
-				Link l = network.getFactory().createLink(Id.create(this.id, Link.class), network.getNodes().get(toId), network.getNodes().get(fromId));
+				Id<Link> linkId = Id.create(this.id, Link.class);
+				Link l = network.getFactory().createLink(linkId, network.getNodes().get(toId), network.getNodes().get(fromId));
 				l.setLength(length);
 				l.setFreespeed(freeSpeedBackward);
 				l.setCapacity(laneCountBackward * laneCapacity);
@@ -403,7 +406,7 @@ public class OsmMultimodalNetworkConverter {
 
 				network.addLink(l);
 				osmIds.put(l.getId(), way.getId());
-				geometryExporter.addLinkDefinition(id, new LinkDefinition(toNode, fromNode, way));
+				geometryExporter.addLinkDefinition(linkId, new LinkDefinition(toNode, fromNode, way));
 				this.id++;
 			}
 		}
