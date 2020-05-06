@@ -28,13 +28,10 @@ import com.google.common.collect.Lists;
  * present in the LineString we export it anyways so this file is a
  * representation of the full network.
  */
-public class NetworkGeometryExporter {
+public class LinkGeometryExporter {
 
 	private final char SEPARATOR = ',';
 	private Map<Id<Link>, LinkDefinition> linkDefinitions = new TreeMap<>();
-
-	public NetworkGeometryExporter() {
-	}
 
 	public void addLinkDefinition(Id<Link> linkId, LinkDefinition definition) {
 		linkDefinitions.put(linkId, definition);
