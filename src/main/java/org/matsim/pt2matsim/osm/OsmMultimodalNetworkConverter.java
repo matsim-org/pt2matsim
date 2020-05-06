@@ -112,10 +112,10 @@ public class OsmMultimodalNetworkConverter {
 		cleanNetwork();
 		if(config.getKeepTagsAsAttributes()) addAttributes();
 
-		if (this.config.getOutputNetworkGeometryFile() != null) {
+		if (this.config.getOutputDetailedLinkGeometryFile() != null) {
 			try {
 				geometryExporter.onlyKeepGeometryForTheseLinks(network.getLinks().keySet());
-				geometryExporter.writeToFile(Paths.get(this.config.getOutputNetworkGeometryFile()));
+				geometryExporter.writeToFile(Paths.get(this.config.getOutputDetailedLinkGeometryFile()));
 			} catch (IOException e) {
 				log.warn("Error while writing network geometry", e);
 				e.printStackTrace();
