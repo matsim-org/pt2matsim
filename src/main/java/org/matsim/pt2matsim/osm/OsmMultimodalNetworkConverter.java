@@ -36,7 +36,7 @@ import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
-import org.matsim.pt2matsim.osm.NetworkGeometryExporter.LinkDefinition;
+import org.matsim.pt2matsim.osm.LinkGeometryExporter.LinkDefinition;
 import org.matsim.pt2matsim.osm.lib.AllowedTagsFilter;
 import org.matsim.pt2matsim.osm.lib.Osm;
 import org.matsim.pt2matsim.osm.lib.OsmData;
@@ -90,7 +90,7 @@ public class OsmMultimodalNetworkConverter {
 
 	protected AllowedTagsFilter ptFilter;
 	protected OsmConverterConfigGroup.OsmWayParams ptDefaultParams;
-	protected NetworkGeometryExporter geometryExporter;
+	protected LinkGeometryExporter geometryExporter;
 
 	public OsmMultimodalNetworkConverter(OsmData osmData) {
 		this.osmData = osmData;
@@ -101,7 +101,7 @@ public class OsmMultimodalNetworkConverter {
 	 */
 	public void convert(OsmConverterConfigGroup config) {
 		this.config = config;
-		this.geometryExporter = new NetworkGeometryExporter();
+		this.geometryExporter = new LinkGeometryExporter();
 		CoordinateTransformation transformation = (config.getOutputCoordinateSystem() == null ?
 				new IdentityTransformation() :
 				TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, config.getOutputCoordinateSystem()));
