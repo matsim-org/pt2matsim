@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.matsim</groupId>
     <artifactId>pt2matsim</artifactId>
-    <version>19.11</version>
+    <version>20.5-SNAPSHOT</version>
 
     <name>PT2MATSim</name>
     <description>Public Transport to MATSim</description>
@@ -24,7 +24,7 @@
         </repository>
         <repository>
         	<id>osgeo</id>
-			<url>http://download.osgeo.org/webdav/geotools</url>
+			<url>https://repo.osgeo.org/repository/release</url>
         </repository>
     </repositories>
 
