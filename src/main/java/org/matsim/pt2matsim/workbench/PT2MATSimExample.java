@@ -35,37 +35,51 @@ import java.io.IOException;
  *
  * @author polettif
  *
- * @deprecated somewhat
  */
 public final class PT2MATSimExample {
 
 	private static final String example = "example/";
-	private static final String test = "test/";
-	private static final String output = "example/output/";
-	private static final String outputUnmapped = output + "unmapped/";
+	private static final String input = example + "input/";
+	private static final String inter = example + "intermediate/";
+	private static final String output = example + "output/";
+
 	private static final String addisonCountyEPSG = "EPSG:2032";
 
 	public static void main(String[] args) {
 		prepare();
+
 		// 1. Convert a gtfs schedule to an unmapped transit schedule
 		gtfsToSchedule();
+
 		// OR a hafas schedule to an unmapped transit schedule
-		hafasToSchedule();
+		// Either data format (GTFS or HAFAS/HRDF) works, GTFS feeds are more commonly available.
+		// hafasToSchedule();
+
 		// OR an osm file to an unmapped transit schedule
-		// Note: osm file cannot be uploaded to github due to its size, see openstreetmap.org or similar for downloads
-		osmToSchedule();
-		// 2. Convert an osm map to a network
-		osmToNetwork();
+		// osm file cannot be uploaded to github due to its size, see openstreetmap.org or similar for downloads
+		// Do not use this approach if you have either GTFS or HAFS/HRDF data available
+		// osmToSchedule();
+
+		// 2. Convert an osm map to a MATSim network
+		// create a config file (or adjust an existing one by hand)
+		createOsmConfigFile( inter + "OsmConverterConfig.xml" );
+		// Convert the OSM file using the config
+		Osm2MultimodalNetwork.main(new String[]{ inter + "OsmConverterConfig.xml" });
+
 		// 3. Map the schedule onto the network
-		mapScheduleToNetwork();
+		// create a config file (or adjust an existing one by hand)
+		createMapperConfigFile(inter + "MapperConfigAdjusted.xml");
+		// Map the schedule using the config
+		PublicTransitMapper.main(new String[]{inter + "MapperConfigAdjusted.xml"});
+
 		// 4. Do a plausibility check
 		checkPlausibility();
 	}
 
+	/** Create output folder if not existing **/
 	public static void prepare() {
-		// Create output folder if not existing:
 		new File(output + "plausibilityResults/").mkdirs();
-		new File(output + "unmapped/").mkdirs();
+		new File(inter).mkdirs();
 	}
 
 
@@ -77,32 +91,35 @@ public final class PT2MATSimExample {
 	 */
 	public static void gtfsToSchedule() {
 		String[] gtfsConverterArgs = new String[]{
-				// [0] folder where the gtfs files are located
-				example + "addisoncounty-vt-us-gtfs/",
+				// [0] gtfs zip file
+				input + "addisoncounty-vt-us-gtfs.zip",
 				// [1] which service ids should be used. One of the following:
 				//		dayWithMostTrips, date in the format yyyymmdd, , dayWithMostServices, all
 				"dayWithMostTrips",
 				// [2] the output coordinate system. Use WGS84 for no transformation.
 				addisonCountyEPSG,
 				// [3] output transit schedule file
-				outputUnmapped + "schedule_unmapped.xml.gz",
+				inter + "schedule_unmapped.xml.gz",
 				// [4] output default vehicles file (optional)
-				outputUnmapped + "vehicles_unmapped.xml",
+				inter + "vehicles_unmapped.xml",
 		};
 		Gtfs2TransitSchedule.main(gtfsConverterArgs);
 	}
-	// Here as a second example, the HAFAS-schedule of the BrienzRothornBahn, Switzerland, is
-	// converted.
+
+	/**
+	 * Here as a second example, the HAFAS-schedule of the
+	 * BrienzRothornBahn, Switzerland, is converted.
+	 */
 	public static void hafasToSchedule() {
 		String[] hafasConverterArgs = new String[]{
 				// [0] hafasFolder
-				test + "BrienzRothornBahn-HAFAS/",
+				"BrienzRothornBahn-HAFAS/",
 				// [1] outputCoordinateSystem
 				"EPSG:2056",
 				// [2] outputScheduleFile
-				outputUnmapped + "schedule_hafas.xml.gz",
+				inter + "schedule_hafas.xml.gz",
 				// [3] outputVehicleFile
-				outputUnmapped + "vehicles_hafas.xml"
+				inter + "vehicles_hafas.xml"
 		};
 		try {
 			Hafas2TransitSchedule.main(hafasConverterArgs);
@@ -110,14 +127,17 @@ public final class PT2MATSimExample {
 			e.printStackTrace();
 		}
 	}
-	// And as a third example, the OSM-map of the Waterloo City Centre, Canada, is
-	// converted.
+
+	/**
+	 * And as a third example, the OSM-map of the Waterloo City Centre, Canada, is
+	 * converted.
+	 */
 	public static void osmToSchedule() {
 		String[] osmConverterArgs = new String[]{
 				// [0] osm file
-				example + "osm/addison.osm",
+				input + "addison.osm.gz",
 				// [1] output schedule file
-				outputUnmapped + "schedule_osm.xml.gz",
+				inter + "schedule_osm.xml.gz",
 				// [2] output coordinate system (optional)
 				addisonCountyEPSG
 		};
@@ -130,25 +150,23 @@ public final class PT2MATSimExample {
 	 *
 	 * Here as an example, the OSM-extract of the city centre of Waterloo, Canada, is converted.
 	 */
-	public static void osmToNetwork() {
-		// Create a default osmToNetwork-Config:
-		CreateDefaultOsmConfig.main(new String[]{output + "OsmConverterConfigDefault.xml"});
+	public static void createOsmConfigFile(String configFile) {
+		// Create a default createOsmConfigFile-Config:
+		CreateDefaultOsmConfig.main(new String[]{inter + "OsmConverterConfigDefault.xml"});
 
-		// Open the osmToNetwork Config and set the parameters to the required values
+		// Open the createOsmConfigFile Config and set the parameters to the required values
 		// (usually done manually by opening the config with a simple editor)
 		Config osmConverterConfig = ConfigUtils.loadConfig(
-				output + "OsmConverterConfigDefault.xml",
+				inter + "OsmConverterConfigDefault.xml",
 				new OsmConverterConfigGroup());
+
 		OsmConverterConfigGroup osmConfig = ConfigUtils.addOrGetModule(osmConverterConfig, OsmConverterConfigGroup.class);
-		osmConfig.setOsmFile(example + "osm/addison.osm");
+		osmConfig.setOsmFile(input + "addison.osm.gz");
 		osmConfig.setOutputCoordinateSystem(addisonCountyEPSG);
-		osmConfig.setOutputNetworkFile(example + "network/addison.xml.gz");
+		osmConfig.setOutputNetworkFile(inter + "addison.xml.gz");
 
-		// Save the osmToNetwork config (usually done manually)
-		new ConfigWriter(osmConverterConfig).write(output + "OsmConverterConfig.xml");
-
-		// Convert the OSM file to a MATSim network using the config
-		Osm2MultimodalNetwork.main(new String[]{output + "OsmConverterConfig.xml"});
+		// Save the createOsmConfigFile config (usually done manually)
+		new ConfigWriter(osmConverterConfig).write(configFile);
 	}
 
 	/**
@@ -157,28 +175,25 @@ public final class PT2MATSimExample {
 	 * 	Here as an example, the unmapped schedule of GrandRiverTransit (previously converted from GTFS) is mapped
 	 * 	to the converted OSM network of the Waterloo Area, Canada.
 	 */
-	public static void mapScheduleToNetwork() {
+	public static void createMapperConfigFile(String configFile) {
 		// Create a mapping config:
-		CreateDefaultPTMapperConfig.main(new String[]{output + "MapperConfig.xml"});
+		CreateDefaultPTMapperConfig.main(new String[]{ inter + "MapperConfigDefault.xml"});
 		// Open the mapping config and set the parameters to the required values
 		// (usually done manually by opening the config with a simple editor)
 		Config config = ConfigUtils.loadConfig(
-				output + "MapperConfig.xml",
+				inter + "MapperConfigDefault.xml",
 				PublicTransitMappingConfigGroup.createDefaultConfig());
 		PublicTransitMappingConfigGroup ptmConfig = ConfigUtils.addOrGetModule(config, PublicTransitMappingConfigGroup.class);
 
-		ptmConfig.setInputNetworkFile(example + "network/addison.xml.gz");
+		ptmConfig.setInputNetworkFile(inter + "addison.xml.gz");
 		ptmConfig.setOutputNetworkFile(output + "addison_multimodalnetwork.xml.gz");
-		ptmConfig.setOutputScheduleFile(output + "addison_schedule.xml.gz");
+		ptmConfig.setOutputScheduleFile(output+ "addison_schedule.xml.gz");
 		ptmConfig.setOutputStreetNetworkFile(output + "addison_streetnetwork.xml.gz");
-		ptmConfig.setInputScheduleFile(outputUnmapped + "schedule_unmapped.xml.gz");
+		ptmConfig.setInputScheduleFile(inter + "schedule_unmapped.xml.gz");
 		ptmConfig.setScheduleFreespeedModes(CollectionUtils.stringToSet("rail, light_rail"));
 		// Save the mapping config
 		// (usually done manually)
-		new ConfigWriter(config).write(output + "MapperConfigAdjusted.xml");
-
-		// Map the schedule to the network using the config
-		PublicTransitMapper.main(new String[]{output + "MapperConfigAdjusted.xml"});
+		new ConfigWriter(config).write(configFile);
 	}
 
 	/**
@@ -195,6 +210,5 @@ public final class PT2MATSimExample {
 				output + "plausibilityResults/"
 		);
 	}
-
 
 }

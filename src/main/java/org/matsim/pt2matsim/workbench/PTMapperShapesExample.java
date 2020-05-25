@@ -7,7 +7,6 @@ import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.mapping.PTMapper;
-import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersFactory;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersGtfsShapes;
 import org.matsim.pt2matsim.plausibility.MappingAnalysis;
@@ -26,10 +25,10 @@ public class PTMapperShapesExample {
 
 	private static String base = "example/";
 	private static String outputFolder = base + "outputPTMapperShapes/";
-	private static String networkInput = base + "addison_network.xml.gz";
+	private static String networkInput = base + "inter/addison_network.xml.gz";
 	private static String coordSys = "EPSG:2032";
-	private static String gtfsFolderZip = base + "addisoncounty-vt-us-gtfs.zip";
-	private static String gtfsFolder = base + "addisoncounty-vt-us-gtfs/";
+	private static String gtfsFolderZip = base + "intermediate/addisoncounty-vt-us-gtfs.zip";
+	private static String gtfsFolder = base + "intermediate/addisoncounty-vt-us-gtfs/";
 	private static String sampleDay = GtfsConverter.ALL_SERVICE_IDS;
 
 	private static GtfsFeed gtfsFeed;
