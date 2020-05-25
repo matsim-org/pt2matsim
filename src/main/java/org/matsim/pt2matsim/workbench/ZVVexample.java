@@ -11,9 +11,7 @@ import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions;
-import org.matsim.pt2matsim.tools.lib.RouteShape;
 import org.matsim.pt2matsim.mapping.PTMapper;
-import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersFactory;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersGtfsShapes;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersOsmAttributes;
@@ -25,21 +23,23 @@ import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ShapeTools;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
+import org.matsim.pt2matsim.tools.lib.RouteShape;
 
 import java.util.*;
 
 /**
  * Mapping example for public transit in the zurich area (agency: ZVV).
- * <p>
+ * Input files are not in repository, this example is not runnable.
+ *
  * Transit schedule is available on opentransportdata.swiss
  *
  * @author polettif
- * @deprecated input files not in repository
  */
-@Deprecated
 public class ZVVexample {
 
 	private static String base = "zvv/";
+
+	// xml file downloaded from
 	private static String osmName = base + "osm/zurich.osm";
 	private static String gtfsFolder = base + "gtfs/";
 	private static String gtfsShapeFile = gtfsFolder + GtfsDefinitions.Files.SHAPES.fileName;
@@ -54,16 +54,25 @@ public class ZVVexample {
 	private static String outputSchedule2 = base + "output/shapes_schedule.xml.gz";
 	private static String outputNetwork3 = base + "output/osm_network.xml.gz";
 	private static String outputSchedule3 = base + "output/osm_schedule.xml.gz";
-	private static OsmData osmData;
 
 	public static void main(String[] args) {
-//		convertOsm();
-//		convertSchedule();
+		// Preparation
+		convertOsm();
+		convertSchedule();
 		filterSchedule();
+
+		// Convert GTFS shapes to shapefiles for debugging
 		convertShapes();
+
+		// Run different Mapping algorithms
 		runMappingStandard();
-//		runMappingShapes();
-//		runMappingOsm();
+
+		// Experimental mapper using the shapes provided in the gtfs feed
+		runMappingShapes();
+
+		// Experimental mapper using osm public transit attributes to improve mapping
+		// (i.e. lower costs of links with pt attributes)
+		runMappingOsm();
 	}
 
 	private static void convertOsm() {
@@ -89,7 +98,7 @@ public class ZVVexample {
 		osmConfig.setOutputCoordinateSystem(coordSys);
 
 		// 1.2 load osm file
-		osmData = new OsmDataImpl(createDefaultPTFilter());
+		OsmData osmData = new OsmDataImpl(createDefaultPTFilter());
 		new OsmFileReader(osmData).readFile(osmName);
 
 		// 1.3 initiate and run converter
