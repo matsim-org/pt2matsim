@@ -16,7 +16,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.pt2matsim.workbench;
+package org.matsim.pt2matsim.examples;
 
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;

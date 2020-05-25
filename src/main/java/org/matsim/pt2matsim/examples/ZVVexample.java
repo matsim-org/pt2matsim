@@ -1,4 +1,4 @@
-package org.matsim.pt2matsim.workbench;
+package org.matsim.pt2matsim.examples;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Network;
