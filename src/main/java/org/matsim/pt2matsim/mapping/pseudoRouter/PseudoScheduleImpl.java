@@ -21,11 +21,14 @@ package org.matsim.pt2matsim.mapping.pseudoRouter;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.pt.transitSchedule.api.MinimalTransferTimes.MinimalTransferTimesIterator;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -53,6 +56,8 @@ public class PseudoScheduleImpl implements PseudoSchedule {
 	@Override
 	public void createFacilitiesAndLinkSequences(TransitSchedule schedule) {
 		TransitScheduleFactory scheduleFactory = schedule.getFactory();
+		
+		Map<Id<TransitStopFacility>, Set<Id<TransitStopFacility>>> parentsToChildren = new HashMap<>();
 
 		for(PseudoTransitRoute pseudoTransitRoute : pseudoSchedule) {
 			List<PseudoRouteStop> pseudoStopSequence = pseudoTransitRoute.getPseudoStops();
@@ -81,6 +86,9 @@ public class PseudoScheduleImpl implements PseudoSchedule {
 						pseudoStop.getDepartureOffset());
 				newTransitRouteStop.setAwaitDepartureTime(pseudoStop.awaitsDepartureTime());
 				newStopSequence.add(newTransitRouteStop);
+				
+				parentsToChildren.computeIfAbsent(pseudoStop.getParentStopFacilityId(), id -> new HashSet<>());
+				parentsToChildren.get(pseudoStop.getParentStopFacilityId()).add(childStopFacilityId);
 			}
 
 			// create a new transitRoute
@@ -102,6 +110,24 @@ public class PseudoScheduleImpl implements PseudoSchedule {
 			// add new route to container
 			schedule.getTransitLines().get(pseudoTransitRoute.getTransitLineId()).addRoute(newTransitRoute);
 			//newRoutes.add(new Tuple<>(pseudoTransitRoute.getTransitLineId(), newRoute));
+			
+			// Recover minimal transfer times between child stop facilities from parent stop facilities
+			MinimalTransferTimesIterator iterator = schedule.getMinimalTransferTimes().iterator();
+			
+			while (iterator.hasNext()) {
+				iterator.next();
+				
+				Id<TransitStopFacility> fromId = iterator.getFromStopId();
+				Id<TransitStopFacility> toId = iterator.getToStopId();
+				
+				if (parentsToChildren.containsKey(fromId) && parentsToChildren.containsKey(toId)) {
+					for (Id<TransitStopFacility> childFromId : parentsToChildren.get(fromId)) {
+						for (Id<TransitStopFacility> childToId : parentsToChildren.get(toId)) {
+							schedule.getMinimalTransferTimes().set(childFromId, childToId, iterator.getSeconds());
+						}
+					}
+				}
+			}
 		}
 	}
 }
