@@ -242,7 +242,7 @@ public final class ScheduleCleaner {
 	}
 
 	/**
-	 * Combines all child stops based on ".link:" to parent stops for debugging.
+	 * Combines all child stops based on ".link:" to parent stops for debugging/testing.
 	 * Network routes and referenced links of child stop facilities are unchanged.
 	 * Combines transfers as well.
 	 */
@@ -282,6 +282,27 @@ public final class ScheduleCleaner {
 		}
 		for(Object[] o: toAdd) {
 			transferTimes.set((Id<TransitStopFacility>) o[0], (Id<TransitStopFacility>) o[1], (double) o[2]);
+		}
+
+		// remove child stops
+		Set<Id<TransitStopFacility>> usedStopIds = new HashSet<>();
+		for(TransitLine line : schedule.getTransitLines().values()) {
+			for(TransitRoute route : line.getRoutes().values()) {
+				for(TransitRouteStop stop : route.getStops()) {
+					usedStopIds.add(stop.getStopFacility().getId());
+				}
+			}
+		}
+		// Mark all unused facilities
+		Set<TransitStopFacility> unusedStopFacilites = new HashSet<>();
+		for(Id<TransitStopFacility> facilityId : schedule.getFacilities().keySet()) {
+			if(!usedStopIds.contains(facilityId)) {
+				unusedStopFacilites.add(schedule.getFacilities().get(facilityId));
+			}
+		}
+		// Remove all unused stop facilities
+		for(TransitStopFacility facility : unusedStopFacilites) {
+			schedule.removeStopFacility(facility);
 		}
 	}
 
