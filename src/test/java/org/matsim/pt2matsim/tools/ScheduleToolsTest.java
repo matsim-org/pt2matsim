@@ -288,4 +288,86 @@ public class ScheduleToolsTest {
 		}
 		Assert.assertEquals(linksUsedBySchedule, linksChanged);
 	}
+
+	public static TransitSchedule initTransfersSchedule() {
+		TransitSchedule transferSchedule = ScheduleTools.createSchedule();
+		TransitScheduleFactory fac = transferSchedule.getFactory();
+
+		// 1 === 2    (6) --T-- (7)
+		//       |
+		//       T
+		//       |
+		// 4 === 3 -T- (5)   (x): unused
+
+		// create StopFacilities
+		TransitStopFacility stop1a = fac.createTransitStopFacility(Id.create("stop1.link:A", TransitStopFacility.class), new Coord(2600021, 1200060), false);
+		TransitStopFacility stop2b = fac.createTransitStopFacility(Id.create("stop2.link:B", TransitStopFacility.class), new Coord(2600021, 1200060), false);
+		TransitStopFacility stop3c = fac.createTransitStopFacility(Id.create("stop3.link:C", TransitStopFacility.class), new Coord(2600021, 1200060), false);
+		TransitStopFacility stop4 = fac.createTransitStopFacility(Id.create("stop4", TransitStopFacility.class), new Coord(2600021, 1200060), false);
+		TransitStopFacility stop5 = fac.createTransitStopFacility(Id.create("stop5", TransitStopFacility.class), new Coord(2600021, 1200060), false);
+		transferSchedule.addStopFacility(stop1a);
+		transferSchedule.addStopFacility(stop2b);
+		transferSchedule.addStopFacility(stop3c);
+		transferSchedule.addStopFacility(stop4);
+		transferSchedule.addStopFacility(stop5);
+
+		// create lines
+		TransitLine lineA = fac.createTransitLine(LINE_A);
+		transferSchedule.addTransitLine(lineA);
+		TransitLine lineB = fac.createTransitLine(LINE_B);
+		transferSchedule.addTransitLine(lineB);
+
+		// route A1
+		Id<Link> dummylink = Id.createLinkId("-");
+		NetworkRoute networkRouteA1 = new LinkSequence(dummylink, new LinkedList<>(), dummylink);
+		List<TransitRouteStop> a1stops = new LinkedList<>();
+		a1stops.add(fac.createTransitRouteStop(stop1a, 0.0, 0.0));
+		a1stops.add(fac.createTransitRouteStop(stop2b, 20.0, 20.0));
+		TransitRoute routeA1 = fac.createTransitRoute(ROUTE_A1, networkRouteA1, a1stops, "bus");
+		lineA.addRoute(routeA1);
+
+		// routeB
+		NetworkRoute networkRouteB = new LinkSequence(dummylink, new LinkedList<>(), dummylink);
+		List<TransitRouteStop> bStops = new LinkedList<>();
+		bStops.add(fac.createTransitRouteStop(stop3c, 0.0, 0.0));
+		bStops.add(fac.createTransitRouteStop(stop4, 80.0, 80.0));
+		TransitRoute routeB = fac.createTransitRoute(ROUTE_B, networkRouteB, bStops, "bus");
+		lineB.addRoute(routeB);
+
+		// transferTimes
+		MinimalTransferTimes minimalTransferTimes = transferSchedule.getMinimalTransferTimes();
+		// transfers from feeds don't use child stops
+		minimalTransferTimes.set(Id.create("stop2", TransitStopFacility.class), Id.create("stop3", TransitStopFacility.class),  157);
+		minimalTransferTimes.set(Id.create("stop3", TransitStopFacility.class), Id.create("stop2", TransitStopFacility.class),  157);
+		minimalTransferTimes.set(Id.create("stop3", TransitStopFacility.class), Id.create("stop5", TransitStopFacility.class),  99);
+		minimalTransferTimes.set(Id.create("stop5", TransitStopFacility.class), Id.create("stop3", TransitStopFacility.class),  99);
+		minimalTransferTimes.set(Id.create("stop6_notInSchedule", TransitStopFacility.class), Id.create("stop7_notInSchedule", TransitStopFacility.class),  6);
+		minimalTransferTimes.set(Id.create("stop7_notInSchedule", TransitStopFacility.class), Id.create("stop6_notInSchedule", TransitStopFacility.class),  6);
+		// child stop transfers created by PTMapper
+		minimalTransferTimes.set(Id.create("stop2.link:A", TransitStopFacility.class), Id.create("stop2", TransitStopFacility.class),  0);
+		minimalTransferTimes.set(Id.create("stop3.link:B", TransitStopFacility.class), Id.create("stop3", TransitStopFacility.class),  0);
+
+		return transferSchedule;
+	}
+
+	@Test
+	public void removeUnusedTransfers() {
+		TransitSchedule transferSchedule = initTransfersSchedule();
+
+		ScheduleCleaner.removeNotUsedMinimalTransferTimes(transferSchedule);
+
+		Set<String> transferFromStopIds = new TreeSet<>();
+		Set<String> transferToStopIds = new TreeSet<>();
+		MinimalTransferTimes.MinimalTransferTimesIterator iterator = transferSchedule.getMinimalTransferTimes().iterator();
+		while(iterator.hasNext()) {
+			iterator.next();
+			transferFromStopIds.add(iterator.getFromStopId().toString());
+			transferToStopIds.add(iterator.getFromStopId().toString());
+		}
+
+		String[] transferFromStopIdsExpected = {"stop2", "stop2.link:A", "stop3", "stop3.link:B", "stop5"};
+		String[] transferToStopIdsExpected = {"stop2", "stop2.link:A", "stop3", "stop3.link:B", "stop5"};
+		Assert.assertArrayEquals(transferFromStopIds.toArray(), transferFromStopIdsExpected);
+		Assert.assertArrayEquals(transferToStopIds.toArray(), transferToStopIdsExpected);
+	}
 }
