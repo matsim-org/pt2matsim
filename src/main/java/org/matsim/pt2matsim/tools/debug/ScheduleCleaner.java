@@ -69,8 +69,22 @@ public final class ScheduleCleaner {
 		}
 	}
 
+	public static Set<String> getParentStopIdsUsedByRoutes(TransitSchedule schedule) {
+		Set<String> usedParentStopIds = new HashSet<>();
+		for(TransitLine line : schedule.getTransitLines().values()) {
+			for(TransitRoute route : line.getRoutes().values()) {
+				for(TransitRouteStop stop : route.getStops()) {
+					String parentId = ScheduleTools.getParentStopFacilityId(stop.getStopFacility().getId().toString());
+					usedParentStopIds.add(parentId);
+				}
+			}
+		}
+		return usedParentStopIds;
+	}
+
 	/**
-	 * Removes all stop facilities not used by a transit route. Modifies the schedule.
+	 * Removes all stop facilities not used by a transit route. Parent stop facilities are kept.
+	 * Modifies the schedule.
 	 *
 	 * @param schedule the schedule in which the facilities should be removed
 	 */
@@ -78,26 +92,16 @@ public final class ScheduleCleaner {
 		log.info("... Removing not used stop facilities");
 		int removed = 0;
 
-		// Collect all used stop facilities:
-		Set<Id<TransitStopFacility>> usedStopFacilities = new HashSet<>();
-		for(TransitLine line : schedule.getTransitLines().values()) {
-			for(TransitRoute route : line.getRoutes().values()) {
-				for(TransitRouteStop stop : route.getStops()) {
-					if(stop == null || stop.getStopFacility() == null) {
-						log.error("Stop does not exist");
-					}
-					usedStopFacilities.add(stop.getStopFacility().getId());
-				}
-			}
-		}
-		// Check all stop facilities if not used:
+		Set<String> usedParentStopIds = getParentStopIdsUsedByRoutes(schedule);
+		// Mark all unused facilities
 		Set<TransitStopFacility> unusedStopFacilites = new HashSet<>();
 		for(Id<TransitStopFacility> facilityId : schedule.getFacilities().keySet()) {
-			if(!usedStopFacilities.contains(facilityId)) {
+			String parentId = ScheduleTools.getParentStopFacilityId(facilityId.toString());
+			if(!usedParentStopIds.contains(parentId)) {
 				unusedStopFacilites.add(schedule.getFacilities().get(facilityId));
 			}
 		}
-		// Remove all stop facilities not used:
+		// Remove all unused stop facilities
 		for(TransitStopFacility facility : unusedStopFacilites) {
 			schedule.removeStopFacility(facility);
 			removed++;

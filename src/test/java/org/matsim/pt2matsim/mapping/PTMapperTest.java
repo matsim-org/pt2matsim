@@ -69,7 +69,9 @@ public class PTMapperTest {
 
 	@Test
 	public void numberOfStopFacilities() {
-		Assert.assertEquals(10, schedule.getFacilities().size());
+		int nParentStops = 6;
+		int nChildStops = 10;
+		Assert.assertEquals(nParentStops + nChildStops, schedule.getFacilities().size());
 	}
 
 	@Test
@@ -98,8 +100,9 @@ public class PTMapperTest {
 		new PTMapper(schedule2, network2).run(ptmConfig2);
 
 		// 1 loop link, 3 artificial links
+		int nParentStops = 6;
 		Assert.assertEquals(NetworkToolsTest.initNetwork().getLinks().size()+4, network2.getLinks().size());
-		Assert.assertEquals(9, schedule2.getFacilities().size());
+		Assert.assertEquals(9 + nParentStops, schedule2.getFacilities().size());
 	}
 	@Test
 	public void noTransportModeAssignment() {
@@ -126,7 +129,9 @@ public class PTMapperTest {
 		}
 		// only artificial stop links
 		for(TransitStopFacility transitStopFacility : schedule2.getFacilities().values()) {
-			Assert.assertTrue(transitStopFacility.getLinkId().toString().contains("pt_"));
+			if(transitStopFacility.getLinkId() != null) {
+				Assert.assertTrue(transitStopFacility.getLinkId().toString().contains("pt_"));
+			}
 		}
 	}
 }
