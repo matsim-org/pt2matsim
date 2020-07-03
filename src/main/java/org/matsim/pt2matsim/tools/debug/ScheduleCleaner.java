@@ -116,6 +116,11 @@ public final class ScheduleCleaner {
 
 		Set<Id<TransitStopFacility>> usedStopFacilitiesId = schedule.getFacilities().keySet();
 
+		Set<String> usedParentStopIds = new HashSet<>();
+		for(Id<TransitStopFacility> transitStopFacilityId : usedStopFacilitiesId) {
+			usedParentStopIds.add(ScheduleTools.getParentStopFacilityId(transitStopFacilityId.toString()));
+		}
+
 		MinimalTransferTimes transferTimes = schedule.getMinimalTransferTimes();
 		MinimalTransferTimes.MinimalTransferTimesIterator iterator = transferTimes.iterator();
 
@@ -123,7 +128,9 @@ public final class ScheduleCleaner {
 
 		while(iterator.hasNext()) {
 			iterator.next();
-			if(!usedStopFacilitiesId.contains(iterator.getFromStopId()) || !usedStopFacilitiesId.contains(iterator.getToStopId())) {
+			String fromStopParentId = ScheduleTools.getParentStopFacilityId(iterator.getFromStopId().toString());
+			String toStopParentId = ScheduleTools.getParentStopFacilityId(iterator.getToStopId().toString());
+			if(!usedParentStopIds.contains(fromStopParentId) || !usedParentStopIds.contains(toStopParentId)) {
 				transferTimes.remove(iterator.getFromStopId(), iterator.getToStopId());
 				removed += 1;
 			}
