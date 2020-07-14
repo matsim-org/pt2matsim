@@ -395,7 +395,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 				ExtendedRouteType extendedRouteType = RouteType.getExtendedRouteType(routeTypeNr);
 
 				if(extendedRouteType == null) {
-					log.warn("Route " + line[col.get(GtfsDefinitions.ROUTE_ID)] + " of type " + routeTypeNr + " will be ignored");
+					log.warn("Route " + line[col.get(GtfsDefinitions.ROUTE_ID)] + " has invalid route type " + routeTypeNr);
 					ignoredRoutes.add(line[col.get(GtfsDefinitions.ROUTE_ID)]);
 				} else {
 					String routeId = line[col.get(GtfsDefinitions.ROUTE_ID)];

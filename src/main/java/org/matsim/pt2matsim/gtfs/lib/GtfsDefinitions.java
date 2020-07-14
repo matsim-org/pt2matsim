@@ -388,10 +388,6 @@ public final class GtfsDefinitions {
 		}
 
 		public static ExtendedRouteType getExtendedRouteType(int routeType) {
-			ExtendedRouteType extRouteType = extendedRouteTypes.get(routeType);
-			if(extRouteType == null) {
-				throw new IllegalArgumentException("Invalid GTFS route type: " + routeType);
-			}
 			return extendedRouteTypes.get(routeType);
 		}
 
