@@ -45,7 +45,7 @@ public class GtfsConverterTest {
 			nTransitRoutes += transitLine.getRoutes().size();
 		}
 		Assert.assertEquals(6, convertedSchedule.getFacilities().size());
-		Assert.assertEquals(2, convertedSchedule.getTransitLines().size());
+		Assert.assertEquals(3, convertedSchedule.getTransitLines().size());
 		Assert.assertEquals(3, nTransitRoutes);
 	}
 

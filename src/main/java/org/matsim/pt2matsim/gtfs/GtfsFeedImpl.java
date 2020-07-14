@@ -367,8 +367,6 @@ public class GtfsFeedImpl implements GtfsFeed {
 		}
 	}
 
-	final protected Set<String> ignoredRoutes = new HashSet<>();
-
 	/**
 	 * Basically just reads all routeIds and their corresponding names and types and puts them in {@link #routes}.
 	 * <p/>
@@ -395,15 +393,14 @@ public class GtfsFeedImpl implements GtfsFeed {
 				ExtendedRouteType extendedRouteType = RouteType.getExtendedRouteType(routeTypeNr);
 
 				if(extendedRouteType == null) {
-					log.warn("Route " + line[col.get(GtfsDefinitions.ROUTE_ID)] + " has invalid route type " + routeTypeNr);
-					ignoredRoutes.add(line[col.get(GtfsDefinitions.ROUTE_ID)]);
-				} else {
-					String routeId = line[col.get(GtfsDefinitions.ROUTE_ID)];
-					String shortName = line[col.get(GtfsDefinitions.ROUTE_SHORT_NAME)];
-					String longName = line[col.get(GtfsDefinitions.ROUTE_LONG_NAME)];
-					Route newGtfsRoute = new RouteImpl(routeId, shortName, longName, extendedRouteType);
-					routes.put(line[col.get(GtfsDefinitions.ROUTE_ID)], newGtfsRoute);
+					log.warn("Route " + line[col.get(GtfsDefinitions.ROUTE_ID)] + " has unknown extended route type " + routeTypeNr);
+					extendedRouteType = ExtendedRouteType.Unknown;
 				}
+				String routeId = line[col.get(GtfsDefinitions.ROUTE_ID)];
+				String shortName = line[col.get(GtfsDefinitions.ROUTE_SHORT_NAME)];
+				String longName = line[col.get(GtfsDefinitions.ROUTE_LONG_NAME)];
+				Route newGtfsRoute = new RouteImpl(routeId, shortName, longName, extendedRouteType);
+				routes.put(line[col.get(GtfsDefinitions.ROUTE_ID)], newGtfsRoute);
 
 				line = reader.readNext();
 			}
@@ -449,11 +446,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 					throw new IllegalStateException("Service " + serviceId + " not found");
 				}
 				if(route == null) {
-					if(!ignoredRoutes.contains(routeId)) {
-						throw new IllegalStateException("Route " + routeId + " not found");
-					} else {
-						ignoredTrips.add(line[col.get(GtfsDefinitions.TRIP_ID)]);
-					}
+					ignoredTrips.add(line[col.get(GtfsDefinitions.TRIP_ID)]);
 				} else {
 					if(usesShapes) {
 						Id<RouteShape> shapeId = Id.create(line[col.get(GtfsDefinitions.SHAPE_ID)], RouteShape.class); // column might not be available
