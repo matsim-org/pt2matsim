@@ -1,0 +1,3 @@
+stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,location_type,parent_station
+Stop A,A,A,A,0.0,0.0,1,
+Stop B,B,B,B,1000.0,1000.0,1,
