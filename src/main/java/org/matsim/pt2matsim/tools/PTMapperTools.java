@@ -243,10 +243,8 @@ public final class PTMapperTools {
 	 * this functions replaces spaces with a special replacement.
 	 */
 	public static Id<Link> despaceLinkId(Id<Link> id) {
-		return Id.create(id.toString().replace(" ", SPACE_REPLACEMENT), Link.class);
+		return Id.create(id.toString().replace(" ", PublicTransitMappingStrings.SPACE_REPLACEMENT), Link.class);
 	}
-	
-	static final public String SPACE_REPLACEMENT = ":::";
 
 	public static Id<Link> createArtificialLinkId(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate) {
 		if(fromLinkCandidate.isLoopLink()) {
