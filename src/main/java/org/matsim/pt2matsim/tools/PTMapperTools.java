@@ -234,19 +234,30 @@ public final class PTMapperTools {
 	public static double calcTravelCost(Link link, PublicTransitMappingConfigGroup.TravelCostType travelCostType) {
 		return (travelCostType.equals(PublicTransitMappingConfigGroup.TravelCostType.travelTime) ? link.getLength() / link.getFreespeed() : link.getLength());
 	}
+	
+	/**
+	 * "De-spaces" link IDs as pt2matsim may create stop-based links, with spaces
+	 * included in their names. This can happen as GTFS allows spaces in stop IDs.
+	 * However, this confuses MATSim as routes are usually encoded as
+	 * space-separated lists. In order to fix the problem of inconsistent routes,
+	 * this functions replaces spaces with a special replacement.
+	 */
+	public static Id<Link> despaceLinkId(Id<Link> id) {
+		return Id.create(id.toString().replace(" ", PublicTransitMappingStrings.SPACE_REPLACEMENT), Link.class);
+	}
 
 	public static Id<Link> createArtificialLinkId(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate) {
 		if(fromLinkCandidate.isLoopLink()) {
-			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getStop().getStopFacility().getId() + "_" + toLinkCandidate.getLink().getId());
+			return despaceLinkId(Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getStop().getStopFacility().getId() + "_" + toLinkCandidate.getLink().getId()));
 		} else if(toLinkCandidate.isLoopLink()) {
-			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getLink().getId() + "_" + toLinkCandidate.getStop().getStopFacility().getId());
+			return despaceLinkId(Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getLink().getId() + "_" + toLinkCandidate.getStop().getStopFacility().getId()));
 		} else {
-			return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getLink().getId() + "_" + toLinkCandidate.getLink().getId());
+			return despaceLinkId(Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + fromLinkCandidate.getLink().getId() + "_" + toLinkCandidate.getLink().getId()));
 		}
 	}
 
 	public static Id<Link> createArtificialLinkId(TransitStopFacility stopFacility) {
-		return Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + stopFacility.getId());
+		return despaceLinkId(Id.createLinkId(PublicTransitMappingStrings.PREFIX_ARTIFICIAL + stopFacility.getId()));
 	}
 
 	/**

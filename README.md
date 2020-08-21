@@ -16,7 +16,7 @@ information, the accuracy of the schedule data varies and is usually not suffici
 
 Unmapped transit schedules lack information on the links used by vehicles and only contain the stop sequence
 for transit routes. Generating these links (i.e. the path a vehicle takes on a network) is called "mapping", a process
-done by the _PublicTransitMapper_. It implements an [algorithm](https://github.com/matsim-org/pt2matsim/wiki/Mapping-algorithm) 
+done by the _PublicTransitMapper_. It implements an [algorithm](https://github.com/matsim-org/pt2matsim/wiki/PTMapper-algorithm-and-config-parameters) 
 that uses an abstract graph to calculate the least cost path from the transit route's first to its last stop with the constraint 
 that the path must contain a so called link candidate for every stop. The result is a mapped transit schedule and a modified network.
 
@@ -45,7 +45,7 @@ To include pt2matsim in your own maven project, add this snippet to your pom.xml
         <dependency>
             <groupId>org.matsim</groupId>
             <artifactId>pt2matsim</artifactId>
-            <version>20.5</version>
+            <version>20.7</version>
         </dependency>
     </dependencies>
 

@@ -37,6 +37,7 @@ public final class PublicTransitMappingStrings {
 	public static final String ARTIFICIAL_LINK_MODE = "artificial";
 	public static final Set<String> ARTIFICIAL_LINK_MODE_AS_SET = CollectionUtils.stringToSet(ARTIFICIAL_LINK_MODE);
 	public static final String PREFIX_ARTIFICIAL = "pt_";
+	static final public String SPACE_REPLACEMENT = ":::";
 	public static final String DESCR_SHAPE_ID_PREFIX = "shapeId:";
 
 }

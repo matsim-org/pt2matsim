@@ -223,6 +223,7 @@ public final class GtfsDefinitions {
 		Cable_car (5, "Cable car", RouteType.CABLE_CAR),
 		Gondola   (6, "Gondola", RouteType.GONDOLA),
 		Funicular (7, "Funicular", RouteType.FUNICULAR),
+		Unknown   (9999, "Unknown", RouteType.OTHER),
 
 		// Extended: https://developers.google.com/transit/gtfs/reference/extended-route-types
 		Railway_Service                       (100,  "Railway Service", 				RouteType.RAIL),
@@ -388,10 +389,6 @@ public final class GtfsDefinitions {
 		}
 
 		public static ExtendedRouteType getExtendedRouteType(int routeType) {
-			ExtendedRouteType extRouteType = extendedRouteTypes.get(routeType);
-			if(extRouteType == null) {
-				throw new IllegalArgumentException("Invalid GTFS route type: " + routeType);
-			}
 			return extendedRouteTypes.get(routeType);
 		}
 
