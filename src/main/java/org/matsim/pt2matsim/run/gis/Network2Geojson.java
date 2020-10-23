@@ -19,7 +19,8 @@
 package org.matsim.pt2matsim.run.gis;
 
 import org.apache.log4j.Logger;
-import org.geojson.*;
+import org.geojson.Feature;
+import org.geojson.FeatureCollection;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -55,10 +56,6 @@ public class Network2Geojson {
 		} else {
 			throw new RuntimeException("Incorrect number of arguments " + args.length);
 		}
-	}
-
-	public static void run(Network network, String outputFile) {
-		run(null, network, outputFile);
 	}
 
 	public static void run(String networkCoordSys, String networkFile, String linksOutputFile, String nodesOutputFile) {

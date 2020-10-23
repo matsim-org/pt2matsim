@@ -82,11 +82,6 @@ public class Schedule2Geojson {
 		s2s.writeSchedule(outputFile);
 	}
 
-	public static void run(TransitSchedule schedule, String outputFile) {
-		Schedule2Geojson s2s = new Schedule2Geojson(null, schedule, null);
-		s2s.writeSchedule(outputFile);
-	}
-
 	public static void run(String crs, TransitSchedule schedule, String outputFile) {
 		Schedule2Geojson s2s = new Schedule2Geojson(crs, schedule, null);
 		s2s.writeSchedule(outputFile);
