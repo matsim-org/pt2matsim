@@ -108,6 +108,17 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		return config;
 	}
 
+	/**
+	 * Loads a Public Transit Mapper Config File<p/>
+	 *
+	 * @param configFile the PublicTransitMapping config file (xml)
+	 */
+	public static PublicTransitMappingConfigGroup loadConfig(String configFile) {
+		Config configAll = ConfigUtils.loadConfig(configFile, new PublicTransitMappingConfigGroup());
+		PublicTransitMappingConfigGroup config = ConfigUtils.addOrGetModule(configAll, PublicTransitMappingConfigGroup.GROUP_NAME, PublicTransitMappingConfigGroup.class);
+		return config;
+	}
+
 	public void writeToFile(String filename) {
 		Config matsimConfig = ConfigUtils.createConfig();
 		matsimConfig.addModule(this);

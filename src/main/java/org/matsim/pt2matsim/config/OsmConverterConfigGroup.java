@@ -102,6 +102,12 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		return defaultConfig;
 	}
 
+	public static OsmConverterConfigGroup loadConfig(String configFile) {
+		Config configAll = ConfigUtils.loadConfig(configFile, new PublicTransitMappingConfigGroup());
+		OsmConverterConfigGroup config = ConfigUtils.addOrGetModule(configAll, OsmConverterConfigGroup.GROUP_NAME, OsmConverterConfigGroup.class);
+		return config;
+	}
+
 	public void writeToFile(String filename) {
 		Config matsimConfig = ConfigUtils.createConfig();
 		matsimConfig.addModule(this);
