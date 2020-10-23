@@ -72,6 +72,12 @@ public class PTMapper {
 	private TransitSchedule schedule;
 
 	public static void mapScheduleToNetwork(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
+		if(config.getInputNetworkFile() != null) {
+			log.warn("The input network file set in PublicTransitMappingConfigGroup is ignored");
+		}
+		if(config.getInputScheduleFile() != null) {
+			log.warn("The input schedule file set in PublicTransitMappingConfigGroup is ignored");
+		}
 		new PTMapper(schedule, network).run(config);
 	}
 
