@@ -358,7 +358,6 @@ public final class ScheduleCleaner {
 				totalNumberOfStops += transitRoute.getDepartures().size() * transitRoute.getStops().size();
 				String routeProfile = transitRoute.getStops().get(0).getStopFacility().getId().toString();
 				for(int i = 1; i < transitRoute.getStops().size(); i++) {
-					//routeProfile = routeProfile + "-" + route.getStops().get(i).toString() + ":" + route.getStops().get(i).getDepartureOffset();
 					routeProfile = routeProfile + "-" + transitRoute.getStops().get(i).getStopFacility().getId().toString();
 				}
 				MapUtils.getList(routeProfile, routeProfiles).add(transitRoute);

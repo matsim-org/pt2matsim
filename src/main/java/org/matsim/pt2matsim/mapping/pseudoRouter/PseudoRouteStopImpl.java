@@ -57,7 +57,7 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 	 * to make access easier during stop facility replacement.
 	 */
 	/*package*/ PseudoRouteStopImpl(int order, TransitRouteStop routeStop, LinkCandidate linkCandidate) {
-		this.id = Id.create("[" + Integer.toString(order) + "]" + linkCandidate.toString(), PseudoRouteStop.class);
+		this.id = Id.create("[" + order + "]" + linkCandidate.toString(), PseudoRouteStop.class);
 		this.linkId = linkCandidate.getLink().getId();
 
 		// stop facility values

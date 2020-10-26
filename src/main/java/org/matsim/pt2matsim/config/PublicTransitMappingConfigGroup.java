@@ -115,8 +115,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	 */
 	public static PublicTransitMappingConfigGroup loadConfig(String configFile) {
 		Config configAll = ConfigUtils.loadConfig(configFile, new PublicTransitMappingConfigGroup());
-		PublicTransitMappingConfigGroup config = ConfigUtils.addOrGetModule(configAll, PublicTransitMappingConfigGroup.GROUP_NAME, PublicTransitMappingConfigGroup.class);
-		return config;
+		return ConfigUtils.addOrGetModule(configAll, PublicTransitMappingConfigGroup.GROUP_NAME, PublicTransitMappingConfigGroup.class);
 	}
 
 	public void writeToFile(String filename) {

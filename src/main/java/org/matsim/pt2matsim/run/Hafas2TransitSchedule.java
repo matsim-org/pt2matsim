@@ -31,7 +31,6 @@ import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 
 import java.io.IOException;
-import java.time.LocalDate;
 
 /**
  * Run class to convert (Swiss) HAFAS data to

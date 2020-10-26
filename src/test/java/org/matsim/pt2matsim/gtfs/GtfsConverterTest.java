@@ -161,7 +161,7 @@ public class GtfsConverterTest {
 	}
 
 	private String getTransferTimeTestString(MinimalTransferTimes.MinimalTransferTimesIterator iterator) {
-		return iterator.getFromStopId().toString() + "-" + iterator.getToStopId().toString() + "-" + String.valueOf(iterator.getSeconds());
+		return iterator.getFromStopId().toString() + "-" + iterator.getToStopId().toString() + "-" + iterator.getSeconds();
 	}
 
 }
