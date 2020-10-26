@@ -25,7 +25,7 @@ public class ExampleWorkflow {
 
 		// convert schedule
 		String unmappedSchedule = "intermediate/schedule_unmapped.xml.gz";
-		Gtfs2TransitSchedule.run("gtfs", "dayWithMostTrips", osmConfig.getOutputCoordinateSystem(), unmappedSchedule, "output/vehicles_unmapped.xml.gz");
+		Gtfs2TransitSchedule.run("gtfs", "dayWithMostTrips", osmConfig.getOutputCoordinateSystem(), unmappedSchedule, "output/vehicles.xml.gz");
 
 		// setup public transit mapper
 		PublicTransitMappingConfigGroup mapperConfig = PublicTransitMappingConfigGroup.createDefaultConfig();
@@ -35,12 +35,15 @@ public class ExampleWorkflow {
 		// map schedule to network
 		PTMapper.mapScheduleToNetwork(schedule,  network, mapperConfig);
 
-		// write results
+		// write mapping results
 		NetworkTools.writeNetwork(network, "output/network.xml.gz");
 		ScheduleTools.writeTransitSchedule(schedule, "output/schedule.xml.gz");
 
 		// Write geojson result
 		Network2Geojson.run(osmConfig.getOutputCoordinateSystem(), network, "output/network.geojson");
 		Schedule2Geojson.run(osmConfig.getOutputCoordinateSystem(), schedule, "output/schedule.geojson");
+
+		// check schedule
+		CheckMappedSchedulePlausibility.run("output/schedule.xml.gz", "output/network.xml.gz", osmConfig.getOutputCoordinateSystem(), "output/check/");
 	}
 }
