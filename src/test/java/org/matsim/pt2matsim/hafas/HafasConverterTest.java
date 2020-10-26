@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
-import org.matsim.pt.transitSchedule.TransitScheduleWriterV2;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.vehicles.VehicleUtils;

@@ -340,7 +340,7 @@ public class GtfsConverter {
 			for(TransitRoute route : line.getRoutes().values()) {
 				// create a vehicle for each departure
 				for(Departure departure : route.getDepartures().values()) {
-					String vehicleId = "veh_" + Long.toString(vehId++) + "_" + route.getTransportMode().replace(" ", "_");
+					String vehicleId = "veh_" + vehId++ + "_" + route.getTransportMode().replace(" ", "_");
 					Vehicle veh = vf.createVehicle(Id.create(vehicleId, Vehicle.class), vehicleType);
 					vehicles.addVehicle(veh);
 					departure.setVehicleId(veh.getId());

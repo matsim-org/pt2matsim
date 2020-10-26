@@ -1,7 +1,6 @@
 package org.matsim.pt2matsim.hafas.lib;
 
 import org.apache.log4j.Logger;
-import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 
 import java.io.*;
 import java.time.LocalDate;

@@ -39,7 +39,6 @@ import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
-import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersFactory;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersStandard;
 

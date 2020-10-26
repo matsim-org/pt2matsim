@@ -175,7 +175,7 @@ public final class ScheduleTools {
 				VehicleType vehicleType = vehicleTypes.get(transportMode);
 				// create a vehicle for each departure
 				for(Departure departure : route.getDepartures().values()) {
-					String vehicleId = "veh_" + Long.toString(vehId++) + "_" + route.getTransportMode();
+					String vehicleId = "veh_" + vehId++ + "_" + route.getTransportMode();
 					Vehicle veh = vf.createVehicle(Id.create(vehicleId, Vehicle.class), vehicleType);
 					vehicles.addVehicle(veh);
 					departure.setVehicleId(veh.getId());
@@ -448,7 +448,7 @@ public final class ScheduleTools {
 
 
 	/**
-	 * Based on {@link org.matsim.core.population.routes.LinkNetworkRouteImpl#getSubRoute}
+	 * Based on org.matsim.core.population.routes.LinkNetworkRouteImpl#getSubRoute
 	 *
 	 * @param transitRoute the transitRoute
 	 * @param fromLinkId   first link of the subroute. If <tt>null</tt> the first link of the route is used.

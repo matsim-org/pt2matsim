@@ -27,7 +27,7 @@ import org.matsim.vehicles.Vehicle;
 import java.util.List;
 
 /**
- * Custom implementation mirroring {@link LinkNetworkRouteImpl}
+ * Custom implementation mirroring org.matsim.core.population.routes.LinkNetworkRouteImpl
  *
  * @author polettif
  */

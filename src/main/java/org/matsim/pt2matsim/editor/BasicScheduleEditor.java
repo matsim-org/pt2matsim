@@ -297,7 +297,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	 */
 	private TransitStopFacility getChildStopInRoute(TransitRoute transitRoute, String parentId) {
 		for(TransitRouteStop routeStop : transitRoute.getStops()) {
-			if(parentId.equals(ScheduleTools.createParentStopFacilityId(routeStop.getStopFacility()))) {
+			if(parentId.equals(ScheduleTools.createParentStopFacilityId(routeStop.getStopFacility()).toString())) {
 				return routeStop.getStopFacility();
 			}
 		}
