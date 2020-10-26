@@ -103,7 +103,7 @@ public final class ScheduleCleaner {
 			removed++;
 		}
 
-		log.info("    " + removed + " stop facilities removed");
+		log.info("   " + removed + " stop facilities removed");
 	}
 
 	/**
