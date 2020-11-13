@@ -223,7 +223,7 @@ public class GtfsConverter {
 	protected TransitRoute createTransitRoute(Trip trip, Map<Id<TransitStopFacility>, TransitStopFacility> stopFacilities) {
 		Id<RouteShape> shapeId = trip.getShape() != null ? trip.getShape().getId() : null;
 
-		if(trip.getStopTimes().size() >= 2) {
+		if(trip.getStopTimes().size() <= 1) {
 			noStopTimeTrips++;
 			return null;
 		}
