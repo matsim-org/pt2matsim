@@ -19,3 +19,8 @@ hs_err_pid*
 
 # IntelliJ
 /.idea
+pt2matsim.iml
+
+test/gtfs-feed-rewrite/
+
+test/stib-mivb-gtfs/
