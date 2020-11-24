@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.matsim</groupId>
     <artifactId>pt2matsim</artifactId>
-    <version>20.10</version>
+    <version>20.11-SNAPSHOT</version>
 
     <name>PT2MATSim</name>
     <description>Public Transport to MATSim</description>
@@ -33,29 +33,6 @@
 	</properties>
 
     <dependencies>
-		<!-- geotools is already a dependency of matsim (at least in v11.0), 
-		     so these dependencies could be removed -->
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-main</artifactId>
-			<version>${geotools.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-referencing</artifactId>
-			<version>${geotools.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-shapefile</artifactId>
-			<version>${geotools.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-epsg-hsql</artifactId>
-			<version>${geotools.version}</version>
-			<scope>runtime</scope>
-		</dependency>
         <dependency>
             <groupId>org.matsim</groupId>
             <artifactId>matsim</artifactId>
