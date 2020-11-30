@@ -38,8 +38,8 @@ public class ArtificialLinkImpl implements ArtificialLink {
 	private final Id<Node> fromNodeId;
 	private final Id<Node> toNodeId;
 	private final int hash;
-	private final Node fromNode;
-	private final Node toNode;
+	private Node fromNode;
+	private Node toNode;
 	private double freespeed;
 	private double linkLength;
 	private double numberOfLanes;
@@ -165,7 +165,8 @@ public class ArtificialLinkImpl implements ArtificialLink {
 
 	@Override
 	public boolean setToNode(Node node) {
-		throw new IllegalAccessError();
+		this.toNode = node;
+		return true;
 	}
 
 	@Override
@@ -175,9 +176,9 @@ public class ArtificialLinkImpl implements ArtificialLink {
 
 	@Override
 	public boolean setFromNode(Node node) {
-		throw new IllegalAccessError();
+		this.fromNode = node;
+		return true;
 	}
-
 
 	@Override
 	public double getLength() {
