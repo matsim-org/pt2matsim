@@ -69,7 +69,7 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
     private final Map<String, PathCalculator> pathCalculatorsByMode = new HashMap<>();
     private final Map<String, Network> networksByMode = new HashMap<>();
     private final Map<String, OsmRouter> osmRouters = new HashMap<>();
-
+    private final int nThreads;
 
     public ScheduleRoutersOsmAttributes(TransitSchedule schedule, Network network, Map<String, Set<String>> transportModeAssignment, PublicTransitMappingConfigGroup.TravelCostType travelCostType, double osmPtLinkTravelCostFactor) {
         this.transportModeAssignment = transportModeAssignment;
@@ -77,6 +77,19 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
         this.schedule = schedule;
         this.network = network;
         this.osmPtLinkTravelCostFactor = osmPtLinkTravelCostFactor;
+        this.nThreads = 8;
+
+        load();
+    }
+
+
+    public ScheduleRoutersOsmAttributes(TransitSchedule schedule, Network network, Map<String, Set<String>> transportModeAssignment, PublicTransitMappingConfigGroup.TravelCostType travelCostType, double osmPtLinkTravelCostFactor, int nThreads) {
+        this.transportModeAssignment = transportModeAssignment;
+        this.travelCostType = travelCostType;
+        this.schedule = schedule;
+        this.network = network;
+        this.osmPtLinkTravelCostFactor = osmPtLinkTravelCostFactor;
+        this.nThreads = nThreads;
 
         load();
     }
@@ -86,7 +99,7 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
      */
     private void load() {
         log.info("Initiating network and router for transit routes...");
-        LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory();
+        LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory(nThreads);
         for (TransitLine transitLine : schedule.getTransitLines().values()) {
             for (TransitRoute transitRoute : transitLine.getRoutes().values()) {
                 String scheduleMode = transitRoute.getTransportMode();

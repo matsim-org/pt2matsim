@@ -47,6 +47,7 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 	private final Map<String, PathCalculator> pathCalculatorsByMode = new HashMap<>();
 	private final Map<String, Network> networksByMode = new HashMap<>();
 	private final boolean considerCandidateDist;
+	private final int nThreads;
 
 	private ScheduleRoutersStandard(TransitSchedule schedule, Network network, Map<String, Set<String>> transportModeAssignment, PublicTransitMappingConfigGroup.TravelCostType costType, boolean routingWithCandidateDistance) {
 		this.schedule = schedule;
@@ -54,6 +55,18 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 		this.transportModeAssignment = transportModeAssignment;
 		this.travelCostType = costType;
 		this.considerCandidateDist = routingWithCandidateDistance;
+		this.nThreads = 8;
+
+		load();
+	}
+
+	private ScheduleRoutersStandard(TransitSchedule schedule, Network network, Map<String, Set<String>> transportModeAssignment, PublicTransitMappingConfigGroup.TravelCostType costType, boolean routingWithCandidateDistance, int nThreads) {
+		this.schedule = schedule;
+		this.network = network;
+		this.transportModeAssignment = transportModeAssignment;
+		this.travelCostType = costType;
+		this.considerCandidateDist = routingWithCandidateDistance;
+		this.nThreads = nThreads;
 
 		load();
 	}
@@ -65,7 +78,7 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 		log.info("==============================================");
 		log.info("Creating network routers for transit routes...");
 		log.info("Initiating network and router for transit routes...");
-		LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory();
+		LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory(nThreads);
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				String scheduleMode = transitRoute.getTransportMode();
