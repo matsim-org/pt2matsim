@@ -21,6 +21,7 @@ package org.matsim.pt2matsim.mapping.pseudoRouter;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.core.utils.misc.OptionalTime;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitStopArea;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
@@ -41,8 +42,8 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 	private final LinkCandidate linkCandidate;
 
 	private final Id<Link> linkId;
-	private final double departureOffset;
-	private final double arrivalOffset;
+	private final OptionalTime departureOffset;
+	private final OptionalTime arrivalOffset;
 	private final boolean awaitDepartureTime;
 	private final Coord coord;
 	private final boolean isBlockingLane;
@@ -99,8 +100,8 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 		this.stopAreaId = null;
 
 		// route stop values
-		this.departureOffset = 0.0;
-		this.arrivalOffset = 0.0;
+		this.departureOffset = OptionalTime.defined(0.0);
+		this.arrivalOffset = OptionalTime.defined(0.0);
 		this.awaitDepartureTime = false;
 
 		// link value
@@ -151,12 +152,12 @@ public class PseudoRouteStopImpl implements PseudoRouteStop {
 	}
 
 	@Override
-	public double getDepartureOffset() {
+	public OptionalTime getDepartureOffset() {
 		return departureOffset;
 	}
 
 	@Override
-	public double getArrivalOffset() {
+	public OptionalTime getArrivalOffset() {
 		return arrivalOffset;
 	}
 
