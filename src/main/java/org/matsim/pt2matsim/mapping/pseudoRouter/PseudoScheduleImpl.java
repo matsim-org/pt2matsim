@@ -82,8 +82,8 @@ public class PseudoScheduleImpl implements PseudoSchedule {
 				// create new TransitRouteStop and add it to the newStopSequence
 				TransitRouteStop newTransitRouteStop = scheduleFactory.createTransitRouteStop(
 						schedule.getFacilities().get(childStopFacilityId),
-						pseudoStop.getArrivalOffset(),
-						pseudoStop.getDepartureOffset());
+						pseudoStop.getArrivalOffset().seconds(),
+						pseudoStop.getDepartureOffset().seconds());
 				newTransitRouteStop.setAwaitDepartureTime(pseudoStop.awaitsDepartureTime());
 				newStopSequence.add(newTransitRouteStop);
 				

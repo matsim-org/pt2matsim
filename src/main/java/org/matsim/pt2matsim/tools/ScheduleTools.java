@@ -144,8 +144,8 @@ public final class ScheduleTools {
 			TransitRouteStop s2 = stops2.get(i);
 			if(!s1.getStopFacility().getId().equals(s2.getStopFacility().getId()) ||
 					!s1.getStopFacility().getCoord().equals(s2.getStopFacility().getCoord()) ||
-					s1.getArrivalOffset() != s2.getArrivalOffset() ||
-					s1.getDepartureOffset() != s2.getDepartureOffset()) {
+					s1.getArrivalOffset().seconds() != s2.getArrivalOffset().seconds() ||
+					s1.getDepartureOffset().seconds() != s2.getDepartureOffset().seconds()) {
 				return false;
 			}
 		}
@@ -600,7 +600,7 @@ public final class ScheduleTools {
 						lengthUpToCurrentStop += link.getLength();
 	
 						if(stop.getStopFacility().getLinkId().equals(link.getId())) {
-							double ttSchedule = stop.getArrivalOffset() - departTime;
+							double ttSchedule = stop.getArrivalOffset().seconds() - departTime;
 							double theoreticalMinSpeed = (lengthUpToCurrentStop / ttSchedule) * 1.02;
 	
 							for(Id<Link> linkId : linkIdsUpToCurrentStop) {
@@ -613,7 +613,7 @@ public final class ScheduleTools {
 							// reset
 							lengthUpToCurrentStop = 0;
 							linkIdsUpToCurrentStop = new ArrayList<>();
-							departTime = stop.getDepartureOffset();
+							departTime = stop.getDepartureOffset().seconds();
 							if(stopsIterator.hasNext()) {
 								stop = stopsIterator.next();
 							}

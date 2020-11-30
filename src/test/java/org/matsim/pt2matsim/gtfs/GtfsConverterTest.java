@@ -81,10 +81,12 @@ public class GtfsConverterTest {
 				Assert.assertEquals(expectedRoute.getStops().size(), transitRoute.getStops().size());
 				for(int i = 0; i < transitRoute.getStops().size() - 1; i++) {
 					if(i > 0) {
-						Assert.assertEquals(expectedRoute.getStops().get(i).getArrivalOffset(), transitRoute.getStops().get(i).getArrivalOffset(), 0.1);
+						Assert.assertEquals(expectedRoute.getStops().get(i).getArrivalOffset().seconds(),
+								transitRoute.getStops().get(i).getArrivalOffset().seconds(), 0.1);
 					}
 					if(i < transitRoute.getStops().size() - 2) {
-						Assert.assertEquals(expectedRoute.getStops().get(i).getDepartureOffset(), transitRoute.getStops().get(i).getDepartureOffset(), 0.1);
+						Assert.assertEquals(expectedRoute.getStops().get(i).getDepartureOffset().seconds(),
+								transitRoute.getStops().get(i).getDepartureOffset().seconds(), 0.1);
 					}
 				}
 			}

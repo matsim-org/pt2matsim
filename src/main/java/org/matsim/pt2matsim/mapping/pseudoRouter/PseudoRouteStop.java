@@ -22,6 +22,7 @@ import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Identifiable;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.core.utils.misc.OptionalTime;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitStopArea;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
@@ -56,9 +57,9 @@ public interface PseudoRouteStop extends Identifiable<PseudoRouteStop>, Comparab
 
 	Id<TransitStopArea> getStopAreaId();
 
-	double getArrivalOffset();
+	OptionalTime getArrivalOffset();
 
-	double getDepartureOffset();
+	OptionalTime getDepartureOffset();
 
 	int compareTo(PseudoRouteStop other);
 
