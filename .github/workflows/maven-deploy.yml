@@ -22,7 +22,7 @@ jobs:
         server-username: BINTRAY_USERNAME
         server-password: BINTRAY_PASSWORD
     - name: Deploy with Maven
-      run: mvn deploy -DskipTests=true
+      run: mvn -B deploy
       env:
         BINTRAY_USERNAME: ${{ secrets.BINTRAY_USERNAME }}
         BINTRAY_PASSWORD: ${{ secrets.BINTRAY_PASSWORD }}
