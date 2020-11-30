@@ -186,10 +186,9 @@ public class HafasConverter {
 					vehicleType.setDoorOperationMode(defaultVehicleType.doorOperation);
 					vehicleType.setPcuEquivalents(defaultVehicleType.pcuEquivalents);
 
-					VehicleCapacity vehicleCapacity = vehicleFactory.createVehicleCapacity();
+					VehicleCapacity vehicleCapacity = vehicleType.getCapacity();
 					vehicleCapacity.setSeats(defaultVehicleType.capacitySeats);
 					vehicleCapacity.setStandingRoom(defaultVehicleType.capacityStanding);
-					vehicleType.setCapacity(vehicleCapacity);
 
 					vehicles.addVehicleType(vehicleType);
 				}

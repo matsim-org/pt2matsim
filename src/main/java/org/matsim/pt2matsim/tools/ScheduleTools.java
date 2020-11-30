@@ -209,10 +209,9 @@ public final class ScheduleTools {
 		vehicleType.setDoorOperationMode(defaultValues.doorOperation);
 		vehicleType.setPcuEquivalents(defaultValues.pcuEquivalents);
 
-		VehicleCapacity capacity = vf.createVehicleCapacity();
+		VehicleCapacity capacity = vehicleType.getCapacity();
 		capacity.setSeats(defaultValues.capacitySeats);
 		capacity.setStandingRoom(defaultValues.capacityStanding);
-		vehicleType.setCapacity(capacity);
 
 		return vehicleType;
 	}
@@ -222,7 +221,7 @@ public final class ScheduleTools {
 	 */
 	public static Vehicles readVehicles(String vehiclesFile) {
 		Vehicles vehicles = createVehiclesContainer();
-		new VehicleReaderV1(vehicles).readFile(vehiclesFile);
+		new MatsimVehicleReader(vehicles).readFile(vehiclesFile);
 		return vehicles;
 	}
 
