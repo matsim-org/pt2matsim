@@ -103,7 +103,7 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	}
 
 	public static OsmConverterConfigGroup loadConfig(String configFile) {
-		Config configAll = ConfigUtils.loadConfig(configFile, new PublicTransitMappingConfigGroup());
+		Config configAll = ConfigUtils.loadConfig(configFile, new OsmConverterConfigGroup());
 		return ConfigUtils.addOrGetModule(configAll, OsmConverterConfigGroup.GROUP_NAME, OsmConverterConfigGroup.class);
 	}
 
