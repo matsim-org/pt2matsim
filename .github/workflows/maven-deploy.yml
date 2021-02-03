@@ -18,12 +18,10 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.11
-        server-id: bintray-polettif-matsim
-        server-username: BINTRAY_USERNAME
-        server-password: BINTRAY_PASSWORD
     - name: Deploy with Maven
       run: mvn -B deploy
       env:
-        BINTRAY_USERNAME: ${{ secrets.BINTRAY_USERNAME }}
-        BINTRAY_PASSWORD: ${{ secrets.BINTRAY_PASSWORD }}
+        server-id: bintray-polettif-matsim
+        server-username: ${{ secrets.BINTRAY_USERNAME }}
+        server-password: ${{ secrets.BINTRAY_PASSWORD }}
         
