@@ -297,4 +297,13 @@ public class OsmMultimodalNetworkConverterTest {
 		// NetworkTools.writeNetwork(converter.getNetwork(), osmConfig.getOutputNetworkFile());
 	}
 
+	@Test
+	public void convertEPSG() {
+		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.createDefaultConfig();
+		osmConfig.setOutputCoordinateSystem("EPSG:8682"); // not the acutal epsg code for the area
+		osmConfig.setOsmFile("test/osm/WaterlooCityCentre.osm");
+
+		new OsmFileReader(new OsmDataImpl()).readFile(osmConfig.getOsmFile());
+	}
+
 }
