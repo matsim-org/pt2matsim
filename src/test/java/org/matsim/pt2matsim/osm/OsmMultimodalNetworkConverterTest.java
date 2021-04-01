@@ -13,12 +13,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.core.network.algorithms.MultimodalNetworkCleaner;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.osm.lib.OsmData;
 import org.matsim.pt2matsim.osm.lib.OsmDataImpl;
 import org.matsim.pt2matsim.osm.lib.OsmFileReader;
-import org.matsim.pt2matsim.run.Osm2MultimodalNetwork;
 
 /**
  * @author polettif
@@ -302,7 +300,7 @@ public class OsmMultimodalNetworkConverterTest {
 	@Test
 	public void convertEPSG() {
 		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.createDefaultConfig();
-		osmConfig.setOutputCoordinateSystem("EPSG:8682"); // not the acutal epsg code for the area
+		osmConfig.setOutputCoordinateSystem("EPSG:8682");
 		osmConfig.setOsmFile("test/osm/Belgrade.osm");
 
 		OsmData osm = new OsmDataImpl();
