@@ -35,6 +35,7 @@ import org.matsim.pt2matsim.tools.lib.RouteShape;
 
 import java.io.*;
 import java.util.*;
+import java.nio.charset.StandardCharsets;
 
 
 /**
@@ -175,7 +176,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 */
 	protected CSVReader createCSVReader(String path) throws FileNotFoundException {
 		InputStream stream = new BOMInputStream(new FileInputStream(path));
-		return new CSVReader(new InputStreamReader(stream));
+		return new CSVReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
 	}
 
 	/**
