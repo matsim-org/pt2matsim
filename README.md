@@ -30,16 +30,9 @@ Tools to validate and rudimentarily edit the mapped schedule are also part of th
 
 ### Binaries
 
-Releases are available on Bintray: https://bintray.com/polettif/matsim/pt2matsim. Run the _-shaded.jar_ for standalone usage.
+[Maven releases are currently not available.](https://github.com/matsim-org/pt2matsim/issues/143)
 
-To include pt2matsim in your own maven project, add this snippet to your pom.xml:
-
-    <repositories>
-        <repository>
-            <id>pt2matsim</id>
-            <url>http://dl.bintray.com/polettif/matsim</url>
-        </repository>
-    </repositories>
+Please clone the git repository to install pt2matsim and use it your own maven project.
 
     <dependencies>
         <dependency>
@@ -48,5 +41,3 @@ To include pt2matsim in your own maven project, add this snippet to your pom.xml
             <version>21.4</version>
         </dependency>
     </dependencies>
-
-The master branch contains the snapshot version with the latest changes. Clone the git repository to use it.
