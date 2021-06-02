@@ -11,10 +11,10 @@
 
     <distributionManagement>
         <repository>
-            <id>bintray-polettif-matsim</id>
-            <name>polettif-matsim</name>
-            <url>https://api.bintray.com/maven/polettif/matsim/pt2matsim/;publish=1</url>
-        </repository>
+             <id>pt2matsim-releases</id>
+             <name>pt2matsim Releases Maven Repository</name>
+             <url>https://repo.matsim.org/repository/matsim-releases/</url>
+         </repository>
     </distributionManagement>
 
     <repositories>
