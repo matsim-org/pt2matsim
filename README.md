@@ -38,6 +38,6 @@ Please clone the git repository to install pt2matsim and use it your own maven p
         <dependency>
             <groupId>org.matsim</groupId>
             <artifactId>pt2matsim</artifactId>
-            <version>21.4</version>
+            <version>21.5</version>
         </dependency>
     </dependencies>
