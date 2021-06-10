@@ -167,7 +167,7 @@ public class PTMapper {
 		log.info("==================================");
 		log.info("Calculating pseudoTransitRoutes... (" + nTransitRoutes + " transit routes in " + schedule.getTransitLines().size() + " transit lines)");
 
-		Progress progress = new Progress(nTransitRoutes, "Calculating pesudoTransitRoutes ...");
+		Progress progress = new Progress(nTransitRoutes, "Calculating pseudoTransitRoutes ...");
 		
 		// initiate pseudoRouting
 		PseudoRouting[] pseudoRoutingRunnables = new PseudoRouting[numThreads];
