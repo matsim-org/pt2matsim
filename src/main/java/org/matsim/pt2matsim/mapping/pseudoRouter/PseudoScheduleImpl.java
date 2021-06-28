@@ -145,7 +145,7 @@ public class PseudoScheduleImpl implements PseudoSchedule {
 			}
 
 			currentNumber++;
-			if (System.currentTimeMillis() / 1000.0 >= lastUpdate + 1.0 || currentNumber == totalNumber) {
+			if (System.currentTimeMillis() >= lastUpdate + 1000.0 || currentNumber == totalNumber) {
 				lastUpdate = System.currentTimeMillis();
 				logger.info(String.format("PseudoScheduleImpl::createFacilitiesAndLinkSequences %d/%d (%.2f%%)",
 						currentNumber, totalNumber, 100.0 * currentNumber / totalNumber));
