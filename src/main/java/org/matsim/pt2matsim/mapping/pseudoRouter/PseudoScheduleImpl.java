@@ -18,18 +18,24 @@
 
 package org.matsim.pt2matsim.mapping.pseudoRouter;
 
-import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
-import org.matsim.pt.transitSchedule.api.*;
-import org.matsim.pt.transitSchedule.api.MinimalTransferTimes.MinimalTransferTimesIterator;
-import org.matsim.pt2matsim.tools.ScheduleTools;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.network.Link;
+import org.matsim.pt.transitSchedule.api.MinimalTransferTimes.MinimalTransferTimesIterator;
+import org.matsim.pt.transitSchedule.api.TransitLine;
+import org.matsim.pt.transitSchedule.api.TransitRoute;
+import org.matsim.pt.transitSchedule.api.TransitRouteStop;
+import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.pt.transitSchedule.api.TransitScheduleFactory;
+import org.matsim.pt.transitSchedule.api.TransitStopFacility;
+import org.matsim.pt2matsim.tools.ScheduleTools;
 
 /**
  * @author polettif
@@ -39,7 +45,8 @@ public class PseudoScheduleImpl implements PseudoSchedule {
 	private final Set<PseudoTransitRoute> pseudoSchedule = new HashSet<>();
 
 	@Override
-	public void addPseudoRoute(TransitLine transitLine, TransitRoute transitRoute, List<PseudoRouteStop> pseudoStopSequence, List<Id<Link>> networkLinkList) {
+	public void addPseudoRoute(TransitLine transitLine, TransitRoute transitRoute,
+			List<PseudoRouteStop> pseudoStopSequence, List<Id<Link>> networkLinkList) {
 		pseudoSchedule.add(new PseudoTransitRouteImpl(transitLine, transitRoute, pseudoStopSequence, networkLinkList));
 	}
 
@@ -56,23 +63,28 @@ public class PseudoScheduleImpl implements PseudoSchedule {
 	@Override
 	public void createFacilitiesAndLinkSequences(TransitSchedule schedule) {
 		TransitScheduleFactory scheduleFactory = schedule.getFactory();
-		
+
 		Map<Id<TransitStopFacility>, Set<Id<TransitStopFacility>>> parentsToChildren = new HashMap<>();
 
-		for(PseudoTransitRoute pseudoTransitRoute : pseudoSchedule) {
+		Logger logger = Logger.getLogger(PseudoScheduleImpl.class);
+
+		int totalNumber = pseudoSchedule.size();
+		int currentNumber = 0;
+		double lastUpdate = Double.NEGATIVE_INFINITY;
+
+		for (PseudoTransitRoute pseudoTransitRoute : pseudoSchedule) {
 			List<PseudoRouteStop> pseudoStopSequence = pseudoTransitRoute.getPseudoStops();
 			List<TransitRouteStop> newStopSequence = new ArrayList<>();
 
-			for(PseudoRouteStop pseudoStop : pseudoStopSequence) {
-				Id<TransitStopFacility> childStopFacilityId = ScheduleTools.createChildStopFacilityId(pseudoStop.getParentStopFacilityId(), pseudoStop.getLinkId());
+			for (PseudoRouteStop pseudoStop : pseudoStopSequence) {
+				Id<TransitStopFacility> childStopFacilityId = ScheduleTools
+						.createChildStopFacilityId(pseudoStop.getParentStopFacilityId(), pseudoStop.getLinkId());
 
 				// if child stop facility for this link has not yet been generated
-				if(!schedule.getFacilities().containsKey(childStopFacilityId)) {
+				if (!schedule.getFacilities().containsKey(childStopFacilityId)) {
 					TransitStopFacility newFacility = scheduleFactory.createTransitStopFacility(
-							Id.create(childStopFacilityId, TransitStopFacility.class),
-							pseudoStop.getCoord(),
-							pseudoStop.isBlockingLane()
-					);
+							Id.create(childStopFacilityId, TransitStopFacility.class), pseudoStop.getCoord(),
+							pseudoStop.isBlockingLane());
 					newFacility.setLinkId(pseudoStop.getLinkId());
 					newFacility.setName(pseudoStop.getFacilityName());
 					newFacility.setStopAreaId(pseudoStop.getStopAreaId());
@@ -81,18 +93,19 @@ public class PseudoScheduleImpl implements PseudoSchedule {
 
 				// create new TransitRouteStop and add it to the newStopSequence
 				TransitRouteStop newTransitRouteStop = scheduleFactory.createTransitRouteStop(
-						schedule.getFacilities().get(childStopFacilityId),
-						pseudoStop.getArrivalOffset().seconds(),
+						schedule.getFacilities().get(childStopFacilityId), pseudoStop.getArrivalOffset().seconds(),
 						pseudoStop.getDepartureOffset().seconds());
 				newTransitRouteStop.setAwaitDepartureTime(pseudoStop.awaitsDepartureTime());
 				newStopSequence.add(newTransitRouteStop);
-				
+
 				parentsToChildren.computeIfAbsent(pseudoStop.getParentStopFacilityId(), id -> new HashSet<>());
 				parentsToChildren.get(pseudoStop.getParentStopFacilityId()).add(childStopFacilityId);
 			}
 
 			// create a new transitRoute
-			TransitRoute newTransitRoute = scheduleFactory.createTransitRoute(pseudoTransitRoute.getTransitRoute().getId(), null, newStopSequence, pseudoTransitRoute.getTransitRoute().getTransportMode());
+			TransitRoute newTransitRoute = scheduleFactory.createTransitRoute(
+					pseudoTransitRoute.getTransitRoute().getId(), null, newStopSequence,
+					pseudoTransitRoute.getTransitRoute().getTransportMode());
 
 			// add departures
 			pseudoTransitRoute.getTransitRoute().getDepartures().values().forEach(newTransitRoute::addDeparture);
@@ -105,21 +118,23 @@ public class PseudoScheduleImpl implements PseudoSchedule {
 			newTransitRoute.setDescription(pseudoTransitRoute.getTransitRoute().getDescription());
 
 			// remove the old route
-			schedule.getTransitLines().get(pseudoTransitRoute.getTransitLineId()).removeRoute(pseudoTransitRoute.getTransitRoute());
+			schedule.getTransitLines().get(pseudoTransitRoute.getTransitLineId())
+					.removeRoute(pseudoTransitRoute.getTransitRoute());
 
 			// add new route to container
 			schedule.getTransitLines().get(pseudoTransitRoute.getTransitLineId()).addRoute(newTransitRoute);
-			//newRoutes.add(new Tuple<>(pseudoTransitRoute.getTransitLineId(), newRoute));
-			
-			// Recover minimal transfer times between child stop facilities from parent stop facilities
+			// newRoutes.add(new Tuple<>(pseudoTransitRoute.getTransitLineId(), newRoute));
+
+			// Recover minimal transfer times between child stop facilities from parent stop
+			// facilities
 			MinimalTransferTimesIterator iterator = schedule.getMinimalTransferTimes().iterator();
-			
+
 			while (iterator.hasNext()) {
 				iterator.next();
-				
+
 				Id<TransitStopFacility> fromId = iterator.getFromStopId();
 				Id<TransitStopFacility> toId = iterator.getToStopId();
-				
+
 				if (parentsToChildren.containsKey(fromId) && parentsToChildren.containsKey(toId)) {
 					for (Id<TransitStopFacility> childFromId : parentsToChildren.get(fromId)) {
 						for (Id<TransitStopFacility> childToId : parentsToChildren.get(toId)) {
@@ -127,6 +142,13 @@ public class PseudoScheduleImpl implements PseudoSchedule {
 						}
 					}
 				}
+			}
+
+			currentNumber++;
+			if (System.currentTimeMillis() / 1000.0 >= lastUpdate + 1.0 || currentNumber == totalNumber) {
+				lastUpdate = System.currentTimeMillis();
+				logger.info(String.format("PseudoScheduleImpl::createFacilitiesAndLinkSequences %d/%d (%.2f%%)",
+						currentNumber, totalNumber, 100.0 * currentNumber / totalNumber));
 			}
 		}
 	}
