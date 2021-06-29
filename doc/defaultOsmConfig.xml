@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE config SYSTEM "http://www.matsim.org/files/dtd/config_v2.dtd">
+<config>
+	<module name="OsmConverter" >
+		<!-- Sets whether the detailed geometry of the roads should be retained in the conversion or not.
+		Keeping the detailed paths results in a much higher number of nodes and links in the resulting MATSim network.
+		Not keeping the detailed paths removes all nodes where only one road passes through, thus only real intersections
+		or branchings are kept as nodes. This reduces the number of nodes and links in the network, but can in some rare
+		cases generate extremely long links (e.g. for motorways with only a few ramps every few kilometers).
+		Defaults to <code>false</code>. -->
+		<param name="keepPaths" value="false" />
+		<!-- If true: The osm tags for ways and containing relations are saved as link attributes in the network.
+		Increases filesize. Default: true. -->
+		<param name="keepTagsAsAttributes" value="true" />
+		<!-- Keep all ways (highway=* and railway=*) with public transit even if they don't have wayDefaultParams defined -->
+		<param name="keepWaysWithPublicTransit" value="true" />
+		<param name="maxLinkLength" value="500.0" />
+		<!-- The path to the osm file. -->
+		<param name="osmFile" value="null" />
+		<!-- Output coordinate system. EPSG:* codes are supported and recommended.
+		Use 'WGS84' for no transformation (though this may lead to errors with PT mapping). -->
+		<param name="outputCoordinateSystem" value="null" />
+		<!-- CSV file containing the full geometry (including start end end node) for each link.
+		This file can be used for visualization purposes in Simunto Via or GIS software. -->
+		<param name="outputDetailedLinkGeometryFile" value="null" />
+		<param name="outputNetworkFile" value="null" />
+		<!-- In case the speed limit allowed does not represent the speed a vehicle can actually realize, 
+		e.g. by constrains of traffic lights not explicitly modeled, a kind of "average simulated speed" can be used.
+		Defaults to false. Set true to scale the speed limit down by the value specified by the wayDefaultParams) -->
+		<param name="scaleMaxSpeed" value="false" />
+		<parameterset type="routableSubnetwork" >
+			<param name="allowedTransportModes" value="car" />
+			<param name="subnetworkMode" value="car" />
+		</parameterset>
+		<parameterset type="routableSubnetwork" >
+			<param name="allowedTransportModes" value="bus,car" />
+			<param name="subnetworkMode" value="bus" />
+		</parameterset>
+		<parameterset type="wayDefaultParams" >
+			<param name="allowedTransportModes" value="car" />
+			<param name="freespeed" value="33.333333333333336" />
+			<param name="freespeedFactor" value="1.0" />
+			<param name="laneCapacity" value="2000.0" />
+			<param name="lanes" value="2.0" />
+			<param name="oneway" value="true" />
+			<param name="osmKey" value="highway" />
+			<param name="osmValue" value="motorway" />
+		</parameterset>
+		<parameterset type="wayDefaultParams" >
+			<param name="allowedTransportModes" value="car" />
+			<param name="freespeed" value="22.22222222222222" />
+			<param name="freespeedFactor" value="1.0" />
+			<param name="laneCapacity" value="1500.0" />
+			<param name="lanes" value="1.0" />
+			<param name="oneway" value="true" />
+			<param name="osmKey" value="highway" />
+			<param name="osmValue" value="motorway_link" />
+		</parameterset>
+		<parameterset type="wayDefaultParams" >
+			<param name="allowedTransportModes" value="car" />
+			<param name="freespeed" value="22.22222222222222" />
+			<param name="freespeedFactor" value="1.0" />
+			<param name="laneCapacity" value="2000.0" />
+			<param name="lanes" value="2.0" />
+			<param name="oneway" value="false" />
+			<param name="osmKey" value="highway" />
+			<param name="osmValue" value="trunk" />
+		</parameterset>
+		<parameterset type="wayDefaultParams" >
+			<param name="allowedTransportModes" value="car" />
+			<param name="freespeed" value="13.88888888888889" />
+			<param name="freespeedFactor" value="1.0" />
+			<param name="laneCapacity" value="1500.0" />
+			<param name="lanes" value="1.0" />
+			<param name="oneway" value="false" />
+			<param name="osmKey" value="highway" />
+			<param name="osmValue" value="trunk_link" />
+		</parameterset>
+		<parameterset type="wayDefaultParams" >
+			<param name="allowedTransportModes" value="car" />
+			<param name="freespeed" value="22.22222222222222" />
+			<param name="freespeedFactor" value="1.0" />
+			<param name="laneCapacity" value="1500.0" />
+			<param name="lanes" value="1.0" />
+			<param name="oneway" value="false" />
+			<param name="osmKey" value="highway" />
+			<param name="osmValue" value="primary" />
+		</parameterset>
+		<parameterset type="wayDefaultParams" >
+			<param name="allowedTransportModes" value="car" />
+			<param name="freespeed" value="16.666666666666668" />
+			<param name="freespeedFactor" value="1.0" />
+			<param name="laneCapacity" value="1500.0" />
+			<param name="lanes" value="1.0" />
+			<param name="oneway" value="false" />
+			<param name="osmKey" value="highway" />
+			<param name="osmValue" value="primary_link" />
+		</parameterset>
+		<parameterset type="wayDefaultParams" >
+			<param name="allowedTransportModes" value="car" />
+			<param name="freespeed" value="8.333333333333334" />
+			<param name="freespeedFactor" value="1.0" />
+			<param name="laneCapacity" value="1000.0" />
+			<param name="lanes" value="1.0" />
+			<param name="oneway" value="false" />
+			<param name="osmKey" value="highway" />
+			<param name="osmValue" value="secondary" />
+		</parameterset>
+		<parameterset type="wayDefaultParams" >
+			<param name="allowedTransportModes" value="car" />
+			<param name="freespeed" value="8.333333333333334" />
+			<param name="freespeedFactor" value="1.0" />
+			<param name="laneCapacity" value="1000.0" />
+			<param name="lanes" value="1.0" />
+			<param name="oneway" value="false" />
+			<param name="osmKey" value="highway" />
+			<param name="osmValue" value="secondary_link" />
+		</parameterset>
+		<parameterset type="wayDefaultParams" >
+			<param name="allowedTransportModes" value="car" />
+			<param name="freespeed" value="6.944444444444445" />
+			<param name="freespeedFactor" value="1.0" />
+			<param name="laneCapacity" value="600.0" />
+			<param name="lanes" value="1.0" />
+			<param name="oneway" value="false" />
+			<param name="osmKey" value="highway" />
+			<param name="osmValue" value="tertiary" />
+		</parameterset>
+		<parameterset type="wayDefaultParams" >
+			<param name="allowedTransportModes" value="car" />
+			<param name="freespeed" value="6.944444444444445" />
+			<param name="freespeedFactor" value="1.0" />
+			<param name="laneCapacity" value="600.0" />
+			<param name="lanes" value="1.0" />
+			<param name="oneway" value="false" />
+			<param name="osmKey" value="highway" />
+			<param name="osmValue" value="tertiary_link" />
+		</parameterset>
+		<parameterset type="wayDefaultParams" >
+			<param name="allowedTransportModes" value="car" />
+			<param name="freespeed" value="6.944444444444445" />
+			<param name="freespeedFactor" value="1.0" />
+			<param name="laneCapacity" value="600.0" />
+			<param name="lanes" value="1.0" />
+			<param name="oneway" value="false" />
+			<param name="osmKey" value="highway" />
+			<param name="osmValue" value="unclassified" />
+		</parameterset>
+		<parameterset type="wayDefaultParams" >
+			<param name="allowedTransportModes" value="car" />
+			<param name="freespeed" value="4.166666666666667" />
+			<param name="freespeedFactor" value="1.0" />
+			<param name="laneCapacity" value="600.0" />
+			<param name="lanes" value="1.0" />
+			<param name="oneway" value="false" />
+			<param name="osmKey" value="highway" />
+			<param name="osmValue" value="residential" />
+		</parameterset>
+		<parameterset type="wayDefaultParams" >
+			<param name="allowedTransportModes" value="car" />
+			<param name="freespeed" value="2.7777777777777777" />
+			<param name="freespeedFactor" value="1.0" />
+			<param name="laneCapacity" value="300.0" />
+			<param name="lanes" value="1.0" />
+			<param name="oneway" value="false" />
+			<param name="osmKey" value="highway" />
+			<param name="osmValue" value="living_street" />
+		</parameterset>
+		<parameterset type="wayDefaultParams" >
+			<param name="allowedTransportModes" value="rail" />
+			<param name="freespeed" value="44.44444444444444" />
+			<param name="freespeedFactor" value="1.0" />
+			<param name="laneCapacity" value="9999.0" />
+			<param name="lanes" value="1.0" />
+			<param name="oneway" value="false" />
+			<param name="osmKey" value="railway" />
+			<param name="osmValue" value="rail" />
+		</parameterset>
+		<parameterset type="wayDefaultParams" >
+			<param name="allowedTransportModes" value="rail" />
+			<param name="freespeed" value="11.11111111111111" />
+			<param name="freespeedFactor" value="1.0" />
+			<param name="laneCapacity" value="9999.0" />
+			<param name="lanes" value="1.0" />
+			<param name="oneway" value="true" />
+			<param name="osmKey" value="railway" />
+			<param name="osmValue" value="tram" />
+		</parameterset>
+		<parameterset type="wayDefaultParams" >
+			<param name="allowedTransportModes" value="rail" />
+			<param name="freespeed" value="22.22222222222222" />
+			<param name="freespeedFactor" value="1.0" />
+			<param name="laneCapacity" value="9999.0" />
+			<param name="lanes" value="1.0" />
+			<param name="oneway" value="false" />
+			<param name="osmKey" value="railway" />
+			<param name="osmValue" value="light_rail" />
+		</parameterset>
+	</module>
+
+</config>

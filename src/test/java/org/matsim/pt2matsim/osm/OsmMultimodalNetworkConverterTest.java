@@ -17,6 +17,8 @@ import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.osm.lib.OsmData;
 import org.matsim.pt2matsim.osm.lib.OsmDataImpl;
 import org.matsim.pt2matsim.osm.lib.OsmFileReader;
+import org.matsim.pt2matsim.run.CreateDefaultOsmConfig;
+import org.matsim.pt2matsim.run.CreateDefaultPTMapperConfig;
 
 /**
  * @author polettif
@@ -308,6 +310,11 @@ public class OsmMultimodalNetworkConverterTest {
 
 		OsmMultimodalNetworkConverter converter = new OsmMultimodalNetworkConverter(osm);
 		converter.convert(osmConfig);
+	}
+
+	@Test
+	public void defaultConfig() {
+		CreateDefaultOsmConfig.main(new String[]{"doc/defaultOsmConfig.xml"});
 	}
 
 }

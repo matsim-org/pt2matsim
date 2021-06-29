@@ -157,22 +157,22 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		map.put(REMOVE_NOT_USED_STOP_FACILITIES,
 				"If true, stop facilities that are not used by any transit route are removed from the schedule. Default: true");
 		map.put(ROUTING_WITH_CANDIDATE_DISTANCE,
-				"The travel cost of a link candidate can be increased according to its distance to the stop facility x2. This \n" +
-				"\t\t\ttends to give more accurate results. If "+ TRAVEL_COST_TYPE +" is "+ travelTime +", freespeed on \n" +
-				"\t\t\tthe link is applied to the beeline distance.");
+				"The travel cost of a link candidate can be increased according to its distance to the\n" +
+				"\t\tstop facility x2. This tends to give more accurate results. If "+ TRAVEL_COST_TYPE +" is "+ travelTime +", freespeed on \n" +
+				"\t\tthe link is applied to the beeline distance.");
 
 		// link candidates
 		map.put(CANDIDATE_DISTANCE_MULTIPLIER,
 				"After " + N_LINK_THRESHOLD + " link candidates have been found, additional link \n" +
-				"\t\t\tcandidates within [" + CANDIDATE_DISTANCE_MULTIPLIER + "] * [distance to the Nth link] are added to the set.\n" +
-				"\t\t\tMust be >= 1.");
+				"\t\tcandidates within [" + CANDIDATE_DISTANCE_MULTIPLIER + "] * [distance to the Nth link] are added to the set.\n" +
+				"\t\tMust be >= 1.");
 		map.put(N_LINK_THRESHOLD,
 				"Number of link candidates considered for all stops, depends on accuracy of stops and desired \n" +
-				"\t\t\tperformance. Somewhere between 4 and 10 seems reasonable for bus stops, depending on the accuracy of the stop \n" +
-				"\t\t\tfacility coordinates and performance desires. Default: " + nLinkThreshold);
+				"\t\tperformance. Somewhere between 4 and 10 seems reasonable for bus stops, depending on the\n" +
+				"\t\taccuracy of the stop facility coordinates and performance desires. Default: " + nLinkThreshold);
 		map.put(MAX_LINK_CANDIDATE_DISTANCE,
-				"The maximal distance [meter] a link candidate is allowed to have from the stop facility. No link candidate\n" +
-				"\t\t\tbeyond this distance are added.");
+				"The maximal distance [meter] a link candidate is allowed to have from the stop facility.\n" +
+				"\t\tNo link candidates beyond this distance are added.");
 		return map;
 	}
 
