@@ -57,7 +57,8 @@ public final class Gtfs2TransitSchedule {
 	 *                  <li>dayWithMostServices</li>
 	 *                  <li>all</li>
 	 *                  </ul>
-	 *              [2] the output coordinate system. Use WGS84 for no transformation.<br/>
+	 *              [2] output coordinate system. EPSG:* codes are supported and recommended.
+	 *                  Use 'WGS84' for no transformation (though this may lead to errors with PT mapping).<br/>
 	 *              [3] output transit schedule file
 	 *              [4] (optional) output default vehicles file
 	 * Calls {@link #run}.

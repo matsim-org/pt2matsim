@@ -11,8 +11,10 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.pt.utils.TransitScheduleValidator;
+import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
+import org.matsim.pt2matsim.run.CreateDefaultPTMapperConfig;
 import org.matsim.pt2matsim.tools.NetworkToolsTest;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ScheduleToolsTest;
@@ -129,4 +131,10 @@ public class PTMapperTest {
 			Assert.assertTrue(transitStopFacility.getLinkId().toString().contains("pt_"));
 		}
 	}
+
+	@Test
+	public void defaultConfig() {
+		CreateDefaultPTMapperConfig.main(new String[]{"doc/defaultPTMapperConfig.xml"});
+	}
+
 }
