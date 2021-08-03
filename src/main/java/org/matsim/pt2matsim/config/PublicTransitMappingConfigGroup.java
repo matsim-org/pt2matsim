@@ -319,7 +319,11 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	 */
 	@StringGetter(SCHEDULE_FREESPEED_MODES)
 	public String getScheduleFreespeedModesStr() {
-		return String.join(",", this.scheduleFreespeedModes);
+		if(this.scheduleFreespeedModes == null) {
+			return "";
+		} else {
+			return CollectionUtils.setToString(this.scheduleFreespeedModes);
+		}
 	}
 
 	@StringSetter(SCHEDULE_FREESPEED_MODES)
