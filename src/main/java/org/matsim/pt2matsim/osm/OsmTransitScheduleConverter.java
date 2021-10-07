@@ -78,6 +78,7 @@ public class OsmTransitScheduleConverter {
 		AllowedTagsFilter route_master = new AllowedTagsFilter();
 		route_master.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.BUS);
 		route_master.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.TROLLEYBUS);
+		route_master.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.TRAIN);
 		route_master.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.TRAM);
 		route_master.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.MONORAIL);
 		route_master.add(Osm.ElementType.RELATION, Osm.Key.ROUTE_MASTER, Osm.Value.SUBWAY);
@@ -220,12 +221,11 @@ public class OsmTransitScheduleConverter {
 			if(member.getType().equals(Osm.ElementType.NODE) && (Osm.Value.STOP.equals(relation.getMemberRole(member)) || Osm.Value.STOP_FORWARD.equals(relation.getMemberRole(member)))) {
 				Id<TransitStopFacility> id = Id.create(((Osm.Node) member).getId(), TransitStopFacility.class);
 				TransitStopFacility transitStopFacility = transitSchedule.getFacilities().get(id);
-				if(transitStopFacility == null) {
-					return null;
+				if(transitStopFacility != null) {
+					// create transitRouteStop
+					TransitRouteStop newRouteStop = factory.createTransitRouteStop(transitStopFacility, 0.0, 0.0);
+					stopSequenceForward.add(newRouteStop);
 				}
-				// create transitRouteStop
-				TransitRouteStop newRouteStop = factory.createTransitRouteStop(transitStopFacility, 0.0, 0.0);
-				stopSequenceForward.add(newRouteStop);
 			}
 
 			// route links
