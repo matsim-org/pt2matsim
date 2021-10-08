@@ -517,7 +517,7 @@ public final class ScheduleTools {
 	 */
 	public static void writeVehicles(Vehicles vehicles, String filePath) {
 		log.info("Writing vehicles to file " + filePath);
-		new VehicleWriterV1(vehicles).writeFile(filePath);
+		new MatsimVehicleWriter(vehicles).writeFile(filePath);
 	}
 
 	/**
