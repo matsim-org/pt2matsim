@@ -26,6 +26,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.NetworkFactory;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.core.config.groups.NetworkConfigGroup;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkTransform;
 import org.matsim.core.network.filter.NetworkFilterManager;
@@ -225,7 +226,7 @@ public final class NetworkTools {
 	 * @return the filtered new network
 	 */
 	public static Network createFilteredNetworkByLinkMode(Network network, Set<String> transportModes) {
-		NetworkFilterManager filterManager = new NetworkFilterManager(network);
+		NetworkFilterManager filterManager = new NetworkFilterManager(network, new NetworkConfigGroup());
 		filterManager.addLinkFilter(new LinkFilter(transportModes));
 		Network newNetwork = filterManager.applyFilters();
 		removeNotUsedNodes(newNetwork);
@@ -233,7 +234,7 @@ public final class NetworkTools {
 	}
 
 	public static Network createFilteredNetworkExceptLinkMode(Network network, Set<String> transportModes) {
-		NetworkFilterManager filterManager = new NetworkFilterManager(network);
+		NetworkFilterManager filterManager = new NetworkFilterManager(network, new NetworkConfigGroup());
 		filterManager.addLinkFilter(new InverseLinkFilter(transportModes));
 		return filterManager.applyFilters();
 	}
