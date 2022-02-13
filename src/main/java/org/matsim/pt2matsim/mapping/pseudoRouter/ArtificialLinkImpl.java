@@ -103,6 +103,11 @@ public class ArtificialLinkImpl implements ArtificialLink {
 	}
 
 	@Override
+	public double getCapacityPeriod() {
+		return 0;
+	}
+
+	@Override
 	public void setAllowedModes(Set<String> modes) {
 		this.transportModes = modes;
 	}
