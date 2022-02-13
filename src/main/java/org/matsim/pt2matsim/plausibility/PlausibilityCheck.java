@@ -143,7 +143,7 @@ public class PlausibilityCheck {
 				TransitRouteStop previousStop = stopsIterator.next();
 				TransitRouteStop nextStop = stopsIterator.next();
 				double ttActual = 0;
-				double departTime = previousStop.getDepartureOffset();
+				double departTime = previousStop.getDepartureOffset().seconds();
 
 				for(int i = 0; i < links.size() - 2; i++) {
 					Link linkFrom = links.get(i);
@@ -152,7 +152,7 @@ public class PlausibilityCheck {
 					// travel time check
 					ttActual += linkFrom.getLength() / linkFrom.getFreespeed();
 					if(nextStop.getStopFacility().getLinkId().equals(linkTo.getId())) {
-						double ttSchedule = nextStop.getArrivalOffset() - departTime;
+						double ttSchedule = nextStop.getArrivalOffset().seconds() - departTime;
 						double ttScheduleRange = ttSchedule + ttRange;
 						if(ttActual > ttScheduleRange && ttSchedule > 0) {
 							PlausibilityWarning warning = new TravelTimeWarning(transitLine, transitRoute, previousStop, nextStop, ttActual, ttSchedule);
@@ -161,7 +161,7 @@ public class PlausibilityCheck {
 						// reset
 						ttActual = 0;
 						previousStop = nextStop;
-						departTime = previousStop.getDepartureOffset();
+						departTime = previousStop.getDepartureOffset().seconds();
 						if(!nextStop.equals(transitRoute.getStops().get(transitRoute.getStops().size() - 1))) {
 							nextStop = stopsIterator.next();
 						}

@@ -103,7 +103,7 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	}
 
 	public static OsmConverterConfigGroup loadConfig(String configFile) {
-		Config configAll = ConfigUtils.loadConfig(configFile, new PublicTransitMappingConfigGroup());
+		Config configAll = ConfigUtils.loadConfig(configFile, new OsmConverterConfigGroup());
 		return ConfigUtils.addOrGetModule(configAll, OsmConverterConfigGroup.GROUP_NAME, OsmConverterConfigGroup.class);
 	}
 
@@ -212,7 +212,7 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 				"The path to the osm file.");
 		map.put(OUTPUT_DETAILED_LINK_GEOMETRY_FILE,
 				"CSV file containing the full geometry (including start end end node) for each link.\n" +
-				"\t\tThis file can be used for visualization purposes in Simunto Via or GIS software.\n");
+				"\t\tThis file can be used for visualization purposes in Simunto Via or GIS software.");
 		map.put(KEEP_PATHS,
 				"Sets whether the detailed geometry of the roads should be retained in the conversion or not.\n" +
 				"\t\tKeeping the detailed paths results in a much higher number of nodes and links in the resulting MATSim network.\n" +
@@ -221,13 +221,17 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 				"\t\tcases generate extremely long links (e.g. for motorways with only a few ramps every few kilometers).\n" +
 				"\t\tDefaults to <code>false</code>.");
 		map.put(KEEP_TAGS_AS_ATTRIBUTES,
-				"If true: The osm tags for ways and containing relations are saved as link attributes in the network. Increases filesize. Default: true.");
+				"If true: The osm tags for ways and containing relations are saved as link attributes in the network.\n" +
+				"\t\tIncreases filesize. Default: true.");
 		map.put(SCALE_MAX_SPEED,
-				"In case the speed limit allowed does not represent the speed a vehicle can actually realize, e.g. by constrains of\n" +
-				"\t\ttraffic lights not explicitly modeled, a kind of \"average simulated speed\" can be used.\n" +
+				"In case the speed limit allowed does not represent the speed a vehicle can actually realize, \n" +
+				"\t\te.g. by constrains of traffic lights not explicitly modeled, a kind of \"average simulated speed\" can be used.\n" +
 				"\t\tDefaults to false. Set true to scale the speed limit down by the value specified by the wayDefaultParams)");
 		map.put(KEEP_WAYS_WITH_PUBLIC_TRANSIT,
 				"Keep all ways (highway=* and railway=*) with public transit even if they don't have wayDefaultParams defined");
+		map.put(OUTPUT_COORDINATE_SYSTEM,
+				"Output coordinate system. EPSG:* codes are supported and recommended.\n" +
+				"\t\tUse 'WGS84' for no transformation (though this may lead to errors with PT mapping).");
 		return map;
 	}
 

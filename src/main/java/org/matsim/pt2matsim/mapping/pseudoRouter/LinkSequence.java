@@ -22,6 +22,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.population.routes.RouteUtils;
+import org.matsim.core.utils.misc.OptionalTime;
 import org.matsim.vehicles.Vehicle;
 
 import java.util.List;
@@ -60,14 +61,17 @@ public class LinkSequence implements NetworkRoute {
 	}
 
 	@Override
-	public double getTravelTime() {
-		return 0;
+	public OptionalTime getTravelTime() {
+		return OptionalTime.defined(0);
 	}
 
 	@Override
 	public void setTravelTime(double v) {
 		throw new IllegalAccessError();
 	}
+
+	@Override
+	public void setTravelTimeUndefined() { throw new IllegalAccessError(); }
 
 	@Override
 	public Id<Link> getStartLinkId() {

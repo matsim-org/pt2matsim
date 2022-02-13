@@ -144,8 +144,8 @@ public final class ScheduleTools {
 			TransitRouteStop s2 = stops2.get(i);
 			if(!s1.getStopFacility().getId().equals(s2.getStopFacility().getId()) ||
 					!s1.getStopFacility().getCoord().equals(s2.getStopFacility().getCoord()) ||
-					s1.getArrivalOffset() != s2.getArrivalOffset() ||
-					s1.getDepartureOffset() != s2.getDepartureOffset()) {
+					s1.getArrivalOffset().seconds() != s2.getArrivalOffset().seconds() ||
+					s1.getDepartureOffset().seconds() != s2.getDepartureOffset().seconds()) {
 				return false;
 			}
 		}
@@ -209,10 +209,9 @@ public final class ScheduleTools {
 		vehicleType.setDoorOperationMode(defaultValues.doorOperation);
 		vehicleType.setPcuEquivalents(defaultValues.pcuEquivalents);
 
-		VehicleCapacity capacity = vf.createVehicleCapacity();
+		VehicleCapacity capacity = vehicleType.getCapacity();
 		capacity.setSeats(defaultValues.capacitySeats);
 		capacity.setStandingRoom(defaultValues.capacityStanding);
-		vehicleType.setCapacity(capacity);
 
 		return vehicleType;
 	}
@@ -222,7 +221,7 @@ public final class ScheduleTools {
 	 */
 	public static Vehicles readVehicles(String vehiclesFile) {
 		Vehicles vehicles = createVehiclesContainer();
-		new VehicleReaderV1(vehicles).readFile(vehiclesFile);
+		new MatsimVehicleReader(vehicles).readFile(vehiclesFile);
 		return vehicles;
 	}
 
@@ -518,7 +517,7 @@ public final class ScheduleTools {
 	 */
 	public static void writeVehicles(Vehicles vehicles, String filePath) {
 		log.info("Writing vehicles to file " + filePath);
-		new VehicleWriterV1(vehicles).writeFile(filePath);
+		new MatsimVehicleWriter(vehicles).writeFile(filePath);
 	}
 
 	/**
@@ -600,7 +599,7 @@ public final class ScheduleTools {
 						lengthUpToCurrentStop += link.getLength();
 	
 						if(stop.getStopFacility().getLinkId().equals(link.getId())) {
-							double ttSchedule = stop.getArrivalOffset() - departTime;
+							double ttSchedule = stop.getArrivalOffset().seconds() - departTime;
 							double theoreticalMinSpeed = (lengthUpToCurrentStop / ttSchedule) * 1.02;
 	
 							for(Id<Link> linkId : linkIdsUpToCurrentStop) {
@@ -613,7 +612,7 @@ public final class ScheduleTools {
 							// reset
 							lengthUpToCurrentStop = 0;
 							linkIdsUpToCurrentStop = new ArrayList<>();
-							departTime = stop.getDepartureOffset();
+							departTime = stop.getDepartureOffset().seconds();
 							if(stopsIterator.hasNext()) {
 								stop = stopsIterator.next();
 							}

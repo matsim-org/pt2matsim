@@ -1,5 +1,0 @@
-language: java
-
-script:
-  - mvn test -B -Dmatsim.preferLocalDtds=true
-  - if ! [[ $( cat pom.xml | grep "SNAPSHOT" ) ]]; then if [[ -n $TRAVIS_TAG ]]; then mvn deploy -DskipTests=true --settings=settings.xml; fi; fi

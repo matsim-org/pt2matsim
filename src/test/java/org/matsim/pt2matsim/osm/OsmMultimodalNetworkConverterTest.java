@@ -17,6 +17,8 @@ import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.osm.lib.OsmData;
 import org.matsim.pt2matsim.osm.lib.OsmDataImpl;
 import org.matsim.pt2matsim.osm.lib.OsmFileReader;
+import org.matsim.pt2matsim.run.CreateDefaultOsmConfig;
+import org.matsim.pt2matsim.run.CreateDefaultPTMapperConfig;
 
 /**
  * @author polettif
@@ -295,6 +297,24 @@ public class OsmMultimodalNetworkConverterTest {
 
 		// write file
 		// NetworkTools.writeNetwork(converter.getNetwork(), osmConfig.getOutputNetworkFile());
+	}
+
+	@Test
+	public void convertEPSG() {
+		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.createDefaultConfig();
+		osmConfig.setOutputCoordinateSystem("EPSG:8682");
+		osmConfig.setOsmFile("test/osm/Belgrade.osm");
+
+		OsmData osm = new OsmDataImpl();
+		new OsmFileReader(osm).readFile(osmConfig.getOsmFile());
+
+		OsmMultimodalNetworkConverter converter = new OsmMultimodalNetworkConverter(osm);
+		converter.convert(osmConfig);
+	}
+
+	@Test
+	public void defaultConfig() {
+		CreateDefaultOsmConfig.main(new String[]{"doc/defaultOsmConfig.xml"});
 	}
 
 }

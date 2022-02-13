@@ -315,8 +315,8 @@ public final class ScheduleCleaner {
 				List<String> sequence = new LinkedList<>();
 				for(TransitRouteStop routeStop : transitRoute.getStops()) {
 					String s = routeStop.getStopFacility().getId().toString()
-							+ "-" + (int) routeStop.getArrivalOffset()
-							+ "-" + (int) routeStop.getDepartureOffset();
+							+ "-" + (int) routeStop.getArrivalOffset().seconds()
+							+ "-" + (int) routeStop.getDepartureOffset().seconds();
 					sequence.add(s);
 				}
 				MapUtils.getList(sequence, profiles).add(transitRoute);
@@ -377,8 +377,8 @@ public final class ScheduleCleaner {
 					boolean departureWithChangedDepartureTimes = false;
 					for(int j = 0; j < finalRoute.getStops().size(); j++) {
 						double changedTotalTimeAtStop =
-								Math.abs(finalRoute.getStops().get(j).getArrivalOffset() - routeToAdd.getStops().get(j).getArrivalOffset())
-										+ Math.abs(finalRoute.getStops().get(j).getDepartureOffset() - routeToAdd.getStops().get(j).getDepartureOffset());
+								Math.abs(finalRoute.getStops().get(j).getArrivalOffset() .seconds()- routeToAdd.getStops().get(j).getArrivalOffset().seconds())
+										+ Math.abs(finalRoute.getStops().get(j).getDepartureOffset().seconds() - routeToAdd.getStops().get(j).getDepartureOffset().seconds());
 						if(changedTotalTimeAtStop > 0) {
 							stopsWithChangedTimes += numberOfDepartures;
 							changedTotalTimeAtStops += changedTotalTimeAtStop * numberOfDepartures;
