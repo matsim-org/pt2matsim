@@ -209,4 +209,9 @@ public class ArtificialLinkImpl implements ArtificialLink {
 	public Coord getCoord() {
 		throw new IllegalAccessError();
 	}
+
+	@Override
+	public double getCapacityPeriod()  {
+		throw new IllegalAccessError();
+	}
 }
