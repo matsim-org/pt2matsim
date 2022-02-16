@@ -139,8 +139,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		map.put(SCHEDULE_FREESPEED_MODES,
 				"After the schedule has been mapped, the free speed of links can be set according to the necessary travel \n" +
 				"\t\ttimes given by the transit schedule. The freespeed of a link is set to the minimal value needed by all \n" +
-				"\t\ttransit routes passing using it. This is performed for \"" + PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE + "\" automatically, additional \n" +
-				"\t\tmodes (rail is recommended) can be added, separated by commas.");
+				"\t\ttransit routes passing using it. This is recommended for \"" + PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE + "\", additional \n" +
+				"\t\tmodes (especially \"rail\", if used) can be added, separated by commas.");
 		map.put(MAX_TRAVEL_COST_FACTOR,
 				"If all paths between two stops have a [travelCost] > [" + MAX_TRAVEL_COST_FACTOR + "] * [minTravelCost], \n" +
 				"\t\tan artificial link is created. If " + TRAVEL_COST_TYPE + " is " + travelTime + ", minTravelCost is the travel time\n" +
