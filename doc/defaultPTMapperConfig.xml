@@ -42,9 +42,9 @@
 		<param name="routingWithCandidateDistance" value="true" />
 		<!-- After the schedule has been mapped, the free speed of links can be set according to the necessary travel 
 		times given by the transit schedule. The freespeed of a link is set to the minimal value needed by all 
-		transit routes passing using it. This is performed for "artificial" automatically, additional 
-		modes (rail is recommended) can be added, separated by commas. -->
-		<param name="scheduleFreespeedModes" value="" />
+		transit routes passing using it. This is recommended for "artificial", additional 
+		modes (especially "rail", if used) can be added, separated by commas. -->
+		<param name="scheduleFreespeedModes" value="artificial" />
 		<!-- Defines which link attribute should be used for routing. Possible values "linkLength" (default) 
 		and "travelTime". -->
 		<param name="travelCostType" value="linkLength" />
