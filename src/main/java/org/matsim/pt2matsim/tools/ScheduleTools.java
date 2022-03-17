@@ -208,6 +208,7 @@ public final class ScheduleTools {
 		vehicleType.setEgressTime(defaultValues.egressTime);
 		vehicleType.setDoorOperationMode(defaultValues.doorOperation);
 		vehicleType.setPcuEquivalents(defaultValues.pcuEquivalents);
+		vehicleType.setNetworkMode(defaultValues.transportMode.name);
 
 		VehicleCapacity capacity = vehicleType.getCapacity();
 		capacity.setSeats(defaultValues.capacitySeats);
