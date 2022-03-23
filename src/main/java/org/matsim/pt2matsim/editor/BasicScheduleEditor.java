@@ -284,7 +284,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			newLinkSequence.add(routeAfterCut.getStartLinkId());
 			newLinkSequence.addAll(routeAfterCut.getLinkIds());
 			newLinkSequence.add(routeAfterCut.getEndLinkId());
-			transitRoute.setRoute(RouteUtils.createNetworkRoute(newLinkSequence, network));
+			transitRoute.setRoute(RouteUtils.createNetworkRoute(newLinkSequence));
 		}
 	}
 	private void rerouteFromStop(TransitLine transitLine, TransitRoute transitRoute, String fromStopFacilityId, String viaLinkId) {
@@ -482,7 +482,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 		}
 
 		// add link sequence to schedule
-		transitRoute.setRoute(RouteUtils.createNetworkRoute(linkSequence, network));
+		transitRoute.setRoute(RouteUtils.createNetworkRoute(linkSequence));
 	}
 
 	/**
