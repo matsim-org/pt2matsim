@@ -159,7 +159,7 @@ public final class PTMapperTools {
 					}
 
 					// set the new link list
-					transitRoute.setRoute(RouteUtils.createNetworkRoute(linkIdList, network));
+					transitRoute.setRoute(RouteUtils.createNetworkRoute(linkIdList));
 				}
 			}
 		}
