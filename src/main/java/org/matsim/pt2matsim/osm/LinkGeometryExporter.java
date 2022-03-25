@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -76,7 +77,7 @@ public class LinkGeometryExporter {
 	private static String toWktLinestring(List<Osm.Node> nodes) {
 		List<String> coords = nodes.stream().map(node -> {
 			Coord coord = node.getCoord();
-			return String.format("%.5f %.5f", coord.getX(), coord.getY());
+			return String.format(Locale.ROOT, "%.5f %.5f", coord.getX(), coord.getY());
 		}).collect(Collectors.toList());
 		return "LINESTRING(" + Joiner.on(',').join(coords) + ")";
 	}
