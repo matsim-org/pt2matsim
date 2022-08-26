@@ -247,16 +247,19 @@ public class GtfsFeedImpl implements GtfsFeed {
 			String[] header = reader.readNext();
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.CALENDAR.columns, GtfsDefinitions.Files.CALENDAR.optionalColumns);
 
-			// assuming all days really do follow monday in the file
-			int indexMonday = col.get(GtfsDefinitions.MONDAY);
-
 			String[] line = reader.readNext();
 			while(line != null) {
 				l++;
+				
 				boolean[] days = new boolean[7];
-				for(int d = 0; d < 7; d++) {
-					days[d] = line[indexMonday + d].equals("1");
-				}
+				days[0] = line[col.get(GtfsDefinitions.MONDAY)].equals("1");
+				days[1] = line[col.get(GtfsDefinitions.TUESDAY)].equals("1");
+				days[2] = line[col.get(GtfsDefinitions.WEDNESDAY)].equals("1");
+				days[3] = line[col.get(GtfsDefinitions.THURSDAY)].equals("1");
+				days[4] = line[col.get(GtfsDefinitions.FRIDAY)].equals("1");
+				days[5] = line[col.get(GtfsDefinitions.SATURDAY)].equals("1");
+				days[6] = line[col.get(GtfsDefinitions.SUNDAY)].equals("1");
+				
 				services.put(line[col.get(GtfsDefinitions.SERVICE_ID)], new ServiceImpl(line[col.get(GtfsDefinitions.SERVICE_ID)], days, line[col.get(GtfsDefinitions.START_DATE)], line[col.get(GtfsDefinitions.END_DATE)]));
 
 				line = reader.readNext();
