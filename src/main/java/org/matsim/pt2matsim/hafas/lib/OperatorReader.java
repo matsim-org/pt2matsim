@@ -37,16 +37,17 @@ public class OperatorReader {
 
 	public static Map<String, String> readOperators(String BETRIEB_DE) throws IOException {
 		Map<String, String> operators = new HashMap<>();
-		BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(BETRIEB_DE), "utf-8"));
-		String newLine = readsLines.readLine();
-		while (newLine != null) {
-			String abbrevationOperator = newLine.split("\"")[1].replace(" ","");
-			newLine = readsLines.readLine();
-			if (newLine == null) break;
-			String operatorId = newLine.substring(8, 14).trim();
-			operators.put(operatorId, abbrevationOperator);
-			// read the next operator:
-			newLine = readsLines.readLine();
+		try(BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(BETRIEB_DE), "utf-8"))) {
+			String newLine = readsLines.readLine();
+			while (newLine != null) {
+				String abbrevationOperator = newLine.split("\"")[1].replace(" ","");
+				newLine = readsLines.readLine();
+				if (newLine == null) break;
+				String operatorId = newLine.substring(8, 14).trim();
+				operators.put(operatorId, abbrevationOperator);
+				// read the next operator:
+				newLine = readsLines.readLine();
+			}
 		}
 		return operators;
 	}

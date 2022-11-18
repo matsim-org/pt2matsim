@@ -20,7 +20,6 @@ package org.matsim.pt2matsim.gtfs;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
-import org.matsim.core.utils.misc.OptionalTime;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.gtfs.lib.*;
