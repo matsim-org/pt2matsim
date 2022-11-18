@@ -18,7 +18,6 @@ import org.matsim.pt2matsim.osm.lib.OsmData;
 import org.matsim.pt2matsim.osm.lib.OsmDataImpl;
 import org.matsim.pt2matsim.osm.lib.OsmFileReader;
 import org.matsim.pt2matsim.run.CreateDefaultOsmConfig;
-import org.matsim.pt2matsim.run.CreateDefaultPTMapperConfig;
 
 /**
  * @author polettif
