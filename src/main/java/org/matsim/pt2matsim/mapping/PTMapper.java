@@ -21,7 +21,8 @@
 
 package org.matsim.pt2matsim.mapping;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -66,7 +67,7 @@ import java.util.Set;
  */
 public class PTMapper {
 
-	protected static Logger log = Logger.getLogger(PTMapper.class);
+	protected static Logger log = LogManager.getLogger(PTMapper.class);
 	private final PseudoSchedule pseudoSchedule = new PseudoScheduleImpl();
 	private Network network;
 	private TransitSchedule schedule;

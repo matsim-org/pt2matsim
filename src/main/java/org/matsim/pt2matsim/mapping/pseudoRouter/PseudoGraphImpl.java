@@ -19,7 +19,8 @@
 
 package org.matsim.pt2matsim.mapping.pseudoRouter;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.utils.geometry.CoordUtils;
@@ -35,7 +36,7 @@ public class PseudoGraphImpl implements PseudoGraph {
 
 	/*package*/ static final String SOURCE = "SOURCE";
 	/*package*/ static final String DESTINATION = "DESTINATION";
-	protected static Logger log = Logger.getLogger(PseudoGraphImpl.class);
+	protected static Logger log = LogManager.getLogger(PseudoGraphImpl.class);
 	private final Id<PseudoRouteStop> SOURCE_ID = Id.create(SOURCE, PseudoRouteStop.class);
 	private final PseudoRouteStop SOURCE_PSEUDO_STOP = new PseudoRouteStopImpl(SOURCE);
 	private final Id<PseudoRouteStop> DESTINATION_ID = Id.create(DESTINATION, PseudoRouteStop.class);

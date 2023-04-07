@@ -18,8 +18,10 @@
 
 package org.matsim.pt2matsim.tools;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -45,7 +47,7 @@ import java.util.stream.Collectors;
  */
 public final class PTMapperTools {
 
-	protected static Logger log = Logger.getLogger(PTMapperTools.class);
+	protected static Logger log = LogManager.getLogger(PTMapperTools.class);
 
 	private PTMapperTools() {
 	}
@@ -208,13 +210,13 @@ public final class PTMapperTools {
 	}
 
 	public static void setLogLevels() {
-		Logger.getLogger(org.matsim.core.router.Dijkstra.class).setLevel(Level.ERROR); // suppress no route found warnings
-		Logger.getLogger(Network.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.network.filter.NetworkFilterManager.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.router.util.PreProcessDijkstra.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.router.util.PreProcessDijkstra.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.router.util.PreProcessEuclidean.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.router.util.PreProcessLandmarks.class).setLevel(Level.WARN);
+		Configurator.setLevel(LogManager.getLogger(org.matsim.core.router.Dijkstra.class).getName(), Level.ERROR); // suppress no route found warnings
+		Configurator.setLevel(LogManager.getLogger(Network.class).getName(), Level.WARN);
+		Configurator.setLevel(LogManager.getLogger(org.matsim.core.network.filter.NetworkFilterManager.class).getName(), Level.WARN);
+		Configurator.setLevel(LogManager.getLogger(org.matsim.core.router.util.PreProcessDijkstra.class).getName(), Level.WARN);
+		Configurator.setLevel(LogManager.getLogger(org.matsim.core.router.util.PreProcessDijkstra.class).getName(), Level.WARN);
+		Configurator.setLevel(LogManager.getLogger(org.matsim.core.router.util.PreProcessEuclidean.class).getName(), Level.WARN);
+		Configurator.setLevel(LogManager.getLogger(org.matsim.core.router.util.PreProcessLandmarks.class).getName(), Level.WARN);
 	}
 
 	/**

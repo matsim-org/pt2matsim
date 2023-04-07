@@ -18,8 +18,10 @@
 
 package org.matsim.pt2matsim.plausibility;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.LogManager;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.matsim.api.core.v01.Id;
@@ -63,7 +65,7 @@ import static org.matsim.pt2matsim.tools.ScheduleTools.getTransitRouteLinkIds;
  */
 public class PlausibilityCheck {
 
-	protected static final Logger log = Logger.getLogger(PlausibilityCheck.class);
+	protected static final Logger log = LogManager.getLogger(PlausibilityCheck.class);
 
 	public static final String CsvSeparator = ",";
 
@@ -509,12 +511,12 @@ public class PlausibilityCheck {
 	}
 
 	public static void setLogLevels() {
-		Logger.getLogger(MGC.class).setLevel(Level.ERROR);
-		Logger.getLogger(MatsimFileTypeGuesser.class).setLevel(Level.ERROR);
-		Logger.getLogger(Network.class).setLevel(Level.ERROR);
-		Logger.getLogger(Node.class).setLevel(Level.ERROR);
-		Logger.getLogger(Link.class).setLevel(Level.ERROR);
-		Logger.getLogger(MatsimXmlParser.class).setLevel(Level.ERROR);
+		Configurator.setLevel(LogManager.getLogger(MGC.class).getName(), Level.ERROR);
+		Configurator.setLevel(LogManager.getLogger(MatsimFileTypeGuesser.class).getName(), Level.ERROR);
+		Configurator.setLevel(LogManager.getLogger(Network.class).getName(), Level.ERROR);
+		Configurator.setLevel(LogManager.getLogger(Node.class).getName(), Level.ERROR);
+		Configurator.setLevel(LogManager.getLogger(Link.class).getName(), Level.ERROR);
+		Configurator.setLevel(LogManager.getLogger(MatsimXmlParser.class).getName(), Level.ERROR);
 	}
 
 	public Map<PlausibilityWarning.Type, Set<PlausibilityWarning>> getWarnings() {

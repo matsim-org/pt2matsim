@@ -21,7 +21,8 @@
 
 package org.matsim.pt2matsim.run;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
@@ -43,7 +44,7 @@ import java.util.Collections;
  */
 public final class PublicTransitMapper {
 
-	protected static Logger log = Logger.getLogger(PublicTransitMapper.class);
+	protected static Logger log = LogManager.getLogger(PublicTransitMapper.class);
 
 	private PublicTransitMapper() {
 	}

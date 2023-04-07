@@ -25,7 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.pt.transitSchedule.api.MinimalTransferTimes.MinimalTransferTimesIterator;
@@ -66,7 +67,7 @@ public class PseudoScheduleImpl implements PseudoSchedule {
 
 		Map<Id<TransitStopFacility>, Set<Id<TransitStopFacility>>> parentsToChildren = new HashMap<>();
 
-		Logger logger = Logger.getLogger(PseudoScheduleImpl.class);
+		Logger logger = LogManager.getLogger(PseudoScheduleImpl.class);
 
 		int totalNumber = pseudoSchedule.size();
 		int currentNumber = 0;

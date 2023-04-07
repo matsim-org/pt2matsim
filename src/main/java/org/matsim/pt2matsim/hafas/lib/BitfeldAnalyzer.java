@@ -21,7 +21,8 @@
 
 package org.matsim.pt2matsim.hafas.lib;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -40,7 +41,7 @@ import java.util.Set;
  * @author boescpa
  */
 public class BitfeldAnalyzer {
-	protected static Logger log = Logger.getLogger(BitfeldAnalyzer.class);
+	protected static Logger log = LogManager.getLogger(BitfeldAnalyzer.class);
 
 	public static Set<Integer> findBitfeldnumbersOfBusiestDay(String FPLAN, String BITFELD) throws IOException {
 		final Set<Integer> bitfeldNummern = new HashSet<>();

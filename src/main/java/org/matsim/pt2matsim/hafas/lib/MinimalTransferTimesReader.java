@@ -1,6 +1,7 @@
 package org.matsim.pt2matsim.hafas.lib;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
 import org.matsim.pt.transitSchedule.api.MinimalTransferTimes;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
@@ -16,7 +17,7 @@ import java.io.*;
  */
 public class MinimalTransferTimesReader {
 
-    protected static Logger log = Logger.getLogger(MinimalTransferTimesReader.class);
+    protected static Logger log = LogManager.getLogger(MinimalTransferTimesReader.class);
 
     public static void run(TransitSchedule schedule, String pathToHafasFolder, String UMSTEIGB, String METABHF) throws IOException {
 

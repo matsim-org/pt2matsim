@@ -18,7 +18,8 @@
 
 package org.matsim.pt2matsim.run;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
@@ -37,7 +38,7 @@ import java.io.File;
  */
 public final class CheckMappedSchedulePlausibility {
 
-	protected static final Logger log = Logger.getLogger(PlausibilityCheck.class);
+	protected static final Logger log = LogManager.getLogger(PlausibilityCheck.class);
 
 	/**
 	 * Performs a plausibility check on the given schedule and network files

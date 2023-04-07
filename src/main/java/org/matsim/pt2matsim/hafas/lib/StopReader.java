@@ -21,7 +21,8 @@
 
 package org.matsim.pt2matsim.hafas.lib;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
@@ -43,7 +44,7 @@ import java.util.Map;
  * @author boescpa
  */
 public class StopReader {
-	protected static Logger log = Logger.getLogger(StopReader.class);
+	protected static Logger log = LogManager.getLogger(StopReader.class);
 
 	private final CoordinateTransformation transformation;
 	private final TransitSchedule schedule;

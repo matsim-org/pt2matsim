@@ -18,7 +18,8 @@
 
 package org.matsim.pt2matsim.mapping.networkRouter;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -52,7 +53,7 @@ import java.util.Set;
 public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
 
 
-    protected static Logger log = Logger.getLogger(ScheduleRoutersGtfsShapes.class);
+    protected static Logger log = LogManager.getLogger(ScheduleRoutersGtfsShapes.class);
     /**
      * If a link has a route with the same transport mode as the transit route,
      * the link's travel cost is multiplied by this factor.

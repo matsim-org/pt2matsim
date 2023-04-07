@@ -18,7 +18,8 @@
 
 package org.matsim.pt2matsim.mapping;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.router.util.LeastCostPathCalculator;
@@ -46,7 +47,7 @@ import java.util.Set;
  */
 public class PseudoRoutingImpl implements PseudoRouting {
 
-	protected static Logger log = Logger.getLogger(PseudoRoutingImpl.class);
+	protected static Logger log = LogManager.getLogger(PseudoRoutingImpl.class);
 	private final Progress progress;
 
 	private static boolean warnMinTravelCost = true;

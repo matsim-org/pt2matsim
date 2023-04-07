@@ -1,6 +1,7 @@
 package org.matsim.pt2matsim.hafas.lib;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.*;
 import java.time.LocalDate;
@@ -9,7 +10,7 @@ import java.time.format.DateTimeParseException;
 
 public class ECKDATENReader {
 
-    protected static Logger log = Logger.getLogger(ECKDATENReader.class);
+    protected static Logger log = LogManager.getLogger(ECKDATENReader.class);
     private static final String ECKDATEN = "ECKDATEN";
     /*
         1 1−10 CHAR Fahrplanstart im Format TT.MM.JJJJ
