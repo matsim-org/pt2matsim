@@ -26,6 +26,7 @@ import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
 import org.matsim.pt2matsim.tools.PTMapperTools;
 import org.matsim.utils.objectattributes.attributable.Attributes;
+import org.matsim.utils.objectattributes.attributable.AttributesImpl;
 
 import java.util.Set;
 
@@ -46,7 +47,7 @@ public class ArtificialLinkImpl implements ArtificialLink {
 	private double capacity = 9999;
 
 	private Set<String> transportModes = PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE_AS_SET;
-	private Attributes attributes = new Attributes();
+	private Attributes attributes = new AttributesImpl();
 
 	public ArtificialLinkImpl(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, double freespeed, double linkLength) {
 		this.id = PTMapperTools.createArtificialLinkId(fromLinkCandidate, toLinkCandidate);
