@@ -18,8 +18,10 @@
 
 package org.matsim.pt2matsim.editor;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.network.io.NetworkWriter;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
@@ -37,7 +39,7 @@ import java.io.IOException;
  */
 public class RunScheduleEditor {
 
-	protected static Logger log = Logger.getLogger(RunScheduleEditor.class);
+	protected static Logger log = LogManager.getLogger(RunScheduleEditor.class);
 
 	/**
 	 * Loads the schedule and network, then executes all commands in the commands csv file.
@@ -99,17 +101,17 @@ public class RunScheduleEditor {
 	}
 
 	private static void setLogLevels() {
-		Logger.getLogger(org.matsim.core.router.Dijkstra.class).setLevel(Level.ERROR); // suppress no route found warnings
-		Logger.getLogger(Network.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.api.core.v01.network.Node.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.api.core.v01.network.Link.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.utils.io.MatsimXmlParser.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.utils.io.MatsimFileTypeGuesser.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.network.filter.NetworkFilterManager.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.router.util.PreProcessDijkstra.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.router.util.PreProcessDijkstra.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.router.util.PreProcessEuclidean.class).setLevel(Level.WARN);
-		Logger.getLogger(org.matsim.core.router.util.PreProcessLandmarks.class).setLevel(Level.WARN);
+		Configurator.setLevel(LogManager.getLogger(org.matsim.core.router.Dijkstra.class).getName(), Level.ERROR); // suppress no route found warnings
+		Configurator.setLevel(LogManager.getLogger(Network.class).getName(), Level.WARN);
+		Configurator.setLevel(LogManager.getLogger(org.matsim.api.core.v01.network.Node.class).getName(), Level.WARN);
+		Configurator.setLevel(LogManager.getLogger(org.matsim.api.core.v01.network.Link.class).getName(), Level.WARN);
+		Configurator.setLevel(LogManager.getLogger(org.matsim.core.utils.io.MatsimXmlParser.class).getName(), Level.WARN);
+		Configurator.setLevel(LogManager.getLogger(org.matsim.core.utils.io.MatsimFileTypeGuesser.class).getName(), Level.WARN);
+		Configurator.setLevel(LogManager.getLogger(org.matsim.core.network.filter.NetworkFilterManager.class).getName(), Level.WARN);
+		Configurator.setLevel(LogManager.getLogger(org.matsim.core.router.util.PreProcessDijkstra.class).getName(), Level.WARN);
+		Configurator.setLevel(LogManager.getLogger(org.matsim.core.router.util.PreProcessDijkstra.class).getName(), Level.WARN);
+		Configurator.setLevel(LogManager.getLogger(org.matsim.core.router.util.PreProcessEuclidean.class).getName(), Level.WARN);
+		Configurator.setLevel(LogManager.getLogger(org.matsim.core.router.util.PreProcessLandmarks.class).getName(), Level.WARN);
 	}
 
 }

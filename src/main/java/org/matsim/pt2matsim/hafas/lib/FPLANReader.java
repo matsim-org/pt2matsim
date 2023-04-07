@@ -21,7 +21,8 @@
 
 package org.matsim.pt2matsim.hafas.lib;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.misc.Counter;
 import org.matsim.vehicles.VehicleType;
@@ -41,7 +42,7 @@ import java.util.Set;
  * @author polettif
  */
 public class FPLANReader {
-	protected static Logger log = Logger.getLogger(FPLANReader.class);
+	protected static Logger log = LogManager.getLogger(FPLANReader.class);
 
 	/**
 	 * Only reads the PtRoutes and leaves line/route

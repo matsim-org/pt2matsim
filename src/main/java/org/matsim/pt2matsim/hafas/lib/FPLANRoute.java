@@ -21,7 +21,8 @@
 
 package org.matsim.pt2matsim.hafas.lib;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.vehicles.Vehicle;
@@ -37,7 +38,7 @@ import java.util.List;
  */
 public class FPLANRoute {
 
-	private static Logger log = Logger.getLogger(FPLANRoute.class);
+	private static Logger log = LogManager.getLogger(FPLANRoute.class);
 
 	private static TransitSchedule schedule;
 	private static TransitScheduleFactory scheduleFactory;

@@ -18,7 +18,8 @@
 
 package org.matsim.pt2matsim.run.gis;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.matsim.api.core.v01.Coord;
@@ -92,7 +93,7 @@ public class Schedule2Geojson {
 		s2s.writeSchedule(outputFile);
 	}
 
-	private static final Logger log = Logger.getLogger(Schedule2Geojson.class);
+	private static final Logger log = LogManager.getLogger(Schedule2Geojson.class);
 	private final TransitSchedule schedule;
 	private final Network network;
 	private final CoordinateTransformation ct;

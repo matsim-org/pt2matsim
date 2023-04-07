@@ -18,7 +18,8 @@
 
 package org.matsim.pt2matsim.mapping.linkCandidateCreation;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -45,7 +46,7 @@ import java.util.*;
 public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 	private static final Set<String> loopLinkModes = CollectionUtils.stringToSet(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE + "," + PublicTransitMappingStrings.STOP_FACILITY_LOOP_LINK);
-	protected static Logger log = Logger.getLogger(LinkCandidateCreatorStandard.class);
+	protected static Logger log = LogManager.getLogger(LinkCandidateCreatorStandard.class);
 
 	private final TransitSchedule schedule;
 	private final Network network;

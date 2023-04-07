@@ -18,7 +18,8 @@
 
 package org.matsim.pt2matsim.run.gis;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.matsim.api.core.v01.Coord;
@@ -80,7 +81,7 @@ public class Network2Geojson {
 	}
 
 
-	protected static Logger log = Logger.getLogger(Network2Geojson.class);
+	protected static Logger log = LogManager.getLogger(Network2Geojson.class);
 	private final CoordinateTransformation ct;
 	private Network network;
 	private FeatureCollection linkFeatures = new FeatureCollection();

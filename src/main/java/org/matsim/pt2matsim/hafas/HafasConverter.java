@@ -21,7 +21,8 @@
 
 package org.matsim.pt2matsim.hafas;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
@@ -51,7 +52,7 @@ import java.util.Set;
  */
 public class HafasConverter {
 
-	protected static Logger log = Logger.getLogger(HafasConverter.class);
+	protected static Logger log = LogManager.getLogger(HafasConverter.class);
 
 	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles) throws IOException {
 		run(hafasFolder, schedule, transformation, vehicles, -1);

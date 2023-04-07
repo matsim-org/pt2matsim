@@ -18,7 +18,8 @@
 
 package org.matsim.pt2matsim.osm.lib;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.misc.Counter;
 
@@ -29,7 +30,7 @@ import java.util.*;
  */
 public class OsmDataImpl implements OsmData {
 
-	private final static Logger log = Logger.getLogger(OsmData.class);
+	private final static Logger log = LogManager.getLogger(OsmData.class);
 
 	protected final Map<Id<Osm.Node>, Osm.Node> nodes = new HashMap<>();
 	protected final Map<Id<Osm.Way>, Osm.Way> ways = new HashMap<>();

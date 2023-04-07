@@ -21,7 +21,8 @@
 
 package org.matsim.pt2matsim.osm;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
@@ -64,7 +65,7 @@ import java.util.*;
  */
 public class OsmMultimodalNetworkConverter {
 
-	private final static Logger log = Logger.getLogger(OsmMultimodalNetworkConverter.class);
+	private final static Logger log = LogManager.getLogger(OsmMultimodalNetworkConverter.class);
 	
 	static final int SPEED_LIMIT_WALK_KPH = 10;
 	// // no speed limit (Germany) .. assume 200kph

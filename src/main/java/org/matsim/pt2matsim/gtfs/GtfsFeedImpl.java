@@ -24,7 +24,8 @@ import com.opencsv.exceptions.CsvValidationException;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.io.input.BOMInputStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
@@ -49,7 +50,7 @@ import java.nio.charset.StandardCharsets;
  */
 public class GtfsFeedImpl implements GtfsFeed {
 
-	protected static final Logger log = Logger.getLogger(GtfsFeedImpl.class);
+	protected static final Logger log = LogManager.getLogger(GtfsFeedImpl.class);
 
 	/**
 	 * Path to the folder where the gtfs files are located

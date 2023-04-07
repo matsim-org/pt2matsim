@@ -23,7 +23,8 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvValidationException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -54,7 +55,7 @@ import java.util.stream.Collectors;
  */
 public class BasicScheduleEditor implements ScheduleEditor {
 
-	protected static Logger log = Logger.getLogger(RunScheduleEditor.class);
+	protected static Logger log = LogManager.getLogger(RunScheduleEditor.class);
 	// fields
 	private final Network network;
 	private final TransitSchedule schedule;

@@ -18,7 +18,8 @@
 
 package org.matsim.pt2matsim.tools;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
@@ -54,7 +55,7 @@ import static org.matsim.pt2matsim.tools.ScheduleTools.getTransitRouteLinkIds;
  */
 public final class NetworkTools {
 
-	protected static Logger log = Logger.getLogger(NetworkTools.class);
+	protected static Logger log = LogManager.getLogger(NetworkTools.class);
 
 	private NetworkTools() {}
 
