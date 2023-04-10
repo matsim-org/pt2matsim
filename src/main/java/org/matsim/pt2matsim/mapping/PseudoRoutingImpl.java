@@ -32,10 +32,11 @@ import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersFactory;
 import org.matsim.pt2matsim.mapping.pseudoRouter.*;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Generates and calculates the pseudoRoutes for all the queued
@@ -51,10 +52,10 @@ public class PseudoRoutingImpl implements PseudoRouting {
 	private final Progress progress;
 
 	private static boolean warnMinTravelCost = true;
+	private static Queue<TransitLine> queue = new ConcurrentLinkedQueue<>();
 
 	private final LinkCandidateCreator linkCandidates;
-	private final ScheduleRoutersFactory scheduleRoutersFactory;
-	private final List<TransitLine> queue = new ArrayList<>();
+	private final ScheduleRouters scheduleRouters;
 
 	private final Set<ArtificialLink> necessaryArtificialLinks = new HashSet<>();
 
@@ -63,7 +64,7 @@ public class PseudoRoutingImpl implements PseudoRouting {
 
 	public PseudoRoutingImpl(ScheduleRoutersFactory scheduleRoutersFactory, LinkCandidateCreator linkCandidates, double maxTravelCostFactor, Progress progress) {
 		this.maxTravelCostFactor = maxTravelCostFactor;
-		this.scheduleRoutersFactory = scheduleRoutersFactory;
+		this.scheduleRouters = scheduleRoutersFactory.createInstance();
 		this.linkCandidates = linkCandidates;
 		this.progress = progress;
 	}
@@ -75,9 +76,9 @@ public class PseudoRoutingImpl implements PseudoRouting {
 
 	@Override
 	public void run() {
-		ScheduleRouters scheduleRouters = scheduleRoutersFactory.createInstance();
 		
-		for(TransitLine transitLine : queue) {
+		TransitLine transitLine;
+		while ((transitLine = queue.poll()) != null) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				/* [1]
 				  Initiate pseudoGraph and Dijkstra algorithm for the current transitRoute.
