@@ -29,17 +29,17 @@
     </repositories>
 
     <properties>
-        <geotools.version>24.2</geotools.version>
-        <jackson.version>2.10.3</jackson.version>
-        <jts.version>1.17.1</jts.version>
-        <log4j.version>2.17.1</log4j.version>
+        <geotools.version>29.0</geotools.version>
+        <jackson.version>2.14.2</jackson.version>
+        <jts.version>1.19.0</jts.version>
+        <log4j.version>2.20.0</log4j.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.matsim</groupId>
             <artifactId>matsim</artifactId>
-            <version>14.0</version>
+            <version>15.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -50,7 +50,7 @@
         <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
-            <version>5.3</version>
+            <version>5.7.1</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -115,8 +115,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.0</version>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <release>17</release>
                     <showWarnings>true</showWarnings>
                     <showDeprecation>true</showDeprecation>
                     <encoding>UTF-8</encoding>
