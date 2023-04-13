@@ -39,7 +39,7 @@
         <dependency>
             <groupId>org.matsim</groupId>
             <artifactId>matsim</artifactId>
-            <version>15.0-PR2500</version>
+            <version>15.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
