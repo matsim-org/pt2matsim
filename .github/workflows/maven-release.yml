@@ -1,8 +1,8 @@
 name: Maven Deploy
 
 on:
-  push:
-    branches: [ master ]
+  release:
+    types: [created]
 
 jobs:
   deploy-release:
