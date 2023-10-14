@@ -272,25 +272,25 @@ public class OsmMultimodalNetworkConverter {
 		}
 
 		log.info("= conversion statistics: ==========================");
-		log.info("MATSim: # nodes created: " + this.network.getNodes().size());
-		log.info("MATSim: # links created: " + this.network.getLinks().size());
+		log.info("MATSim: # nodes created: {}", this.network.getNodes().size());
+		log.info("MATSim: # links created: {}", this.network.getLinks().size());
 
 		if (!this.unknownHighways.isEmpty()) {
 			log.info("The following highway-types had no defaults set and were thus NOT converted:");
 			for(String highwayType : this.unknownHighways) {
-				log.info("- \"" + highwayType + "\"");
+				log.info("- \"{}\"", highwayType);
 			}
 		}
 		if (!this.unknownRailways.isEmpty()) {
 			log.info("The following railway-types had no defaults set and were thus NOT converted:");
 			for(String railwayType : this.unknownRailways) {
-				log.info("- \"" + railwayType + "\"");
+				log.info("- \"{}\"", railwayType);
 			}
 		}
 		if (!this.unknownWays.isEmpty()) {
 			log.info("The way-types with the following tags had no defaults set and were thus NOT converted:");
 			for(String wayType : this.unknownWays) {
-				log.info("- \"" + wayType + "\"");
+				log.info("- \"{}\"", wayType);
 			}
 		}
 		log.info("= end of conversion statistics ====================");
@@ -459,7 +459,7 @@ public class OsmMultimodalNetworkConverter {
 		} catch (NumberFormatException e) {
 			if(!unknownMaxspeedTags.contains(value)) {
 				unknownMaxspeedTags.add(value);
-				log.warn("Could not parse '" + key + "': " + e.getMessage() + " (way " + way.getId() + ")");
+				log.warn("Could not parse '{}': {} (way {})", key, e.getMessage(), way.getId());
 			}
 			return Optional.empty();
 		}
@@ -506,7 +506,7 @@ public class OsmMultimodalNetworkConverter {
 		} catch (NumberFormatException e) {
 			if(!unknownLanesTags.contains(value)) {
 				unknownLanesTags.add(value);
-				log.warn("Could not parse '" + key + "': " + e.getMessage() + " (way " + way.getId() + ")");
+				log.warn("Could not parse '{}': {} (way {})", key, e.getMessage(), way.getId());
 			}
 			return Optional.empty();
 		}
