@@ -133,17 +133,17 @@ public final class Osm {
 		public static final String HIGHWAY = "highway";
 		public static final String SERVICE = "service";
 
-		public final static String LANES = "lanes";
-		public final static String MAXSPEED = "maxspeed";
-		public final static String JUNCTION = "junction";
-		public final static String ONEWAY = "oneway";
-		public final static String ACCESS = "access";
+		public static final String LANES = "lanes";
+		public static final String MAXSPEED = "maxspeed";
+		public static final String JUNCTION = "junction";
+		public static final String ONEWAY = "oneway";
+		public static final String ACCESS = "access";
 		public static final String PSV = "psv";
 		public static final String BUS = "bus";
 		public static final String TAXI = "taxi";
 		
-		public final static String FORWARD = "forward";
-		public final static String BACKWARD = "backward";
+		public static final String FORWARD = "forward";
+		public static final String BACKWARD = "backward";
 
 		// rarely used
 		public static final String TYPE = "type";
@@ -195,9 +195,9 @@ public final class Osm {
 		public static final String RESIDENTIAL = "residential";
 		public static final String LIVING_STREET = "living_street";
 		public static final String SERVICE = "service";
-		public final static String STOP_POSITION = "stop_position";
-		public final static String BUS = "bus";
-		public final static String TROLLEYBUS = "trolleybus";
+		public static final String STOP_POSITION = "stop_position";
+		public static final String BUS = "bus";
+		public static final String TROLLEYBUS = "trolleybus";
 
 		public static final String FERRY = "ferry";
 

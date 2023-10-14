@@ -30,7 +30,7 @@ import java.util.*;
  */
 public class OsmDataImpl implements OsmData {
 
-	private final static Logger log = LogManager.getLogger(OsmData.class);
+	private static final Logger log = LogManager.getLogger(OsmData.class);
 
 	protected final Map<Id<Osm.Node>, Osm.Node> nodes = new HashMap<>();
 	protected final Map<Id<Osm.Way>, Osm.Way> ways = new HashMap<>();

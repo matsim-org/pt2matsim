@@ -254,7 +254,7 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	 */
 	public static class OsmWayParams extends ReflectiveConfigGroup implements MatsimParameters {
 
-		public final static String SET_NAME = "wayDefaultParams";
+		public static final String SET_NAME = "wayDefaultParams";
 
 		private String osmKey;
 		private String osmValue;
@@ -385,7 +385,7 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	 */
 	public static class RoutableSubnetworkParams extends ReflectiveConfigGroup implements MatsimParameters {
 	    
-	    public final static String SET_NAME = "routableSubnetwork";
+		public static final String SET_NAME = "routableSubnetwork";
 	    
 	    /** Network mode, for which a consistent routable network is created **/
 	    private String subnetworkMode;
