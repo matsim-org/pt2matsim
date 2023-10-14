@@ -65,7 +65,7 @@ import java.util.*;
  */
 public class OsmMultimodalNetworkConverter {
 
-	private final static Logger log = LogManager.getLogger(OsmMultimodalNetworkConverter.class);
+	private static final Logger log = LogManager.getLogger(OsmMultimodalNetworkConverter.class);
 	
 	static final int SPEED_LIMIT_WALK_KPH = 10;
 	// // no speed limit (Germany) .. assume 200kph

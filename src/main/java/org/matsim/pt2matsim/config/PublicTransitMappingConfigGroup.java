@@ -479,7 +479,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	 */
 	public static class TransportModeAssignment extends ReflectiveConfigGroup implements MatsimParameters {
 
-		public final static String SET_NAME = "transportModeAssignment";
+		public static final String SET_NAME = "transportModeAssignment";
 
 		private static final String SCHEDULE_MODE = "scheduleMode";
 		private static final String NETWORK_MODES = "networkModes";
