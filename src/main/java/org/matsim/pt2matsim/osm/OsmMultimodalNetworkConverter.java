@@ -275,19 +275,19 @@ public class OsmMultimodalNetworkConverter {
 		log.info("MATSim: # nodes created: " + this.network.getNodes().size());
 		log.info("MATSim: # links created: " + this.network.getLinks().size());
 
-		if(this.unknownHighways.size() > 0) {
+		if (!this.unknownHighways.isEmpty()) {
 			log.info("The following highway-types had no defaults set and were thus NOT converted:");
 			for(String highwayType : this.unknownHighways) {
 				log.info("- \"" + highwayType + "\"");
 			}
 		}
-		if(this.unknownRailways.size() > 0) {
+		if (!this.unknownRailways.isEmpty()) {
 			log.info("The following railway-types had no defaults set and were thus NOT converted:");
 			for(String railwayType : this.unknownRailways) {
 				log.info("- \"" + railwayType + "\"");
 			}
 		}
-		if(this.unknownWays.size() > 0) {
+		if (!this.unknownWays.isEmpty()) {
 			log.info("The way-types with the following tags had no defaults set and were thus NOT converted:");
 			for(String wayType : this.unknownWays) {
 				log.info("- \"" + wayType + "\"");
