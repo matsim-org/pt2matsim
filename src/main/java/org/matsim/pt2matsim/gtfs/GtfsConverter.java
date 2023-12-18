@@ -250,13 +250,16 @@ public class GtfsConverter {
 		TransitRoute transitRoute;
 		if(trip.getFrequencies().size() > 0) {
 			transitRoute = this.scheduleFactory.createTransitRoute(createTransitRouteId(trip), null, transitRouteStops, trip.getRoute().getRouteType().name);
-
-			for(Frequency frequency : trip.getFrequencies()) {
-				for(int t = frequency.getStartTime(); t < frequency.getEndTime(); t += frequency.getHeadWaySecs()) {
-					Departure newDeparture = this.scheduleFactory.createDeparture(createDepartureId(transitRoute, t), t);
-					transitRoute.addDeparture(newDeparture);
-				}
-			}
+            int frequencyOverlap = 0;
+            for (Frequency frequency : trip.getFrequencies()) {
+                for (int t = frequency.getStartTime(); t < frequency.getEndTime(); t += frequency.getHeadWaySecs()) {
+                    Id<Departure> departureId = createDepartureId(transitRoute, t);
+                    while (transitRoute.getDepartures().containsKey(departureId))
+                        departureId = Id.create(departureId.toString() + "_" + frequencyOverlap++, Departure.class);
+                    Departure newDeparture = this.scheduleFactory.createDeparture(departureId, t);
+                    transitRoute.addDeparture(newDeparture);
+                }
+            }
 		} else {
 			// Calculate departures from stopTimes
 			int routeStartTime = trip.getStopTimes().first().getDepartureTime();
