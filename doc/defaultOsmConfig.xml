@@ -23,6 +23,9 @@
 		<!-- CSV file containing the full geometry (including start end end node) for each link.
 		This file can be used for visualization purposes in Simunto Via or GIS software. -->
 		<param name="outputDetailedLinkGeometryFile" value="null" />
+		<!-- CSV file containing the link id and the way id for each link.
+		This file can be used to map the MATSim network back to the OSM data. -->
+		<param name="outputLinkWayTupleFile" value="null" />
 		<param name="outputNetworkFile" value="null" />
 		<!-- In case the speed limit allowed does not represent the speed a vehicle can actually realize, 
 		e.g. by constrains of traffic lights not explicitly modeled, a kind of "average simulated speed" can be used.

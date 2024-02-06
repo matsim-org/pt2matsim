@@ -4,13 +4,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import org.matsim.api.core.v01.Coord;
@@ -31,7 +26,7 @@ import com.google.common.collect.Lists;
  */
 public class LinkGeometryExporter {
 
-	private final char SEPARATOR = ',';
+	private final String SEPARATOR = ",";
 	private Map<Id<Link>, LinkDefinition> linkDefinitions = new TreeMap<>();
 
 	public void addLinkDefinition(Id<Link> linkId, LinkDefinition definition) {
@@ -81,6 +76,25 @@ public class LinkGeometryExporter {
 		}).collect(Collectors.toList());
 		return "LINESTRING(" + Joiner.on(',').join(coords) + ")";
 	}
+
+	public void writeLinkWayTuples(Path path) { // Write unique tuples of link id and way id
+		Set<String> writtenTuples = new HashSet<>(); // Set to store unique tuples
+
+		try (BufferedWriter writer = Files.newBufferedWriter(path)) {
+			writer.write(String.join(SEPARATOR, "LinkId", "WayId") + "\n");
+
+			for (Entry<Id<Link>, LinkDefinition> entry : linkDefinitions.entrySet()) {
+				String tuple = String.join(SEPARATOR, entry.getKey().toString(), entry.getValue().way.getId().toString());
+
+				if (writtenTuples.add(tuple)) { // Add returns true if the tuple was not already in the set
+					writer.write(tuple + "\n");
+				}
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 
 	public static class LinkDefinition {
 		public final Osm.Node fromNode;

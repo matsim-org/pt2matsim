@@ -47,6 +47,7 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	private static final String OSM_FILE ="osmFile";
 	private static final String OUTPUT_NETWORK_FILE ="outputNetworkFile";
 	private static final String OUTPUT_DETAILED_LINK_GEOMETRY_FILE ="outputDetailedLinkGeometryFile";
+	private static final String OUTPUT_LINK_WAY_TUPLE_FILE ="outputLinkWayTupleFile";
 	private static final String OUTPUT_COORDINATE_SYSTEM ="outputCoordinateSystem";
 	private static final String KEEP_PATHS ="keepPaths";
 	private static final String MAX_LINK_LENGTH = "maxLinkLength";
@@ -57,6 +58,7 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	private String osmFile;
 	private String outputNetworkFile;
 	private String outputDetailedLinkGeometryFile;
+	private String outputLinkWayTupleFile;
 	private String outputCoordinateSystem;
 
 	private double maxLinkLength = 500.0;
@@ -185,6 +187,16 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		this.outputDetailedLinkGeometryFile = outputDetailedLinkGeometryFile;
 	}
 
+	@StringGetter(OUTPUT_LINK_WAY_TUPLE_FILE)
+	public String getOutputLinkWayTupleFile() {
+		return outputLinkWayTupleFile;
+	}
+
+	@StringSetter(OUTPUT_LINK_WAY_TUPLE_FILE)
+	public void setOutputLinkWayTupleFile(String outputLinkWayTupleFile) {
+		this.outputLinkWayTupleFile = outputLinkWayTupleFile;
+	}
+
 	@StringGetter(OUTPUT_COORDINATE_SYSTEM)
 	public String getOutputCoordinateSystem() {
 		return outputCoordinateSystem;
@@ -213,6 +225,9 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		map.put(OUTPUT_DETAILED_LINK_GEOMETRY_FILE,
 				"CSV file containing the full geometry (including start end end node) for each link.\n" +
 				"\t\tThis file can be used for visualization purposes in Simunto Via or GIS software.");
+		map.put(OUTPUT_LINK_WAY_TUPLE_FILE,
+				"CSV file containing the link id and the way id for each link.\n" +
+				"\t\tThis file can be used to map the MATSim network back to the OSM data.");
 		map.put(KEEP_PATHS,
 				"Sets whether the detailed geometry of the roads should be retained in the conversion or not.\n" +
 				"\t\tKeeping the detailed paths results in a much higher number of nodes and links in the resulting MATSim network.\n" +

@@ -113,16 +113,21 @@ public class OsmMultimodalNetworkConverter {
 		cleanNetwork();
 		if(config.getKeepTagsAsAttributes()) addAttributes();
 
-		if (this.config.getOutputDetailedLinkGeometryFile() != null) {
-			try {
-				geometryExporter.onlyKeepGeometryForTheseLinks(network.getLinks().keySet());
-				geometryExporter.writeToFile(Paths.get(this.config.getOutputDetailedLinkGeometryFile()));
-			} catch (IOException e) {
-				log.warn("Error while writing network geometry", e);
-				e.printStackTrace();
-			}
-		}
-	}
+        if (this.config.getOutputDetailedLinkGeometryFile() != null) {
+            try {
+                geometryExporter.onlyKeepGeometryForTheseLinks(network.getLinks().keySet());
+                geometryExporter.writeToFile(Paths.get(this.config.getOutputDetailedLinkGeometryFile()));
+            } catch (IOException e) {
+                log.warn("Error while writing network geometry", e);
+                e.printStackTrace();
+            }
+        }
+        log.info("Writing link-way tuples to file: " + this.config.getOutputLinkWayTupleFile());
+        if (this.config.getOutputLinkWayTupleFile() != null) {
+            geometryExporter.onlyKeepGeometryForTheseLinks(network.getLinks().keySet());
+            geometryExporter.writeLinkWayTuples(Paths.get(this.config.getOutputLinkWayTupleFile()));
+        }
+    }
 
 	/**
 	 * reads the params from the config to different containers.
