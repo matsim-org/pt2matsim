@@ -40,7 +40,7 @@ public class OsmFileReader extends MatsimXmlParser {
 	private ParsedRelation currentRelation = null;
 
 	public OsmFileReader(OsmData osmData) {
-		super();
+		super(ValidationType.DTD_OR_XSD);
 		this.osmData = osmData;
 		this.setValidating(false);
 	}
