@@ -36,6 +36,7 @@ public class OsmMultimodalNetworkConverterTest {
 		osmConfig.setOsmFile("test/osm/GerasdorfArtificialLanesAndMaxspeed.osm");
 		osmConfig.setOutputNetworkFile("test/osm/GerasdorfArtificialLanesAndMaxspeed.xml.gz");
 		osmConfig.setMaxLinkLength(1000);
+		osmConfig.parseTurnRestrictions = true;
 
 		// read OSM file
 		OsmData osm = new OsmDataImpl();

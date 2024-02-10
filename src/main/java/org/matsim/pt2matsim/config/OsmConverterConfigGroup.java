@@ -21,6 +21,8 @@ package org.matsim.pt2matsim.config;
 
 import org.matsim.core.api.internal.MatsimParameters;
 import org.matsim.core.config.*;
+import org.matsim.core.config.ReflectiveConfigGroup.Comment;
+import org.matsim.core.config.ReflectiveConfigGroup.Parameter;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.pt2matsim.osm.lib.Osm;
 
@@ -65,6 +67,9 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	private boolean keepTagsAsAttributes = true;
 	private boolean keepWaysWithPublicTransit = true;
 
+	@Parameter
+	@Comment("If true: OSM turn restrictions are parsed and written as disallowedNextLinks attribute to the first link.")
+	public boolean parseTurnRestrictions = false;
 
 	public OsmConverterConfigGroup() {
 		super(GROUP_NAME);
