@@ -37,11 +37,17 @@
 			<param name="subnetworkMode" value="bus" />
 		</parameterset>
 		<parameterset type="wayDefaultParams" >
+			<!-- defines the allowed transport modes for the link -->
 			<param name="allowedTransportModes" value="car" />
+			<!-- free speed vehicles can drive on that road type [meters/second] -->
 			<param name="freespeed" value="33.333333333333336" />
+			<!-- factor the freespeed is scaled -->
 			<param name="freespeedFactor" value="1.0" />
+			<!-- capacity per lane [veh/h] -->
 			<param name="laneCapacity" value="2000.0" />
+			<!-- number of lanes on that road type -->
 			<param name="lanes" value="2.0" />
+			<!-- true to say that this road is a oneway road -->
 			<param name="oneway" value="true" />
 			<param name="osmKey" value="highway" />
 			<param name="osmValue" value="motorway" />

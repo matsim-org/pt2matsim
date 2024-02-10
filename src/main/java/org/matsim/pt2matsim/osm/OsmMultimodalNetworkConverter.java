@@ -133,8 +133,8 @@ public class OsmMultimodalNetworkConverter {
 	private void readWayParams() {
 		for(ConfigGroup e : config.getParameterSets(OsmConverterConfigGroup.OsmWayParams.SET_NAME)) {
 			OsmConverterConfigGroup.OsmWayParams w = (OsmConverterConfigGroup.OsmWayParams) e;
-			wayParams.putIfAbsent(w.getOsmKey(), new HashMap<>());
-			wayParams.get(w.getOsmKey()).put(w.getOsmValue(), w);
+			wayParams.putIfAbsent(w.osmKey, new HashMap<>());
+			wayParams.get(w.osmKey).put(w.osmValue, w);
 		}
 	}
 
@@ -310,9 +310,9 @@ public class OsmMultimodalNetworkConverter {
 
 		// load defaults
 		OsmConverterConfigGroup.OsmWayParams wayDefaultParams = getWayDefaultParams(way);
-		laneCapacity = wayDefaultParams.getLaneCapacity();
-		oneway = wayDefaultParams.getOneway();
-		modes = new HashSet<>(wayDefaultParams.getAllowedTransportModes());
+		laneCapacity = wayDefaultParams.laneCapacity;
+		oneway = wayDefaultParams.oneway;
+		modes = new HashSet<>(wayDefaultParams.allowedTransportModes);
 
 		// Overwrite defaults with OSM data
 		Map<String, String> tags = way.getTags();
@@ -341,18 +341,18 @@ public class OsmMultimodalNetworkConverter {
 		}
 		
 		// FREESPEED
-		double freeSpeedDefault = wayDefaultParams.getFreespeed();
+		double freeSpeedDefault = wayDefaultParams.freespeed;
 		double freeSpeedForward = calculateFreeSpeed(way, true, oneway || onewayReverse, freeSpeedDefault);
 		double freeSpeedBackward = calculateFreeSpeed(way, false, oneway || onewayReverse, freeSpeedDefault);
 		
 		if (config.scaleMaxSpeed) {
-			double freeSpeedFactor = wayDefaultParams.getFreespeedFactor();
+			double freeSpeedFactor = wayDefaultParams.freespeedFactor;
 			freeSpeedForward = freeSpeedForward * freeSpeedFactor;
 			freeSpeedBackward = freeSpeedBackward * freeSpeedFactor;
 		}
 
 		// LANES
-		double laneCountDefault = wayDefaultParams.getLanes();
+		double laneCountDefault = wayDefaultParams.lanes;
 		double laneCountForward = calculateLaneCount(way, true, oneway || onewayReverse, laneCountDefault);
 		double laneCountBackward = calculateLaneCount(way, false, oneway || onewayReverse, laneCountDefault);
 
