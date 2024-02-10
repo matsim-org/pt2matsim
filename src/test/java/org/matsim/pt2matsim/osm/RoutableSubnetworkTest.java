@@ -23,10 +23,10 @@ class RoutableSubnetworkTest {
 	void customSubnetworks() {
 		// setup config
 		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.createDefaultConfig();
-		osmConfig.setOutputCoordinateSystem("WGS84");
-		osmConfig.setOsmFile("test/osm/WaterlooCityCentre.osm");
-		osmConfig.setOutputNetworkFile("test/output/WaterlooCityCentre.xml.gz");
-		osmConfig.setMaxLinkLength(20);
+		osmConfig.outputCoordinateSystem = "WGS84";
+		osmConfig.osmFile = "test/osm/WaterlooCityCentre.osm";
+		osmConfig.outputNetworkFile = "test/output/WaterlooCityCentre.xml.gz";
+		osmConfig.maxLinkLength = 20;
 		
 		// Add car_passenger to all car links		
 		for (ConfigGroup params : osmConfig.getParameterSets(OsmConverterConfigGroup.OsmWayParams.SET_NAME)) {
@@ -41,7 +41,7 @@ class RoutableSubnetworkTest {
 
 		// read OSM file
 		OsmData osm = new OsmDataImpl();
-		new OsmFileReader(osm).readFile(osmConfig.getOsmFile());
+		new OsmFileReader(osm).readFile(osmConfig.osmFile);
 
 		// I) Convert without a network layer for car_passenger
 		OsmMultimodalNetworkConverter converter = new OsmMultimodalNetworkConverter(osm);

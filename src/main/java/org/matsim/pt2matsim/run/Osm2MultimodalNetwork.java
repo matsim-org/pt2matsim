@@ -68,9 +68,9 @@ public final class Osm2MultimodalNetwork {
 	 */
 	public static void run(String osmFile, String outputNetworkFile, String outputCoordinateSystem) {
 		OsmConverterConfigGroup config = OsmConverterConfigGroup.createDefaultConfig();
-		config.setOsmFile(osmFile);
-		config.setOutputNetworkFile(outputNetworkFile);
-		config.setOutputCoordinateSystem(outputCoordinateSystem);
+		config.osmFile = osmFile;
+		config.outputNetworkFile = outputNetworkFile;
+		config.outputCoordinateSystem = outputCoordinateSystem;
 
 		run(config);
 	}
@@ -81,11 +81,11 @@ public final class Osm2MultimodalNetwork {
 		filter.add(Osm.ElementType.WAY, Osm.Key.RAILWAY, null);
 
 		OsmData osmData = new OsmDataImpl(filter);
-		new OsmFileReader(osmData).readFile(config.getOsmFile());
+		new OsmFileReader(osmData).readFile(config.osmFile);
 
 		OsmMultimodalNetworkConverter converter = new OsmMultimodalNetworkConverter(osmData);
 		converter.convert(config);
 
-		NetworkTools.writeNetwork(converter.getNetwork(), config.getOutputNetworkFile());
+		NetworkTools.writeNetwork(converter.getNetwork(), config.outputNetworkFile);
 	}
 }

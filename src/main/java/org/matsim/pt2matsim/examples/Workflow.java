@@ -28,11 +28,12 @@ public class Workflow {
 
 		// convert schedule
 		String unmappedSchedule = "intermediate/schedule_unmapped.xml.gz";
-		Gtfs2TransitSchedule.run("gtfs", "dayWithMostTrips", osmConfig.getOutputCoordinateSystem(), unmappedSchedule, "output/vehicles.xml.gz");
+		Gtfs2TransitSchedule.run("gtfs", "dayWithMostTrips", osmConfig.outputCoordinateSystem, unmappedSchedule,
+				"output/vehicles.xml.gz");
 
 		// setup public transit mapper
 		PublicTransitMappingConfigGroup mapperConfig = PublicTransitMappingConfigGroup.createDefaultConfig();
-		Network network = NetworkTools.readNetwork(osmConfig.getOutputNetworkFile());
+		Network network = NetworkTools.readNetwork(osmConfig.outputNetworkFile);
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(unmappedSchedule);
 
 		// map schedule to network
@@ -43,10 +44,11 @@ public class Workflow {
 		ScheduleTools.writeTransitSchedule(schedule, "output/schedule.xml.gz");
 
 		// Write geojson result
-		Network2Geojson.run(osmConfig.getOutputCoordinateSystem(), network, "output/network.geojson");
-		Schedule2Geojson.run(osmConfig.getOutputCoordinateSystem(), schedule, "output/schedule.geojson");
+		Network2Geojson.run(osmConfig.outputCoordinateSystem, network, "output/network.geojson");
+		Schedule2Geojson.run(osmConfig.outputCoordinateSystem, schedule, "output/schedule.geojson");
 
 		// check schedule
-		CheckMappedSchedulePlausibility.run("output/schedule.xml.gz", "output/network.xml.gz", osmConfig.getOutputCoordinateSystem(), "output/check/");
+		CheckMappedSchedulePlausibility.run("output/schedule.xml.gz", "output/network.xml.gz",
+				osmConfig.outputCoordinateSystem, "output/check/");
 	}
 }

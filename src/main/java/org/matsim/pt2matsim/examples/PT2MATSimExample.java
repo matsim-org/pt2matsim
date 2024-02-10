@@ -161,9 +161,9 @@ public final class PT2MATSimExample {
 				new OsmConverterConfigGroup());
 
 		OsmConverterConfigGroup osmConfig = ConfigUtils.addOrGetModule(osmConverterConfig, OsmConverterConfigGroup.class);
-		osmConfig.setOsmFile(input + "addison.osm.gz");
-		osmConfig.setOutputCoordinateSystem(addisonCountyEPSG);
-		osmConfig.setOutputNetworkFile(inter + "addison.xml.gz");
+		osmConfig.osmFile = input + "addison.osm.gz";
+		osmConfig.outputCoordinateSystem = addisonCountyEPSG;
+		osmConfig.outputNetworkFile = inter + "addison.xml.gz";
 
 		// Save the createOsmConfigFile config (usually done manually)
 		new ConfigWriter(osmConverterConfig).write(configFile);

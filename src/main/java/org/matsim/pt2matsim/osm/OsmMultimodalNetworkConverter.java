@@ -103,20 +103,23 @@ public class OsmMultimodalNetworkConverter {
 	public void convert(OsmConverterConfigGroup config) {
 		this.config = config;
 		this.geometryExporter = new LinkGeometryExporter();
-		CoordinateTransformation transformation = (config.getOutputCoordinateSystem() == null ?
+		CoordinateTransformation transformation = (config.outputCoordinateSystem == null
+				?
 				new IdentityTransformation() :
-				TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, config.getOutputCoordinateSystem()));
+				TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84,
+						config.outputCoordinateSystem));
 
 		initPT();
 		readWayParams();
 		convertToNetwork(transformation);
 		cleanNetwork();
-		if(config.getKeepTagsAsAttributes()) addAttributes();
+		if (config.keepTagsAsAttributes)
+			addAttributes();
 
-		if (this.config.getOutputDetailedLinkGeometryFile() != null) {
+		if (this.config.outputDetailedLinkGeometryFile != null) {
 			try {
 				geometryExporter.onlyKeepGeometryForTheseLinks(network.getLinks().keySet());
-				geometryExporter.writeToFile(Paths.get(this.config.getOutputDetailedLinkGeometryFile()));
+				geometryExporter.writeToFile(Paths.get(this.config.outputDetailedLinkGeometryFile));
 			} catch (IOException e) {
 				log.warn("Error while writing network geometry", e);
 				e.printStackTrace();
@@ -180,7 +183,7 @@ public class OsmMultimodalNetworkConverter {
 		log.info("cleaning network...");
 
 		// Clean network:
-		if(!config.getKeepPaths()) {
+		if (!config.keepPaths) {
 			// marked nodes as unused where only one way leads through
 			// but only if this doesn't lead to links longer than MAX_LINKLENGTH
 			for(Osm.Way way : ways.values()) {
@@ -194,7 +197,7 @@ public class OsmMultimodalNetworkConverter {
 						lastNode = node;
 					} else if(node.getWays().size() == 1) {
 						length += CoordUtils.calcEuclideanDistance(lastNode.getCoord(), node.getCoord());
-						if(length <= config.getMaxLinkLength()) {
+						if (length <= config.maxLinkLength) {
 							nodesToIgnore.add(node);
 							lastNode = node;
 						} else {
@@ -342,7 +345,7 @@ public class OsmMultimodalNetworkConverter {
 		double freeSpeedForward = calculateFreeSpeed(way, true, oneway || onewayReverse, freeSpeedDefault);
 		double freeSpeedBackward = calculateFreeSpeed(way, false, oneway || onewayReverse, freeSpeedDefault);
 		
-		if(config.getScaleMaxSpeed()) {
+		if (config.scaleMaxSpeed) {
 			double freeSpeedFactor = wayDefaultParams.getFreespeedFactor();
 			freeSpeedForward = freeSpeedForward * freeSpeedFactor;
 			freeSpeedBackward = freeSpeedBackward * freeSpeedFactor;
@@ -578,7 +581,7 @@ public class OsmMultimodalNetworkConverter {
 		}
 
 		if(wayDefaults == null) {
-			if(wayHasPublicTransit(way) && config.keepHighwaysWithPT()) {
+			if (wayHasPublicTransit(way) && config.keepWaysWithPublicTransit) {
 				wayDefaults = ptDefaultParams;
 			}
 		}

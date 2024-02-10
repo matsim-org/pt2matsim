@@ -20,13 +20,19 @@
 package org.matsim.pt2matsim.config;
 
 import org.matsim.core.api.internal.MatsimParameters;
-import org.matsim.core.config.*;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigGroup;
+import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.ConfigWriter;
+import org.matsim.core.config.ReflectiveConfigGroup;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.pt2matsim.osm.lib.Osm;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
-
 
 /**
  * Config group for osm conversion {@link org.matsim.pt2matsim.osm.OsmMultimodalNetworkConverter}
@@ -44,26 +50,49 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	// actual config values
 	public static final String GROUP_NAME = "OsmConverter";
 
-	private static final String OSM_FILE ="osmFile";
-	private static final String OUTPUT_NETWORK_FILE ="outputNetworkFile";
-	private static final String OUTPUT_DETAILED_LINK_GEOMETRY_FILE ="outputDetailedLinkGeometryFile";
-	private static final String OUTPUT_COORDINATE_SYSTEM ="outputCoordinateSystem";
-	private static final String KEEP_PATHS ="keepPaths";
-	private static final String MAX_LINK_LENGTH = "maxLinkLength";
-	private static final String SCALE_MAX_SPEED = "scaleMaxSpeed";
-	private static final String KEEP_TAGS_AS_ATTRIBUTES = "keepTagsAsAttributes";
-	private static final String KEEP_WAYS_WITH_PUBLIC_TRANSIT = "keepWaysWithPublicTransit";
+	@Parameter
+	@Comment("The path to the osm file.")
+	public String osmFile;
 
-	private String osmFile;
-	private String outputNetworkFile;
-	private String outputDetailedLinkGeometryFile;
-	private String outputCoordinateSystem;
+	@Parameter
+	public String outputNetworkFile;
 
-	private double maxLinkLength = 500.0;
-	private boolean keepPaths = false;
-	private boolean scaleMaxSpeed = false;
-	private boolean keepTagsAsAttributes = true;
-	private boolean keepWaysWithPublicTransit = true;
+	@Parameter
+	@Comment("CSV file containing the full geometry (including start end end node) for each link.\n" + //
+			"\t\tThis file can be used for visualization purposes in Simunto Via or GIS software.")
+	public String outputDetailedLinkGeometryFile;
+
+	@Parameter
+	@Comment("Output coordinate system. EPSG:* codes are supported and recommended.\n" + //
+			"\t\tUse 'WGS84' for no transformation (though this may lead to errors with PT mapping).")
+	public String outputCoordinateSystem;
+
+	@Parameter
+	public double maxLinkLength = 500.0;
+
+	@Parameter
+	@Comment("Sets whether the detailed geometry of the roads should be retained in the conversion or not.\n" + //
+			"\t\tKeeping the detailed paths results in a much higher number of nodes and links in the resulting MATSim network.\n" + //
+			"\t\tNot keeping the detailed paths removes all nodes where only one road passes through, thus only real intersections\n" + //
+			"\t\tor branchings are kept as nodes. This reduces the number of nodes and links in the network, but can in some rare\n" + //
+			"\t\tcases generate extremely long links (e.g. for motorways with only a few ramps every few kilometers).\n" + //
+			"\t\tDefaults to <code>false</code>.")
+	public boolean keepPaths = false;
+
+	@Parameter
+	@Comment("In case the speed limit allowed does not represent the speed a vehicle can actually realize, \n" + //
+			"\t\te.g. by constrains of traffic lights not explicitly modeled, a kind of \"average simulated speed\" can be used.\n" + //
+			"\t\tDefaults to false. Set true to scale the speed limit down by the value specified by the wayDefaultParams)")
+	public boolean scaleMaxSpeed = false;
+
+	@Parameter
+	@Comment("If true: The osm tags for ways and containing relations are saved as link attributes in the network.\n" + //
+			"\t\tIncreases filesize. Default: true.")
+	public boolean keepTagsAsAttributes = true;
+
+	@Parameter
+	@Comment("Keep all ways (highway=* and railway=*) with public transit even if they don't have wayDefaultParams defined")
+	public boolean keepWaysWithPublicTransit = true;
 
 
 	public OsmConverterConfigGroup() {
@@ -113,126 +142,6 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		Set<String> toRemove = matsimConfig.getModules().keySet().stream().filter(module -> !module.equals(OsmConverterConfigGroup.GROUP_NAME)).collect(Collectors.toSet());
 		toRemove.forEach(matsimConfig::removeModule);
 		new ConfigWriter(matsimConfig).write(filename);
-	}
-
-	@StringGetter(OSM_FILE)
-	public String getOsmFile() {
-		return osmFile;
-	}
-
-	@StringSetter(OSM_FILE)
-	public void setOsmFile(String osmFile) {
-		this.osmFile = osmFile;
-	}
-
-	@StringGetter(KEEP_PATHS)
-	public boolean getKeepPaths() {
-		return keepPaths;
-	}
-
-	@StringSetter(KEEP_PATHS)
-	public void setKeepPaths(boolean keepPaths) {
-		this.keepPaths = keepPaths;
-	}
-
-	@StringGetter(MAX_LINK_LENGTH)
-	public double getMaxLinkLength() {
-		return maxLinkLength;
-	}
-
-	@StringSetter(MAX_LINK_LENGTH)
-	public void setMaxLinkLength(double maxLinkLength) {
-		this.maxLinkLength = maxLinkLength;
-	}
-
-	@StringGetter(SCALE_MAX_SPEED)
-	public boolean getScaleMaxSpeed() {
-		return scaleMaxSpeed;
-	}
-
-	@StringSetter(SCALE_MAX_SPEED)
-	public void setScaleMaxSpeed(boolean scaleMaxSpeed) {
-		this.scaleMaxSpeed = scaleMaxSpeed;
-	}
-
-	@StringGetter(KEEP_TAGS_AS_ATTRIBUTES)
-	public boolean getKeepTagsAsAttributes() {
-		return keepTagsAsAttributes;
-	}
-
-	@StringSetter(KEEP_TAGS_AS_ATTRIBUTES)
-	public void setKeepTagsAsAttributes(boolean v) {
-		this.keepTagsAsAttributes = v;
-	}
-
-	@StringGetter(OUTPUT_NETWORK_FILE)
-	public String getOutputNetworkFile() {
-		return outputNetworkFile;
-	}
-
-	@StringSetter(OUTPUT_NETWORK_FILE)
-	public void setOutputNetworkFile(String outputNetworkFile) {
-		this.outputNetworkFile = outputNetworkFile;
-	}
-	
-	@StringGetter(OUTPUT_DETAILED_LINK_GEOMETRY_FILE)
-	public String getOutputDetailedLinkGeometryFile() {
-		return outputDetailedLinkGeometryFile;
-	}
-
-	@StringSetter(OUTPUT_DETAILED_LINK_GEOMETRY_FILE)
-	public void setOutputDetailedLinkGeometryFile(String outputDetailedLinkGeometryFile) {
-		this.outputDetailedLinkGeometryFile = outputDetailedLinkGeometryFile;
-	}
-
-	@StringGetter(OUTPUT_COORDINATE_SYSTEM)
-	public String getOutputCoordinateSystem() {
-		return outputCoordinateSystem;
-	}
-
-	@StringSetter(OUTPUT_COORDINATE_SYSTEM)
-	public void setOutputCoordinateSystem(String outputCoordinateSystem) {
-		this.outputCoordinateSystem = outputCoordinateSystem;
-	}
-
-	@StringGetter(KEEP_WAYS_WITH_PUBLIC_TRANSIT)
-	public boolean keepHighwaysWithPT() {
-		return keepWaysWithPublicTransit;
-	}
-
-	@StringSetter(KEEP_WAYS_WITH_PUBLIC_TRANSIT)
-	public void setKeepHighwaysWithPT(boolean b) {
-		this.keepWaysWithPublicTransit = b;
-	}
-
-	@Override
-	public final Map<String, String> getComments() {
-		Map<String, String> map = super.getComments();
-		map.put(OSM_FILE,
-				"The path to the osm file.");
-		map.put(OUTPUT_DETAILED_LINK_GEOMETRY_FILE,
-				"CSV file containing the full geometry (including start end end node) for each link.\n" +
-				"\t\tThis file can be used for visualization purposes in Simunto Via or GIS software.");
-		map.put(KEEP_PATHS,
-				"Sets whether the detailed geometry of the roads should be retained in the conversion or not.\n" +
-				"\t\tKeeping the detailed paths results in a much higher number of nodes and links in the resulting MATSim network.\n" +
-				"\t\tNot keeping the detailed paths removes all nodes where only one road passes through, thus only real intersections\n" +
-				"\t\tor branchings are kept as nodes. This reduces the number of nodes and links in the network, but can in some rare\n" +
-				"\t\tcases generate extremely long links (e.g. for motorways with only a few ramps every few kilometers).\n" +
-				"\t\tDefaults to <code>false</code>.");
-		map.put(KEEP_TAGS_AS_ATTRIBUTES,
-				"If true: The osm tags for ways and containing relations are saved as link attributes in the network.\n" +
-				"\t\tIncreases filesize. Default: true.");
-		map.put(SCALE_MAX_SPEED,
-				"In case the speed limit allowed does not represent the speed a vehicle can actually realize, \n" +
-				"\t\te.g. by constrains of traffic lights not explicitly modeled, a kind of \"average simulated speed\" can be used.\n" +
-				"\t\tDefaults to false. Set true to scale the speed limit down by the value specified by the wayDefaultParams)");
-		map.put(KEEP_WAYS_WITH_PUBLIC_TRANSIT,
-				"Keep all ways (highway=* and railway=*) with public transit even if they don't have wayDefaultParams defined");
-		map.put(OUTPUT_COORDINATE_SYSTEM,
-				"Output coordinate system. EPSG:* codes are supported and recommended.\n" +
-				"\t\tUse 'WGS84' for no transformation (though this may lead to errors with PT mapping).");
-		return map;
 	}
 
 	@Override

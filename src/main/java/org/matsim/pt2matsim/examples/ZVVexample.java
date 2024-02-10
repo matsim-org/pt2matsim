@@ -94,8 +94,8 @@ public class ZVVexample {
 		osmConfig.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.LIVING_STREET, 1, 15.0 / 3.6, 1.0, 300, false, carSingleton));
 //		osmConfig.addParameterSet(new OsmConverterConfigGroup.OsmWayParams(Osm.Key.HIGHWAY, Osm.Value.SERVICE, 1, 15.0 / 3.6, 1.0, 200, 	false, carSingleton));
 
-		osmConfig.setKeepPaths(true);
-		osmConfig.setOutputCoordinateSystem(coordSys);
+		osmConfig.keepPaths = true;
+		osmConfig.outputCoordinateSystem = coordSys;
 
 		// 1.2 load osm file
 		OsmData osmData = new OsmDataImpl(createDefaultPTFilter());

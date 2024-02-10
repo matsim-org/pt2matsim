@@ -30,14 +30,14 @@ public class OsmMultimodalNetworkConverterTest {
 	public static void convertGerasdorfArtificialLanesAndMaxspeed() {
 		// setup config
 		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.createDefaultConfig();
-		osmConfig.setOutputCoordinateSystem("EPSG:31256");
-		osmConfig.setOsmFile("test/osm/GerasdorfArtificialLanesAndMaxspeed.osm");
-		osmConfig.setOutputNetworkFile("test/osm/GerasdorfArtificialLanesAndMaxspeed.xml.gz");
-		osmConfig.setMaxLinkLength(1000);
+		osmConfig.outputCoordinateSystem = "EPSG:31256";
+		osmConfig.osmFile = "test/osm/GerasdorfArtificialLanesAndMaxspeed.osm";
+		osmConfig.outputNetworkFile = "test/osm/GerasdorfArtificialLanesAndMaxspeed.xml.gz";
+		osmConfig.maxLinkLength = 1000;
 
 		// read OSM file
 		OsmData osm = new OsmDataImpl();
-		new OsmFileReader(osm).readFile(osmConfig.getOsmFile());
+		new OsmFileReader(osm).readFile(osmConfig.osmFile);
 
 		// convert
 		OsmMultimodalNetworkConverter converter = new OsmMultimodalNetworkConverter(osm);
@@ -45,8 +45,7 @@ public class OsmMultimodalNetworkConverterTest {
 
 		Network network = converter.getNetwork();
 		
-		// write file
-		//NetworkTools.writeNetwork(network, osmConfig.getOutputNetworkFile());
+		// write file NetworkTools.writeNetwork(network, osmConfig.outputNetworkFile);
 		
 		osmid2link = collectLinkMap(network);
 	}
@@ -282,31 +281,31 @@ public class OsmMultimodalNetworkConverterTest {
 	void convertWaterlooCityCentre() {
 		// setup config
 		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.createDefaultConfig();
-		osmConfig.setOutputCoordinateSystem("WGS84");
-		osmConfig.setOsmFile("test/osm/WaterlooCityCentre.osm");
-		osmConfig.setOutputNetworkFile("test/output/WaterlooCityCentre.xml.gz");
-		osmConfig.setMaxLinkLength(20);
+		osmConfig.outputCoordinateSystem = "WGS84";
+		osmConfig.osmFile = "test/osm/WaterlooCityCentre.osm";
+		osmConfig.outputNetworkFile = "test/output/WaterlooCityCentre.xml.gz";
+		osmConfig.maxLinkLength = 20;
 
 		// read OSM file
 		OsmData osm = new OsmDataImpl();
-		new OsmFileReader(osm).readFile(osmConfig.getOsmFile());
+		new OsmFileReader(osm).readFile(osmConfig.osmFile);
 
 		// convert
 		OsmMultimodalNetworkConverter converter = new OsmMultimodalNetworkConverter(osm);
 		converter.convert(osmConfig);
 
 		// write file
-		// NetworkTools.writeNetwork(converter.getNetwork(), osmConfig.getOutputNetworkFile());
+		// NetworkTools.writeNetwork(converter.getNetwork(), osmConfig.outputNetworkFile);
 	}
 
 	@Test
 	void convertEPSG() {
 		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.createDefaultConfig();
-		osmConfig.setOutputCoordinateSystem("EPSG:8682");
-		osmConfig.setOsmFile("test/osm/Belgrade.osm");
+		osmConfig.outputCoordinateSystem = "EPSG:8682";
+		osmConfig.osmFile = "test/osm/Belgrade.osm";
 
 		OsmData osm = new OsmDataImpl();
-		new OsmFileReader(osm).readFile(osmConfig.getOsmFile());
+		new OsmFileReader(osm).readFile(osmConfig.osmFile);
 
 		OsmMultimodalNetworkConverter converter = new OsmMultimodalNetworkConverter(osm);
 		converter.convert(osmConfig);
