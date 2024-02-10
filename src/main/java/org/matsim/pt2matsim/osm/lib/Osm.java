@@ -145,6 +145,13 @@ public final class Osm {
 		public static final String FORWARD = "forward";
 		public static final String BACKWARD = "backward";
 
+		public static final String RESTRICTION = "restriction";
+		public static final String PROHIBITORY_RESTRICTION_PREFIX = "no_";
+		public static final String MANDATORY_RESTRICTION_PREFIX = "only_";
+		public static final String EXCEPT = "except";
+		public static final String MOTORCAR = "motorcar";
+		public static final String BICYCLE = "bicycle";
+
 		// rarely used
 		public static final String TYPE = "type";
 		public static final String NETWORK = "network";
@@ -217,6 +224,12 @@ public final class Osm {
 		// values for maxspeed=*
 		public static final String WALK = "walk";
 		public static final String NONE = "none";
+
+		// turn restriction roles
+		public static final String FROM = "from";
+		public static final String VIA = "via";
+		public static final String TO = "to";
+
 	}
 
 
