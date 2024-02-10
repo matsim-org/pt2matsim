@@ -95,7 +95,7 @@ public final class Osm {
 		List<Node> getNodes();
 
 		/**
-		 * @return the relations of which this node is a member
+		 * @return the relations of which this way is a member
 		 */
 		Map<Id<Relation>, Relation> getRelations();
 	}
@@ -113,7 +113,7 @@ public final class Osm {
 		String getMemberRole(Element member);
 
 		/**
-		 * @return the relations of which this node is a member
+		 * @return the relations of which this relation is a member
 		 */
 		Map<Id<Relation>, Relation> getRelations();
 	}
