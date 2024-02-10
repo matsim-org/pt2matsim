@@ -40,7 +40,7 @@ public class PTMapperTest {
 		config.setCandidateDistanceMultiplier(1.0);
 
 		PublicTransitMappingConfigGroup.TransportModeAssignment mraBus = new PublicTransitMappingConfigGroup.TransportModeAssignment("bus");
-		mraBus.setNetworkModesStr("car,bus");
+		mraBus.networkModes = Set.of("car", "bus");
 		config.addParameterSet(mraBus);
 
 		return config;

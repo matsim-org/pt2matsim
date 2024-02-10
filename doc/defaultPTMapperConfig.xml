@@ -52,11 +52,11 @@
 			<!-- Transit Routes with the given scheduleMode can only use links with at least one of the network modes
 			defined here. Separate multiple modes by comma. If no network modes are defined, the transit route will
 			use artificial links. -->
-			<param name="networkModes" value="car,bus" />
+			<param name="networkModes" value="car, bus" />
 			<param name="scheduleMode" value="bus" />
 		</parameterset>
 		<parameterset type="transportModeAssignment" >
-			<param name="networkModes" value="rail,light_rail" />
+			<param name="networkModes" value="rail, light_rail" />
 			<param name="scheduleMode" value="rail" />
 		</parameterset>
 	</module>

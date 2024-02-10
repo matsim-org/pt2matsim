@@ -22,7 +22,6 @@ package org.matsim.pt2matsim.config;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.api.internal.MatsimParameters;
 import org.matsim.core.config.*;
-import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt2matsim.run.PublicTransitMapper;
 
@@ -99,9 +98,9 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		config.getModesToKeepOnCleanUp().add("car");
 
 		TransportModeAssignment tmaBus = new TransportModeAssignment("bus");
-		tmaBus.setNetworkModesStr("car,bus");
+		tmaBus.networkModes = Set.of("car", "bus");
 		TransportModeAssignment tmaRail = new TransportModeAssignment("rail");
-		tmaRail.setNetworkModesStr("rail,light_rail");
+		tmaRail.networkModes = Set.of("rail", "light_rail");
 		config.addParameterSet(tmaBus);
 		config.addParameterSet(tmaRail);
 
@@ -198,7 +197,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private void loadParameterSets() {
 		for(ConfigGroup e : this.getParameterSets(TransportModeAssignment.SET_NAME)) {
 			TransportModeAssignment mra = (TransportModeAssignment) e;
-			transportModeAssignment.put(mra.getScheduleMode(), mra.getNetworkModes());
+			transportModeAssignment.put(mra.scheduleMode, mra.networkModes);
 		}
 	}
 
@@ -481,11 +480,14 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 
 		public static final String SET_NAME = "transportModeAssignment";
 
-		private static final String SCHEDULE_MODE = "scheduleMode";
-		private static final String NETWORK_MODES = "networkModes";
+		@Parameter
+		public String scheduleMode;
 
-		private String scheduleMode;
-		private Set<String> networkModes;
+		@Parameter
+		@Comment("Transit Routes with the given scheduleMode can only use links with at least one of the network modes\n" +
+				"\t\t\tdefined here. Separate multiple modes by comma. If no network modes are defined, the transit route will\n" +
+				"\t\t\tuse artificial links.")
+		public Set<String> networkModes;
 
 		public TransportModeAssignment() {
 			super(SET_NAME);
@@ -496,42 +498,5 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 			this.scheduleMode = scheduleMode;
 		}
 
-		@Override
-		public Map<String, String> getComments() {
-			Map<String, String> map = super.getComments();
-			map.put(NETWORK_MODES,
-					"Transit Routes with the given scheduleMode can only use links with at least one of the network modes\n" +
-					"\t\t\tdefined here. Separate multiple modes by comma. If no network modes are defined, the transit route will\n" +
-					"\t\t\tuse artificial links.");
-			return map;
-		}
-
-		@StringGetter(SCHEDULE_MODE)
-		public String getScheduleMode() {
-			return scheduleMode;
-		}
-
-		@StringSetter(SCHEDULE_MODE)
-		public void setScheduleMode(String scheduleMode) {
-			this.scheduleMode = scheduleMode;
-		}
-
-		@StringGetter(NETWORK_MODES)
-		public String getNetworkModesStr() {
-			return CollectionUtils.setToString(networkModes);
-		}
-
-		@StringSetter(NETWORK_MODES)
-		public void setNetworkModesStr(String networkModesStr) {
-			this.networkModes = CollectionUtils.stringToSet(networkModesStr);
-		}
-
-		public Set<String> getNetworkModes() {
-			return this.networkModes;
-		}
-
-		public void setNetworkModes(Set<String> networkModes) {
-			this.networkModes = networkModes;
-		}
 	}
 }
