@@ -21,6 +21,8 @@ package org.matsim.pt2matsim.config;
 
 import org.matsim.core.api.internal.MatsimParameters;
 import org.matsim.core.config.*;
+import org.matsim.core.config.ReflectiveConfigGroup.Comment;
+import org.matsim.core.config.ReflectiveConfigGroup.Parameter;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.pt2matsim.osm.lib.Osm;
 
@@ -65,6 +67,9 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	private boolean keepTagsAsAttributes = true;
 	private boolean keepWaysWithPublicTransit = true;
 
+	@Parameter
+	@Comment("If true: OSM turn restrictions are parsed and written as disallowedNextLinks attribute to the first link.")
+	public boolean parseTurnRestrictions = false;
 
 	public OsmConverterConfigGroup() {
 		super(GROUP_NAME);
@@ -254,7 +259,7 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	 */
 	public static class OsmWayParams extends ReflectiveConfigGroup implements MatsimParameters {
 
-		public final static String SET_NAME = "wayDefaultParams";
+		public static final String SET_NAME = "wayDefaultParams";
 
 		private String osmKey;
 		private String osmValue;
@@ -385,7 +390,7 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	 */
 	public static class RoutableSubnetworkParams extends ReflectiveConfigGroup implements MatsimParameters {
 	    
-	    public final static String SET_NAME = "routableSubnetwork";
+		public static final String SET_NAME = "routableSubnetwork";
 	    
 	    /** Network mode, for which a consistent routable network is created **/
 	    private String subnetworkMode;

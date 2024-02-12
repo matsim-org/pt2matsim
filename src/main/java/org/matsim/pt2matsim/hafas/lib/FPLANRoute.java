@@ -46,7 +46,7 @@ public class FPLANRoute {
 
 	private final int initialDelay = 60; // [s] In MATSim a pt route starts with the arrival at the first station. In HAFAS with the departure at the first station. Ergo we have to set a delay which gives some waiting time at the first station while still keeping the schedule.
 
-	public final static String PT = "pt";
+	public static final String PT = "pt";
 
 	private final String operator;
 	private final String fahrtNummer;

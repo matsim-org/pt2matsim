@@ -30,7 +30,7 @@ import java.util.*;
  */
 public class OsmDataImpl implements OsmData {
 
-	private final static Logger log = LogManager.getLogger(OsmData.class);
+	private static final Logger log = LogManager.getLogger(OsmData.class);
 
 	protected final Map<Id<Osm.Node>, Osm.Node> nodes = new HashMap<>();
 	protected final Map<Id<Osm.Way>, Osm.Way> ways = new HashMap<>();
@@ -131,14 +131,14 @@ public class OsmDataImpl implements OsmData {
 
 				// add relations to nodes/ways/relations
 				for(Osm.Element e : memberList) {
-					if(e instanceof OsmElement.Node) {
-						((OsmElement.Node) e).addRelation(currentRel);
+					if (e instanceof OsmElement.Node n) {
+						n.addRelation(currentRel);
 					}
-					if(e instanceof OsmElement.Way) {
-						((OsmElement.Way) e).addRelation(currentRel);
+					if (e instanceof OsmElement.Way w) {
+						w.addRelation(currentRel);
 					}
-					if(e instanceof OsmElement.Relation) {
-						((OsmElement.Relation) e).addRelation(currentRel);
+					if (e instanceof OsmElement.Relation r) {
+						r.addRelation(currentRel);
 					}
 				}
 			}
@@ -187,14 +187,14 @@ public class OsmDataImpl implements OsmData {
 		Osm.Relation rel = relations.get(id);
 
 		for(Osm.Element e : rel.getMembers()) {
-			if(e instanceof OsmElement.Node) {
-				((OsmElement.Node) e).getRelations().remove(rel.getId());
+			if (e instanceof OsmElement.Node n) {
+				n.getRelations().remove(rel.getId());
 			}
-			if(e instanceof OsmElement.Way) {
-				((OsmElement.Way) e).getRelations().remove(rel.getId());
+			if (e instanceof OsmElement.Way w) {
+				w.getRelations().remove(rel.getId());
 			}
-			if(e instanceof OsmElement.Relation) {
-				((OsmElement.Relation) e).getRelations().remove(rel.getId());
+			if (e instanceof OsmElement.Relation r) {
+				r.getRelations().remove(rel.getId());
 			}
 		}
 		removeMemberFromRelations(rel);
@@ -203,14 +203,14 @@ public class OsmDataImpl implements OsmData {
 	private void removeMemberFromRelations(Osm.Element e) {
 		Collection<Osm.Relation> memberOfRelations = null;
 
-		if(e instanceof Osm.Node) {
-			memberOfRelations = ((Osm.Node) e).getRelations().values();
+		if (e instanceof Osm.Node n) {
+			memberOfRelations = n.getRelations().values();
 		}
-		else if(e instanceof Osm.Way) {
-			memberOfRelations = ((Osm.Way) e).getRelations().values();
+		else if (e instanceof Osm.Way w) {
+			memberOfRelations = w.getRelations().values();
 		}
-		else if(e instanceof Osm.Relation) {
-			memberOfRelations = ((Osm.Relation) e).getRelations().values();
+		else if (e instanceof Osm.Relation r) {
+			memberOfRelations = r.getRelations().values();
 		}
 
 		assert memberOfRelations != null;
