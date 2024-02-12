@@ -41,11 +41,13 @@ import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.IdMap;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.config.ConfigGroup;
+import org.matsim.core.network.DisallowedNextLinks;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.utils.collections.CollectionUtils;
@@ -123,6 +125,7 @@ public class OsmMultimodalNetworkConverter {
 	 **/
 	protected final Map<Id<Link>, Id<Osm.Way>> osmIds = new HashMap<>();
 	protected final Map<Id<Osm.Way>, List<Id<Link>>> wayLinkMap = new HashMap<>(); // reverse of osmIds
+	protected final Map<Id<Link>, DisallowedNextLinks> disallowedNextLinks = new IdMap<>(Link.class);
 	protected OsmConverterConfigGroup config;
 	protected Network network;
 	protected long id = 0;
@@ -149,6 +152,9 @@ public class OsmMultimodalNetworkConverter {
 		readWayParams();
 		convertToNetwork(transformation);
 		cleanNetwork();
+		if (config.parseTurnRestrictions) {
+			addDisallowedNextLinksAttributes();
+		}
 		if(config.getKeepTagsAsAttributes()) addAttributes();
 
 		if (this.config.getOutputDetailedLinkGeometryFile() != null) {
@@ -641,6 +647,19 @@ public class OsmMultimodalNetworkConverter {
 	}
 
 	/**
+	 * Adds DisallowedNextLinks attributes to links. See {@link #addAttributes()}
+	 * documentation as to why this cannot be done directly when creating the link.
+	 */
+	private void addDisallowedNextLinksAttributes() {
+		network.getLinks().values().forEach(link -> {
+			DisallowedNextLinks dnl = disallowedNextLinks.get(link.getId());
+			if (dnl != null) {
+				NetworkUtils.setDisallowedNextLinks(link, dnl);
+			}
+		});
+	}
+
+	/**
 	 * Adds attributes to the network link. Cannot be added directly upon link creation since we need to
 	 * clean the road network and attributes are not copied while filtering
 	 */
@@ -859,11 +878,13 @@ public class OsmMultimodalNetworkConverter {
 					}
 
 					// attach DisallowedNextLinks objects
+					DisallowedNextLinks dnl = new DisallowedNextLinks();
 					for (List<Id<Link>> disallowedNextLinkIds : disallowedNextLinkIdLists) {
 						for (String mode : tr.modes) {
-							NetworkUtils.addDisallowedNextLinks(link, mode, disallowedNextLinkIds);
+							dnl.addDisallowedLinkSequence(mode, disallowedNextLinkIds);
 						}
 					}
+					disallowedNextLinks.put(link.getId(), dnl);
 				}
 
 			}

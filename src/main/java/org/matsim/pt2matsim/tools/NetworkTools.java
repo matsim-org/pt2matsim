@@ -203,7 +203,7 @@ public final class NetworkTools {
 				Map<Double, Link> tmp = new HashMap<>();
 				for(Link l : list) {
 					double fromNodeDist = CoordUtils.calcEuclideanDistance(l.getFromNode().getCoord(), coord);
-					double toNodeDist = CoordUtils.calcEuclideanDistance(l.getFromNode().getCoord(), coord);
+					double toNodeDist = CoordUtils.calcEuclideanDistance(l.getToNode().getCoord(), coord);
 					double nodeDist = fromNodeDist < toNodeDist ? fromNodeDist : toNodeDist;
 
 					double d = nodeDist + (coordIsOnRightSideOfLink(coord, l) ? 1 : 100);
