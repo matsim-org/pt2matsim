@@ -121,8 +121,8 @@ public class PseudoGraphImpl implements PseudoGraph {
 
 			for(Link l : stopPairLinks.get(getKey(stopA, stopB))) {
 				networkLinkIds.add(l.getId());
-				if(l instanceof ArtificialLink) {
-					artificialNetworkLinks.add((ArtificialLink) l);
+				if (l instanceof ArtificialLink al) {
+					artificialNetworkLinks.add(al);
 				}
 			}
 			networkLinkIds.add(stopB.getLinkId());
