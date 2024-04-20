@@ -32,8 +32,8 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
+import org.matsim.core.utils.gis.GeoFileWriter;
 import org.matsim.core.utils.gis.PolylineFeatureFactory;
-import org.matsim.core.utils.gis.ShapeFileWriter;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions;
@@ -228,7 +228,7 @@ public final class ShapeTools {
 				}
 			}
 		}
-		ShapeFileWriter.writeGeometries(features, outFile);
+		GeoFileWriter.writeGeometries(features, outFile);
 	}
 
 	/**
@@ -257,7 +257,7 @@ public final class ShapeTools {
 				features.add(f);
 			}
 		}
-		ShapeFileWriter.writeGeometries(features, filename);
+		GeoFileWriter.writeGeometries(features, filename);
 
 	}
 
