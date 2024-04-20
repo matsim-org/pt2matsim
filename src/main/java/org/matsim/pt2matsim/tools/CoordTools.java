@@ -269,6 +269,7 @@ public final class CoordTools {
 	 *
 	 * @deprecated not used anywhere
 	 */
+	@Deprecated
 	public static int getBorderCrossType(Coord SWcut, Coord NEcut, Coord fromCoord, Coord toCoord) {
 		int fromSector = getAreaOfInterestSector(SWcut, NEcut, fromCoord);
 		int toSector = getAreaOfInterestSector(SWcut, NEcut, toCoord);
