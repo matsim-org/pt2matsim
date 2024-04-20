@@ -205,9 +205,9 @@ public final class ScheduleTools {
 		VehicleType vehicleType = vf.createVehicleType(vTypeId);
 		vehicleType.setLength(defaultValues.length);
 		vehicleType.setWidth(defaultValues.width);
-		vehicleType.setAccessTime(defaultValues.accessTime);
-		vehicleType.setEgressTime(defaultValues.egressTime);
-		vehicleType.setDoorOperationMode(defaultValues.doorOperation);
+		VehicleUtils.setAccessTime(vehicleType, defaultValues.accessTime);
+		VehicleUtils.setEgressTime(vehicleType, defaultValues.egressTime);
+		VehicleUtils.setDoorOperationMode(vehicleType, defaultValues.doorOperation);
 		vehicleType.setPcuEquivalents(defaultValues.pcuEquivalents);
 		vehicleType.setNetworkMode(defaultValues.transportMode.name);
 
