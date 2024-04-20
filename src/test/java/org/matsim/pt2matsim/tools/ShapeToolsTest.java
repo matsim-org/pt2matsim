@@ -1,8 +1,8 @@
 package org.matsim.pt2matsim.tools;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Node;
@@ -67,7 +67,7 @@ public class ShapeToolsTest {
 		return new Coord(c.getX() + offset, c.getY() + offset);
 	}
 
-	@Before
+	@BeforeEach
 	public void prepare() {
 		Map<Id<RouteShape>, RouteShape> shapes = initShapes();
 		this.shapeA1 = shapes.get(Id.create("A1", RouteShape.class));
@@ -76,26 +76,26 @@ public class ShapeToolsTest {
 	}
 
 	@Test
-	public void calcMinDistanceToShape() {
-		Assert.assertEquals(0, ShapeTools.calcMinDistanceToShape(coordX, shapeB), d);
-		Assert.assertEquals(5, ShapeTools.calcMinDistanceToShape(new Coord(2600035, 1200035), shapeB), d);
+	void calcMinDistanceToShape() {
+		Assertions.assertEquals(0, ShapeTools.calcMinDistanceToShape(coordX, shapeB), d);
+		Assertions.assertEquals(5, ShapeTools.calcMinDistanceToShape(new Coord(2600035, 1200035), shapeB), d);
 
 		Coord bx = CoordTools.calcNewPoint(coordX, CoordTools.getAzimuth(coordX, coordB), CoordUtils.calcEuclideanDistance(coordX, coordB) / 2);
-		Assert.assertEquals(0, ShapeTools.calcMinDistanceToShape(bx, shapeA1), d);
+		Assertions.assertEquals(0, ShapeTools.calcMinDistanceToShape(bx, shapeA1), d);
 	}
 
 
 	@Test
-	public void getNodesWithinBuffer() {
+	void getNodesWithinBuffer() {
 		Collection<Node> nodes = ShapeTools.getNodesWithinBuffer(NetworkToolsTest.initNetwork(), shapeB, 1.0);
-		Assert.assertEquals(9, nodes.size());
+		Assertions.assertEquals(9, nodes.size());
 	}
 
 	@Test
-	public void getShapeLength() {
+	void getShapeLength() {
 		double lengthA1 = ShapeTools.getShapeLength(shapeA1);
 		double lengthA2 = ShapeTools.getShapeLength(shapeA2);
-		Assert.assertEquals(lengthA1, lengthA2, d);
+		Assertions.assertEquals(lengthA1, lengthA2, d);
 	}
 
 }

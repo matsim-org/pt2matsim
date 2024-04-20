@@ -1,8 +1,8 @@
 package org.matsim.pt2matsim.mapping;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -46,7 +46,7 @@ public class PTMapperTest {
 		return config;
 	}
 
-	@Before
+	@BeforeEach
 	public void prepare() {
 		ptmConfig = initPTMConfig();
 		network = NetworkToolsTest.initNetwork();
@@ -56,25 +56,25 @@ public class PTMapperTest {
 	}
 
 	@Test
-	public void validateMappedSchedule() {
-		Assert.assertTrue(TransitScheduleValidator.validateAll(schedule, network).isValid());
+	void validateMappedSchedule() {
+		Assertions.assertTrue(TransitScheduleValidator.validateAll(schedule, network).isValid());
 	}
 
 
 	@Test
-	public void allowedModes() {
+	void allowedModes() {
 		for(Link l : network.getLinks().values()) {
-			Assert.assertFalse(l.getAllowedModes().contains(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE));
+			Assertions.assertFalse(l.getAllowedModes().contains(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE));
 		}
 	}
 
 	@Test
-	public void numberOfStopFacilities() {
-		Assert.assertEquals(10, schedule.getFacilities().size());
+	void numberOfStopFacilities() {
+		Assertions.assertEquals(10, schedule.getFacilities().size());
 	}
 
 	@Test
-	public void linkSequences() {
+	void linkSequences() {
 		TransitSchedule initSchedule = ScheduleToolsTest.initSchedule();
 
 		for(TransitLine l : schedule.getTransitLines().values()) {
@@ -83,14 +83,14 @@ public class PTMapperTest {
 				List<Id<Link>> initLinkIds = ScheduleTools.getTransitRouteLinkIds(initRoute);
 				List<Id<Link>> linkIds = ScheduleTools.getTransitRouteLinkIds(r);
 				if(!r.getId().equals(ROUTE_B)) { // route B cantt be guessed by the mapper because there's not enough information
-					Assert.assertEquals(initLinkIds, linkIds);
+					Assertions.assertEquals(initLinkIds, linkIds);
 				}
 			}
 		}
 	}
 
 	@Test
-	public void artificialLinks() {
+	void artificialLinks() {
 		PublicTransitMappingConfigGroup ptmConfig2 = initPTMConfig();
 		ptmConfig2.setMaxLinkCandidateDistance(3);
 
@@ -99,11 +99,11 @@ public class PTMapperTest {
 		new PTMapper(schedule2, network2).run(ptmConfig2);
 
 		// 1 loop link, 3 artificial links
-		Assert.assertEquals(NetworkToolsTest.initNetwork().getLinks().size()+4, network2.getLinks().size());
-		Assert.assertEquals(9, schedule2.getFacilities().size());
+		Assertions.assertEquals(NetworkToolsTest.initNetwork().getLinks().size() + 4, network2.getLinks().size());
+		Assertions.assertEquals(9, schedule2.getFacilities().size());
 	}
 	@Test
-	public void noTransportModeAssignment() {
+	void noTransportModeAssignment() {
 		PublicTransitMappingConfigGroup noTMAConfig = new PublicTransitMappingConfigGroup();
 		noTMAConfig.getModesToKeepOnCleanUp().add("car");
 		noTMAConfig.setNumOfThreads(2);
@@ -121,18 +121,18 @@ public class PTMapperTest {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				List<Id<Link>> linkIds = ScheduleTools.getTransitRouteLinkIds(transitRoute);
 				for(Id<Link> linkId : linkIds) {
-					Assert.assertTrue(linkId.toString().contains("pt_"));
+					Assertions.assertTrue(linkId.toString().contains("pt_"));
 				}
 			}
 		}
 		// only artificial stop links
 		for(TransitStopFacility transitStopFacility : schedule2.getFacilities().values()) {
-			Assert.assertTrue(transitStopFacility.getLinkId().toString().contains("pt_"));
+			Assertions.assertTrue(transitStopFacility.getLinkId().toString().contains("pt_"));
 		}
 	}
 
 	@Test
-	public void defaultConfig() {
+	void defaultConfig() {
 		CreateDefaultPTMapperConfig.main(new String[]{"doc/defaultPTMapperConfig.xml"});
 	}
 

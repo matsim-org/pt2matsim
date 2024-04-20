@@ -1,16 +1,14 @@
 package org.matsim.pt2matsim.osm;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
@@ -28,7 +26,7 @@ public class OsmMultimodalNetworkConverterTest {
 	private static Map<Long, Set<Link>> osmid2link;
 	private static final double DELTA = 0.001;
 	
-	@BeforeClass
+	@BeforeAll
 	public static void convertGerasdorfArtificialLanesAndMaxspeed() {
 		// setup config
 		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.createDefaultConfig();
@@ -71,41 +69,41 @@ public class OsmMultimodalNetworkConverterTest {
 	}
 	
 	@Test
-	public void testDefaultResidential() {
+	void testDefaultResidential() {
 		Set<Link> links = osmid2link.get(7994891L);
-		assertEquals("bidirectional", 2, links.size());
+		Assertions.assertEquals(2, links.size(), "bidirectional");
 		assertLanes(links, 1);
 		assertMaxspeed("taken from OsmConverterConfigGroup.createDefaultConfig", links, 15);
 	}
 	
 	@Test
-	public void testDefaultPrimary() {
+	void testDefaultPrimary() {
 		Set<Link> links = osmid2link.get(7994890L);
-		assertEquals("bidirectional", 2, links.size()); 
+		Assertions.assertEquals(2, links.size(), "bidirectional");
 		assertLanes("taken from OsmConverterConfigGroup.createDefaultConfig", links, 1);
 		assertMaxspeed("taken from OsmConverterConfigGroup.createDefaultConfig", links, 80);
 	}
 	
 	@Test
-	public void testPrimaryWithLanesAndMaxspeed() {
+	void testPrimaryWithLanesAndMaxspeed() {
 		Set<Link> links = osmid2link.get(7994889L);
-		assertEquals("bidirectional", 2, links.size());
+		Assertions.assertEquals(2, links.size(), "bidirectional");
 		assertLanes(links, 3);
 		assertMaxspeed(links, 70);
 	}
 
 	@Test
-	public void testPrimaryWithOddLanesAndMaxspeed() {
+	void testPrimaryWithOddLanesAndMaxspeed() {
 		Set<Link> links = osmid2link.get(7994888L);
-		assertEquals("bidirectional", 2, links.size());
+		Assertions.assertEquals(2, links.size(), "bidirectional");
 		assertLanes(links, 3.5);
 		assertMaxspeed(links, 70);
 	}
 
 	@Test
-	public void testPrimaryWithForwardAndBackwardLanesAndMaxspeed() {
+	void testPrimaryWithForwardAndBackwardLanesAndMaxspeed() {
 		Set<Link> links = osmid2link.get(7994887L);
-		assertEquals("bidirectional", 2, links.size());
+		Assertions.assertEquals(2, links.size(), "bidirectional");
 
 		Set<Link> linksToNorth = getLinksTowardsNode(links, 59836731L);
 		assertLanes(linksToNorth, 3);
@@ -117,9 +115,9 @@ public class OsmMultimodalNetworkConverterTest {
 	}
 	
 	@Test
-	public void testPrimaryWithForwardAndBackwardSpecialLanesAndMaxspeed() {
+	void testPrimaryWithForwardAndBackwardSpecialLanesAndMaxspeed() {
 		Set<Link> links = osmid2link.get(7994886L);
-		assertEquals("bidirectional", 2, links.size());
+		Assertions.assertEquals(2, links.size(), "bidirectional");
 
 		Set<Link> linksToNorth = getLinksTowardsNode(links, 57443579L);
 		assertLanes("4 minus one bus lane", linksToNorth, 3);
@@ -131,128 +129,129 @@ public class OsmMultimodalNetworkConverterTest {
 	}
 
 	@Test
-	public void testPrimaryWithSpecialLanes() {
+	void testPrimaryWithSpecialLanes() {
 		Set<Link> links = osmid2link.get(7994912L);
-		assertEquals("bidirectional", 2, links.size());
+		Assertions.assertEquals(2, links.size(), "bidirectional");
 		assertLanes("4 per direction minus one taxi lane", links, 3);
 		assertMaxspeed(links, 70);
 	}
 
 	@Test
-	public void testDefaultResidentialOneway() {
+	void testDefaultResidentialOneway() {
 		Set<Link> links = osmid2link.get(7994914L);
-		assertEquals("oneway", 1, links.size());
-		assertEquals("oneway up north", 1, getLinksTowardsNode(links, 59836794L).size());
+		Assertions.assertEquals(1, links.size(), "oneway");
+		Assertions.assertEquals(1, getLinksTowardsNode(links, 59836794L).size(), "oneway up north");
 		assertLanes(links, 1);
 		assertMaxspeed("taken from OsmConverterConfigGroup.createDefaultConfig", links, 15);
 	}
 	
 	@Test
-	public void testResidentialInvalidLanesAndMaxspeed() {
+	void testResidentialInvalidLanesAndMaxspeed() {
 		Set<Link> links = osmid2link.get(7994891L);
-		assertEquals("bidirectional", 2, links.size());
+		Assertions.assertEquals(2, links.size(), "bidirectional");
 		assertLanes("taken from OsmConverterConfigGroup.createDefaultConfig", links, 1);
 		assertMaxspeed("taken from OsmConverterConfigGroup.createDefaultConfig", links, 15);
 	}
 	
 
 	@Test
-	public void testDefaultPrimaryOneway() {
+	void testDefaultPrimaryOneway() {
 		Set<Link> links = osmid2link.get(7994919L);
-		assertEquals("oneway", 1, links.size());
-		assertEquals("oneway up north", 1, getLinksTowardsNode(links, 59836804L).size());
+		Assertions.assertEquals(1, links.size(), "oneway");
+		Assertions.assertEquals(1, getLinksTowardsNode(links, 59836804L).size(), "oneway up north");
 		assertLanes("taken from OsmConverterConfigGroup.createDefaultConfig", links, 1);
 		assertMaxspeed("taken from OsmConverterConfigGroup.createDefaultConfig", links, 80);
 	}
 
 	@Test
-	public void testPrimaryOnewayWithLanesAndMaxspeed() {
+	void testPrimaryOnewayWithLanesAndMaxspeed() {
 		Set<Link> links = osmid2link.get(240536138L);
-		assertEquals("oneway", 1, links.size());
-		assertEquals("oneway up north", 1, getLinksTowardsNode(links, 2482638327L).size());
+		Assertions.assertEquals(1, links.size(), "oneway");
+		Assertions.assertEquals(1, getLinksTowardsNode(links, 2482638327L).size(), "oneway up north");
 		assertLanes(links, 3);
 		assertMaxspeed(links, 70);
 	}
 
 	@Test
-	public void testPrimaryOnewayWithForwardLanesAndMaxspeed() {
+	void testPrimaryOnewayWithForwardLanesAndMaxspeed() {
 		Set<Link> links = osmid2link.get(7994920L);
-		assertEquals("oneway", 1, links.size());
-		assertEquals("oneway up north", 1, getLinksTowardsNode(links, 59836807L).size());
+		Assertions.assertEquals(1, links.size(), "oneway");
+		Assertions.assertEquals(1, getLinksTowardsNode(links, 59836807L).size(), "oneway up north");
 		assertLanes(links, 3);
 		assertMaxspeed(links, 70);
 	}
 
 	@Test
-	public void testPrimaryOnewayWithForwardSpecialLanesAndMaxspeed() {
+	void testPrimaryOnewayWithForwardSpecialLanesAndMaxspeed() {
 		Set<Link> links = osmid2link.get(7994925L);
-		assertEquals("oneway", 1, links.size());
-		assertEquals("oneway up north", 1, getLinksTowardsNode(links, 59836816L).size());
+		Assertions.assertEquals(1, links.size(), "oneway");
+		Assertions.assertEquals(1, getLinksTowardsNode(links, 59836816L).size(), "oneway up north");
 		assertLanes("4 minus one bus lane", links, 3);
 		assertMaxspeed(links, 70);
 	}
 
 	@Test
-	public void testPrimaryOnewayWithSpecialLane() {
+	void testPrimaryOnewayWithSpecialLane() {
 		Set<Link> links = osmid2link.get(7994927L);
-		assertEquals("oneway", 1, links.size());
-		assertEquals("oneway up north", 1, getLinksTowardsNode(links, 59836820L).size());
+		Assertions.assertEquals(1, links.size(), "oneway");
+		Assertions.assertEquals(1, getLinksTowardsNode(links, 59836820L).size(), "oneway up north");
 		assertLanes("4 minus one bus lane", links, 3);
 		assertMaxspeed(links, 70);
 	}
 	
 	@Test
-	public void testPrimaryDefaultReversedOneway() {
+	void testPrimaryDefaultReversedOneway() {
 		Set<Link> links = osmid2link.get(7994930L);
-		assertEquals("oneway", 1, links.size());
-		assertEquals("oneway down south", 1, getLinksTowardsNode(links, 59836834L).size());
+		Assertions.assertEquals(1, links.size(), "oneway");
+		Assertions.assertEquals(1, getLinksTowardsNode(links, 59836834L).size(), "oneway down south");
 		assertLanes(links, 3);
 		assertMaxspeed(links, 70);
 	}
 	
 	@Test
-	public void testMotorwayWithoutMaxspeedAndOneway() {
+	void testMotorwayWithoutMaxspeedAndOneway() {
 		Set<Link> links = osmid2link.get(7994932L);
-		assertEquals("oneway by default - taken from OsmConverterConfigGroup.createDefaultConfig", 1, links.size());
-		assertEquals("oneway up north", 1, getLinksTowardsNode(links, 59836844L).size());
+		Assertions.assertEquals(1, links.size(),
+				"oneway by default - taken from OsmConverterConfigGroup.createDefaultConfig");
+		Assertions.assertEquals(1, getLinksTowardsNode(links, 59836844L).size(), "oneway up north");
 		assertLanes("taken from OsmConverterConfigGroup.createDefaultConfig", links, 2);
 		assertMaxspeed(links, OsmMultimodalNetworkConverter.SPEED_LIMIT_NONE_KPH);
 	}
 	
 	@Test
-	public void testResidentialWithMaxspeedWalk() {
+	void testResidentialWithMaxspeedWalk() {
 		Set<Link> links = osmid2link.get(7994934L);
-		assertEquals("bidirectional", 2, links.size());
+		Assertions.assertEquals(2, links.size(), "bidirectional");
 		assertMaxspeed(links, OsmMultimodalNetworkConverter.SPEED_LIMIT_WALK_KPH);
 	}
 	
 	@Test
-	public void testResidentialWithMaxspeedMiles() {
+	void testResidentialWithMaxspeedMiles() {
 		Set<Link> links = osmid2link.get(7994935L);
-		assertEquals("bidirectional", 2, links.size());
+		Assertions.assertEquals(2, links.size(), "bidirectional");
 		assertMaxspeed(links, 20 * 1.609344);
 	}
 	
 	@Test
-	public void testResidentialWithMaxspeedKnots() {
+	void testResidentialWithMaxspeedKnots() {
 		Set<Link> links = osmid2link.get(7994935L);
-		assertEquals("bidirectional", 2, links.size());
+		Assertions.assertEquals(2, links.size(), "bidirectional");
 		assertMaxspeed(links, 20 * 1.609344);
 	}
 	
 	@Test
-	public void testResidentialMultipleSpeedLimits() {
+	void testResidentialMultipleSpeedLimits() {
 		Set<Link> links = osmid2link.get(7999581L);
-		assertEquals("bidirectional", 2, links.size());
+		Assertions.assertEquals(2, links.size(), "bidirectional");
 		assertMaxspeed("second speed limit is ignored", links, 40);
 	}
 	
 	@Test
-	public void testDeadEndStreetsAreContainedInNetwork() {
-		assertEquals(2, osmid2link.get(22971704L).size());
-		assertEquals(2, osmid2link.get(153227314L).size());
-		assertEquals(2, osmid2link.get(95142433L).size());
-		assertEquals(2, osmid2link.get(95142441L).size());
+	void testDeadEndStreetsAreContainedInNetwork() {
+		Assertions.assertEquals(2, osmid2link.get(22971704L).size());
+		Assertions.assertEquals(2, osmid2link.get(153227314L).size());
+		Assertions.assertEquals(2, osmid2link.get(95142433L).size());
+		Assertions.assertEquals(2, osmid2link.get(95142441L).size());
 	}
 	
 	private static void assertLanes(Set<Link> links, double expectedLanes) {
@@ -260,9 +259,10 @@ public class OsmMultimodalNetworkConverterTest {
 	}
 
 	private static void assertLanes(String message, Set<Link> links, double expectedLanes) {
-		assertFalse("at least one link expected", links.isEmpty());
+		Assertions.assertFalse(links.isEmpty(), "at least one link expected");
 		for (Link link : links) {
-			assertEquals("lanes (in one direction): " + message, expectedLanes, link.getNumberOfLanes(), DELTA);
+			Assertions.assertEquals(expectedLanes, link.getNumberOfLanes(), DELTA,
+					"lanes (in one direction): " + message);
 		}
 	}
 	
@@ -271,14 +271,15 @@ public class OsmMultimodalNetworkConverterTest {
 	}
 
 	private static void assertMaxspeed(String message, Set<Link> links, double expectedFreespeedKph) {
-		assertFalse("at least one link expected", links.isEmpty());
+		Assertions.assertFalse(links.isEmpty(), "at least one link expected");
 		for (Link link : links) {
-			assertEquals("freespeed m/s: message", expectedFreespeedKph / 3.6, link.getFreespeed(), DELTA);
+			Assertions.assertEquals(expectedFreespeedKph / 3.6, link.getFreespeed(), DELTA,
+					"freespeed m/s: " + message);
 		}
 	}
 
 	@Test
-	public void convertWaterlooCityCentre() {
+	void convertWaterlooCityCentre() {
 		// setup config
 		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.createDefaultConfig();
 		osmConfig.setOutputCoordinateSystem("WGS84");
@@ -299,7 +300,7 @@ public class OsmMultimodalNetworkConverterTest {
 	}
 
 	@Test
-	public void convertEPSG() {
+	void convertEPSG() {
 		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.createDefaultConfig();
 		osmConfig.setOutputCoordinateSystem("EPSG:8682");
 		osmConfig.setOsmFile("test/osm/Belgrade.osm");
@@ -312,7 +313,7 @@ public class OsmMultimodalNetworkConverterTest {
 	}
 
 	@Test
-	public void defaultConfig() {
+	void defaultConfig() {
 		CreateDefaultOsmConfig.main(new String[]{"doc/defaultOsmConfig.xml"});
 	}
 

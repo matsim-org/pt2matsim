@@ -1,7 +1,7 @@
 package org.matsim.pt2matsim.tools;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.matsim.core.utils.collections.MapUtils;
 
 import java.io.File;
@@ -12,10 +12,10 @@ import java.util.Map;
 /**
  * @author polettif
  */
-public class CsvToolsTest {
+class CsvToolsTest {
 
 	@Test
-	public void mapCsvTest() throws IOException {
+	void mapCsvTest() throws IOException {
 		String file = "test/testfile.csv";
 		Map<String, Map<String, String>> testMap = new HashMap<>();
 
@@ -30,7 +30,7 @@ public class CsvToolsTest {
 		CsvTools.writeNestedMapToFile(testMap, file);
 		Map<String, Map<String, String>> readMap = CsvTools.readNestedMapFromFile(file, false);
 
-		Assert.assertEquals(testMap, readMap);
+		Assertions.assertEquals(testMap, readMap);
 
 		File f = new File(file);
 		boolean del = f.delete();
