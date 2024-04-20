@@ -25,7 +25,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.core.router.FastAStarLandmarksFactory;
+import org.matsim.core.router.speedy.SpeedyALTFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
 import org.matsim.core.router.util.TravelDisutility;
@@ -100,7 +100,7 @@ public class ScheduleRoutersOsmAttributes implements ScheduleRouters {
      */
     private void load() {
         log.info("Initiating network and router for transit routes...");
-        LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory(nThreads);
+		LeastCostPathCalculatorFactory factory = new SpeedyALTFactory();
         for (TransitLine transitLine : schedule.getTransitLines().values()) {
             for (TransitRoute transitRoute : transitLine.getRoutes().values()) {
                 String scheduleMode = transitRoute.getTransportMode();
