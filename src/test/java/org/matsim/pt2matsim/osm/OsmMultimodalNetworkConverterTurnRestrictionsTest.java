@@ -3,9 +3,9 @@ package org.matsim.pt2matsim.osm;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
@@ -18,12 +18,12 @@ import org.matsim.pt2matsim.osm.lib.OsmData;
 import org.matsim.pt2matsim.osm.lib.OsmDataImpl;
 import org.matsim.pt2matsim.osm.lib.OsmFileReader;
 
-public class OsmMultimodalNetworkConverterTurnRestrictionsTest {
+class OsmMultimodalNetworkConverterTurnRestrictionsTest {
 
 	private static Network network;
 
-	@BeforeClass
-	public static void convertRudolfplatz() {
+	@BeforeAll
+	static void convertRudolfplatz() {
 		// setup config
 		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.createDefaultConfig();
 		osmConfig.setOutputCoordinateSystem("EPSG:25832");
@@ -47,20 +47,20 @@ public class OsmMultimodalNetworkConverterTurnRestrictionsTest {
 	}
 
 	@Test
-	public void testisValid() {
+	void testisValid() {
 
-		Assert.assertTrue(DisallowedNextLinksUtils.isValid(network));
+		Assertions.assertTrue(DisallowedNextLinksUtils.isValid(network));
 
 	}
 
 	@Test
-	public void testDisallowedNextLinks() {
+	void testDisallowedNextLinks() {
 
 		Id<Link> lId124 = Id.createLinkId("124");
 		Link l124 = network.getLinks().get(lId124);
 		DisallowedNextLinks dnl = NetworkUtils.getDisallowedNextLinks(l124);
 
-		Assert.assertEquals(Map.of(
+		Assertions.assertEquals(Map.of(
 				"bus", List.of(List.of(Id.createLinkId("68"), Id.createLinkId("414"))),
 				TransportMode.car, List.of(List.of(Id.createLinkId("68"), Id.createLinkId("414"))),
 				TransportMode.pt, List.of(List.of(Id.createLinkId("68"), Id.createLinkId("414")))), dnl.getAsMap());

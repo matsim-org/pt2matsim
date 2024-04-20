@@ -9,8 +9,8 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -21,7 +21,7 @@ import org.matsim.pt2matsim.osm.lib.Osm;
 /**
  * Test finding a sequence of link ids from OSM way ids.
  */
-public class OsmTurnRestrictionTest {
+class OsmTurnRestrictionTest {
 
 	private static final Logger LOG = LogManager.getLogger(OsmTurnRestrictionTest.class);
 
@@ -109,7 +109,7 @@ public class OsmTurnRestrictionTest {
 	}
 
 	@Test
-	public void testFindLinks0() {
+	void testFindLinks0() {
 
 		OsmMultimodalNetworkConverter.OsmTurnRestriction tr = new OsmMultimodalNetworkConverter.OsmTurnRestriction(null,
 				List.of(Id.create("1221", Osm.Way.class),
@@ -125,11 +125,11 @@ public class OsmTurnRestrictionTest {
 		LOG.info(linkIds);
 
 		// NodeId does not fit to nextWayIds -> list of links should be empty
-		Assert.assertEquals(Collections.emptyList(), linkIds);
+		Assertions.assertEquals(Collections.emptyList(), linkIds);
 	}
 
 	@Test
-	public void testFindLinks1() {
+	void testFindLinks1() {
 
 		OsmMultimodalNetworkConverter.OsmTurnRestriction tr = new OsmMultimodalNetworkConverter.OsmTurnRestriction(null,
 				List.of(Id.create("1221", Osm.Way.class),
@@ -144,11 +144,11 @@ public class OsmTurnRestrictionTest {
 				tr.nextWayIds());
 		LOG.info(linkIds);
 
-		Assert.assertEquals(List.of(Id.createLinkId("12"), Id.createLinkId("23")), linkIds);
+		Assertions.assertEquals(List.of(Id.createLinkId("12"), Id.createLinkId("23")), linkIds);
 	}
 
 	@Test
-	public void testFindLinks2() {
+	void testFindLinks2() {
 
 		OsmMultimodalNetworkConverter.OsmTurnRestriction tr = new OsmMultimodalNetworkConverter.OsmTurnRestriction(null,
 				List.of(Id.create("1221", Osm.Way.class),
@@ -164,11 +164,11 @@ public class OsmTurnRestrictionTest {
 				tr.nextWayIds());
 		LOG.info(linkIds);
 
-		Assert.assertEquals(List.of(Id.createLinkId("12"), Id.createLinkId("23"), Id.createLinkId("34")), linkIds);
+		Assertions.assertEquals(List.of(Id.createLinkId("12"), Id.createLinkId("23"), Id.createLinkId("34")), linkIds);
 	}
 
 	@Test
-	public void testFindLinks3() {
+	void testFindLinks3() {
 
 		OsmMultimodalNetworkConverter.OsmTurnRestriction tr = new OsmMultimodalNetworkConverter.OsmTurnRestriction(null,
 				List.of(Id.create("1221", Osm.Way.class),
@@ -186,7 +186,7 @@ public class OsmTurnRestrictionTest {
 				tr.nextWayIds());
 		LOG.info(linkIds);
 
-		Assert.assertEquals(List.of(
+		Assertions.assertEquals(List.of(
 				Id.createLinkId("12"),
 				Id.createLinkId("23"),
 				Id.createLinkId("34"),
@@ -195,7 +195,7 @@ public class OsmTurnRestrictionTest {
 	}
 
 	@Test
-	public void testFindLinks4() {
+	void testFindLinks4() {
 
 		OsmMultimodalNetworkConverter.OsmTurnRestriction tr = new OsmMultimodalNetworkConverter.OsmTurnRestriction(null,
 				List.of(Id.create("1221", Osm.Way.class),
@@ -215,7 +215,7 @@ public class OsmTurnRestrictionTest {
 				tr.nextWayIds());
 		LOG.info(linkIds);
 
-		Assert.assertEquals(List.of(
+		Assertions.assertEquals(List.of(
 				Id.createLinkId("12"),
 				Id.createLinkId("23"),
 				Id.createLinkId("34"),
