@@ -317,7 +317,7 @@ public final class ScheduleTools {
 
 					// add link sequence to schedule
 					if(linkIdSequence != null) {
-						transitRoute.setRoute(RouteUtils.createNetworkRoute(linkIdSequence, network));
+						transitRoute.setRoute(RouteUtils.createNetworkRoute(linkIdSequence));
 					}
 				} else {
 					log.warn("Route " + transitRoute.getId() + " on line " + transitLine.getId() + " has no stop sequence");
