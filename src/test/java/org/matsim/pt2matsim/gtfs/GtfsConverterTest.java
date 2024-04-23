@@ -1,8 +1,8 @@
 package org.matsim.pt2matsim.gtfs;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
@@ -16,14 +16,14 @@ import java.util.*;
 /**
  * @author polettif
  */
-public class GtfsConverterTest {
+class GtfsConverterTest {
 
 	private GtfsFeed gtfsFeed;
 	private GtfsConverter gtfsConverter;
 	private String coordSystem = TransformationFactory.CH1903_LV03_Plus;
 	private TransitSchedule convertedSchedule;
 
-	@Before
+	@BeforeEach
 	public void convert() {
 		gtfsFeed = new GtfsFeedImpl("test/gtfs-feed/");
 
@@ -32,25 +32,25 @@ public class GtfsConverterTest {
 	}
 
 	@Test
-	public void convertAll() {
+	void convertAll() {
 		TransitSchedule schedule = gtfsConverter.convert(GtfsConverter.ALL_SERVICE_IDS, coordSystem);
-		Assert.assertTrue(TransitScheduleValidator.validateAllStopsExist(schedule).isValid());
-		Assert.assertTrue(TransitScheduleValidator.validateOffsets(schedule).isValid());
+		Assertions.assertTrue(TransitScheduleValidator.validateAllStopsExist(schedule).isValid());
+		Assertions.assertTrue(TransitScheduleValidator.validateOffsets(schedule).isValid());
 	}
 
 	@Test
-	public void numberOfStopsAndRoutes() {
+	void numberOfStopsAndRoutes() {
 		int nTransitRoutes = 0;
 		for(TransitLine transitLine : convertedSchedule.getTransitLines().values()) {
 			nTransitRoutes += transitLine.getRoutes().size();
 		}
-		Assert.assertEquals(6, convertedSchedule.getFacilities().size());
-		Assert.assertEquals(3, convertedSchedule.getTransitLines().size());
-		Assert.assertEquals(3, nTransitRoutes);
+		Assertions.assertEquals(6, convertedSchedule.getFacilities().size());
+		Assertions.assertEquals(3, convertedSchedule.getTransitLines().size());
+		Assertions.assertEquals(3, nTransitRoutes);
 	}
 
 	@Test
-	public void departuresFromFrequencies() {
+	void departuresFromFrequencies() {
 		TransitSchedule baseSchedule = ScheduleToolsTest.initSchedule();
 		for(TransitLine transitLine : convertedSchedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
@@ -67,25 +67,25 @@ public class GtfsConverterTest {
 					actualDepTimes.add(departure.getDepartureTime());
 				}
 
-				Assert.assertEquals(expectedDepTimes, actualDepTimes);
+				Assertions.assertEquals(expectedDepTimes, actualDepTimes);
 			}
 		}
 	}
 
 	@Test
-	public void offsets() {
+	void offsets() {
 		TransitSchedule baseSchedule = ScheduleToolsTest.initSchedule();
 		for(TransitLine transitLine : convertedSchedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				TransitRoute expectedRoute = baseSchedule.getTransitLines().get(transitLine.getId()).getRoutes().get(transitRoute.getId());
-				Assert.assertEquals(expectedRoute.getStops().size(), transitRoute.getStops().size());
+				Assertions.assertEquals(expectedRoute.getStops().size(), transitRoute.getStops().size());
 				for(int i = 0; i < transitRoute.getStops().size() - 1; i++) {
 					if(i > 0) {
-						Assert.assertEquals(expectedRoute.getStops().get(i).getArrivalOffset().seconds(),
+						Assertions.assertEquals(expectedRoute.getStops().get(i).getArrivalOffset().seconds(),
 								transitRoute.getStops().get(i).getArrivalOffset().seconds(), 0.1);
 					}
 					if(i < transitRoute.getStops().size() - 2) {
-						Assert.assertEquals(expectedRoute.getStops().get(i).getDepartureOffset().seconds(),
+						Assertions.assertEquals(expectedRoute.getStops().get(i).getDepartureOffset().seconds(),
 								transitRoute.getStops().get(i).getDepartureOffset().seconds(), 0.1);
 					}
 				}
@@ -94,17 +94,17 @@ public class GtfsConverterTest {
 	}
 
 	@Test
-	public void stops() {
+	void stops() {
 		TransitSchedule baseSchedule = ScheduleToolsTest.initUnmappedSchedule();
 		for(TransitStopFacility actualStopFac : convertedSchedule.getFacilities().values()) {
 			TransitStopFacility expectedStopFac = baseSchedule.getFacilities().get(actualStopFac.getId());
-			Assert.assertEquals(expectedStopFac.getCoord(), actualStopFac.getCoord());
-			Assert.assertEquals(expectedStopFac.getName(), actualStopFac.getName());
+			Assertions.assertEquals(expectedStopFac.getCoord(), actualStopFac.getCoord());
+			Assertions.assertEquals(expectedStopFac.getName(), actualStopFac.getName());
 		}
 	}
 
 	@Test
-	public void combineRoutes() {
+	void combineRoutes() {
 		TransitSchedule test = ScheduleTools.createSchedule();
 		TransitScheduleFactory f = test.getFactory();
 		Id<TransitLine> lineId = Id.create("L", TransitLine.class);
@@ -137,14 +137,14 @@ public class GtfsConverterTest {
 		line.addRoute(route2);
 		line.addRoute(route3);
 
-		Assert.assertEquals(3, line.getRoutes().size());
+		Assertions.assertEquals(3, line.getRoutes().size());
 		// only routes with identical stop sequence (1, 2, 3) and departure sequence (2, 3) are combined.
 		gtfsConverter.combineTransitRoutes(test);
-		Assert.assertEquals(2, line.getRoutes().size());
+		Assertions.assertEquals(2, line.getRoutes().size());
 	}
 
 	@Test
-	public void testTransfers() {
+	void testTransfers() {
 		Set<String> expectedTransferTimes = new TreeSet<>();
 		MinimalTransferTimes.MinimalTransferTimesIterator iter1 = ScheduleToolsTest.initUnmappedSchedule().getMinimalTransferTimes().iterator();
 		while(iter1.hasNext()) {
@@ -159,7 +159,7 @@ public class GtfsConverterTest {
 			actualTransferTime.add(getTransferTimeTestString(iter2));
 		}
 
-		Assert.assertEquals(expectedTransferTimes, actualTransferTime);
+		Assertions.assertEquals(expectedTransferTimes, actualTransferTime);
 	}
 
 	private String getTransferTimeTestString(MinimalTransferTimes.MinimalTransferTimesIterator iterator) {

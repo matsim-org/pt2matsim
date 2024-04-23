@@ -4,8 +4,8 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -25,8 +25,8 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 
-public class SpaceIdTest {
-	@After
+class SpaceIdTest {
+	@AfterEach
 	public void cleanup() {
 		new File("test_output_schedule.xml").delete();
 	}
@@ -41,7 +41,7 @@ public class SpaceIdTest {
 	 * link IDs that do not have spaces included.
 	 */
 	@Test
-	public void testFeedWithSpacesInId() {
+	void testFeedWithSpacesInId() {
 		GtfsFeed feed = new GtfsFeedImpl("test/space-feed/");
 		GtfsConverter covnerter = new GtfsConverter(feed);
 

@@ -1,7 +1,7 @@
 package org.matsim.pt2matsim.editor;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -17,7 +17,7 @@ import static org.matsim.pt2matsim.tools.ScheduleToolsTest.*;
 /**
  * @author polettif
  */
-public class BasicScheduleEditorTest {
+class BasicScheduleEditorTest {
 
 	/**
 	 * Possible Commands:
@@ -25,7 +25,7 @@ public class BasicScheduleEditorTest {
 	 * ["rerouteViaLink"] [TransitLineId] [TransitRouteId] [oldLinkId] [newLinkId]
 	 */
 	@Test
-	public void rerouteViaLink() {
+	void rerouteViaLink() {
 		TransitSchedule schedule = initSchedule();
 		Network network = NetworkToolsTest.initNetwork();
 
@@ -47,7 +47,7 @@ public class BasicScheduleEditorTest {
 		linkIdsExpected.add(Id.createLinkId("ZI"));
 		linkIdsExpected.add(Id.createLinkId("IB"));
 
-		Assert.assertEquals(linkIdsExpected, linkIds);
+		Assertions.assertEquals(linkIdsExpected, linkIds);
 	}
 
 	/**
@@ -57,7 +57,7 @@ public class BasicScheduleEditorTest {
 	 * ["changeRefLink"] ["allTransitRoutesOnLink"] [linkId] [ParentId] [newlinkId]
 	 */
 	@Test
-	public void changeRefLink() {
+	void changeRefLink() {
 		TransitSchedule schedule = initSchedule();
 		Network network = NetworkToolsTest.initNetwork();
 
@@ -79,7 +79,7 @@ public class BasicScheduleEditorTest {
 		linkIdsExpected.add(Id.createLinkId("ZI"));
 		linkIdsExpected.add(Id.createLinkId("IB"));
 
-		Assert.assertEquals(linkIdsExpected, linkIds);
+		Assertions.assertEquals(linkIdsExpected, linkIds);
 	}
 
 }

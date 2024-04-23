@@ -33,6 +33,7 @@
         <jackson.version>2.17.0</jackson.version>
         <jts.version>1.19.0</jts.version>
         <log4j.version>2.23.1</log4j.version>
+        <junit.version>5.10.2</junit.version>
     </properties>
 
     <dependencies>
@@ -42,9 +43,9 @@
             <version>2024.0</version>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
