@@ -1,8 +1,8 @@
 
 package org.matsim.pt2matsim.tools;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -179,16 +179,16 @@ public class ScheduleToolsTest {
 	}
 
 	@Test
-	public void validateTestSchedule() {
+	void validateTestSchedule() {
 		ValidationResult result = TransitScheduleValidator.validateAll(ScheduleToolsTest.initSchedule(), NetworkToolsTest.initNetwork());
 		for(ValidationIssue<?> issue : result.getIssues()) {
 			System.err.println(issue.getSeverity() + ": " + issue.getMessage());
 		}
-		Assert.assertTrue(result.isValid());
+		Assertions.assertTrue(result.isValid());
 	}
 
 	@Test
-	public void mergeSchedules() {
+	void mergeSchedules() {
 		TransitSchedule testSchedule = initSchedule();
 		ScheduleTools.mergeSchedules(testSchedule, initSchedule());
 
@@ -201,13 +201,13 @@ public class ScheduleToolsTest {
 			nRoutesInit += l.getRoutes().size();
 		}
 
-		Assert.assertEquals(testSchedule.getTransitLines().size(), initSchedule().getTransitLines().size());
-		Assert.assertEquals(nRoutesInit, nRoutesTest);
-		Assert.assertEquals(testSchedule.getFacilities().size(), initSchedule().getFacilities().size());
+		Assertions.assertEquals(testSchedule.getTransitLines().size(), initSchedule().getTransitLines().size());
+		Assertions.assertEquals(nRoutesInit, nRoutesTest);
+		Assertions.assertEquals(testSchedule.getFacilities().size(), initSchedule().getFacilities().size());
 	}
 
 	@Test
-	public void mergeSchedulesOffset() {
+	void mergeSchedulesOffset() {
 		TransitSchedule baseSchedule = initSchedule();
 		TransitSchedule testSchedule = initSchedule();
 		ScheduleTools.mergeSchedules(testSchedule, baseSchedule, 24 * 3600, 60 * 3600);
@@ -226,14 +226,14 @@ public class ScheduleToolsTest {
 			}
 		}
 
-		Assert.assertEquals(testSchedule.getTransitLines().size(), initSchedule().getTransitLines().size());
-		Assert.assertEquals(nRoutesInit, nRoutesTest);
-		Assert.assertEquals(testSchedule.getFacilities().size(), initSchedule().getFacilities().size());
-		Assert.assertEquals(nDeparturesInit * 2, nDeparturesTest);
+		Assertions.assertEquals(testSchedule.getTransitLines().size(), initSchedule().getTransitLines().size());
+		Assertions.assertEquals(nRoutesInit, nRoutesTest);
+		Assertions.assertEquals(testSchedule.getFacilities().size(), initSchedule().getFacilities().size());
+		Assertions.assertEquals(nDeparturesInit * 2, nDeparturesTest);
 	}
 
 	@Test
-	public void mergeSchedulesOffsetTimeLimit() {
+	void mergeSchedulesOffsetTimeLimit() {
 		TransitSchedule baseSchedule = initSchedule();
 		TransitSchedule testSchedule = initSchedule();
 		ScheduleTools.mergeSchedules(testSchedule, baseSchedule, 24 * 3600, 24 * 3600 + 12.5 * 3600);
@@ -252,14 +252,14 @@ public class ScheduleToolsTest {
 			}
 		}
 
-		Assert.assertEquals(testSchedule.getTransitLines().size(), initSchedule().getTransitLines().size());
-		Assert.assertEquals(nRoutesInit, nRoutesTest);
-		Assert.assertEquals(testSchedule.getFacilities().size(), initSchedule().getFacilities().size());
-		Assert.assertEquals(nDeparturesInit + 6, nDeparturesTest);
+		Assertions.assertEquals(testSchedule.getTransitLines().size(), initSchedule().getTransitLines().size());
+		Assertions.assertEquals(nRoutesInit, nRoutesTest);
+		Assertions.assertEquals(testSchedule.getFacilities().size(), initSchedule().getFacilities().size());
+		Assertions.assertEquals(nDeparturesInit + 6, nDeparturesTest);
 	}
 
 	@Test
-	public void freespeedBasedOnSchedule() {
+	void freespeedBasedOnSchedule() {
 		TransitSchedule schedule = initSchedule();
 		Network network = NetworkToolsTest.initNetwork();
 		Network baseNetwork = NetworkToolsTest.initNetwork();
@@ -286,6 +286,6 @@ public class ScheduleToolsTest {
 				linksChanged.add(link.getId());
 			}
 		}
-		Assert.assertEquals(linksUsedBySchedule, linksChanged);
+		Assertions.assertEquals(linksUsedBySchedule, linksChanged);
 	}
 }

@@ -1,14 +1,12 @@
 package org.matsim.pt2matsim.tools;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.core.utils.geometry.CoordUtils;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author polettif
@@ -57,29 +55,29 @@ public class CoordToolsTest {
 	 */
 
 	@Test
-	public void getAzimuth() {
-		assertEquals(0,   200* CoordTools.getAzimuth(coordA,coordD)/Math.PI, testDelta);
-		assertEquals(50,  200* CoordTools.getAzimuth(coordA,coordC)/Math.PI, testDelta);
-		assertEquals(100, 200* CoordTools.getAzimuth(coordA,coordB)/Math.PI, testDelta);
-		assertEquals(150, 200* CoordTools.getAzimuth(coordA,coordI)/Math.PI, testDelta);
-		assertEquals(200, 200* CoordTools.getAzimuth(coordA,coordH)/Math.PI, testDelta);
-		assertEquals(250, 200* CoordTools.getAzimuth(coordA,coordG)/Math.PI, testDelta);
-		assertEquals(300, 200* CoordTools.getAzimuth(coordA,coordF)/Math.PI, testDelta);
-		assertEquals(350, 200* CoordTools.getAzimuth(coordA,coordE)/Math.PI, testDelta);
+	void getAzimuth() {
+		Assertions.assertEquals(0, 200 * CoordTools.getAzimuth(coordA, coordD) / Math.PI, testDelta);
+		Assertions.assertEquals(50, 200 * CoordTools.getAzimuth(coordA, coordC) / Math.PI, testDelta);
+		Assertions.assertEquals(100, 200 * CoordTools.getAzimuth(coordA, coordB) / Math.PI, testDelta);
+		Assertions.assertEquals(150, 200 * CoordTools.getAzimuth(coordA, coordI) / Math.PI, testDelta);
+		Assertions.assertEquals(200, 200 * CoordTools.getAzimuth(coordA, coordH) / Math.PI, testDelta);
+		Assertions.assertEquals(250, 200 * CoordTools.getAzimuth(coordA, coordG) / Math.PI, testDelta);
+		Assertions.assertEquals(300, 200 * CoordTools.getAzimuth(coordA, coordF) / Math.PI, testDelta);
+		Assertions.assertEquals(350, 200 * CoordTools.getAzimuth(coordA, coordE) / Math.PI, testDelta);
 	}
 
 	@Test
-	public void getAzimuthDiff() {
-		assertEquals(100, 200*CoordTools.getAngleDiff(coordA, coordD, coordC)/Math.PI, testDelta);
-		assertEquals(150, 200*CoordTools.getAngleDiff(coordA, coordD, coordB)/Math.PI, testDelta);
-		assertEquals(-100,  200*CoordTools.getAngleDiff(coordA, coordB, coordC)/Math.PI, testDelta);
-		assertEquals(-150,  200*CoordTools.getAngleDiff(coordA, coordB, coordD)/Math.PI, testDelta);
+	void getAzimuthDiff() {
+		Assertions.assertEquals(100, 200 * CoordTools.getAngleDiff(coordA, coordD, coordC) / Math.PI, testDelta);
+		Assertions.assertEquals(150, 200 * CoordTools.getAngleDiff(coordA, coordD, coordB) / Math.PI, testDelta);
+		Assertions.assertEquals(-100, 200 * CoordTools.getAngleDiff(coordA, coordB, coordC) / Math.PI, testDelta);
+		Assertions.assertEquals(-150, 200 * CoordTools.getAngleDiff(coordA, coordB, coordD) / Math.PI, testDelta);
 
-		assertEquals(50, 200*CoordTools.getAngleDiff(coordH, coordA, coordC)/Math.PI, testDelta);
-		assertEquals(-50, 200*CoordTools.getAngleDiff(coordH, coordA, coordE)/Math.PI, testDelta);
+		Assertions.assertEquals(50, 200 * CoordTools.getAngleDiff(coordH, coordA, coordC) / Math.PI, testDelta);
+		Assertions.assertEquals(-50, 200 * CoordTools.getAngleDiff(coordH, coordA, coordE) / Math.PI, testDelta);
 
-		assertEquals(0, 200*CoordTools.getAngleDiff(coordF, coordA, coordB)/Math.PI, testDelta);
-		assertEquals(200, 200*CoordTools.getAngleDiff(coordA, coordF, coordB)/Math.PI, testDelta);
+		Assertions.assertEquals(0, 200 * CoordTools.getAngleDiff(coordF, coordA, coordB) / Math.PI, testDelta);
+		Assertions.assertEquals(200, 200 * CoordTools.getAngleDiff(coordA, coordF, coordB) / Math.PI, testDelta);
 
 		Map<String, Coord> coords = new HashMap<>();
 		coords.put("A", coordA); coords.put("B", coordB); coords.put("C", coordC); coords.put("D", coordD);
@@ -91,8 +89,8 @@ public class CoordToolsTest {
 				for(Map.Entry<String, Coord> c2 : coords.entrySet()) {
 					if(!c1.equals(c0) && !c2.equals(c0) && !c1.equals(c2)) {
 						double diff = CoordTools.getAngleDiff(c0.getValue(), c1.getValue(), c2.getValue());
-						assertTrue(diff <= Math.PI);
-						assertTrue(diff >= -Math.PI);
+						Assertions.assertTrue(diff <= Math.PI);
+						Assertions.assertTrue(diff >= -Math.PI);
 					}
 				}
 			}
@@ -101,26 +99,26 @@ public class CoordToolsTest {
 	}
 
 	@Test
-	public void calcNewPoint() {
+	void calcNewPoint() {
 		Coord newPointD = CoordTools.calcNewPoint(coordA, 0.00 * Math.PI, CoordUtils.calcEuclideanDistance(coordA, coordD));
-		assertEquals(newPointD.getX(), coordD.getX(), testDelta);
-		assertEquals(newPointD.getY(), coordD.getY(), testDelta);
+		Assertions.assertEquals(newPointD.getX(), coordD.getX(), testDelta);
+		Assertions.assertEquals(newPointD.getY(), coordD.getY(), testDelta);
 
 		Coord newPointX = CoordTools.calcNewPoint(coordA, 0.25 * Math.PI, CoordUtils.calcEuclideanDistance(coordA, coordC));
-		assertEquals(newPointX.getX(), coordC.getX(), testDelta);
-		assertEquals(newPointX.getY(), coordC.getY(), testDelta);
+		Assertions.assertEquals(newPointX.getX(), coordC.getX(), testDelta);
+		Assertions.assertEquals(newPointX.getY(), coordC.getY(), testDelta);
 
 		Coord duplicateCoordZ = CoordTools.calcNewPoint(coordA, CoordTools.getAzimuth(coordA, coordZ), CoordUtils.calcEuclideanDistance(coordA, coordZ));
-		assertEquals(duplicateCoordZ.getX(), coordZ.getX(), testDelta);
-		assertEquals(duplicateCoordZ.getY(), coordZ.getY(), testDelta);
+		Assertions.assertEquals(duplicateCoordZ.getX(), coordZ.getX(), testDelta);
+		Assertions.assertEquals(duplicateCoordZ.getY(), coordZ.getY(), testDelta);
 
 		Coord newPointB = CoordTools.calcNewPoint(coordA, 0.50 * Math.PI, 20);
-		assertEquals(newPointB.getX(), coordB.getX(), testDelta);
-		assertEquals(newPointB.getY(), coordB.getY(), testDelta);
+		Assertions.assertEquals(newPointB.getX(), coordB.getX(), testDelta);
+		Assertions.assertEquals(newPointB.getY(), coordB.getY(), testDelta);
 
 		Coord newPointG = CoordTools.calcNewPoint(coordA, 1.25*Math.PI, CoordUtils.calcEuclideanDistance(coordA, coordG));
-		assertEquals(newPointG.getX(), coordG.getX(), testDelta);
-		assertEquals(newPointG.getY(), coordG.getY(), testDelta);
+		Assertions.assertEquals(newPointG.getX(), coordG.getX(), testDelta);
+		Assertions.assertEquals(newPointG.getY(), coordG.getY(), testDelta);
 	}
 
 }
