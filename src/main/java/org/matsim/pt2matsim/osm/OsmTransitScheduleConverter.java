@@ -236,7 +236,7 @@ public class OsmTransitScheduleConverter {
 			}
 		}
 
-		NetworkRoute networkRoute = (linkSequenceForward.size() == 0 ? null : RouteUtils.createNetworkRoute(linkSequenceForward, null));
+		NetworkRoute networkRoute = (linkSequenceForward.size() == 0 ? null : RouteUtils.createNetworkRoute(linkSequenceForward));
 
 		if(stopSequenceForward.size() == 0) {
 			return null;

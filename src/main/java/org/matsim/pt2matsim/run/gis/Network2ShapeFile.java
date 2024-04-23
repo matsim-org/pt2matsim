@@ -24,9 +24,9 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.geometry.geotools.MGC;
+import org.matsim.core.utils.gis.GeoFileWriter;
 import org.matsim.core.utils.gis.PointFeatureFactory;
 import org.matsim.core.utils.gis.PolylineFeatureFactory;
-import org.matsim.core.utils.gis.ShapeFileWriter;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -94,7 +94,7 @@ public class Network2ShapeFile {
 			nodeFeatures.add(f);
 		}
 
-		ShapeFileWriter.writeGeometries(nodeFeatures, nodesOutputFile);
+		GeoFileWriter.writeGeometries(nodeFeatures, nodesOutputFile);
 	}
 
 	public void convertLinks(String linksOutputFile) {
@@ -125,7 +125,7 @@ public class Network2ShapeFile {
 			linkFeatures.add(f);
 		}
 
-		ShapeFileWriter.writeGeometries(linkFeatures, linksOutputFile);
+		GeoFileWriter.writeGeometries(linkFeatures, linksOutputFile);
 	}
 
 	private Coordinate[] getCoordinates(Link link) {
