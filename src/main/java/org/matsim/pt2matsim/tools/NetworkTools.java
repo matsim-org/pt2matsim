@@ -182,7 +182,10 @@ public final class NetworkTools {
 	 * For opposite links, the link which has the coordinate on its right side is sorted "closer" to the coordinate.
 	 * If more than two links have the exact same distance, links are sorted by distance to their respective closest node.
 	 * After that, behaviour is undefined.
+	 * 
+	 * @deprecated See https://github.com/matsim-org/pt2matsim/issues/199
 	 */
+	@Deprecated(since = "23.10-SNAPSHOT")
 	public static List<Link> findClosestLinksSorted(Network network, Coord coord, double nodeSearchRadius, Set<String> allowedTransportModes) {
 		List<Link> links = new ArrayList<>();
 		Map<Double, Set<Link>> sortedLinks = findClosestLinks(network, coord, nodeSearchRadius, allowedTransportModes);
@@ -203,7 +206,7 @@ public final class NetworkTools {
 				Map<Double, Link> tmp = new HashMap<>();
 				for(Link l : list) {
 					double fromNodeDist = CoordUtils.calcEuclideanDistance(l.getFromNode().getCoord(), coord);
-					double toNodeDist = CoordUtils.calcEuclideanDistance(l.getFromNode().getCoord(), coord);
+					double toNodeDist = CoordUtils.calcEuclideanDistance(l.getToNode().getCoord(), coord);
 					double nodeDist = fromNodeDist < toNodeDist ? fromNodeDist : toNodeDist;
 
 					double d = nodeDist + (coordIsOnRightSideOfLink(coord, l) ? 1 : 100);

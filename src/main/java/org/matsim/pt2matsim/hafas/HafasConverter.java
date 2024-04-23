@@ -33,6 +33,7 @@ import org.matsim.pt2matsim.tools.VehicleTypeDefaults;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 import org.matsim.vehicles.VehicleCapacity;
 import org.matsim.vehicles.VehicleType;
+import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 import org.matsim.vehicles.VehiclesFactory;
 
@@ -182,9 +183,9 @@ public class HafasConverter {
 					// using default values for vehicle type
 					vehicleType.setLength(defaultVehicleType.length);
 					vehicleType.setWidth(defaultVehicleType.width);
-					vehicleType.setAccessTime(defaultVehicleType.accessTime);
-					vehicleType.setEgressTime(defaultVehicleType.egressTime);
-					vehicleType.setDoorOperationMode(defaultVehicleType.doorOperation);
+					VehicleUtils.setAccessTime(vehicleType, defaultVehicleType.accessTime);
+					VehicleUtils.setEgressTime(vehicleType, defaultVehicleType.egressTime);
+					VehicleUtils.setDoorOperationMode(vehicleType, defaultVehicleType.doorOperation);
 					vehicleType.setPcuEquivalents(defaultVehicleType.pcuEquivalents);
 
 					VehicleCapacity vehicleCapacity = vehicleType.getCapacity();
