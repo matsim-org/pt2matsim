@@ -21,14 +21,33 @@
 
 package org.matsim.pt2matsim.osm;
 
-import org.apache.logging.log4j.Logger;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.IdMap;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.config.ConfigGroup;
+import org.matsim.core.network.DisallowedNextLinks;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.utils.collections.CollectionUtils;
@@ -42,10 +61,6 @@ import org.matsim.pt2matsim.osm.lib.AllowedTagsFilter;
 import org.matsim.pt2matsim.osm.lib.Osm;
 import org.matsim.pt2matsim.osm.lib.OsmData;
 import org.matsim.pt2matsim.tools.NetworkTools;
-
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.*;
 
 /**
  * Converts {@link OsmData} to a MATSim network, uses a config file
@@ -66,7 +81,31 @@ import java.util.*;
 public class OsmMultimodalNetworkConverter {
 
 	private static final Logger log = LogManager.getLogger(OsmMultimodalNetworkConverter.class);
-	
+
+	/**
+	 * mode == null means "all modes"
+	 */
+	static record OsmTurnRestriction(Set<String> modes, List<Id<Osm.Way>> nextWayIds, RestrictionType restrictionType) {
+
+		enum RestrictionType {
+			PROHIBITIVE, // no_*
+			MANDATORY; // only_*
+		}
+
+	}
+
+	private static final Map<String, String> OSM_2_MATSIM_MODE_MAP = Map.of(
+			Osm.Key.BUS, "bus",
+			Osm.Key.BICYCLE, TransportMode.bike,
+			Osm.Key.MOTORCYCLE, TransportMode.motorcycle,
+			Osm.Key.MOTORCAR, TransportMode.car);
+
+	private static final List<String> TURN_RESTRICTION_KEY_SUFFIXES = List.of(
+			"", // for all modes
+			":" + Osm.Key.BUS,
+			":" + Osm.Key.BICYCLE,
+			":" + Osm.Key.MOTORCAR);
+
 	static final int SPEED_LIMIT_WALK_KPH = 10;
 	// // no speed limit (Germany) .. assume 200kph
 	static final int SPEED_LIMIT_NONE_KPH = 200;
@@ -85,6 +124,8 @@ public class OsmMultimodalNetworkConverter {
 	 * connects osm way ids and link ids of the generated network
 	 **/
 	protected final Map<Id<Link>, Id<Osm.Way>> osmIds = new HashMap<>();
+	protected final Map<Id<Osm.Way>, List<Id<Link>>> wayLinkMap = new HashMap<>(); // reverse of osmIds
+	protected final Map<Id<Link>, DisallowedNextLinks> disallowedNextLinks = new IdMap<>(Link.class);
 	protected OsmConverterConfigGroup config;
 	protected Network network;
 	protected long id = 0;
@@ -111,6 +152,9 @@ public class OsmMultimodalNetworkConverter {
 		readWayParams();
 		convertToNetwork(transformation);
 		cleanNetwork();
+		if (config.parseTurnRestrictions) {
+			addDisallowedNextLinksAttributes();
+		}
 		if(config.getKeepTagsAsAttributes()) addAttributes();
 
 		if (this.config.getOutputDetailedLinkGeometryFile() != null) {
@@ -271,6 +315,13 @@ public class OsmMultimodalNetworkConverter {
 			}
 		}
 
+		// create reverse lookup map for link ids
+		wayLinkMap.putAll(osmIds.entrySet().stream().collect(
+				Collectors.groupingBy(Entry::getValue, Collectors.mapping(Entry::getKey, Collectors.toList()))));
+
+		// parse turn restriction relations into disallowed links
+		this.attachTurnRestrictionsAsDisallowedNextLinks();
+
 		log.info("= conversion statistics: ==========================");
 		log.info("MATSim: # nodes created: {}", this.network.getNodes().size());
 		log.info("MATSim: # links created: {}", this.network.getLinks().size());
@@ -368,7 +419,10 @@ public class OsmMultimodalNetworkConverter {
 				modes.add(TransportMode.pt);
 			}
 		}
-		
+
+		// TURN RESTRICTIONS
+		List<OsmTurnRestriction> osmTurnRestrictions = this.parseTurnRestrictions(way, modes);
+
 		// LENGTH
 		if (length == 0.0) {
 			log.warn("Attempting to create a link of length 0.0, which will mess up the routing. Fixing to 1.0!");
@@ -389,6 +443,9 @@ public class OsmMultimodalNetworkConverter {
 				l.setCapacity(laneCountForward * laneCapacity);
 				l.setNumberOfLanes(laneCountForward);
 				l.setAllowedModes(modes);
+				if (config.parseTurnRestrictions) {
+					l.getAttributes().putAttribute(OsmTurnRestriction.class.getSimpleName(), osmTurnRestrictions);
+				}
 
 				network.addLink(l);
 				osmIds.put(l.getId(), way.getId());
@@ -404,6 +461,9 @@ public class OsmMultimodalNetworkConverter {
 				l.setCapacity(laneCountBackward * laneCapacity);
 				l.setNumberOfLanes(laneCountBackward);
 				l.setAllowedModes(modes);
+				if (config.parseTurnRestrictions) {
+					l.getAttributes().putAttribute(OsmTurnRestriction.class.getSimpleName(), osmTurnRestrictions);
+				}
 
 				network.addLink(l);
 				osmIds.put(l.getId(), way.getId());
@@ -587,6 +647,19 @@ public class OsmMultimodalNetworkConverter {
 	}
 
 	/**
+	 * Adds DisallowedNextLinks attributes to links. See {@link #addAttributes()}
+	 * documentation as to why this cannot be done directly when creating the link.
+	 */
+	private void addDisallowedNextLinksAttributes() {
+		network.getLinks().values().forEach(link -> {
+			DisallowedNextLinks dnl = disallowedNextLinks.get(link.getId());
+			if (dnl != null) {
+				NetworkUtils.setDisallowedNextLinks(link, dnl);
+			}
+		});
+	}
+
+	/**
 	 * Adds attributes to the network link. Cannot be added directly upon link creation since we need to
 	 * clean the road network and attributes are not copied while filtering
 	 */
@@ -680,6 +753,188 @@ public class OsmMultimodalNetworkConverter {
 	 */
 	public Network getNetwork() {
 		return this.network;
+	}
+
+	// Turn Restrictions
+
+	@Nullable
+	private List<OsmTurnRestriction> parseTurnRestrictions(final Osm.Way way, Set<String> modes) {
+
+		if (!config.parseTurnRestrictions) {
+			return null;
+		}
+
+		List<OsmTurnRestriction> osmTurnRestrictions = new ArrayList<>();
+		for (Osm.Relation relation : way.getRelations().values()) {
+
+			Map<String, String> relationTags = relation.getTags();
+
+			// we only consider this relation, if
+			// - it is a turn restriction relation and
+			// - this way is the "from" link
+			if (!(Osm.Key.RESTRICTION.equals(relationTags.get(Osm.Key.TYPE))
+					&& Osm.Value.FROM.equals(relation.getMemberRole(way)))) {
+				continue;
+			}
+
+			// identify modes
+			Set<String> restrictionModes = new HashSet<>(modes);
+			// remove except modes
+			String exceptModesString = relationTags.get(Osm.Key.EXCEPT);
+			if (exceptModesString != null) {
+				for (String exceptMode : exceptModesString.split(";")) {
+					String matsimExceptMode = OSM_2_MATSIM_MODE_MAP.getOrDefault(exceptMode, exceptMode);
+					modes.remove(matsimExceptMode);
+				}
+			}
+
+			// identify restriction type and eventually add modes
+			OsmTurnRestriction.RestrictionType restrictionType = null;
+			for (String suffix : TURN_RESTRICTION_KEY_SUFFIXES) {
+				String restrictionTypeString = relationTags.get(Osm.Key.RESTRICTION + suffix);
+				if (restrictionTypeString != null) {
+
+					// add restriction type
+					if (restrictionTypeString.startsWith(Osm.Key.PROHIBITORY_RESTRICTION_PREFIX)) {
+						restrictionType = OsmTurnRestriction.RestrictionType.PROHIBITIVE;
+					} else if (restrictionTypeString.startsWith(Osm.Key.MANDATORY_RESTRICTION_PREFIX)) {
+						restrictionType = OsmTurnRestriction.RestrictionType.MANDATORY;
+					}
+
+					// add explicit modes, if
+					// - suffix specified it and
+					// - it is a MATSim mode
+					if (suffix.length() > 1) {
+						String mode = suffix.substring(1);
+						String matsimMode = OSM_2_MATSIM_MODE_MAP.get(mode);
+						if (matsimMode == null) {
+							// skip this, if not one of MATSim modes
+							restrictionType = null;
+							continue;
+						}
+						restrictionModes.add(matsimMode);
+					}
+
+					break; // take first one
+				}
+			}
+			if (restrictionType == null) {
+				log.warn("Could not identify turn restriction relation: https://www.openstreetmap.org/relation/{}",
+						relation.getId());
+				continue;
+			}
+
+			// create intermediate turn restriction record
+			List<Id<Osm.Way>> nextWayIds = new ArrayList<>();
+			Id<Osm.Way> toWayId = null;
+			for (Osm.Element element : relation.getMembers()) {
+				if (element instanceof Osm.Way wayElement) {
+					if (Osm.Value.TO.equals(relation.getMemberRole(wayElement))) {
+						toWayId = wayElement.getId();
+					} else if (Osm.Value.VIA.equals(relation.getMemberRole(wayElement))) {
+						nextWayIds.add(wayElement.getId());
+					}
+				}
+			}
+			nextWayIds.add(toWayId);
+			osmTurnRestrictions.add(new OsmTurnRestriction(restrictionModes, nextWayIds, restrictionType));
+		}
+
+		return osmTurnRestrictions;
+	}
+
+	private void attachTurnRestrictionsAsDisallowedNextLinks() {
+
+		if (!config.parseTurnRestrictions) {
+			return;
+		}
+
+		for (Link link : network.getLinks().values()) {
+
+			// get turn restrictions
+			List<OsmTurnRestriction> osmTurnRestrictions = (List<OsmTurnRestriction>) link.getAttributes()
+					.getAttribute(OsmTurnRestriction.class.getSimpleName());
+			if (osmTurnRestrictions == null) {
+				break;
+			}
+
+			// create DisallowedNextLink
+			for (OsmTurnRestriction tr : osmTurnRestrictions) {
+
+				// find next link ids from next way ids
+				List<Id<Link>> nextLinkIds = findLinkIds(wayLinkMap, network, link.getToNode(), tr.nextWayIds);
+				if (nextLinkIds.size() == tr.nextWayIds.size()) { // found next link ids from this link's toNode
+
+					// find link id lists to disallow
+					List<List<Id<Link>>> disallowedNextLinkIdLists = new ArrayList<>();
+					if (tr.restrictionType.equals(OsmTurnRestriction.RestrictionType.PROHIBITIVE)) {
+						disallowedNextLinkIdLists.add(nextLinkIds);
+					} else if (tr.restrictionType.equals(OsmTurnRestriction.RestrictionType.MANDATORY)) {
+						// we need to exclude all other links originating from fromWay's toNode
+						link.getToNode().getOutLinks().values().stream()
+								.map(Link::getId)
+								.filter(lId -> !lId.equals(nextLinkIds.get(0)))
+								.forEach(lId -> disallowedNextLinkIdLists.add(List.of(lId)));
+					}
+
+					// attach DisallowedNextLinks objects
+					DisallowedNextLinks dnl = new DisallowedNextLinks();
+					for (List<Id<Link>> disallowedNextLinkIds : disallowedNextLinkIdLists) {
+						for (String mode : tr.modes) {
+							dnl.addDisallowedLinkSequence(mode, disallowedNextLinkIds);
+						}
+					}
+					disallowedNextLinks.put(link.getId(), dnl);
+				}
+
+			}
+
+			// remove attribute
+			link.getAttributes().removeAttribute(OsmTurnRestriction.class.getSimpleName());
+		}
+	}
+
+	// Statics
+
+	/**
+	 * Finds list of link ids starting from {@code lastNode} from list of OSM way
+	 * ids.
+	 * 
+	 * @param wayLinkMap
+	 * @param network
+	 * @param lastNode
+	 * @param wayIds
+	 * @return
+	 */
+	protected static List<Id<Link>> findLinkIds(Map<Id<Osm.Way>, List<Id<Link>>> wayLinkMap, Network network,
+			Node lastNode, List<Id<Osm.Way>> wayIds) {
+
+		List<Id<Link>> linkIds = new ArrayList<>();
+
+		int i = 0;
+		do {
+			Id<Osm.Way> wayId = wayIds.get(i);
+			// for every link id, that could stem from this way
+			List<Id<Link>> linkIdCandidates = wayLinkMap.get(wayId);
+			if (linkIdCandidates == null) {
+				// requested way id has no link ids -> turn restriction is incomplete
+				return Collections.emptyList();
+			}
+			for (Id<Link> linkIdCandidate : linkIdCandidates) {
+				if (lastNode.getId().equals(network.getLinks().get(linkIdCandidate).getFromNode().getId())) {
+					linkIds.add(linkIdCandidate);
+					i += 1;
+					lastNode = network.getLinks().get(linkIds.get(linkIds.size() - 1)).getToNode();
+					break;
+				}
+				// try next link candidate
+			}
+			if (i == 0) { // no linkCandidate was fitting -> lastNode is not attached to way ids
+				return Collections.emptyList();
+			}
+		} while (i < wayIds.size());
+
+		return linkIds;
 	}
 
 }
