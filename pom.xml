@@ -30,7 +30,7 @@
 
     <properties>
         <geotools.version>29.5</geotools.version>
-        <jackson.version>2.17.0</jackson.version>
+        <jackson.version>2.17.1</jackson.version>
         <jts.version>1.19.0</jts.version>
         <log4j.version>2.23.1</log4j.version>
         <junit.version>5.10.2</junit.version>
