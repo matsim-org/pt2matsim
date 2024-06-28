@@ -67,16 +67,15 @@ public class FPLANReader {
 					 1−2 	CHAR 	*Z
 					 4−9 	INT32 	Fahrtnummer (6-stellig)
 					 11−16 	CHAR 	Verwaltung (6-stellig); Die Verwaltungsangabe darf keine Leerzeichen enthalten.
-					 17−19 	INT16 	leer // Tatsächlich unterscheidet dieser Eintrag noch verschiedene Fahrtvarianten...
+					 17−19 	INT16 	leer
 					 20-22 	INT16 	Nummer der Variante des Verkehrsmittels (Kein Standard Feld von HRDF). Hat aber keine fachliche Bedeutung.
 					 24−26 	INT16 	Taktanzahl; gibt die Anzahl der noch folgenden Takte an.
 					 28−30 	INT16 	Taktzeit in Minuten (Abstand zwischen zwei Fahrten).
 					 */
 					if(newLine.charAt(1) == 'Z') {
 						// get operator
-						String operator = operators.get(newLine.substring(9, 15).trim());
-
 						String operator = operators.get(newLine.substring(10, 16).trim());
+
 						// get the fahrtnummer
 						String fahrtnummer = newLine.substring(3, 9).trim();
 
