@@ -65,8 +65,8 @@ public class FPLANReader {
 					/*
 					 Initialzeile neue Fahrt
 					 1−2 	CHAR 	*Z
-					 4−8 	INT32 	Fahrtnummer
-					 10−15 	CHAR 	Verwaltung (6-stellig); Die Verwaltungsangabe darf keine Leerzeichen enthalten.
+					 4−9 	INT32 	Fahrtnummer (6-stellig)
+					 11−16 	CHAR 	Verwaltung (6-stellig); Die Verwaltungsangabe darf keine Leerzeichen enthalten.
 					 17−21 	INT16 	leer // Tatsächlich unterscheidet dieser Eintrag noch verschiedene Fahrtvarianten...
 					 23−25 	INT16 	Taktanzahl; gibt die Anzahl der noch folgenden Takte an.
 					 27−29 	INT16 	Taktzeit in Minuten (Abstand zwischen zwei Fahrten).
@@ -76,7 +76,7 @@ public class FPLANReader {
 						String operator = operators.get(newLine.substring(9, 15).trim());
 
 						// get the fahrtnummer
-						String fahrtnummer = newLine.substring(3, 8).trim();
+						String fahrtnummer = newLine.substring(3, 9).trim();
 
 						int numberOfDepartures = 0;
 						int cycleTime = 0;
