@@ -1,4 +1,5 @@
 Extract of http://www.fahrplanfelder.ch/de/fahrplandaten.html => testdaten.zip (accessed 02.11.2016), which is publicly available.
+Note 2024: test files are no longer available in the link above and the HAFAS-Format has changed since. The test files have been manually edited to reflect the changes.
 
 Extracted the files
 	- BETRIEB_DE
