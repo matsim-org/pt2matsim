@@ -20,7 +20,17 @@ public class ECKDATENReader {
     public static LocalDate getFahrPlanStart(String pathToHafasFolder) throws IOException {
         if (new File(pathToHafasFolder, ECKDATEN).exists()) {
             BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToHafasFolder + ECKDATEN), "utf-8"));
-            LocalDate startDate = getDate(readsLines.readLine());
+            String line;
+            String firstLineAfterComments = null;
+
+            while ((line = readsLines.readLine()) != null) {
+                if (line.startsWith("*")) {
+                    continue;
+                }
+                firstLineAfterComments = line;
+                break;
+            }
+            LocalDate startDate = getDate(firstLineAfterComments);
             readsLines.close();
             return startDate;
         } else {
@@ -32,8 +42,17 @@ public class ECKDATENReader {
     public static LocalDate getFahrPlanEnd(String pathToHafasFolder) throws IOException {
         if (new File(pathToHafasFolder, ECKDATEN).exists()) {
             BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToHafasFolder + ECKDATEN), "utf-8"));
-            readsLines.readLine();
-            LocalDate endDate = getDate(readsLines.readLine());
+            String line;
+            String secondLineAfterComments = null;
+
+            while ((line = readsLines.readLine()) != null) {
+                if (line.startsWith("*")) {
+                    continue;
+                }
+                secondLineAfterComments = readsLines.readLine();
+                break;
+            }
+            LocalDate endDate = getDate(secondLineAfterComments);
 
             readsLines.close();
             return endDate;

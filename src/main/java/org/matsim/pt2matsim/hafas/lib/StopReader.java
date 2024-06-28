@@ -66,8 +66,11 @@ public class StopReader {
 	private void createStops() throws IOException {
 		log.info("  Read transit stops...");
 			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToBFKOORD_GEOFile), "utf-8"));
-			String newLine = readsLines.readLine();
-			while (newLine != null) {
+			String newLine;
+			while ((newLine = readsLines.readLine()) != null) {
+				if (newLine.startsWith("*")) {
+					continue;
+				}
 				/*
 				1−7 INT32 Nummer der Haltestelle
 				9−18 FLOAT X-Koordinate
@@ -84,7 +87,6 @@ public class StopReader {
 				}
 				String stopName = newLine.substring(39, newLine.length());
 				createStop(stopId, coord, stopName);
-				newLine = readsLines.readLine();
 			}
 			readsLines.close();
 		log.info("  Read transit stops... done.");

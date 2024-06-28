@@ -163,12 +163,14 @@ public class BitfeldAnalyzer {
 		Set<Integer> validBitfields = new HashSet<>();
 
 		BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathFile), "utf-8"));
-		String newLine = readsLines.readLine();
-		while (newLine != null) {
+		String newLine;
+		while ((newLine = readsLines.readLine()) != null) {
+			if (newLine.startsWith("*")) {
+				continue;
+			}
 			int id = Integer.parseInt(newLine.substring(0, 6));
 			String bitfield = new BigInteger(newLine.substring(7), 16).toString(2).substring(offset_bitstring);
 			if (bitfield.charAt(dayNr)== '1') validBitfields.add(id);
-			newLine = readsLines.readLine();
 		}
 		readsLines.close();
         // TODO this error-prone and should be removed by a stable solution
