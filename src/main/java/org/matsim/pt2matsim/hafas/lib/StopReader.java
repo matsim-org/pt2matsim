@@ -73,19 +73,19 @@ public class StopReader {
 				}
 				/*
 				1−7 INT32 Nummer der Haltestelle
-				9−18 FLOAT X-Koordinate
-				20−29 FLOAT Y-Koordinate
-				31−36 INT16 Z-Koordinate (Tunnel und andere Streckenelemente ohne eigentliche Haltestelle haben keine Z-Koordinate)
-				38ff CHAR Kommentarzeichen "%"gefolgt vom Klartext des Haltestellennamens (optional zur besseren Lesbarkeit)
+				9−19 FLOAT X-Koordinate
+				21−31 FLOAT Y-Koordinate
+				33−38 INT16 Z-Koordinate (Tunnel und andere Streckenelemente ohne eigentliche Haltestelle haben keine Z-Koordinate)
+				40ff CHAR Kommentarzeichen "%"gefolgt vom Klartext des Haltestellennamens (optional zur besseren Lesbarkeit)
 				 */
 				Id<TransitStopFacility> stopId = Id.create(newLine.substring(0, 7), TransitStopFacility.class);
-				double xCoord = Double.parseDouble(newLine.substring(8, 18));
-				double yCoord = Double.parseDouble(newLine.substring(19, 29));
+				double xCoord = Double.parseDouble(newLine.substring(8, 19));
+				double yCoord = Double.parseDouble(newLine.substring(20, 31));
 				Coord coord = new Coord(xCoord, yCoord);
 				if (this.transformation != null) {
 					coord = this.transformation.transform(coord);
 				}
-				String stopName = newLine.substring(39, newLine.length());
+				String stopName = newLine.substring(41, newLine.length() - 1);
 				createStop(stopId, coord, stopName);
 			}
 			readsLines.close();
