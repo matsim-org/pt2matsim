@@ -47,8 +47,11 @@ public class BitfeldAnalyzer {
 		final Set<Integer> bitfeldNummern = new HashSet<>();
 		final int posMaxFVals = find4DayBlockWithMostFVals(FPLAN, BITFELD);
 			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(BITFELD), "latin1"));
-			String newLine = readsLines.readLine();
-			while (newLine != null) {
+			String newLine;
+			while ((newLine = readsLines.readLine()) != null) {
+				if (newLine.startsWith("*")) {
+					continue;
+				}
 				/*Spalte Typ Bedeutung
 				1−6 INT32 Bitfeldnummer
 				8−103 CHAR Bitfeld (Binärkodierung der Tage, an welchen Fahrt, in Hexadezimalzahlen notiert.)*/
@@ -69,7 +72,6 @@ public class BitfeldAnalyzer {
 				if (matches >= 1) {
 					bitfeldNummern.add(bitfeldnummer);
 				}
-				newLine = readsLines.readLine();
 			}
 			readsLines.close();
 		bitfeldNummern.add(0);
@@ -117,8 +119,11 @@ public class BitfeldAnalyzer {
 		int[] bitfeldStats = new int[96];
 		try {
 			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(BITFELD), "latin1"));
-			String newLine = readsLines.readLine();
-			while (newLine != null) {
+			String newLine;
+			while ((newLine = readsLines.readLine()) != null) {
+				if (newLine.startsWith("*")) {
+					continue;
+				}
 				/*Spalte Typ Bedeutung
 				1−6 INT32 Bitfeldnummer
 				8−103 CHAR Bitfeld (Binärkodierung der Tage, an welchen Fahrt, in Hexadezimalzahlen notiert.)*/
@@ -132,7 +137,6 @@ public class BitfeldAnalyzer {
 						bitfeldStats[i] += bitFeldValue;
 					}
 				}
-				newLine = readsLines.readLine();
 			}
 			readsLines.close();
 		} catch (IOException e) {
