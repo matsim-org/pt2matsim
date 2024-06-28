@@ -85,7 +85,7 @@ public class StopReader {
 				if (this.transformation != null) {
 					coord = this.transformation.transform(coord);
 				}
-				String stopName = newLine.substring(41, newLine.length() - 1);
+				String stopName = newLine.substring(41);
 				createStop(stopId, coord, stopName);
 			}
 			readsLines.close();
