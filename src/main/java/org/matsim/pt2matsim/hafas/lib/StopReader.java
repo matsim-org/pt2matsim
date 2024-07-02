@@ -38,7 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Reads all stops from HAFAS-BFKOORD_GEO and adds them as TransitStopFacilities
+ * Reads all stops from HAFAS-BFKOORD_WGS and adds them as TransitStopFacilities
  * to the provided TransitSchedule.
  *
  * @author boescpa
@@ -50,41 +50,43 @@ public class StopReader {
 	private final TransitSchedule schedule;
 	private final TransitScheduleFactory scheduleBuilder;
 	private final Map<Coord, String> usedCoordinates = new HashMap<>();
-	private final String pathToBFKOORD_GEOFile;
+	private final String pathToBFKOORD_WGSFile;
 
-	public StopReader(TransitSchedule schedule, CoordinateTransformation transformation, String pathToBFKOORD_GEOFile) {
+	public StopReader(TransitSchedule schedule, CoordinateTransformation transformation, String pathToBFKOORD_WGSFile) {
 		this.schedule = schedule;
 		this.transformation = transformation;
 		this.scheduleBuilder = this.schedule.getFactory();
-		this.pathToBFKOORD_GEOFile = pathToBFKOORD_GEOFile;
+		this.pathToBFKOORD_WGSFile = pathToBFKOORD_WGSFile;
 	}
 
-	public static void run(TransitSchedule schedule, CoordinateTransformation transformation, String pathToBFKOORD_GEOFile) throws IOException {
-		new StopReader(schedule, transformation, pathToBFKOORD_GEOFile).createStops();
+	public static void run(TransitSchedule schedule, CoordinateTransformation transformation, String pathToBFKOORD_WGSFile) throws IOException {
+		new StopReader(schedule, transformation, pathToBFKOORD_WGSFile).createStops();
 	}
 
 	private void createStops() throws IOException {
 		log.info("  Read transit stops...");
-			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToBFKOORD_GEOFile), "utf-8"));
-			String newLine = readsLines.readLine();
-			while (newLine != null) {
+			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToBFKOORD_WGSFile), "utf-8"));
+			String newLine;
+			while ((newLine = readsLines.readLine()) != null) {
+				if (newLine.startsWith("*")) {
+					continue;
+				}
 				/*
 				1−7 INT32 Nummer der Haltestelle
-				9−18 FLOAT X-Koordinate
-				20−29 FLOAT Y-Koordinate
-				31−36 INT16 Z-Koordinate (Tunnel und andere Streckenelemente ohne eigentliche Haltestelle haben keine Z-Koordinate)
-				38ff CHAR Kommentarzeichen "%"gefolgt vom Klartext des Haltestellennamens (optional zur besseren Lesbarkeit)
+				9−19 FLOAT X-Koordinate
+				21−31 FLOAT Y-Koordinate
+				33−38 INT16 Z-Koordinate (Tunnel und andere Streckenelemente ohne eigentliche Haltestelle haben keine Z-Koordinate)
+				40ff CHAR Kommentarzeichen "%"gefolgt vom Klartext des Haltestellennamens (optional zur besseren Lesbarkeit)
 				 */
 				Id<TransitStopFacility> stopId = Id.create(newLine.substring(0, 7), TransitStopFacility.class);
-				double xCoord = Double.parseDouble(newLine.substring(8, 18));
-				double yCoord = Double.parseDouble(newLine.substring(19, 29));
+				double xCoord = Double.parseDouble(newLine.substring(8, 19));
+				double yCoord = Double.parseDouble(newLine.substring(20, 31));
 				Coord coord = new Coord(xCoord, yCoord);
 				if (this.transformation != null) {
 					coord = this.transformation.transform(coord);
 				}
-				String stopName = newLine.substring(39, newLine.length());
+				String stopName = newLine.substring(41);
 				createStop(stopId, coord, stopName);
-				newLine = readsLines.readLine();
 			}
 			readsLines.close();
 		log.info("  Read transit stops... done.");

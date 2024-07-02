@@ -91,7 +91,7 @@ public class HafasConverter {
 
 		// 1. Read and create stop facilities
 		log.info("  Read transit stops...");
-		StopReader.run(schedule, transformation, hafasFolder + "BFKOORD_GEO");
+		StopReader.run(schedule, transformation, hafasFolder + "BFKOORD_WGS");
 		log.info("  Read transit stops... done.");
 
 		// 1.a Read minimal transfer times
