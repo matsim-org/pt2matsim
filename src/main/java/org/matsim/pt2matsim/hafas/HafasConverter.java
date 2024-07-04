@@ -75,7 +75,7 @@ public class HafasConverter {
 			}
 
 			int dayNr = (int) ChronoUnit.DAYS.between(fahrplanStartDate, chosenDate);
-			run(hafasFolder, schedule, transformation, vehicles, dayNr);
+			run(hafasFolder, schedule, transformation, vehicles, dayNr, vehicleTypes);
 
 		} catch (DateTimeParseException ex) {
 			throw new IllegalArgumentException(
@@ -84,7 +84,7 @@ public class HafasConverter {
 		}
 	}
 
-	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, int dayNr) throws IOException {
+	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, int dayNr, List<String> vehicleTypes) throws IOException {
 		if(!hafasFolder.endsWith("/")) hafasFolder += "/";
 
 		log.info("Creating the schedule based on HAFAS...");
@@ -119,7 +119,7 @@ public class HafasConverter {
 
 		// 4. Create all lines from HAFAS-Schedule
 		log.info("  Read transit lines...");
-		List<FPLANRoute> routes = FPLANReader.parseFPLAN(bitfeldNummern, operators, hafasFolder + "FPLAN");
+		List<FPLANRoute> routes = FPLANReader.parseFPLAN(bitfeldNummern, operators, hafasFolder + "FPLAN", vehicleTypes, true);
 		log.info("  Read transit lines... done.");
 
 		// TODO another important HAFAS-file is DURCHBI. This feature is not supported by MATSim yet (but in Switzerland, for example, locally very important.

@@ -50,13 +50,20 @@ public class FPLANReader {
 	 *
 	 * @return the list of FPLANRoutes
 	 */
-	public static List<FPLANRoute> parseFPLAN(Set<Integer> bitfeldNummern, Map<String, String> operators, String FPLANfile) throws IOException {
+	public static List<FPLANRoute> parseFPLAN(Set<Integer> bitfeldNummern, Map<String, String> operators, String FPLANfile, List<String> vehicleTypes, boolean includeRailReplacementBus) throws IOException {
 		List<FPLANRoute> hafasRoutes = new ArrayList<>();
 
 			FPLANRoute currentFPLANRoute = null;
 
 			Counter counter = new Counter("FPLAN line # ");
 			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(FPLANfile), "utf-8"));
+
+			boolean busInVehicleType = vehicleTypes.contains("B");
+			if (includeRailReplacementBus && !busInVehicleType) {
+				vehicleTypes = new ArrayList<>(vehicleTypes);
+				vehicleTypes.add("B");
+			}
+			boolean busToBePotentiallyRemoved = false;
 
 			String newLine = readsLines.readLine();
 			while(newLine != null) {
@@ -73,6 +80,9 @@ public class FPLANReader {
 					 28−30 	INT16 	Taktzeit in Minuten (Abstand zwischen zwei Fahrten).
 					 */
 					if(newLine.charAt(1) == 'Z') {
+						// reset rail replacement bus-removal flag
+						busToBePotentiallyRemoved = false;
+
 						// get operator
 						String operator = operators.get(newLine.substring(10, 16).trim());
 
@@ -104,8 +114,16 @@ public class FPLANReader {
 					else if(newLine.charAt(1) == 'G') {
 						if(currentFPLANRoute != null) {
 							// Vehicle Id:
-							Id<VehicleType> typeId = Id.create(newLine.substring(3, 6).trim(), VehicleType.class);
-							currentFPLANRoute.setVehicleTypeId(typeId);
+							String vehicleType = newLine.substring(3, 6).trim();
+							if (vehicleTypes.contains(vehicleType)) {
+								Id<VehicleType> typeId = Id.create(vehicleType, VehicleType.class);
+								currentFPLANRoute.setVehicleTypeId(typeId);
+								busToBePotentiallyRemoved = vehicleType.equals("B") && includeRailReplacementBus && !busInVehicleType;
+							} else {
+								hafasRoutes.remove(currentFPLANRoute);
+								currentFPLANRoute = null;
+							}
+
 						}
 					}
 
@@ -132,6 +150,11 @@ public class FPLANReader {
 						}
 					}
 
+					// Bahnersatz: *A BE
+					else if(busToBePotentiallyRemoved && newLine.charAt(1) == 'A' && newLine.charAt(3) == 'B' && newLine.charAt(4) == 'E') {
+						busToBePotentiallyRemoved = false;
+					}
+
 					/*
 					 1-2 CHAR *L
 					 4-11 CHAR Liniennummer
@@ -156,6 +179,11 @@ public class FPLANReader {
 				 */
 				else if(newLine.charAt(0) == '+') {
 					log.error("+-Line in HRDF discovered. Please implement appropriate read out.");
+				}
+
+				else if(busToBePotentiallyRemoved) {
+					hafasRoutes.remove(currentFPLANRoute);
+					currentFPLANRoute = null;
 				}
 
 				/*
