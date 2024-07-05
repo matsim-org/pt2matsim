@@ -55,7 +55,7 @@ public class HafasConverter {
 
 	protected static Logger log = LogManager.getLogger(HafasConverter.class);
 
-	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, String chosenDateString, List<String> vehicleTypes) throws IOException {
+	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, String chosenDateString, Set<String> vehicleTypes) throws IOException {
 		if(!hafasFolder.endsWith("/")) hafasFolder += "/";
 
 		// 3a. Get start_fahrplan date
@@ -80,7 +80,7 @@ public class HafasConverter {
 		}
 	}
 
-	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, int dayNr, List<String> vehicleTypes) throws IOException {
+	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, int dayNr, Set<String> vehicleTypes) throws IOException {
 		if(!hafasFolder.endsWith("/")) hafasFolder += "/";
 
 		log.info("Creating the schedule based on HAFAS...");

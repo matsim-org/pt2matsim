@@ -54,7 +54,7 @@ public final class FPLANReader {
 	 *
 	 * @return the list of FPLANRoutes
 	 */
-	public static List<FPLANRoute> parseFPLAN(Set<Integer> bitfeldNummern, Map<String, String> operators, String FPLANfile, List<String> vehicleTypes, boolean includeRailReplacementBus) throws IOException {
+	public static List<FPLANRoute> parseFPLAN(Set<Integer> bitfeldNummern, Map<String, String> operators, String FPLANfile, Set<String> vehicleTypes, boolean includeRailReplacementBus) throws IOException {
 		List<FPLANRoute> hafasRoutes = new ArrayList<>();
 
 			FPLANRoute currentFPLANRoute = null;
@@ -63,7 +63,7 @@ public final class FPLANReader {
 			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(FPLANfile), "utf-8"));
 
 			if (vehicleTypes == null) {
-				vehicleTypes = new ArrayList<>();
+				vehicleTypes = new HashSet<>();
 				includeRailReplacementBus = false;
 			} else {
 				log.info("Parsing HAFAS using following Vehicle types: " + vehicleTypes);
@@ -71,7 +71,6 @@ public final class FPLANReader {
 			Set<String> skippedVehicleTypes = new HashSet<>();
 			boolean busInVehicleType = vehicleTypes.contains("B");
 			if (includeRailReplacementBus && !busInVehicleType) {
-				vehicleTypes = new ArrayList<>(vehicleTypes);
 				vehicleTypes.add("B");
 			}
 			boolean busToBePotentiallyRemoved = false;
