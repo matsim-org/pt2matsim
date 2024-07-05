@@ -21,6 +21,7 @@
 
 package org.matsim.pt2matsim.hafas.lib;
 
+import java.util.HashSet;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
@@ -41,10 +42,13 @@ import java.util.Set;
  *
  * @author polettif
  */
-public class FPLANReader {
-	protected static Logger log = LogManager.getLogger(FPLANReader.class);
+public final class FPLANReader {
+	private static final Logger log = LogManager.getLogger(FPLANReader.class);
 
-	/**
+    private FPLANReader() {
+    }
+
+    /**
 	 * Only reads the PtRoutes and leaves line/route
 	 * separation to a later process
 	 *
@@ -58,6 +62,13 @@ public class FPLANReader {
 			Counter counter = new Counter("FPLAN line # ");
 			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(FPLANfile), "utf-8"));
 
+			if (vehicleTypes == null) {
+				vehicleTypes = new ArrayList<>();
+				includeRailReplacementBus = false;
+			} else {
+				log.info("Parsing HAFAS using following Vehicle types: " + vehicleTypes);
+			}
+			Set<String> skippedVehicleTypes = new HashSet<>();
 			boolean busInVehicleType = vehicleTypes.contains("B");
 			if (includeRailReplacementBus && !busInVehicleType) {
 				vehicleTypes = new ArrayList<>(vehicleTypes);
@@ -116,11 +127,12 @@ public class FPLANReader {
 						if(currentFPLANRoute != null) {
 							// Vehicle Id:
 							String vehicleType = newLine.substring(3, 6).trim();
-							if (vehicleTypes.contains(vehicleType)) {
+							if (vehicleTypes.isEmpty() || vehicleTypes.contains(vehicleType)) {
 								Id<VehicleType> typeId = Id.create(vehicleType, VehicleType.class);
 								currentFPLANRoute.setVehicleTypeId(typeId);
 								busToBePotentiallyRemoved = vehicleType.equals("B") && includeRailReplacementBus && !busInVehicleType;
 							} else {
+								skippedVehicleTypes.add(vehicleType);
 								hafasRoutes.remove(currentFPLANRoute);
 								currentFPLANRoute = null;
 							}
@@ -243,6 +255,11 @@ public class FPLANReader {
 			}
 			readsLines.close();
 			counter.printCounter();
+
+			log.info("Finished parsing FPLAN.");
+			if (!vehicleTypes.isEmpty()) {
+				log.info("Skipped vehicle types: " + skippedVehicleTypes);
+			}
 
 		return hafasRoutes;
 	}
