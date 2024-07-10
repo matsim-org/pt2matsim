@@ -21,8 +21,10 @@
 
 package org.matsim.pt2matsim.hafas;
 
-import org.apache.logging.log4j.Logger;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
@@ -55,12 +57,17 @@ public class HafasConverter {
 
 	protected static Logger log = LogManager.getLogger(HafasConverter.class);
 
-	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, String chosenDateString, Set<String> vehicleTypes) throws IOException {
+    public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, String chosenDateString, Set<String> vehicleTypes) throws IOException {
+		run(hafasFolder, schedule, transformation, vehicles, chosenDateString, vehicleTypes, StandardCharsets.UTF_8);
+	}
+
+	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, String chosenDateString, Set<String> vehicleTypes,
+		Charset encodingCharset) throws IOException {
 		if(!hafasFolder.endsWith("/")) hafasFolder += "/";
 
 		// 3a. Get start_fahrplan date
-		LocalDate fahrplanStartDate = ECKDATENReader.getFahrPlanStart(hafasFolder);
-		LocalDate fahrplanEndDate = ECKDATENReader.getFahrPlanEnd(hafasFolder);
+		LocalDate fahrplanStartDate = ECKDATENReader.getFahrPlanStart(hafasFolder, encodingCharset);
+		LocalDate fahrplanEndDate = ECKDATENReader.getFahrPlanEnd(hafasFolder, encodingCharset);
 		try {
 			LocalDate chosenDate = ECKDATENReader.getDate(chosenDateString);
 
@@ -71,7 +78,7 @@ public class HafasConverter {
 			}
 
 			int dayNr = (int) ChronoUnit.DAYS.between(fahrplanStartDate, chosenDate);
-			run(hafasFolder, schedule, transformation, vehicles, dayNr, vehicleTypes);
+			run(hafasFolder, schedule, transformation, vehicles, dayNr, vehicleTypes, encodingCharset);
 
 		} catch (DateTimeParseException ex) {
 			throw new IllegalArgumentException(
@@ -80,24 +87,24 @@ public class HafasConverter {
 		}
 	}
 
-	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, int dayNr, Set<String> vehicleTypes) throws IOException {
+	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, int dayNr, Set<String> vehicleTypes, Charset encodingCharset) throws IOException {
 		if(!hafasFolder.endsWith("/")) hafasFolder += "/";
 
 		log.info("Creating the schedule based on HAFAS...");
 
 		// 1. Read and create stop facilities
 		log.info("  Read transit stops...");
-		StopReader.run(schedule, transformation, hafasFolder + "BFKOORD_WGS");
+		StopReader.run(schedule, transformation, hafasFolder + "BFKOORD_WGS", encodingCharset);
 		log.info("  Read transit stops... done.");
 
 		// 1.a Read minimal transfer times
 		log.info("  Read minimal transfer times...");
-		MinimalTransferTimesReader.run(schedule, hafasFolder, "UMSTEIGB","METABHF");
+		MinimalTransferTimesReader.run(schedule, hafasFolder, "UMSTEIGB","METABHF", encodingCharset);
 		log.info("  Read minimal transfer times... done.");
 
 		// 2. Read all operators from BETRIEB_DE
 		log.info("  Read operators...");
-		Map<String, String> operators = OperatorReader.readOperators(hafasFolder + "BETRIEB_DE");
+		Map<String, String> operators = OperatorReader.readOperators(hafasFolder + "BETRIEB_DE", encodingCharset);
 		log.info("  Read operators... done.");
 
 		// 3. Read all ids for work-day-routes from HAFAS-BITFELD
@@ -108,14 +115,14 @@ public class HafasConverter {
 			log.info("      nb of bitfields at busiest day: " + bitfeldNummern.size());
 		} else {
 			// TODO: check if dayNr is within the timetable period defined in ECKDATEN
-			bitfeldNummern = BitfeldAnalyzer.getBitfieldsAtValidDay(dayNr, hafasFolder);
+			bitfeldNummern = BitfeldAnalyzer.getBitfieldsAtValidDay(dayNr, hafasFolder, encodingCharset);
 			log.info("      nb of bitfields valid at day " + dayNr + ": " + bitfeldNummern.size());
 		}
 		log.info("  Read bitfeld numbers... done.");
 
 		// 4. Create all lines from HAFAS-Schedule
 		log.info("  Read transit lines...");
-		List<FPLANRoute> routes = FPLANReader.parseFPLAN(bitfeldNummern, operators, hafasFolder + "FPLAN", vehicleTypes, true);
+		List<FPLANRoute> routes = FPLANReader.parseFPLAN(bitfeldNummern, operators, hafasFolder + "FPLAN", vehicleTypes, true, encodingCharset);
 		log.info("  Read transit lines... done.");
 
 		// TODO another important HAFAS-file is DURCHBI. This feature is not supported by MATSim yet (but in Switzerland, for example, locally very important.

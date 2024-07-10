@@ -1,5 +1,6 @@
 package org.matsim.pt2matsim.hafas.lib;
 
+import java.nio.charset.Charset;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
@@ -19,13 +20,13 @@ public class MinimalTransferTimesReader {
 
     protected static Logger log = LogManager.getLogger(MinimalTransferTimesReader.class);
 
-    public static void run(TransitSchedule schedule, String pathToHafasFolder, String UMSTEIGB, String METABHF) throws IOException {
+    public static void run(TransitSchedule schedule, String pathToHafasFolder, String UMSTEIGB, String METABHF, Charset encodingCharset) throws IOException {
 
         MinimalTransferTimes minimalTransferTimes = schedule.getMinimalTransferTimes();
 
         // read from UMSTEIGB
         if (new File(pathToHafasFolder, UMSTEIGB).exists()) {
-            BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToHafasFolder + UMSTEIGB), "utf-8"));
+            BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToHafasFolder + UMSTEIGB), encodingCharset));
             String newLine;
             while ((newLine = readsLines.readLine()) != null) {
                 if (newLine.startsWith("*")) {
@@ -48,7 +49,7 @@ public class MinimalTransferTimesReader {
 
         // read from METABHF
         if (new File(pathToHafasFolder, METABHF).exists()) {
-            BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToHafasFolder + METABHF), "utf-8"));
+            BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToHafasFolder + METABHF), encodingCharset));
             String newLine = readsLines.readLine();
             while (newLine != null) {
                 /*

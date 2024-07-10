@@ -21,6 +21,7 @@
 
 package org.matsim.pt2matsim.hafas.lib;
 
+import java.nio.charset.Charset;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Coord;
@@ -59,13 +60,13 @@ public class StopReader {
 		this.pathToBFKOORD_WGSFile = pathToBFKOORD_WGSFile;
 	}
 
-	public static void run(TransitSchedule schedule, CoordinateTransformation transformation, String pathToBFKOORD_WGSFile) throws IOException {
-		new StopReader(schedule, transformation, pathToBFKOORD_WGSFile).createStops();
+	public static void run(TransitSchedule schedule, CoordinateTransformation transformation, String pathToBFKOORD_WGSFile, Charset encodingCharset) throws IOException {
+		new StopReader(schedule, transformation, pathToBFKOORD_WGSFile).createStops(encodingCharset);
 	}
 
-	private void createStops() throws IOException {
+	private void createStops(Charset encodingCharset) throws IOException {
 		log.info("  Read transit stops...");
-			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToBFKOORD_WGSFile), "utf-8"));
+			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToBFKOORD_WGSFile), encodingCharset));
 			String newLine;
 			while ((newLine = readsLines.readLine()) != null) {
 				if (newLine.startsWith("*")) {

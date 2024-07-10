@@ -21,6 +21,7 @@
 
 package org.matsim.pt2matsim.hafas.lib;
 
+import java.nio.charset.Charset;
 import java.util.HashSet;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -54,13 +55,13 @@ public final class FPLANReader {
 	 *
 	 * @return the list of FPLANRoutes
 	 */
-	public static List<FPLANRoute> parseFPLAN(Set<Integer> bitfeldNummern, Map<String, String> operators, String FPLANfile, Set<String> vehicleTypes, boolean includeRailReplacementBus) throws IOException {
+	public static List<FPLANRoute> parseFPLAN(Set<Integer> bitfeldNummern, Map<String, String> operators, String FPLANfile, Set<String> vehicleTypes, boolean includeRailReplacementBus, Charset encodingCharset) throws IOException {
 		List<FPLANRoute> hafasRoutes = new ArrayList<>();
 
 			FPLANRoute currentFPLANRoute = null;
 
 			Counter counter = new Counter("FPLAN line # ");
-			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(FPLANfile), "utf-8"));
+			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(FPLANfile), encodingCharset));
 
 			if (vehicleTypes == null) {
 				vehicleTypes = new HashSet<>();
