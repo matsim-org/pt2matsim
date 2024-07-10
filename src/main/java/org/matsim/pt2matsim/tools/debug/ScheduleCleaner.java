@@ -327,10 +327,14 @@ public final class ScheduleCleaner {
 				if(routeList.size() > 1) {
 					TransitRoute finalRoute = routeList.get(0);
 					for(int i = 1; i < routeList.size(); i++) {
-						TransitRoute routeToRemove = routeList.get(i);
-						routeToRemove.getDepartures().values().forEach(finalRoute::addDeparture);
-						transitLine.removeRoute(routeToRemove);
-						combined++;
+						TransitRoute routeToPotentiallyRemove = routeList.get(i);
+						boolean noDepartureIdOverlap = routeToPotentiallyRemove.getDepartures().keySet().stream().filter(d -> finalRoute.getDepartures().containsKey(d)).toList().isEmpty();
+						if (noDepartureIdOverlap) {
+							routeToPotentiallyRemove.getDepartures().values().forEach(finalRoute::addDeparture);
+							transitLine.removeRoute(routeToPotentiallyRemove);
+							combined++;
+						}
+
 					}
 				}
 			}
