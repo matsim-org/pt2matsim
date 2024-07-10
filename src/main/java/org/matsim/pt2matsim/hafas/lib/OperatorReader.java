@@ -45,9 +45,15 @@ public class OperatorReader {
 					continue;
 				}
 				String abbrevationOperator = newLine.split("\"")[1].replace(" ","");
-				newLine = readsLines.readLine();
-				if (newLine == null) break;
-				String[] operatorIds = newLine.substring(8).trim().split("\\s+");
+
+				String[] operatorIds;
+				if (newLine.split(":").length == 0) { // handle format variants
+					newLine = readsLines.readLine();
+					if (newLine == null) break;
+					operatorIds = newLine.substring(8).trim().split("\\s+");
+				} else {
+					operatorIds = newLine.split(":")[1].trim().split("\\s+");
+				}
 				for (String operatorId : operatorIds) {
 					operators.put(operatorId.trim(), abbrevationOperator);
 				}
