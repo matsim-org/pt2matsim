@@ -53,9 +53,12 @@ import java.util.Set;
  *
  * @author polettif
  */
-public class HafasConverter {
+public final class HafasConverter {
 
-	protected static Logger log = LogManager.getLogger(HafasConverter.class);
+	static Logger log = LogManager.getLogger(HafasConverter.class);
+
+    private HafasConverter() {
+    }
 
     public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, String chosenDateString, Set<String> vehicleTypes) throws IOException {
 		run(hafasFolder, schedule, transformation, vehicles, chosenDateString, vehicleTypes, StandardCharsets.UTF_8);
@@ -172,8 +175,8 @@ public class HafasConverter {
 				TransitLine transitLine;
 				if(!schedule.getTransitLines().containsKey(lineId)) {
 					transitLine = scheduleFactory.createTransitLine(lineId);
-					transitLine.getAttributes().putAttribute("operator", fplanRoute.getOperator());
-					transitLine.getAttributes().putAttribute("operatorCode", fplanRoute.getOperatorCode());
+					transitLine.getAttributes().putAttribute("operator", String.valueOf(fplanRoute.getOperator()));
+					transitLine.getAttributes().putAttribute("operatorCode", String.valueOf(fplanRoute.getOperatorCode()));
 					schedule.addTransitLine(transitLine);
 					lineCounter.incCounter();
 				} else {
@@ -225,7 +228,11 @@ public class HafasConverter {
 	}
 
 	private static Id<TransitLine> createLineId(FPLANRoute route) {
-		if(route.getOperator().equals("SBB")) {
+		String operator = route.getOperator();
+		if(operator == null) {
+			operator = route.getOperatorCode();
+		}
+		if(operator.equals("SBB")) {
 			long firstStopId;
 			long lastStopId;
 
@@ -247,9 +254,9 @@ public class HafasConverter {
 			}
 		}
 		else if(route.getRouteDescription() == null) {
-			return Id.create(route.getOperator(), TransitLine.class);
+			return Id.create(operator, TransitLine.class);
 		} else {
-			return Id.create(route.getOperator() + "_line" + route.getRouteDescription(), TransitLine.class);
+			return Id.create(operator + "_line" + route.getRouteDescription(), TransitLine.class);
 		}
 	}
 
