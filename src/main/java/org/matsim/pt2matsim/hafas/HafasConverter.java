@@ -21,16 +21,31 @@
 
 package org.matsim.pt2matsim.hafas;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.misc.Counter;
-import org.matsim.pt.transitSchedule.api.*;
-import org.matsim.pt2matsim.hafas.lib.*;
+import org.matsim.pt.transitSchedule.api.Departure;
+import org.matsim.pt.transitSchedule.api.TransitLine;
+import org.matsim.pt.transitSchedule.api.TransitRoute;
+import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.pt.transitSchedule.api.TransitScheduleFactory;
+import org.matsim.pt2matsim.hafas.filter.HafasFilter;
+import org.matsim.pt2matsim.hafas.lib.FPLANReader;
+import org.matsim.pt2matsim.hafas.lib.FPLANRoute;
+import org.matsim.pt2matsim.hafas.lib.MinimalTransferTimesReader;
+import org.matsim.pt2matsim.hafas.lib.OperatorReader;
+import org.matsim.pt2matsim.hafas.lib.StopReader;
 import org.matsim.pt2matsim.tools.VehicleTypeDefaults;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 import org.matsim.vehicles.VehicleCapacity;
@@ -38,15 +53,6 @@ import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 import org.matsim.vehicles.VehiclesFactory;
-
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Converts hafas files to a matsim transit schedule.
@@ -60,37 +66,11 @@ public final class HafasConverter {
     private HafasConverter() {
     }
 
-    public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, String chosenDateString, Set<String> vehicleTypes) throws IOException {
-		run(hafasFolder, schedule, transformation, vehicles, chosenDateString, vehicleTypes, StandardCharsets.UTF_8);
+    public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles) throws IOException {
+		run(hafasFolder, schedule, transformation, vehicles, new HashSet<>(), StandardCharsets.UTF_8);
 	}
 
-	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, String chosenDateString, Set<String> vehicleTypes,
-		Charset encodingCharset) throws IOException {
-		if(!hafasFolder.endsWith("/")) hafasFolder += "/";
-
-		// 3a. Get start_fahrplan date
-		LocalDate fahrplanStartDate = ECKDATENReader.getFahrPlanStart(hafasFolder, encodingCharset);
-		LocalDate fahrplanEndDate = ECKDATENReader.getFahrPlanEnd(hafasFolder, encodingCharset);
-		try {
-			LocalDate chosenDate = ECKDATENReader.getDate(chosenDateString);
-
-			if (chosenDate.isBefore(fahrplanStartDate) || chosenDate.isAfter(fahrplanEndDate)) {
-				throw new IllegalArgumentException(
-						String.format("Chosen date %s is outside fahrplan period: (%s, %s)", chosenDate, fahrplanStartDate, fahrplanEndDate)
-				);
-			}
-
-			int dayNr = (int) ChronoUnit.DAYS.between(fahrplanStartDate, chosenDate);
-			run(hafasFolder, schedule, transformation, vehicles, dayNr, vehicleTypes, encodingCharset);
-
-		} catch (DateTimeParseException ex) {
-			throw new IllegalArgumentException(
-					"Format of chosen date (should be dd.MM.yyyy) is invalid: " + chosenDateString
-			);
-		}
-	}
-
-	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, int dayNr, Set<String> vehicleTypes, Charset encodingCharset) throws IOException {
+	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, Set<HafasFilter> filters, Charset encodingCharset) throws IOException {
 		if(!hafasFolder.endsWith("/")) hafasFolder += "/";
 
 		log.info("Creating the schedule based on HAFAS...");
@@ -110,22 +90,9 @@ public final class HafasConverter {
 		Map<String, String> operators = OperatorReader.readOperators(hafasFolder + "BETRIEB_DE", encodingCharset);
 		log.info("  Read operators... done.");
 
-		// 3. Read all ids for work-day-routes from HAFAS-BITFELD
-		log.info("  Read bitfeld numbers...");
-		Set<Integer> bitfeldNummern;
-		if (dayNr < 0) {
-			bitfeldNummern = BitfeldAnalyzer.findBitfeldnumbersOfBusiestDay(hafasFolder + "FPLAN", hafasFolder + "BITFELD");
-			log.info("      nb of bitfields at busiest day: " + bitfeldNummern.size());
-		} else {
-			// TODO: check if dayNr is within the timetable period defined in ECKDATEN
-			bitfeldNummern = BitfeldAnalyzer.getBitfieldsAtValidDay(dayNr, hafasFolder, encodingCharset);
-			log.info("      nb of bitfields valid at day " + dayNr + ": " + bitfeldNummern.size());
-		}
-		log.info("  Read bitfeld numbers... done.");
-
 		// 4. Create all lines from HAFAS-Schedule
 		log.info("  Read transit lines...");
-		List<FPLANRoute> routes = FPLANReader.parseFPLAN(bitfeldNummern, operators, hafasFolder + "FPLAN", vehicleTypes, true, encodingCharset);
+		List<FPLANRoute> routes = FPLANReader.parseFPLAN(operators, hafasFolder + "FPLAN", filters, encodingCharset);
 		log.info("  Read transit lines... done.");
 
 		// TODO another important HAFAS-file is DURCHBI. This feature is not supported by MATSim yet (but in Switzerland, for example, locally very important.

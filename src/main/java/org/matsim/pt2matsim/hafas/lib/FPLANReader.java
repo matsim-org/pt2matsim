@@ -21,12 +21,15 @@
 
 package org.matsim.pt2matsim.hafas.lib;
 
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
-import java.util.HashSet;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.misc.Counter;
+import org.matsim.pt2matsim.hafas.filter.HafasFilter;
 import org.matsim.vehicles.VehicleType;
 
 import java.io.BufferedReader;
@@ -55,26 +58,13 @@ public final class FPLANReader {
 	 *
 	 * @return the list of FPLANRoutes
 	 */
-	public static List<FPLANRoute> parseFPLAN(Set<Integer> bitfeldNummern, Map<String, String> operators, String FPLANfile, Set<String> vehicleTypes, boolean includeRailReplacementBus, Charset encodingCharset) throws IOException {
+	public static List<FPLANRoute> parseFPLAN(Map<String, String> operators, String FPLANfile, Set<HafasFilter> filters, Charset encodingCharset) throws IOException {
 		List<FPLANRoute> hafasRoutes = new ArrayList<>();
 
 			FPLANRoute currentFPLANRoute = null;
 
 			Counter counter = new Counter("FPLAN line # ");
 			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(FPLANfile), encodingCharset));
-
-			if (vehicleTypes == null) {
-				vehicleTypes = new HashSet<>();
-				includeRailReplacementBus = false;
-			} else {
-				log.info("Parsing HAFAS using following Vehicle types: " + vehicleTypes);
-			}
-			Set<String> skippedVehicleTypes = new HashSet<>();
-			boolean busInVehicleType = vehicleTypes.contains("B");
-			if (includeRailReplacementBus && !busInVehicleType) {
-				vehicleTypes.add("B");
-			}
-			boolean busToBePotentiallyRemoved = false;
 
 			String newLine = readsLines.readLine();
 			while(newLine != null) {
@@ -91,8 +81,10 @@ public final class FPLANReader {
 					 28−30 	INT16 	Taktzeit in Minuten (Abstand zwischen zwei Fahrten).
 					 */
 					if(newLine.charAt(1) == 'Z') {
-						// reset rail replacement bus-removal flag
-						busToBePotentiallyRemoved = false;
+						// new trip is beginning. Store previous route
+						if(keepRoute(currentFPLANRoute, filters)) {
+							hafasRoutes.add(currentFPLANRoute);
+						}
 
 						// get operator
 						String operatorCode = newLine.substring(10, 16).trim();
@@ -109,7 +101,6 @@ public final class FPLANReader {
 						} catch (Exception ignored) {
 						}
 						currentFPLANRoute = new FPLANRoute(operator, operatorCode, fahrtnummer, numberOfDepartures, cycleTime);
-						hafasRoutes.add(currentFPLANRoute);
 					}
 
 					/*
@@ -124,20 +115,10 @@ public final class FPLANReader {
 					 31−36 [#]INT32 	(optional) Index für das x. Auftreten oder Ankunftszeitpunkt
 					 */
 					else if(newLine.charAt(1) == 'G') {
-						if(currentFPLANRoute != null) {
-							// Vehicle Id:
-							String vehicleType = newLine.substring(3, 6).trim();
-							if (vehicleTypes.isEmpty() || vehicleTypes.contains(vehicleType)) {
-								Id<VehicleType> typeId = Id.create(vehicleType, VehicleType.class);
-								currentFPLANRoute.setVehicleTypeId(typeId);
-								busToBePotentiallyRemoved = vehicleType.equals("B") && includeRailReplacementBus && !busInVehicleType;
-							} else {
-								skippedVehicleTypes.add(vehicleType);
-								hafasRoutes.remove(currentFPLANRoute);
-								currentFPLANRoute = null;
-							}
-
-						}
+						// Vehicle Id:
+						String vehicleType = newLine.substring(3, 6).trim();
+						Id<VehicleType> typeId = Id.create(vehicleType, VehicleType.class);
+						currentFPLANRoute.setVehicleTypeId(typeId);
 					}
 
 					/*
@@ -149,23 +130,17 @@ public final class FPLANReader {
 					 37-42 	[#]INT32 	(optional) Index für das x. Auftreten oder Ankunftszeitpunkt.
 					 */
 					else if(newLine.charAt(1) == 'A' && newLine.charAt(3) == 'V' && newLine.charAt(4) == 'E') {
-						if(currentFPLANRoute != null) {
-							int localBitfeldnr = 0;
-							if(newLine.substring(22, 28).trim().length() > 0) {
-								localBitfeldnr = Integer.parseInt(newLine.substring(22, 28));
-								// TODO there may be more than one *A VE line per *Z block (when the bitfield changes during the route). This is an important issue in HAFAS!
-							}
-							if(!bitfeldNummern.contains(localBitfeldnr)) {
-								// Linie gefunden, die nicht werktäglich verkehrt... => Ignorieren wir...
-								hafasRoutes.remove(currentFPLANRoute);
-								currentFPLANRoute = null;
-							}
+						int localBitfeldnr = 0;
+						if(!newLine.substring(22, 28).trim().isEmpty()) {
+							localBitfeldnr = Integer.parseInt(newLine.substring(22, 28));
 						}
+						// TODO there may be more than one *A VE line per *Z block (when the bitfield changes during the route). This is an important issue in HAFAS!
+						currentFPLANRoute.setLocalBitfeldNr(localBitfeldnr);
 					}
 
 					// Bahnersatz: *A BE
-					else if(busToBePotentiallyRemoved && newLine.charAt(1) == 'A' && newLine.charAt(3) == 'B' && newLine.charAt(4) == 'E') {
-						busToBePotentiallyRemoved = false;
+					else if(newLine.charAt(1) == 'A' && newLine.charAt(3) == 'B' && newLine.charAt(4) == 'E') {
+						currentFPLANRoute.setIsRailReplacementBus();
 					}
 
 					/*
@@ -173,9 +148,7 @@ public final class FPLANReader {
 					 4-11 CHAR Liniennummer
 					 */
 					else if(newLine.charAt(1) == 'L') {
-						if(currentFPLANRoute != null) {
-							currentFPLANRoute.setRouteDescription(newLine.substring(3, 11).trim());
-						}
+						currentFPLANRoute.setRouteDescription(newLine.substring(3, 11).trim());
 					}
 
 					/*
@@ -194,11 +167,6 @@ public final class FPLANReader {
 					log.error("+-Line in HRDF discovered. Please implement appropriate read out.");
 				}
 
-				else if(busToBePotentiallyRemoved) {
-					hafasRoutes.remove(currentFPLANRoute);
-					currentFPLANRoute = null;
-				}
-
 				/*
 				 Laufwegzeile
 				 1−7 	INT32 Haltestellennummer
@@ -213,40 +181,37 @@ public final class FPLANReader {
 					boolean arrivalTimeNegative = newLine.charAt(29) == '-';
 					boolean departureTimeNegative = newLine.charAt(36) == '-';
 
-					if(currentFPLANRoute != null) {
-						int arrivalTime;
-						int departureTime;
+					int arrivalTime;
+					int departureTime;
 
-						try {
-							arrivalTime = Integer.parseInt(newLine.substring(31, 33)) * 3600 +
-									Integer.parseInt(newLine.substring(33, 35)) * 60;
-						} catch (Exception e) {
-							arrivalTime = -1;
-						}
-						try {
-							departureTime = Integer.parseInt(newLine.substring(38, 40)) * 3600 +
-									Integer.parseInt(newLine.substring(40, 42)) * 60;
-						} catch (Exception e) {
-							departureTime = -1;
-						}
+					try {
+						arrivalTime = Integer.parseInt(newLine.substring(31, 33)) * 3600 +
+								Integer.parseInt(newLine.substring(33, 35)) * 60;
+					} catch (Exception e) {
+						arrivalTime = -1;
+					}
+					try {
+						departureTime = Integer.parseInt(newLine.substring(38, 40)) * 3600 +
+								Integer.parseInt(newLine.substring(40, 42)) * 60;
+					} catch (Exception e) {
+						departureTime = -1;
+					}
 
-						if(arrivalTime < 0) {
-							arrivalTime = departureTime;
-						}
-						else if(departureTime < 0) {
-							departureTime = arrivalTime;
-						}
+					if(arrivalTime < 0) {
+						arrivalTime = departureTime;
+					}
+					else if(departureTime < 0) {
+						departureTime = arrivalTime;
+					}
 
+					// if no departure has been set yet
+					if(currentFPLANRoute.getFirstDepartureTime() < 0) {
+						currentFPLANRoute.setFirstDepartureTime(departureTime);
+					}
 
-						// if no departure has been set yet
-						if(currentFPLANRoute.getFirstDepartureTime() < 0) {
-							currentFPLANRoute.setFirstDepartureTime(departureTime);
-						}
-
-						// only add if stop is not "Durchfahrt" or "Diensthalt"
-						if(!(arrivalTimeNegative && departureTimeNegative)) {
-							currentFPLANRoute.addRouteStop(newLine.substring(0, 7), arrivalTime, departureTime);
-						}
+					// only add if stop is not "Durchfahrt" or "Diensthalt"
+					if(!(arrivalTimeNegative && departureTimeNegative)) {
+						currentFPLANRoute.addRouteStop(newLine.substring(0, 7), arrivalTime, departureTime);
 					}
 				}
 
@@ -257,11 +222,36 @@ public final class FPLANReader {
 			counter.printCounter();
 
 			log.info("Finished parsing FPLAN.");
-			if (!vehicleTypes.isEmpty()) {
-				log.info("Skipped vehicle types: " + skippedVehicleTypes);
-			}
+
+			writeFilterStats(filters);
 
 		return hafasRoutes;
+	}
+
+	private static void writeFilterStats(Set<HafasFilter> filters) {
+		for(HafasFilter filter : filters) {
+			String filterName = filter.getClass().getSimpleName();
+			try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filterName + "_filteredIn.txt"), "utf-8"))) {
+				for (String id : filter.getIdsFilteredIn()) {
+					bw.write(id + "\n");
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+			try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filterName + "_filteredOut.txt"), "utf-8"))) {
+				for (String id : filter.getIdsFilteredOut()) {
+					bw.write(id + "\n");
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+    }
+
+	private static boolean keepRoute(FPLANRoute route, Set<HafasFilter> filters) {
+		if (route == null) return false;
+		if (filters.isEmpty()) return true;
+		return filters.stream().allMatch(f -> f.keepRoute(route));
 	}
 
 }
