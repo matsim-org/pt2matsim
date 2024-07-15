@@ -60,6 +60,8 @@ public class FPLANRoute {
 	private final List<TransitRouteStop> transitRouteStops = new ArrayList<>();
 
 	private Id<VehicleType> vehicleTypeId;
+	private boolean isRailReplacementBus;
+	private int localBitfeldnr;
 
 	public static void setSchedule(TransitSchedule schedule) {
 		FPLANRoute.schedule = schedule;
@@ -241,5 +243,21 @@ public class FPLANRoute {
 
 	public Id<VehicleType> getVehicleTypeId() {
 		return vehicleTypeId;
+	}
+
+	public void setIsRailReplacementBus() {
+		this.isRailReplacementBus = true;
+	}
+
+	public boolean isIsRailReplacementBus() {
+		return isRailReplacementBus;
+	}
+
+	public void setLocalBitfeldNr(int localBitfeldnr) {
+		this.localBitfeldnr = localBitfeldnr;
+	}
+
+	public int getLocalBitfeldNr() {
+		return localBitfeldnr;
 	}
 }
