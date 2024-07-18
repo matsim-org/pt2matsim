@@ -1,6 +1,5 @@
 package org.matsim.pt2matsim.hafas.filter;
 
-import java.util.Map;
 import java.util.Set;
 import org.matsim.pt2matsim.hafas.lib.FPLANRoute;
 
