@@ -177,29 +177,31 @@ public class FPLANRoute {
 			throw new RuntimeException("Schedule and stopFacilities not yet defined for FPLANRoute!");
 		}
 
-		for(Object[] t : tmpStops) {
-			Id<TransitStopFacility> stopFacilityId = Id.create((String) t[0], TransitStopFacility.class);
-			int arrivalTime = (int) t[1];
-			int departureTime = (int) t[2];
+		if (transitRouteStops.isEmpty()) {
+			for(Object[] t : tmpStops) {
+				Id<TransitStopFacility> stopFacilityId = Id.create((String) t[0], TransitStopFacility.class);
+				int arrivalTime = (int) t[1];
+				int departureTime = (int) t[2];
 
-			double arrivalDelay = 0.0;
-			if(arrivalTime > 0 && firstDepartureTime > 0) {
-				arrivalDelay = arrivalTime + initialDelay - firstDepartureTime;
-			}
-			double departureDelay = 0.0;
-			if(departureTime > 0 && firstDepartureTime > 0) {
-				departureDelay = departureTime + initialDelay - firstDepartureTime;
-			} else if(arrivalDelay > 0) {
-				departureDelay = arrivalDelay + initialDelay;
-			}
+				double arrivalDelay = 0.0;
+				if(arrivalTime > 0 && firstDepartureTime > 0) {
+					arrivalDelay = arrivalTime + initialDelay - firstDepartureTime;
+				}
+				double departureDelay = 0.0;
+				if(departureTime > 0 && firstDepartureTime > 0) {
+					departureDelay = departureTime + initialDelay - firstDepartureTime;
+				} else if(arrivalDelay > 0) {
+					departureDelay = arrivalDelay + initialDelay;
+				}
 
-			TransitStopFacility stopFacility = schedule.getFacilities().get(stopFacilityId);
-			if (stopFacility == null) {
-				log.warn("StopFacility " + stopFacilityId + " not defined, not adding stop" + fahrtNummer);
-			} else {
-				TransitRouteStop routeStop = scheduleFactory.createTransitRouteStop(stopFacility, arrivalDelay, departureDelay);
-				routeStop.setAwaitDepartureTime(true); // Only *T-Lines (currently not implemented) would have this as false...
-				transitRouteStops.add(routeStop);
+				TransitStopFacility stopFacility = schedule.getFacilities().get(stopFacilityId);
+				if (stopFacility == null) {
+					log.warn("StopFacility " + stopFacilityId + " not defined, not adding stop" + fahrtNummer);
+				} else {
+					TransitRouteStop routeStop = scheduleFactory.createTransitRouteStop(stopFacility, arrivalDelay, departureDelay);
+					routeStop.setAwaitDepartureTime(true); // Only *T-Lines (currently not implemented) would have this as false...
+					transitRouteStops.add(routeStop);
+				}
 			}
 		}
 
