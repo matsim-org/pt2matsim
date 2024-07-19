@@ -58,7 +58,7 @@ public final class FPLANReader {
 	 *
 	 * @return the list of FPLANRoutes
 	 */
-	public static List<FPLANRoute> parseFPLAN(Map<String, String> operators, String FPLANfile, Set<HafasFilter> filters, Charset encodingCharset) throws IOException {
+	public static List<FPLANRoute> parseFPLAN(Map<String, String> operators, String FPLANfile, List<HafasFilter> filters, Charset encodingCharset) throws IOException {
 		List<FPLANRoute> hafasRoutes = new ArrayList<>();
 
 			FPLANRoute currentFPLANRoute = null;
@@ -228,7 +228,7 @@ public final class FPLANReader {
 		return hafasRoutes;
 	}
 
-	private static void writeFilterStats(Set<HafasFilter> filters) {
+	private static void writeFilterStats(List<HafasFilter> filters) {
 		for(HafasFilter filter : filters) {
 			String filterName = filter.getClass().getSimpleName();
 			try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filterName + "_filteredIn.txt"), "utf-8"))) {
@@ -248,7 +248,7 @@ public final class FPLANReader {
 		}
     }
 
-	private static boolean keepRoute(FPLANRoute route, Set<HafasFilter> filters) {
+	private static boolean keepRoute(FPLANRoute route, List<HafasFilter> filters) {
 		if (route == null) return false;
 		if (filters.isEmpty()) return true;
 		return filters.stream().allMatch(f -> f.keepRoute(route));

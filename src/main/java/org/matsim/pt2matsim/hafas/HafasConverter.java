@@ -67,10 +67,10 @@ public final class HafasConverter {
     }
 
     public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles) throws IOException {
-		run(hafasFolder, schedule, transformation, vehicles, new HashSet<>(), StandardCharsets.UTF_8);
+		run(hafasFolder, schedule, transformation, vehicles, new ArrayList<>(), StandardCharsets.UTF_8);
 	}
 
-	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, Set<HafasFilter> filters, Charset encodingCharset) throws IOException {
+	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, List<HafasFilter> filters, Charset encodingCharset) throws IOException {
 		if(!hafasFolder.endsWith("/")) hafasFolder += "/";
 
 		log.info("Creating the schedule based on HAFAS...");
