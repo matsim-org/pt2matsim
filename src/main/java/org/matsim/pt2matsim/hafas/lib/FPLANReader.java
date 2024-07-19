@@ -130,12 +130,20 @@ public final class FPLANReader {
 					 37-42 	[#]INT32 	(optional) Index für das x. Auftreten oder Ankunftszeitpunkt.
 					 */
 					else if(newLine.charAt(1) == 'A' && newLine.charAt(3) == 'V' && newLine.charAt(4) == 'E') {
+						String startStopId = null;
+						String endStopId = null;
 						int localBitfeldnr = 0;
+						if(!newLine.substring(8, 14).trim().isEmpty()) {
+							startStopId = newLine.substring(8, 14);
+						}
+						if(!newLine.substring(15, 21).trim().isEmpty()) {
+							endStopId = newLine.substring(15, 21);
+						}
 						if(!newLine.substring(22, 28).trim().isEmpty()) {
 							localBitfeldnr = Integer.parseInt(newLine.substring(22, 28));
 						}
 						// TODO there may be more than one *A VE line per *Z block (when the bitfield changes during the route). This is an important issue in HAFAS!
-						currentFPLANRoute.setLocalBitfeldNr(localBitfeldnr);
+						currentFPLANRoute.addLocalBitfeldNr(localBitfeldnr, startStopId, endStopId);
 					}
 
 					// Bahnersatz: *A BE

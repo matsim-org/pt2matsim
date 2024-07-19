@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import org.apache.logging.log4j.LogManager;
@@ -20,6 +21,7 @@ public class OperationDayFilter implements HafasFilter {
     private final Set<Integer> bitfeldNummern;
 
     private final Logger log = LogManager.getLogger(HafasConverter.class);
+
     private final Set<String> idsFilteredIn = new TreeSet<>();
     private final Set<String> idsFilteredOut = new TreeSet<>();
 
@@ -46,10 +48,10 @@ public class OperationDayFilter implements HafasFilter {
 
     @Override
     public boolean keepRoute(FPLANRoute route) {
-        String localBitfeldNrStr = String.valueOf(route.getLocalBitfeldNr());
-        boolean keep = this.bitfeldNummern.contains(route.getLocalBitfeldNr());
-        if (keep) this.idsFilteredIn.add(localBitfeldNrStr);
-        else this.idsFilteredOut.add(localBitfeldNrStr);
+        List<String> localBitfeldNrStr = route.getLocalBitfeldNumbers().stream().map(String::valueOf).toList();
+        boolean keep = route.getLocalBitfeldNumbers().stream().anyMatch(this.bitfeldNummern::contains);
+        if (keep) this.idsFilteredIn.addAll(localBitfeldNrStr);
+        else this.idsFilteredOut.addAll(localBitfeldNrStr);
         return keep;
     }
 
@@ -88,6 +90,10 @@ public class OperationDayFilter implements HafasFilter {
         }
         log.info("  Read bitfeld numbers... done.");
 
+        return bitfeldNummern;
+    }
+
+    public Set<Integer> getBitfeldNummern() {
         return bitfeldNummern;
     }
 }

@@ -21,10 +21,20 @@
 
 package org.matsim.pt2matsim.hafas.lib;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
-import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.core.utils.collections.Tuple;
+import org.matsim.pt.transitSchedule.api.Departure;
+import org.matsim.pt.transitSchedule.api.TransitRouteStop;
+import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.pt.transitSchedule.api.TransitScheduleFactory;
+import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleType;
 
@@ -38,7 +48,7 @@ import java.util.List;
  */
 public class FPLANRoute {
 
-	private static Logger log = LogManager.getLogger(FPLANRoute.class);
+	private static final Logger log = LogManager.getLogger(FPLANRoute.class);
 
 	private static TransitSchedule schedule;
 	private static TransitScheduleFactory scheduleFactory;
@@ -56,12 +66,12 @@ public class FPLANRoute {
 	private final int numberOfDepartures;
 	private final int cycleTime; // [sec]
 
-	private List<Object[]> tmpStops = new ArrayList<>();
+	private final List<Object[]> tmpStops = new ArrayList<>();
 	private final List<TransitRouteStop> transitRouteStops = new ArrayList<>();
 
 	private Id<VehicleType> vehicleTypeId;
 	private boolean isRailReplacementBus;
-	private int localBitfeldnr;
+	private final Map<Integer, Tuple<String, String>> localBitfeldNummern = new TreeMap<>();
 
 	public static void setSchedule(TransitSchedule schedule) {
 		FPLANRoute.schedule = schedule;
@@ -142,12 +152,10 @@ public class FPLANRoute {
 		List<Departure> departures = new ArrayList<>();
 		for(int i = 0; i < numberOfDepartures; i++) {
 			// Departure ID
-//			Id<Departure> departureId = Id.create(routeDescription + "_" + String.format("%04d", i + 1), Departure.class);
 			Id<Departure> departureId = Id.create(String.format("%05d", depId++), Departure.class);
 			// Departure time
 			double departureTime = firstDepartureTime + (i * cycleTime) - initialDelay;
 			// Departure vehicle
-//			Id<Vehicle> vehicleId = Id.create(getVehicleId() + "_" + String.format("%04d", i + 1), Vehicle.class);
 			Id<Vehicle> vehicleId = Id.create(getVehicleId() + "_" + departureId, Vehicle.class);
 			// create and add departure
 			departures.add(createDeparture(departureId, departureTime, vehicleId));
@@ -167,6 +175,10 @@ public class FPLANRoute {
 	 */
 	public String getLastStopId() {
 		return (String) tmpStops.get(tmpStops.size()-1)[0];
+	}
+
+	public List<TransitRouteStop> getTransitRouteStops() {
+		return getTransitRouteStops(new HashSet<>());
 	}
 
 	/**
@@ -255,11 +267,11 @@ public class FPLANRoute {
 		return isRailReplacementBus;
 	}
 
-	public void setLocalBitfeldNr(int localBitfeldnr) {
-		this.localBitfeldnr = localBitfeldnr;
+	public void addLocalBitfeldNr(int localBitfeldnr, String startStopId, String endStopId) {
+		this.localBitfeldNummern.put(localBitfeldnr, new Tuple<>(startStopId, endStopId));
 	}
 
-	public int getLocalBitfeldNr() {
-		return localBitfeldnr;
+	public List<Integer> getLocalBitfeldNumbers() {
+		return localBitfeldNummern.keySet().stream().toList();
 	}
 }
