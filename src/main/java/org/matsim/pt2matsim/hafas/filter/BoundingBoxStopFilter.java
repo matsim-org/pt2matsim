@@ -80,9 +80,9 @@ public class BoundingBoxStopFilter implements HafasFilter {
 
     private boolean pointInBoundingBox(Coord coord, BoundingBox boundingBox) {
         return (
-                coord.getY() >= boundingBox.south() &
-                coord.getY() <= boundingBox.north() &
-                coord.getX() >= boundingBox.west() &
+                coord.getY() >= boundingBox.south() &&
+                coord.getY() <= boundingBox.north() &&
+                coord.getX() >= boundingBox.west() &&
                 coord.getX() <= boundingBox.east()
             );
     }
