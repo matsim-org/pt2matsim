@@ -133,11 +133,11 @@ public final class FPLANReader {
 						String startStopId = null;
 						String endStopId = null;
 						int localBitfeldnr = 0;
-						if(!newLine.substring(8, 14).trim().isEmpty()) {
-							startStopId = newLine.substring(8, 14);
+						if(!newLine.substring(6, 13).trim().isEmpty()) {
+							startStopId = newLine.substring(6, 13);
 						}
-						if(!newLine.substring(15, 21).trim().isEmpty()) {
-							endStopId = newLine.substring(15, 21);
+						if(!newLine.substring(14, 21).trim().isEmpty()) {
+							endStopId = newLine.substring(14, 21);
 						}
 						if(!newLine.substring(22, 28).trim().isEmpty()) {
 							localBitfeldnr = Integer.parseInt(newLine.substring(22, 28));
