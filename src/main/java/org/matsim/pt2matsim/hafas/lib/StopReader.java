@@ -79,14 +79,15 @@ public class StopReader {
 				33−38 INT16 Z-Koordinate (Tunnel und andere Streckenelemente ohne eigentliche Haltestelle haben keine Z-Koordinate)
 				40ff CHAR Kommentarzeichen "%"gefolgt vom Klartext des Haltestellennamens (optional zur besseren Lesbarkeit)
 				 */
-				Id<TransitStopFacility> stopId = Id.create(newLine.substring(0, 7), TransitStopFacility.class);
-				double xCoord = Double.parseDouble(newLine.substring(8, 19));
-				double yCoord = Double.parseDouble(newLine.substring(20, 31));
+				String[] parts = newLine.split(" ");
+				Id<TransitStopFacility> stopId = Id.create(parts[0].trim(), TransitStopFacility.class);
+				double xCoord = Double.parseDouble(parts[1].trim());
+				double yCoord = Double.parseDouble(parts[2].trim());
 				Coord coord = new Coord(xCoord, yCoord);
 				if (this.transformation != null) {
 					coord = this.transformation.transform(coord);
 				}
-				String stopName = newLine.substring(39).replace("% ", "");
+				String stopName = newLine.substring(39).replace("% ", "").trim();
 				createStop(stopId, coord, stopName);
 			}
 			readsLines.close();
