@@ -195,6 +195,8 @@ public class FPLANRoute {
 
 		if (this.transitRouteStops.isEmpty()) {
 			processStops(validStartStopIds, validEndStopIds);
+			assert this.transitRouteStops.size() <= this.tmpStops.size();
+			assert bitfeldNummern.size() > 1 || this.transitRouteStops.size() == this.tmpStops.size();
 		}
 
 		return this.transitRouteStops;
