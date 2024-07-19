@@ -184,40 +184,89 @@ public class FPLANRoute {
 	/**
 	 * @return the transit route stops of this route. Static schedule needs to be set.
 	 */
-	public List<TransitRouteStop> getTransitRouteStops() {
+	public List<TransitRouteStop> getTransitRouteStops(Set<Integer> bitfeldNummern) {
 		if(schedule == null) {
 			throw new RuntimeException("Schedule and stopFacilities not yet defined for FPLANRoute!");
 		}
 
-		if (transitRouteStops.isEmpty()) {
-			for(Object[] t : tmpStops) {
-				Id<TransitStopFacility> stopFacilityId = Id.create((String) t[0], TransitStopFacility.class);
-				int arrivalTime = (int) t[1];
-				int departureTime = (int) t[2];
+		List<Tuple<String, String>> validBitfeldNummern = getValidBitfeldNummern(bitfeldNummern);
+		List<String> validStartStopIds = validBitfeldNummern.stream().map(Tuple::getFirst).collect(Collectors.toCollection(ArrayList::new));
+		List<String> validEndStopIds = validBitfeldNummern.stream().map(Tuple::getSecond).collect(Collectors.toCollection(ArrayList::new));
 
-				double arrivalDelay = 0.0;
-				if(arrivalTime > 0 && firstDepartureTime > 0) {
-					arrivalDelay = arrivalTime + initialDelay - firstDepartureTime;
-				}
-				double departureDelay = 0.0;
-				if(departureTime > 0 && firstDepartureTime > 0) {
-					departureDelay = departureTime + initialDelay - firstDepartureTime;
-				} else if(arrivalDelay > 0) {
-					departureDelay = arrivalDelay + initialDelay;
-				}
-
-				TransitStopFacility stopFacility = schedule.getFacilities().get(stopFacilityId);
-				if (stopFacility == null) {
-					log.warn("StopFacility " + stopFacilityId + " not defined, not adding stop" + fahrtNummer);
-				} else {
-					TransitRouteStop routeStop = scheduleFactory.createTransitRouteStop(stopFacility, arrivalDelay, departureDelay);
-					routeStop.setAwaitDepartureTime(true); // Only *T-Lines (currently not implemented) would have this as false...
-					transitRouteStops.add(routeStop);
-				}
-			}
+		if (this.transitRouteStops.isEmpty()) {
+			processStops(validStartStopIds, validEndStopIds);
 		}
 
-		return transitRouteStops;
+		return this.transitRouteStops;
+	}
+
+	private List<Tuple<String, String>> getValidBitfeldNummern(Set<Integer> bitfeldNummern) {
+		if (bitfeldNummern.isEmpty()) {
+			return new ArrayList<>(this.localBitfeldNummern.values());
+		}
+		return this.localBitfeldNummern.entrySet().stream()
+			.filter(entry -> bitfeldNummern.contains(entry.getKey())).map(Map.Entry::getValue).toList();
+	}
+
+	private void processStops(List<String> validStartStopIds, List<String> validEndStopIds) {
+		boolean stopWithinValidSection = false;
+		String lastSectionStopId = null;
+
+		for(Object[] t : this.tmpStops) {
+			String stopId = (String) t[0];
+			// if section is open, process last stop and close section
+			if (stopWithinValidSection && validEndStopIds.contains(stopId)) {
+				processStop(t, stopId);
+				stopWithinValidSection = false;
+				validEndStopIds.remove(stopId);
+				lastSectionStopId = stopId;
+			}
+			// opens the section
+			if (validStartStopIds.contains(stopId)) {
+				stopWithinValidSection = true;
+				validStartStopIds.remove(stopId);
+			}
+			// process stops between section's boundaries (avoids re-processing previous section's end stop)
+			if (stopWithinValidSection && !stopId.equals(lastSectionStopId)) {
+				processStop(t, stopId);
+			}
+
+		}
+	}
+
+	private void processStop(Object[] tmpStop, String stopId) {
+		Id<TransitStopFacility> stopFacilityId = Id.create(stopId, TransitStopFacility.class);
+
+		int arrivalTime = (int) tmpStop[1];
+		int departureTime = (int) tmpStop[2];
+
+		double arrivalDelay = calculateArrivalDelay(arrivalTime);
+		double departureDelay = calculateDepartureDelay(departureTime, arrivalDelay);
+
+		TransitStopFacility stopFacility = schedule.getFacilities().get(stopFacilityId);
+		if (stopFacility == null) {
+            log.warn("StopFacility {} not defined, not adding stop {}", stopFacilityId, this.fahrtNummer);
+		} else {
+			TransitRouteStop routeStop = scheduleFactory.createTransitRouteStop(stopFacility, arrivalDelay, departureDelay);
+			routeStop.setAwaitDepartureTime(true); // Only *T-Lines (currently not implemented) would have this as false...
+			this.transitRouteStops.add(routeStop);
+		}
+	}
+
+	private double calculateArrivalDelay(int arrivalTime) {
+		if (arrivalTime > 0 && firstDepartureTime > 0) {
+			return arrivalTime + initialDelay - firstDepartureTime;
+		}
+		return 0.0;
+	}
+
+	private double calculateDepartureDelay(int departureTime, double arrivalDelay) {
+		if (departureTime > 0 && firstDepartureTime > 0) {
+			return departureTime + initialDelay - firstDepartureTime;
+		} else if (arrivalDelay > 0) {
+			return arrivalDelay + initialDelay;
+		}
+		return 0.0;
 	}
 
 	private Departure createDeparture(Id<Departure> departureId, double departureTime, Id<Vehicle> vehicleId) {

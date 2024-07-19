@@ -24,6 +24,7 @@ package org.matsim.pt2matsim.hafas;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -41,6 +42,7 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitScheduleFactory;
 import org.matsim.pt2matsim.hafas.filter.HafasFilter;
+import org.matsim.pt2matsim.hafas.filter.OperationDayFilter;
 import org.matsim.pt2matsim.hafas.lib.FPLANReader;
 import org.matsim.pt2matsim.hafas.lib.FPLANRoute;
 import org.matsim.pt2matsim.hafas.lib.MinimalTransferTimesReader;
@@ -98,7 +100,9 @@ public final class HafasConverter {
 		// TODO another important HAFAS-file is DURCHBI. This feature is not supported by MATSim yet (but in Switzerland, for example, locally very important.
 
 		log.info("  Creating transit routes...");
-		createTransitRoutesFromFPLAN(routes, schedule, vehicles);
+		OperationDayFilter operationDayFilter = (OperationDayFilter) filters.stream().filter(f -> f instanceof OperationDayFilter).findAny().orElse(null);
+		Set<Integer> bitfeldNummern = operationDayFilter == null ? new HashSet<>() : operationDayFilter.getBitfeldNummern();
+		createTransitRoutesFromFPLAN(routes, schedule, vehicles, bitfeldNummern);
 		log.info("  Creating transit routes... done.");
 
 		// 5. Clean schedule
@@ -111,7 +115,7 @@ public final class HafasConverter {
 		log.info("Creating the schedule based on HAFAS... done.");
 	}
 
-	private static void createTransitRoutesFromFPLAN(List<FPLANRoute> routes, TransitSchedule schedule, Vehicles vehicles) {
+	private static void createTransitRoutesFromFPLAN(List<FPLANRoute> routes, TransitSchedule schedule, Vehicles vehicles, Set<Integer> bitfeldNummern) {
 		TransitScheduleFactory scheduleFactory = schedule.getFactory();
 		VehiclesFactory vehicleFactory = vehicles.getFactory();
 		Map<Id<TransitLine>, Integer> routeNrs = new HashMap<>();
@@ -176,7 +180,7 @@ public final class HafasConverter {
 				routeNrs.put(lineId, routeNr);
 
 				// create actual TransitRoute
-				TransitRoute transitRoute = scheduleFactory.createTransitRoute(routeId, null, fplanRoute.getTransitRouteStops(), fplanRoute.getMode());
+				TransitRoute transitRoute = scheduleFactory.createTransitRoute(routeId, null, fplanRoute.getTransitRouteStops(bitfeldNummern), fplanRoute.getMode());
 				for(Departure departure : fplanRoute.getDepartures()) {
 					transitRoute.addDeparture(departure);
 					try {
