@@ -69,6 +69,19 @@ public final class FPLANReader {
 			String newLine = readsLines.readLine();
 			while(newLine != null) {
 				if(newLine.charAt(0) == '*') {
+					// Skip initial comment line
+					if(newLine.charAt(1) == 'F' && newLine.charAt(2) == ' ') {
+						newLine = readsLines.readLine();
+						continue;
+					}
+
+					if(newLine.charAt(1) == 'Z' || (newLine.charAt(1) == 'K' && newLine.charAt(2) == 'W')) {
+						// new trip is beginning. Store previous route
+						if (keepRoute(currentFPLANRoute, filters)) {
+							hafasRoutes.add(currentFPLANRoute);
+						}
+						currentFPLANRoute = null;
+					}
 
 					/*
 					 Initialzeile neue Fahrt
@@ -81,11 +94,6 @@ public final class FPLANReader {
 					 28−30 	INT16 	Taktzeit in Minuten (Abstand zwischen zwei Fahrten).
 					 */
 					if(newLine.charAt(1) == 'Z') {
-						// new trip is beginning. Store previous route
-						if(keepRoute(currentFPLANRoute, filters)) {
-							hafasRoutes.add(currentFPLANRoute);
-						}
-
 						// get operator
 						String operatorCode = newLine.substring(10, 16).trim();
 						String operator = operators.get(operatorCode);
@@ -101,6 +109,12 @@ public final class FPLANReader {
 						} catch (Exception ignored) {
 						}
 						currentFPLANRoute = new FPLANRoute(operator, operatorCode, fahrtnummer, numberOfDepartures, cycleTime);
+					}
+
+					// *KW (Kurswagen) share attributes with actual trips (*Z). The following skips KW until finding the next Z.
+					if (currentFPLANRoute == null) {
+						newLine = readsLines.readLine();
+						continue;
 					}
 
 					/*
@@ -142,7 +156,6 @@ public final class FPLANReader {
 						if(!newLine.substring(22, 28).trim().isEmpty()) {
 							localBitfeldnr = Integer.parseInt(newLine.substring(22, 28));
 						}
-						// TODO there may be more than one *A VE line per *Z block (when the bitfield changes during the route). This is an important issue in HAFAS!
 						currentFPLANRoute.addLocalBitfeldNr(localBitfeldnr, startStopId, endStopId);
 					}
 
