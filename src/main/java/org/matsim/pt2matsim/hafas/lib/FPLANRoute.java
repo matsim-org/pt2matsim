@@ -247,6 +247,7 @@ public class FPLANRoute {
 		// if no departure has been set yet
 		if(this.firstDepartureTime < 0) {
 			this.firstDepartureTime = departureTime;
+			arrivalTime = -1;  // default for the first arrivalTime
 		}
 
 		double arrivalDelay = calculateArrivalDelay(arrivalTime);
