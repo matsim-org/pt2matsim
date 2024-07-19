@@ -29,7 +29,7 @@ public class VehSystemFilter implements HafasFilter {
     @Override
     public boolean keepRoute(FPLANRoute route) {
         boolean keep;
-        if (this.includeTrainReplacementBus && route.getVehicleTypeId().toString().equals("B")) {
+        if (this.includeTrainReplacementBus && route.isRailReplacementBus() && route.getVehicleTypeId().toString().equals("B")) {
             keep = true;
         } else{
             keep = this.vehicleSystems.contains(route.getVehicleTypeId().toString());
