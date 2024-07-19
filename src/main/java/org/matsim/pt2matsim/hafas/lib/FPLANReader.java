@@ -225,11 +225,6 @@ public final class FPLANReader {
 						departureTime = arrivalTime;
 					}
 
-					// if no departure has been set yet
-					if(currentFPLANRoute.getFirstDepartureTime() < 0) {
-						currentFPLANRoute.setFirstDepartureTime(departureTime);
-					}
-
 					// only add if stop is not "Durchfahrt" or "Diensthalt"
 					if(!(arrivalTimeNegative && departureTimeNegative)) {
 						currentFPLANRoute.addRouteStop(newLine.substring(0, 7), arrivalTime, departureTime);

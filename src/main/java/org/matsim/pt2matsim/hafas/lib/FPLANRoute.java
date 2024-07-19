@@ -67,7 +67,7 @@ public class FPLANRoute {
 	private final int cycleTime; // [sec]
 
 	private final List<Object[]> tmpStops = new ArrayList<>();
-	private final List<TransitRouteStop> transitRouteStops = new ArrayList<>();
+	private List<TransitRouteStop> transitRouteStops;
 
 	private Id<VehicleType> vehicleTypeId;
 	private boolean isRailReplacementBus;
@@ -193,7 +193,9 @@ public class FPLANRoute {
 		List<String> validStartStopIds = validBitfeldNummern.stream().map(Tuple::getFirst).collect(Collectors.toCollection(ArrayList::new));
 		List<String> validEndStopIds = validBitfeldNummern.stream().map(Tuple::getSecond).collect(Collectors.toCollection(ArrayList::new));
 
-		if (this.transitRouteStops.isEmpty()) {
+		if (this.transitRouteStops == null || !bitfeldNummern.isEmpty()) {
+			transitRouteStops = new ArrayList<>();
+			firstDepartureTime = -1;
 			processStops(validStartStopIds, validEndStopIds);
 			assert this.transitRouteStops.size() <= this.tmpStops.size();
 			assert bitfeldNummern.size() > 1 || this.transitRouteStops.size() == this.tmpStops.size();
@@ -241,6 +243,11 @@ public class FPLANRoute {
 
 		int arrivalTime = (int) tmpStop[1];
 		int departureTime = (int) tmpStop[2];
+
+		// if no departure has been set yet
+		if(this.firstDepartureTime < 0) {
+			this.firstDepartureTime = departureTime;
+		}
 
 		double arrivalDelay = calculateArrivalDelay(arrivalTime);
 		double departureDelay = calculateDepartureDelay(departureTime, arrivalDelay);
@@ -314,7 +321,7 @@ public class FPLANRoute {
 		this.isRailReplacementBus = true;
 	}
 
-	public boolean isIsRailReplacementBus() {
+	public boolean isRailReplacementBus() {
 		return isRailReplacementBus;
 	}
 
