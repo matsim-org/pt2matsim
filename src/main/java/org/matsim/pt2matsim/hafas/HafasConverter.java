@@ -94,6 +94,8 @@ public final class HafasConverter {
 
 		// 4. Create all lines from HAFAS-Schedule
 		log.info("  Read transit lines...");
+		// set schedule so fplanRoutes have stopfacilities available
+		FPLANRoute.setSchedule(schedule);
 		List<FPLANRoute> routes = FPLANReader.parseFPLAN(operators, hafasFolder + "FPLAN", filters, encodingCharset);
 		log.info("  Read transit lines... done.");
 
@@ -121,9 +123,6 @@ public final class HafasConverter {
 		Map<Id<TransitLine>, Integer> routeNrs = new HashMap<>();
 
 		Counter lineCounter = new Counter(" TransitLine # ");
-
-		// set schedule so fplanRoutes have stopfacilities available
-		FPLANRoute.setSchedule(schedule);
 
 		for(FPLANRoute fplanRoute : routes) {
 			Id<VehicleType> vehicleTypeId = fplanRoute.getVehicleTypeId();
