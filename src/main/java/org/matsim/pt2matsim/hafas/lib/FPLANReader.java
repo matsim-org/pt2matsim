@@ -236,30 +236,8 @@ public final class FPLANReader {
 
 			log.info("Finished parsing FPLAN.");
 
-			writeFilterStats(filters);
-
 		return hafasRoutes;
 	}
-
-	private static void writeFilterStats(List<HafasFilter> filters) {
-		for(HafasFilter filter : filters) {
-			String filterName = filter.getClass().getSimpleName();
-			try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filterName + "_filteredIn.txt"), "utf-8"))) {
-				for (String id : filter.getIdsFilteredIn()) {
-					bw.write(id + "\n");
-				}
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-			try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filterName + "_filteredOut.txt"), "utf-8"))) {
-				for (String id : filter.getIdsFilteredOut()) {
-					bw.write(id + "\n");
-				}
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-    }
 
 	private static boolean keepRoute(FPLANRoute route, List<HafasFilter> filters) {
 		if (route == null) return false;
