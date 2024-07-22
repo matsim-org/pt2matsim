@@ -41,8 +41,11 @@ import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitScheduleFactory;
+import org.matsim.pt.transitSchedule.api.TransitStopFacility;
+import org.matsim.pt2matsim.hafas.filter.BoundingBoxStopFilter;
 import org.matsim.pt2matsim.hafas.filter.HafasFilter;
 import org.matsim.pt2matsim.hafas.filter.OperationDayFilter;
+import org.matsim.pt2matsim.hafas.filter.StopsFilter;
 import org.matsim.pt2matsim.hafas.lib.FPLANReader;
 import org.matsim.pt2matsim.hafas.lib.FPLANRoute;
 import org.matsim.pt2matsim.hafas.lib.MinimalTransferTimesReader;
@@ -69,10 +72,11 @@ public final class HafasConverter {
     }
 
     public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles) throws IOException {
-		run(hafasFolder, schedule, transformation, vehicles, new ArrayList<>(), StandardCharsets.UTF_8);
+		run(hafasFolder, schedule, transformation, vehicles, new ArrayList<>(), StandardCharsets.UTF_8, false);
 	}
 
-	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, List<HafasFilter> filters, Charset encodingCharset) throws IOException {
+	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, List<HafasFilter> filters, Charset encodingCharset,
+		boolean keepStopsInFilter) throws IOException {
 		if(!hafasFolder.endsWith("/")) hafasFolder += "/";
 
 		log.info("Creating the schedule based on HAFAS...");
@@ -108,13 +112,35 @@ public final class HafasConverter {
 		log.info("  Creating transit routes... done.");
 
 		// 5. Clean schedule
-		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
+		Set<Id<TransitStopFacility>> stopsToKeep = new HashSet<>();
+		if (keepStopsInFilter) {
+			stopsToKeep = getStopsFromFilters(schedule, filters);
+		}
+		ScheduleCleaner.removeNotUsedStopFacilities(schedule, stopsToKeep);
 		ScheduleCleaner.removeNotUsedMinimalTransferTimes(schedule);
 		ScheduleCleaner.combineIdenticalTransitRoutes(schedule);
 		ScheduleCleaner.cleanDepartures(schedule);
 		ScheduleCleaner.cleanVehicles(schedule, vehicles);
 
 		log.info("Creating the schedule based on HAFAS... done.");
+	}
+
+	private static Set<Id<TransitStopFacility>> getStopsFromFilters(TransitSchedule schedule, List<HafasFilter> filters) {
+		Set<Id<TransitStopFacility>> stopsToKeep = new HashSet<>();
+		for (HafasFilter filter : filters) {
+			for (TransitStopFacility stopFacility : schedule.getFacilities().values()) {
+				if (filter instanceof BoundingBoxStopFilter) {
+					if(((BoundingBoxStopFilter) filter).stopInBoundingBox(stopFacility)) {
+						stopsToKeep.add(stopFacility.getId());
+					}
+				} else if (filter instanceof StopsFilter) {
+					if(((StopsFilter) filter).getStopIds().contains(stopFacility.getId().toString())) {
+						stopsToKeep.add(stopFacility.getId());
+					}
+				}
+			}
+		}
+		return stopsToKeep;
 	}
 
 	private static void createTransitRoutesFromFPLAN(List<FPLANRoute> routes, TransitSchedule schedule, Vehicles vehicles, Set<Integer> bitfeldNummern) {

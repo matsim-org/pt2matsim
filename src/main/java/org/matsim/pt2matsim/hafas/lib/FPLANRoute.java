@@ -123,10 +123,6 @@ public class FPLANRoute {
 		return vehicleTypeId + "_" + operator;
 	}
 
-	/**
-	 * @param arrivalTime   Expected as seconds from midnight or zero if not available.
-	 * @param departureTime Expected as seconds from midnight or zero if not available.
-	 */
 	public void addRouteStop(String stopFacilityId, int arrivalTime, int departureTime, boolean isBoardingAllowed, boolean isAlightingAllowed) {
 		hafasRouteStops.add(new HafasRouteStop(stopFacilityId, arrivalTime, departureTime, isBoardingAllowed, isAlightingAllowed));
 	}

@@ -60,7 +60,7 @@ public final class ScheduleCleaner {
 	public static void main(String[] args) {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(args[0]);
 		removeTransitRoutesWithoutLinkSequences(schedule);
-		removeNotUsedStopFacilities(schedule);
+		removeNotUsedStopFacilities(schedule, new HashSet<>());
 		if(args.length == 1) {
 			ScheduleTools.writeTransitSchedule(schedule, args[0]);
 		} else if(args.length == 2) {
@@ -75,12 +75,12 @@ public final class ScheduleCleaner {
 	 *
 	 * @param schedule the schedule in which the facilities should be removed
 	 */
-	public static void removeNotUsedStopFacilities(TransitSchedule schedule) {
+	public static void removeNotUsedStopFacilities(TransitSchedule schedule, Set<Id<TransitStopFacility>> stopsToKeep) {
 		log.info("... Removing not used stop facilities");
 		int removed = 0;
+        Set<Id<TransitStopFacility>> usedStopFacilities = new HashSet<>(stopsToKeep);
 
 		// Collect all used stop facilities:
-		Set<Id<TransitStopFacility>> usedStopFacilities = new HashSet<>();
 		for(TransitLine line : schedule.getTransitLines().values()) {
 			for(TransitRoute route : line.getRoutes().values()) {
 				for(TransitRouteStop stop : route.getStops()) {
@@ -515,7 +515,7 @@ public final class ScheduleCleaner {
 		}
 		log.info("   lines removed: " + linesToRemove.size());
 
-		removeNotUsedStopFacilities(schedule);
+		removeNotUsedStopFacilities(schedule, new HashSet<>());
 	}
 
 	/**
