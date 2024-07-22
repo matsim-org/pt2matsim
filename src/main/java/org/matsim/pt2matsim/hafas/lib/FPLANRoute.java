@@ -198,7 +198,7 @@ public class FPLANRoute {
 			firstDepartureTime = -1;
 			processStops(validStartStopIds, validEndStopIds);
 			assert this.transitRouteStops.size() <= this.tmpStops.size();
-			assert bitfeldNummern.size() > 1 || this.transitRouteStops.size() == this.tmpStops.size();
+			assert getLocalBitfeldNumbers().size() > 1 || this.transitRouteStops.size() == this.tmpStops.size();
 		}
 
 		return this.transitRouteStops;
