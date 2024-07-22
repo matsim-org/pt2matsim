@@ -66,12 +66,14 @@ public class FPLANRoute {
 	private final int numberOfDepartures;
 	private final int cycleTime; // [sec]
 
-	private final List<Object[]> tmpStops = new ArrayList<>();
+	private final List<HafasRouteStop> hafasRouteStops = new ArrayList<>();
 	private List<TransitRouteStop> transitRouteStops;
 
 	private Id<VehicleType> vehicleTypeId;
 	private boolean isRailReplacementBus;
 	private final Map<Integer, Tuple<String, String>> localBitfeldNummern = new TreeMap<>();
+
+	public record HafasRouteStop(String stopFacilityId, int arrivalTime, int departureTime, boolean isBoardingAllowed, boolean isAlightingAllowed) {}
 
 	public static void setSchedule(TransitSchedule schedule) {
 		FPLANRoute.schedule = schedule;
@@ -125,13 +127,16 @@ public class FPLANRoute {
 	 * @param arrivalTime   Expected as seconds from midnight or zero if not available.
 	 * @param departureTime Expected as seconds from midnight or zero if not available.
 	 */
-	public void addRouteStop(String stopFacilityId, int arrivalTime, int departureTime) {
-		Object[] tmpRouteStop = new Object[3];
-		tmpRouteStop[0] = stopFacilityId;
-		tmpRouteStop[1] = arrivalTime;
-		tmpRouteStop[2] = departureTime;
+	public void addRouteStop(String stopFacilityId, int arrivalTime, int departureTime, boolean isBoardingAllowed, boolean isAlightingAllowed) {
+		hafasRouteStops.add(new HafasRouteStop(stopFacilityId, arrivalTime, departureTime, isBoardingAllowed, isAlightingAllowed));
+	}
 
-		tmpStops.add(tmpRouteStop);
+	/**
+	 * @param arrivalTime   Expected as seconds from midnight or zero if not available.
+	 * @param departureTime Expected as seconds from midnight or zero if not available.
+	 */
+	public void addRouteStop(String stopFacilityId, int arrivalTime, int departureTime) {
+		hafasRouteStops.add(new HafasRouteStop(stopFacilityId, arrivalTime, departureTime, true, true));
 	}
 
 	/**
@@ -167,14 +172,14 @@ public class FPLANRoute {
 	 * @return the id of the first stop
 	 */
 	public String getFirstStopId() {
-		return (String) tmpStops.get(0)[0];
+		return (String) hafasRouteStops.get(0).stopFacilityId;
 	}
 
 	/**
 	 * @return the id of the last stop
 	 */
 	public String getLastStopId() {
-		return (String) tmpStops.get(tmpStops.size()-1)[0];
+		return (String) hafasRouteStops.get(hafasRouteStops.size()-1).stopFacilityId;
 	}
 
 	public List<TransitRouteStop> getTransitRouteStops() {
@@ -197,8 +202,8 @@ public class FPLANRoute {
 			transitRouteStops = new ArrayList<>();
 			firstDepartureTime = -1;
 			processStops(validStartStopIds, validEndStopIds);
-			assert this.transitRouteStops.size() <= this.tmpStops.size();
-			assert getLocalBitfeldNumbers().size() > 1 || this.transitRouteStops.size() == this.tmpStops.size();
+			assert this.transitRouteStops.size() <= this.hafasRouteStops.size();
+			assert getLocalBitfeldNumbers().size() > 1 || this.transitRouteStops.size() == this.hafasRouteStops.size();
 		}
 
 		return this.transitRouteStops;
@@ -216,11 +221,11 @@ public class FPLANRoute {
 		boolean stopWithinValidSection = false;
 		String lastSectionStopId = null;
 
-		for(Object[] t : this.tmpStops) {
-			String stopId = (String) t[0];
+		for(HafasRouteStop hafasRouteStop : this.hafasRouteStops) {
+			String stopId = hafasRouteStop.stopFacilityId;
 			// if section is open, process last stop and close section
 			if (stopWithinValidSection && validEndStopIds.contains(stopId)) {
-				processStop(t, stopId);
+				processStop(hafasRouteStop, stopId);
 				stopWithinValidSection = false;
 				validEndStopIds.remove(stopId);
 				lastSectionStopId = stopId;
@@ -232,17 +237,17 @@ public class FPLANRoute {
 			}
 			// process stops between section's boundaries (avoids re-processing previous section's end stop)
 			if (stopWithinValidSection && !stopId.equals(lastSectionStopId)) {
-				processStop(t, stopId);
+				processStop(hafasRouteStop, stopId);
 			}
 
 		}
 	}
 
-	private void processStop(Object[] tmpStop, String stopId) {
+	private void processStop(HafasRouteStop hafasRouteStop, String stopId) {
 		Id<TransitStopFacility> stopFacilityId = Id.create(stopId, TransitStopFacility.class);
 
-		int arrivalTime = (int) tmpStop[1];
-		int departureTime = (int) tmpStop[2];
+		int arrivalTime = hafasRouteStop.arrivalTime;
+		int departureTime = hafasRouteStop.departureTime;
 
 		// if no departure has been set yet
 		if(this.firstDepartureTime < 0) {
@@ -258,6 +263,8 @@ public class FPLANRoute {
             log.warn("StopFacility {} not defined, not adding stop {}", stopFacilityId, this.fahrtNummer);
 		} else {
 			TransitRouteStop routeStop = scheduleFactory.createTransitRouteStop(stopFacility, arrivalDelay, departureDelay);
+			routeStop.setAllowBoarding(hafasRouteStop.isBoardingAllowed);
+			routeStop.setAllowAlighting(hafasRouteStop.isAlightingAllowed);
 			routeStop.setAwaitDepartureTime(true); // Only *T-Lines (currently not implemented) would have this as false...
 			this.transitRouteStops.add(routeStop);
 		}

@@ -199,8 +199,8 @@ public final class FPLANReader {
 				 57−57 	CHAR (optional) "X", falls diese Haltestelle auf dem Laufschild der Fahrt aufgeführt wird.
 				 */
 				else {
-					boolean arrivalTimeNegative = newLine.charAt(29) == '-';
-					boolean departureTimeNegative = newLine.charAt(36) == '-';
+					boolean isAlightingAllowed = newLine.charAt(29) == '-';
+					boolean isBoardingAllowed = newLine.charAt(36) == '-';
 
 					int arrivalTime;
 					int departureTime;
@@ -225,10 +225,7 @@ public final class FPLANReader {
 						departureTime = arrivalTime;
 					}
 
-					// only add if stop is not "Durchfahrt" or "Diensthalt"
-					if(!(arrivalTimeNegative && departureTimeNegative)) {
-						currentFPLANRoute.addRouteStop(newLine.substring(0, 7), arrivalTime, departureTime);
-					}
+					currentFPLANRoute.addRouteStop(newLine.substring(0, 7), arrivalTime, departureTime, isBoardingAllowed, isAlightingAllowed);
 				}
 
 				newLine = readsLines.readLine();
