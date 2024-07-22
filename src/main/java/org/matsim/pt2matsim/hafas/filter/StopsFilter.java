@@ -15,6 +15,10 @@ public class StopsFilter implements HafasFilter {
 
     public enum StopFilterType {FIRST_STOP, ANY_STOP, ALL_STOPS, FIRST_OR_LAST_STOP}
 
+    public List<String> getStopIds() {
+        return stopIds;
+    }
+
     private final List<String> stopIds;
 
     public StopsFilter(List<String> stopIds, StopFilterType stopFilterType) {

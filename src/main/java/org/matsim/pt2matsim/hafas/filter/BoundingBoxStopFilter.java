@@ -51,19 +51,18 @@ public class BoundingBoxStopFilter implements HafasFilter {
 
     public boolean keepRoute(List<TransitStopFacility> routeStopFacilities) {
         boolean keep;
-        List<Coord> routeStopCoords = routeStopFacilities.stream().map(TransitStopFacility::getCoord).toList();
         switch (this.stopFilterType) {
             case FIRST_STOP -> {
-                keep = pointInBoundingBox(routeStopCoords.getFirst(), this.boundingBox);
+                keep = stopInBoundingBox(routeStopFacilities.getFirst());
             }
             case FIRST_OR_LAST_STOP -> {
-                keep = pointInBoundingBox(routeStopCoords.getFirst(), this.boundingBox) || pointInBoundingBox(routeStopCoords.getLast(), this.boundingBox);
+                keep = stopInBoundingBox(routeStopFacilities.getFirst()) || stopInBoundingBox(routeStopFacilities.getLast());
             }
             case ANY_STOP -> {
-                keep = routeStopCoords.stream().anyMatch(point -> pointInBoundingBox(point, this.boundingBox));
+                keep = routeStopFacilities.stream().anyMatch(this::stopInBoundingBox);
             }
             case ALL_STOPS -> {
-                keep = routeStopCoords.stream().allMatch(point -> pointInBoundingBox(point, this.boundingBox));
+                keep = routeStopFacilities.stream().allMatch(this::stopInBoundingBox);
             }
             default -> {
                 keep = false;
@@ -78,12 +77,16 @@ public class BoundingBoxStopFilter implements HafasFilter {
         return keep;
     }
 
-    private boolean pointInBoundingBox(Coord coord, BoundingBox boundingBox) {
+    public boolean stopInBoundingBox(TransitStopFacility stop) {
+        return pointInBoundingBox(stop.getCoord());
+    }
+
+    private boolean pointInBoundingBox(Coord coord) {
         return (
-                coord.getY() >= boundingBox.south() &&
-                coord.getY() <= boundingBox.north() &&
-                coord.getX() >= boundingBox.west() &&
-                coord.getX() <= boundingBox.east()
+                coord.getY() >= this.boundingBox.south() &&
+                coord.getY() <= this.boundingBox.north() &&
+                coord.getX() >= this.boundingBox.west() &&
+                coord.getX() <= this.boundingBox.east()
             );
     }
 }
