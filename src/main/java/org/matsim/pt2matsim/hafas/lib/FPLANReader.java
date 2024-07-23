@@ -225,7 +225,9 @@ public final class FPLANReader {
 						departureTime = arrivalTime;
 					}
 
-					currentFPLANRoute.addRouteStop(newLine.substring(0, 7), arrivalTime, departureTime, !isBoardingForbidden, !isAlightingForbidden);
+					if (!(isBoardingForbidden && isAlightingForbidden)) {
+						currentFPLANRoute.addRouteStop(newLine.substring(0, 7), arrivalTime, departureTime, !isBoardingForbidden, !isAlightingForbidden);
+					}
 				}
 
 				newLine = readsLines.readLine();
