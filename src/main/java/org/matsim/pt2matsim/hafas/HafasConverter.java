@@ -88,7 +88,7 @@ public final class HafasConverter {
 
 		// 1.a Read minimal transfer times
 		log.info("  Read minimal transfer times...");
-		MinimalTransferTimesReader.run(schedule, hafasFolder, "UMSTEIGB","METABHF", encodingCharset);
+		MinimalTransferTimesReader.run(schedule, hafasFolder, "UMSTEIGB","METABHF", encodingCharset, 120.0);
 		log.info("  Read minimal transfer times... done.");
 
 		// 2. Read all operators from BETRIEB_DE

@@ -16,11 +16,18 @@ import java.io.*;
  *
  * @author jlieberherr
  */
-public class MinimalTransferTimesReader {
+public final class MinimalTransferTimesReader {
 
-    protected static Logger log = LogManager.getLogger(MinimalTransferTimesReader.class);
+    private static final Logger log = LogManager.getLogger(MinimalTransferTimesReader.class);
+
+    private MinimalTransferTimesReader() {
+    }
 
     public static void run(TransitSchedule schedule, String pathToHafasFolder, String UMSTEIGB, String METABHF, Charset encodingCharset) throws IOException {
+        run(schedule, pathToHafasFolder, UMSTEIGB, METABHF, encodingCharset, -1.0);
+    }
+
+    public static void run(TransitSchedule schedule, String pathToHafasFolder, String UMSTEIGB, String METABHF, Charset encodingCharset, double defaultMinTransferTime) throws IOException {
 
         MinimalTransferTimes minimalTransferTimes = schedule.getMinimalTransferTimes();
 
@@ -73,6 +80,14 @@ public class MinimalTransferTimesReader {
             readsLines.close();
         } else {
             log.info("   METABHF does not exist!");
+        }
+        if (defaultMinTransferTime > 0.0) {
+            for (Id<TransitStopFacility> stopId : schedule.getFacilities().keySet()) {
+                double mtt = schedule.getMinimalTransferTimes().get(stopId, stopId);
+                if (Double.isNaN(mtt)) {
+                    schedule.getMinimalTransferTimes().set(stopId, stopId, defaultMinTransferTime);
+                }
+            }
         }
     }
 
