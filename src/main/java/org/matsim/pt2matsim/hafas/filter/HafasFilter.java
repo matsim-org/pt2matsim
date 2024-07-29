@@ -5,10 +5,8 @@ import org.matsim.pt2matsim.hafas.lib.FPLANRoute;
 
 public interface HafasFilter {
 
-    Set<String> getIdsFilteredIn();
-
-    Set<String> getIdsFilteredOut();
-
     boolean keepRoute(FPLANRoute route);
+
+    void writeFilterStats(String outputDir);
 
 }

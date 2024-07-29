@@ -7,19 +7,16 @@ import java.util.TreeSet;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt2matsim.hafas.lib.FPLANRoute;
 
-public class StopsFilter implements HafasFilter {
+public class StopsFilter extends AbstractFilter implements HafasFilter {
 
     private final StopFilterType stopFilterType;
-    private final Set<String> idsFilteredIn = new TreeSet<>();
-    private final Set<String> idsFilteredOut = new TreeSet<>();
+    private final List<String> stopIds;
 
     public enum StopFilterType {FIRST_STOP, ANY_STOP, ALL_STOPS, FIRST_OR_LAST_STOP}
 
     public List<String> getStopIds() {
         return stopIds;
     }
-
-    private final List<String> stopIds;
 
     public StopsFilter(List<String> stopIds, StopFilterType stopFilterType) {
         this.stopIds = stopIds;
@@ -29,16 +26,6 @@ public class StopsFilter implements HafasFilter {
     public StopsFilter(List<String> stopIds) {
         this.stopIds = stopIds;
         this.stopFilterType = StopFilterType.FIRST_OR_LAST_STOP;
-    }
-
-    @Override
-    public Set<String> getIdsFilteredIn() {
-        return this.idsFilteredIn;
-    }
-
-    @Override
-    public Set<String> getIdsFilteredOut() {
-        return this.idsFilteredOut;
     }
 
     @Override
@@ -70,9 +57,9 @@ public class StopsFilter implements HafasFilter {
             }
         }
         if (keep) {
-            this.idsFilteredIn.addAll(routeStopIds);
+            this.getIdsFilteredIn().addAll(routeStopIds);
         } else {
-            this.idsFilteredOut.addAll(routeStopIds);
+            this.getIdsFilteredOut().addAll(routeStopIds);
         }
         return keep;
     }

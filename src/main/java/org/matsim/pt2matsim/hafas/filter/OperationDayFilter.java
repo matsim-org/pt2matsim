@@ -16,14 +16,10 @@ import org.matsim.pt2matsim.hafas.lib.BitfeldAnalyzer;
 import org.matsim.pt2matsim.hafas.lib.ECKDATENReader;
 import org.matsim.pt2matsim.hafas.lib.FPLANRoute;
 
-public class OperationDayFilter implements HafasFilter {
+public class OperationDayFilter extends AbstractFilter implements HafasFilter {
 
     private final Set<Integer> bitfeldNummern;
-
     private final Logger log = LogManager.getLogger(HafasConverter.class);
-
-    private final Set<String> idsFilteredIn = new TreeSet<>();
-    private final Set<String> idsFilteredOut = new TreeSet<>();
 
     public OperationDayFilter(String chosenDateString, String hafasFolder, Charset encodingCharset) throws IOException {
         if(!hafasFolder.endsWith("/")) hafasFolder += "/";
@@ -37,21 +33,11 @@ public class OperationDayFilter implements HafasFilter {
     }
 
     @Override
-    public Set<String> getIdsFilteredIn() {
-        return this.idsFilteredIn;
-    }
-
-    @Override
-    public Set<String> getIdsFilteredOut() {
-        return this.idsFilteredOut;
-    }
-
-    @Override
     public boolean keepRoute(FPLANRoute route) {
         List<String> localBitfeldNrStr = route.getLocalBitfeldNumbers().stream().map(String::valueOf).toList();
         boolean keep = route.getLocalBitfeldNumbers().stream().anyMatch(this.bitfeldNummern::contains);
-        if (keep) this.idsFilteredIn.addAll(localBitfeldNrStr);
-        else this.idsFilteredOut.addAll(localBitfeldNrStr);
+        if (keep) this.getIdsFilteredIn().addAll(localBitfeldNrStr);
+        else this.getIdsFilteredOut().addAll(localBitfeldNrStr);
         return keep;
     }
 

@@ -10,12 +10,9 @@ import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.pt2matsim.hafas.filter.StopsFilter.StopFilterType;
 import org.matsim.pt2matsim.hafas.lib.FPLANRoute;
 
-public class BoundingBoxStopFilter implements HafasFilter {
+public class BoundingBoxStopFilter extends AbstractFilter implements HafasFilter {
 
     private final StopFilterType stopFilterType;
-    private final Set<String> idsFilteredIn = new TreeSet<>();
-    private final Set<String> idsFilteredOut = new TreeSet<>();
-
     private final BoundingBox boundingBox;
 
     public record BoundingBox (double north, double south, double east, double west) {}
@@ -28,16 +25,6 @@ public class BoundingBoxStopFilter implements HafasFilter {
     public BoundingBoxStopFilter(BoundingBox boundingBox) {
         this.boundingBox = boundingBox;
         this.stopFilterType = StopFilterType.FIRST_OR_LAST_STOP;
-    }
-
-    @Override
-    public Set<String> getIdsFilteredIn() {
-        return this.idsFilteredIn;
-    }
-
-    @Override
-    public Set<String> getIdsFilteredOut() {
-        return this.idsFilteredOut;
     }
 
     @Override
@@ -70,9 +57,9 @@ public class BoundingBoxStopFilter implements HafasFilter {
         }
         List<String> routeStopIds = routeStopFacilities.stream().map(s -> s.getId().toString()).toList();
         if (keep) {
-            this.idsFilteredIn.addAll(routeStopIds);
+            this.getIdsFilteredIn().addAll(routeStopIds);
         } else {
-            this.idsFilteredOut.addAll(routeStopIds);
+            this.getIdsFilteredOut().addAll(routeStopIds);
         }
         return keep;
     }
