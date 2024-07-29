@@ -52,7 +52,7 @@ public class FPLANRoute {
 
 	private static TransitSchedule schedule;
 	private static TransitScheduleFactory scheduleFactory;
-	private static int depId = 1;
+	private static Set<String> vehicleIds = new HashSet<>();
 
 	private final int initialDelay = 60; // [s] In MATSim a pt route starts with the arrival at the first station. In HAFAS with the departure at the first station. Ergo we have to set a delay which gives some waiting time at the first station while still keeping the schedule.
 
@@ -119,8 +119,16 @@ public class FPLANRoute {
 		this.mode = mode;
 	}
 
-	public String getVehicleId() {
-		return vehicleTypeId + "_" + operator;
+	public String getVehicleId(String depId) {
+		String vehId = vehicleTypeId + "_" + operator + "_" + depId;
+		int len = vehId.length();
+		int i = 1;
+		while (vehicleIds.contains(vehId)) {
+			vehId = vehId.substring(0, len) + "_" + i;
+			i++;
+		}
+		vehicleIds.add(vehId);
+		return vehId;
 	}
 
 	public void addRouteStop(String stopFacilityId, int arrivalTime, int departureTime, boolean isBoardingAllowed, boolean isAlightingAllowed) {
@@ -141,25 +149,21 @@ public class FPLANRoute {
 	 * If vehicleType is not set, the vehicle is not in the list and entry will not be created.
 	 */
 	public List<Departure> getDepartures() {
-		if(firstDepartureTime < 0 || getVehicleId() == null) {
-			log.error("getDepartures before first departureTime and usedVehicleId set.");
+		if(firstDepartureTime < 0) {
+			log.error("getDepartures before first departureTime.");
 			return null;
 		}
 		if(vehicleTypeId == null) {
-			//log.warn("VehicleType not defined in vehicles list.");
+			log.warn("VehicleType not defined in vehicles list.");
 			return null;
 		}
 
 		List<Departure> departures = new ArrayList<>();
 		for(int i = 0; i < numberOfDepartures; i++) {
-			// Departure ID
-			Id<Departure> departureId = Id.create(String.format("%05d", depId++), Departure.class);
 			// Departure time
 			double departureTime = firstDepartureTime + (i * cycleTime) - initialDelay;
-			// Departure vehicle
-			Id<Vehicle> vehicleId = Id.create(getVehicleId() + "_" + departureId, Vehicle.class);
 			// create and add departure
-			departures.add(createDeparture(departureId, departureTime, vehicleId));
+			departures.add(createDeparture(i + 1, departureTime));
 		}
 		return departures;
 	}
@@ -282,8 +286,11 @@ public class FPLANRoute {
 		return 0.0;
 	}
 
-	private Departure createDeparture(Id<Departure> departureId, double departureTime, Id<Vehicle> vehicleId) {
-		Departure departure = scheduleFactory.createDeparture(Id.create(this.fahrtNummer, Departure.class), departureTime);
+	private Departure createDeparture(int index, double departureTime) {
+		String depId = this.cycleTime == 0 ? this.fahrtNummer : this.fahrtNummer + "_" + index;
+		Id<Departure> departureId = Id.create(depId, Departure.class);
+		Id<Vehicle> vehicleId = Id.create(getVehicleId(depId), Vehicle.class);
+		Departure departure = scheduleFactory.createDeparture(departureId, departureTime);
 		departure.setVehicleId(vehicleId);
 		return departure;
 	}
