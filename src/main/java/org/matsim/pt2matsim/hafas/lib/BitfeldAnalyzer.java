@@ -21,7 +21,8 @@
 
 package org.matsim.pt2matsim.hafas.lib;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -40,14 +41,17 @@ import java.util.Set;
  * @author boescpa
  */
 public class BitfeldAnalyzer {
-	protected static Logger log = Logger.getLogger(BitfeldAnalyzer.class);
+	protected static Logger log = LogManager.getLogger(BitfeldAnalyzer.class);
 
 	public static Set<Integer> findBitfeldnumbersOfBusiestDay(String FPLAN, String BITFELD) throws IOException {
 		final Set<Integer> bitfeldNummern = new HashSet<>();
 		final int posMaxFVals = find4DayBlockWithMostFVals(FPLAN, BITFELD);
 			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(BITFELD), "latin1"));
-			String newLine = readsLines.readLine();
-			while (newLine != null) {
+			String newLine;
+			while ((newLine = readsLines.readLine()) != null) {
+				if (newLine.startsWith("*")) {
+					continue;
+				}
 				/*Spalte Typ Bedeutung
 				1−6 INT32 Bitfeldnummer
 				8−103 CHAR Bitfeld (Binärkodierung der Tage, an welchen Fahrt, in Hexadezimalzahlen notiert.)*/
@@ -68,7 +72,6 @@ public class BitfeldAnalyzer {
 				if (matches >= 1) {
 					bitfeldNummern.add(bitfeldnummer);
 				}
-				newLine = readsLines.readLine();
 			}
 			readsLines.close();
 		bitfeldNummern.add(0);
@@ -116,8 +119,11 @@ public class BitfeldAnalyzer {
 		int[] bitfeldStats = new int[96];
 		try {
 			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(BITFELD), "latin1"));
-			String newLine = readsLines.readLine();
-			while (newLine != null) {
+			String newLine;
+			while ((newLine = readsLines.readLine()) != null) {
+				if (newLine.startsWith("*")) {
+					continue;
+				}
 				/*Spalte Typ Bedeutung
 				1−6 INT32 Bitfeldnummer
 				8−103 CHAR Bitfeld (Binärkodierung der Tage, an welchen Fahrt, in Hexadezimalzahlen notiert.)*/
@@ -131,7 +137,6 @@ public class BitfeldAnalyzer {
 						bitfeldStats[i] += bitFeldValue;
 					}
 				}
-				newLine = readsLines.readLine();
 			}
 			readsLines.close();
 		} catch (IOException e) {
@@ -162,12 +167,14 @@ public class BitfeldAnalyzer {
 		Set<Integer> validBitfields = new HashSet<>();
 
 		BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathFile), "utf-8"));
-		String newLine = readsLines.readLine();
-		while (newLine != null) {
+		String newLine;
+		while ((newLine = readsLines.readLine()) != null) {
+			if (newLine.startsWith("*")) {
+				continue;
+			}
 			int id = Integer.parseInt(newLine.substring(0, 6));
 			String bitfield = new BigInteger(newLine.substring(7), 16).toString(2).substring(offset_bitstring);
 			if (bitfield.charAt(dayNr)== '1') validBitfields.add(id);
-			newLine = readsLines.readLine();
 		}
 		readsLines.close();
         // TODO this error-prone and should be removed by a stable solution

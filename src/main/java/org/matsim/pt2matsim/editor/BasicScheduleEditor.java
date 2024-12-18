@@ -18,8 +18,13 @@
 
 package org.matsim.pt2matsim.editor;
 
+import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
-import org.apache.log4j.Logger;
+import com.opencsv.CSVReaderBuilder;
+import com.opencsv.exceptions.CsvValidationException;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -50,7 +55,7 @@ import java.util.stream.Collectors;
  */
 public class BasicScheduleEditor implements ScheduleEditor {
 
-	protected static Logger log = Logger.getLogger(RunScheduleEditor.class);
+	protected static Logger log = LogManager.getLogger(RunScheduleEditor.class);
 	// fields
 	private final Network network;
 	private final TransitSchedule schedule;
@@ -93,15 +98,20 @@ public class BasicScheduleEditor implements ScheduleEditor {
 	 */
 	@Override
 	public void parseCommandCsv(String filePath) throws IOException {
-		CSVReader reader = new CSVReader(new FileReader(filePath), ';');
-
-		String[] line = reader.readNext();
-		while(line != null) {
-			log.info(CollectionUtils.arrayToString(line));
-			executeCmdLine(line);
-			line = reader.readNext();
+		try (CSVReader reader = new CSVReaderBuilder(new FileReader(filePath))
+				.withCSVParser(new CSVParserBuilder()
+						.withSeparator(';')
+						.build())
+				.build()) {
+			String[] line = reader.readNext();
+			while (line != null) {
+				log.info(CollectionUtils.arrayToString(line));
+				executeCmdLine(line);
+				line = reader.readNext();
+			}
+		} catch (CsvValidationException e) {
+			throw new RuntimeException(e);
 		}
-		reader.close();
 	}
 
 	/**

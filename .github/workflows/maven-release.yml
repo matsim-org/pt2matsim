@@ -2,8 +2,7 @@ name: Maven Deploy
 
 on:
   release:
-    types:
-      - created
+    types: [created]
 
 jobs:
   deploy-release:
@@ -24,7 +23,7 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v2
         with:
-          java-version: 11
+          java-version: 17
           distribution: 'adopt'
           server-id: pt2matsim-releases
           server-username: MAVEN_USERNAME

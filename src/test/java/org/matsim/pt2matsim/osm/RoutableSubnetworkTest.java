@@ -1,6 +1,7 @@
 package org.matsim.pt2matsim.osm;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.ConfigGroup;
@@ -13,15 +14,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-
 /**
  * @author shoerl
  */
-public class RoutableSubnetworkTest {
+class RoutableSubnetworkTest {
 
 	@Test
-	public void customSubnetworks() {
+	void customSubnetworks() {
 		// setup config
 		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.createDefaultConfig();
 		osmConfig.setOutputCoordinateSystem("WGS84");
@@ -52,7 +51,7 @@ public class RoutableSubnetworkTest {
 		int carPassengerLinks = countModeLinks(converter.getNetwork(), "car_passenger");
 		
 		// Since some car links are not connected, we expect that there are more (uncleaned) passenger links now
-		assertEquals(carLinks + 8, carPassengerLinks);
+		Assertions.assertEquals(carLinks + 8, carPassengerLinks);
 		
 		// II) Convert with a network layer for car_passenger
 		osmConfig.addParameterSet(new OsmConverterConfigGroup.RoutableSubnetworkParams("car_passenger", Collections.singleton("car")));
@@ -64,7 +63,7 @@ public class RoutableSubnetworkTest {
 		int carPassengerLinks2 = countModeLinks(converter2.getNetwork(), "car_passenger");
 		
 		// Now car_passenger should be cleaned just as car... Thus it should be the same number.
-		assertEquals(carLinks2, carPassengerLinks2);
+		Assertions.assertEquals(carLinks2, carPassengerLinks2);
 	}
 	
 	private static int countModeLinks(Network network, String mode) {

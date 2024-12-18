@@ -18,7 +18,8 @@
 
 package org.matsim.pt2matsim.tools.debug;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -47,7 +48,7 @@ import java.util.*;
  */
 public final class ScheduleCleaner {
 
-	protected static Logger log = Logger.getLogger(ScheduleTools.class);
+	protected static Logger log = LogManager.getLogger(ScheduleTools.class);
 
 	private ScheduleCleaner() {}
 

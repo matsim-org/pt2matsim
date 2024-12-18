@@ -1,6 +1,6 @@
 # PT2MATSim
 
-[![Build Status](https://travis-ci.org/matsim-org/pt2matsim.svg?branch=master)](https://travis-ci.org/matsim-org/pt2matsim)
+[![Status Maven Test](https://github.com/matsim-org/pt2matsim/actions/workflows/maven-test.yml/badge.svg)](https://github.com/matsim-org/pt2matsim/actions/workflows/maven-test.yml)
 
 PT2MATSim is a package to convert public transit data from GTFS, HAFAS or OSM to a completely mapped MATSim schedule.
 
@@ -45,7 +45,7 @@ To include pt2matsim in your own maven project, add this snippet to your pom.xml
         <dependency>
             <groupId>org.matsim</groupId>
             <artifactId>pt2matsim</artifactId>
-            <version>22.3</version>
+            <version>24.4</version>
         </dependency>
     </dependencies>
 

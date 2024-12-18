@@ -18,7 +18,8 @@
 
 package org.matsim.pt2matsim.plausibility;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -49,7 +50,7 @@ public class MappingAnalysis {
 
 	private static final double MEASURE_INTERVAL = 1;
 
-	private static final Logger log = Logger.getLogger(MappingAnalysis.class);
+	private static final Logger log = LogManager.getLogger(MappingAnalysis.class);
 	private final TransitSchedule schedule;
 	private final Map<Id<RouteShape>, RouteShape> shapes;
 	private final Network network;

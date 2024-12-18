@@ -1,12 +1,13 @@
 package org.matsim.pt2matsim.mapping.networkRouter;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.core.router.FastAStarEuclideanFactory;
+import org.matsim.core.router.speedy.SpeedyALTFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
@@ -38,7 +39,7 @@ import java.util.Set;
  */
 public class ScheduleRoutersGtfsShapes implements ScheduleRouters {
 
-	protected static Logger log = Logger.getLogger(ScheduleRoutersGtfsShapes.class);
+	protected static Logger log = LogManager.getLogger(ScheduleRoutersGtfsShapes.class);
 
 	// standard fields
 	private final TransitSchedule schedule;
@@ -105,7 +106,8 @@ public class ScheduleRoutersGtfsShapes implements ScheduleRouters {
 						NetworkTools.cutNetwork(cutNetwork, nodesWithinBuffer);
 
 						ShapeRouter r = new ShapeRouter(shape);
-						pathCalculator = new PathCalculator(new FastAStarEuclideanFactory().createPathCalculator(cutNetwork, r, r));
+						pathCalculator = new PathCalculator(
+								new SpeedyALTFactory().createPathCalculator(cutNetwork, r, r));
 
 						pathCalculatorsByShape.put(shapeId, pathCalculator);
 						networksByShape.put(shapeId, cutNetwork);

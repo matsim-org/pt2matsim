@@ -21,7 +21,8 @@
 
 package org.matsim.pt2matsim.hafas.lib;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.vehicles.Vehicle;
@@ -37,7 +38,7 @@ import java.util.List;
  */
 public class FPLANRoute {
 
-	private static Logger log = Logger.getLogger(FPLANRoute.class);
+	private static Logger log = LogManager.getLogger(FPLANRoute.class);
 
 	private static TransitSchedule schedule;
 	private static TransitScheduleFactory scheduleFactory;
@@ -45,7 +46,7 @@ public class FPLANRoute {
 
 	private final int initialDelay = 60; // [s] In MATSim a pt route starts with the arrival at the first station. In HAFAS with the departure at the first station. Ergo we have to set a delay which gives some waiting time at the first station while still keeping the schedule.
 
-	public final static String PT = "pt";
+	public static final String PT = "pt";
 
 	private final String operator;
 	private final String fahrtNummer;

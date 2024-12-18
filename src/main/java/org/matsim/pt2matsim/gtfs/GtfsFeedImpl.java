@@ -19,10 +19,13 @@
 package org.matsim.pt2matsim.gtfs;
 
 import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
+
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.io.input.BOMInputStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
@@ -47,7 +50,7 @@ import java.nio.charset.StandardCharsets;
  */
 public class GtfsFeedImpl implements GtfsFeed {
 
-	protected static final Logger log = Logger.getLogger(GtfsFeedImpl.class);
+	protected static final Logger log = LogManager.getLogger(GtfsFeedImpl.class);
 
 	/**
 	 * Path to the folder where the gtfs files are located
@@ -217,6 +220,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 			reader.close();
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new RuntimeException("Line " + l + " in agency.txt is empty or malformed.");
+		} catch (CsvValidationException e) {
+			throw new RuntimeException(e);
 		}
 		log.info("...     agency.txt loaded");
 	}
@@ -267,6 +272,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 			reader.close();
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new RuntimeException("Line " + l + " in stops.txt is empty or malformed.");
+		} catch (CsvValidationException e) {
+			throw new RuntimeException(e);
 		}
 		log.info("...     stops.txt loaded");
 	}
@@ -313,6 +320,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 			return false;
 		} catch (ArrayIndexOutOfBoundsException i) {
 			throw new RuntimeException("Line " + l + " in calendar.txt is empty or malformed.");
+		} catch (CsvValidationException e) {
+			throw new RuntimeException(e);
 		}
 		log.info("...     calendar.txt loaded");
 		return true;
@@ -366,6 +375,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 			return false;
 		} catch (ArrayIndexOutOfBoundsException i) {
 			throw new RuntimeException("Line " + l + " in calendar_dates.txt is empty or malformed.");
+		} catch (CsvValidationException e) {
+			throw new RuntimeException(e);
 		}
 		return true;
 	}
@@ -409,6 +420,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 			log.info("...     no shapes file found.");
 		} catch (ArrayIndexOutOfBoundsException i) {
 			throw new RuntimeException("Line " + l + " in shapes.txt is empty or malformed.");
+		} catch (CsvValidationException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -457,6 +470,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 			reader.close();
 		} catch (ArrayIndexOutOfBoundsException i) {
 			throw new RuntimeException("Line " + l + " in routes.txt is empty or malformed.");
+		} catch (CsvValidationException e) {
+			throw new RuntimeException(e);
 		}
 		log.info("...     routes.txt loaded");
 	}
@@ -517,6 +532,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 			reader.close();
 		} catch (ArrayIndexOutOfBoundsException i) {
 			throw new RuntimeException("Line " + l + " in trips.txt is empty or malformed.");
+		} catch (CsvValidationException e) {
+			throw new RuntimeException(e);
 		}
 		log.info("...     trips.txt loaded");
 	}
@@ -602,6 +619,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 			reader.close();
 		} catch (ArrayIndexOutOfBoundsException i) {
 			throw new RuntimeException("Line " + l + " in stop_times.txt is empty or malformed.");
+		} catch (CsvValidationException e) {
+			throw new RuntimeException(e);
 		}
 		log.info("...     stop_times.txt loaded");
 	}
@@ -656,6 +675,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 			throw new RuntimeException("Line " + l + " in frequencies.txt is empty or malformed.");
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (CsvValidationException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -699,6 +720,8 @@ public class GtfsFeedImpl implements GtfsFeed {
 			transfersFileFound = false;
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (CsvValidationException e) {
+			throw new RuntimeException(e);
 		}
 		if(transfersFileFound) {
 			log.info("...     transfers.txt loaded");
@@ -709,14 +732,15 @@ public class GtfsFeedImpl implements GtfsFeed {
 		String unzippedFolder = compressedZip.substring(0, compressedZip.length() - 4) + "/";
 		log.info("Unzipping " + compressedZip + " to " + unzippedFolder);
 
-		try {
-			ZipFile zipFile = new ZipFile(compressedZip);
+		try (ZipFile zipFile = new ZipFile(compressedZip)) {
 			if(zipFile.isEncrypted()) {
 				throw new RuntimeException("Zip file is encrypted");
 			}
 			zipFile.extractAll(unzippedFolder);
 		} catch (ZipException e) {
 			e.printStackTrace();
+		} catch(IOException e) {
+			throw new RuntimeException(e);
 		}
 		return unzippedFolder;
 	}

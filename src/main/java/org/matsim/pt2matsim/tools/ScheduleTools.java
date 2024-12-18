@@ -18,7 +18,8 @@
 
 package org.matsim.pt2matsim.tools;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -49,7 +50,7 @@ import static org.matsim.vehicles.VehicleUtils.createVehiclesContainer;
  */
 public final class ScheduleTools {
 
-	protected static Logger log = Logger.getLogger(ScheduleTools.class);
+	protected static Logger log = LogManager.getLogger(ScheduleTools.class);
 
 	private ScheduleTools() {}
 
@@ -204,10 +205,11 @@ public final class ScheduleTools {
 		VehicleType vehicleType = vf.createVehicleType(vTypeId);
 		vehicleType.setLength(defaultValues.length);
 		vehicleType.setWidth(defaultValues.width);
-		vehicleType.setAccessTime(defaultValues.accessTime);
-		vehicleType.setEgressTime(defaultValues.egressTime);
-		vehicleType.setDoorOperationMode(defaultValues.doorOperation);
+		VehicleUtils.setAccessTime(vehicleType, defaultValues.accessTime);
+		VehicleUtils.setEgressTime(vehicleType, defaultValues.egressTime);
+		VehicleUtils.setDoorOperationMode(vehicleType, defaultValues.doorOperation);
 		vehicleType.setPcuEquivalents(defaultValues.pcuEquivalents);
+		vehicleType.setNetworkMode(defaultValues.transportMode.name);
 
 		VehicleCapacity capacity = vehicleType.getCapacity();
 		capacity.setSeats(defaultValues.capacitySeats);
@@ -315,7 +317,7 @@ public final class ScheduleTools {
 
 					// add link sequence to schedule
 					if(linkIdSequence != null) {
-						transitRoute.setRoute(RouteUtils.createNetworkRoute(linkIdSequence, network));
+						transitRoute.setRoute(RouteUtils.createNetworkRoute(linkIdSequence));
 					}
 				} else {
 					log.warn("Route " + transitRoute.getId() + " on line " + transitLine.getId() + " has no stop sequence");

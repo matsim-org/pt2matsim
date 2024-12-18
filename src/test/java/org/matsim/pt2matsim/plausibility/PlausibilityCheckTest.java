@@ -1,10 +1,9 @@
 package org.matsim.pt2matsim.plausibility;
 
-import org.locationtech.jts.util.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.plausibility.log.PlausibilityWarning;
@@ -15,23 +14,24 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ScheduleToolsTest;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * @author polettif
  */
-public class PlausibilityCheckTest {
+class PlausibilityCheckTest {
 
-	@Rule
-	public TemporaryFolder temporaryFolder = new TemporaryFolder();
+	@TempDir
+	public Path temporaryFolder;
 
 	private String testDir;
 	private PlausibilityCheck check;
 
-	@Before
+	@BeforeEach
 	public void prepare() {
-		testDir = temporaryFolder.getRoot().toString();
+		testDir = temporaryFolder.toString();
 
 		TransitSchedule s = ScheduleToolsTest.initSchedule();
 		Network n = NetworkToolsTest.initNetwork();
@@ -43,22 +43,22 @@ public class PlausibilityCheckTest {
 	}
 
 	@Test
-	public void checks() {
+	void checks() {
 		Map<PlausibilityWarning.Type, Set<PlausibilityWarning>> warnings = check.getWarnings();
-		Assert.equals(0, warnings.get(PlausibilityWarning.Type.ArtificialLinkWarning).size());
-		Assert.equals(0, warnings.get(PlausibilityWarning.Type.LoopWarning).size());
-		Assert.equals(4, warnings.get(PlausibilityWarning.Type.DirectionChangeWarning).size());
-		Assert.equals(0, warnings.get(PlausibilityWarning.Type.TravelTimeWarning).size());
+		Assertions.assertEquals(0, warnings.get(PlausibilityWarning.Type.ArtificialLinkWarning).size());
+		Assertions.assertEquals(0, warnings.get(PlausibilityWarning.Type.LoopWarning).size());
+		Assertions.assertEquals(4, warnings.get(PlausibilityWarning.Type.DirectionChangeWarning).size());
+		Assertions.assertEquals(0, warnings.get(PlausibilityWarning.Type.TravelTimeWarning).size());
 	}
 
 	@Test
-	public void writeGeojson() {
+	void writeGeojson() {
 		check.writeResultsGeojson(testDir + "plausibility.geojson");
 		new File(testDir + "plausibility.geojson").delete();
 	}
 
 	@Test
-	public void staticRun() {
+	void staticRun() {
 		String scheduleFile = testDir + "testSchedule.xml";
 		String networkFile = testDir + "testNetwork.xml";
 		String outputfolder = testDir + "plausibility/";

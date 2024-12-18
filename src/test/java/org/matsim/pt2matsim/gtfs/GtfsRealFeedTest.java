@@ -1,33 +1,33 @@
 package org.matsim.pt2matsim.gtfs;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author polettif
  */
-public class GtfsRealFeedTest {
+class GtfsRealFeedTest {
 
 	private GtfsFeed feed;
 	private GtfsConverter converter;
 
-	@Before
+	@BeforeEach
 	public void loadAndConvert() {
 		feed = new GtfsFeedImpl("test/stib-mivb-gtfs.zip");
 		converter = new GtfsConverter(feed);
 	}
 
 	@Test
-	public void statistics() {
-		Assert.assertEquals(2514, feed.getStops().size());
-		Assert.assertEquals(92, feed.getRoutes().size());
-		Assert.assertEquals(139, feed.getServices().size());
-		Assert.assertEquals(806, feed.getShapes().size());
+	void statistics() {
+		Assertions.assertEquals(2514, feed.getStops().size());
+		Assertions.assertEquals(92, feed.getRoutes().size());
+		Assertions.assertEquals(139, feed.getServices().size());
+		Assertions.assertEquals(806, feed.getShapes().size());
 	}
 
 	@Test
-	public void convert() {
+	void convert() {
 		converter.convert(GtfsConverter.DAY_WITH_MOST_TRIPS, "EPSG:32631");
 	}
 

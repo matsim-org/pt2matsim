@@ -21,7 +21,8 @@
 
 package org.matsim.pt2matsim.hafas;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
@@ -32,6 +33,7 @@ import org.matsim.pt2matsim.tools.VehicleTypeDefaults;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 import org.matsim.vehicles.VehicleCapacity;
 import org.matsim.vehicles.VehicleType;
+import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 import org.matsim.vehicles.VehiclesFactory;
 
@@ -51,7 +53,7 @@ import java.util.Set;
  */
 public class HafasConverter {
 
-	protected static Logger log = Logger.getLogger(HafasConverter.class);
+	protected static Logger log = LogManager.getLogger(HafasConverter.class);
 
 	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles) throws IOException {
 		run(hafasFolder, schedule, transformation, vehicles, -1);
@@ -89,7 +91,7 @@ public class HafasConverter {
 
 		// 1. Read and create stop facilities
 		log.info("  Read transit stops...");
-		StopReader.run(schedule, transformation, hafasFolder + "BFKOORD_GEO");
+		StopReader.run(schedule, transformation, hafasFolder + "BFKOORD_WGS");
 		log.info("  Read transit stops... done.");
 
 		// 1.a Read minimal transfer times
@@ -181,9 +183,9 @@ public class HafasConverter {
 					// using default values for vehicle type
 					vehicleType.setLength(defaultVehicleType.length);
 					vehicleType.setWidth(defaultVehicleType.width);
-					vehicleType.setAccessTime(defaultVehicleType.accessTime);
-					vehicleType.setEgressTime(defaultVehicleType.egressTime);
-					vehicleType.setDoorOperationMode(defaultVehicleType.doorOperation);
+					VehicleUtils.setAccessTime(vehicleType, defaultVehicleType.accessTime);
+					VehicleUtils.setEgressTime(vehicleType, defaultVehicleType.egressTime);
+					VehicleUtils.setDoorOperationMode(vehicleType, defaultVehicleType.doorOperation);
 					vehicleType.setPcuEquivalents(defaultVehicleType.pcuEquivalents);
 
 					VehicleCapacity vehicleCapacity = vehicleType.getCapacity();

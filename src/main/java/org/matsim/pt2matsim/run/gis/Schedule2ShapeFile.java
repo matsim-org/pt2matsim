@@ -19,16 +19,17 @@
 package org.matsim.pt2matsim.run.gis;
 
 import org.locationtech.jts.geom.Coordinate;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.geotools.MGC;
+import org.matsim.core.utils.gis.GeoFileWriter;
 import org.matsim.core.utils.gis.PointFeatureFactory;
 import org.matsim.core.utils.gis.PolylineFeatureFactory;
-import org.matsim.core.utils.gis.ShapeFileWriter;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
@@ -43,7 +44,7 @@ import java.util.*;
  */
 public class Schedule2ShapeFile {
 
-	private static final Logger log = Logger.getLogger(Schedule2ShapeFile.class);
+	private static final Logger log = LogManager.getLogger(Schedule2ShapeFile.class);
 	private final TransitSchedule schedule;
 	private final Network network;
 	private final String crs;
@@ -143,7 +144,7 @@ public class Schedule2ShapeFile {
 			}
 		}
 
-		ShapeFileWriter.writeGeometries(lineFeatures, outputFile);
+		GeoFileWriter.writeGeometries(lineFeatures, outputFile);
 	}
 
 
@@ -180,7 +181,7 @@ public class Schedule2ShapeFile {
 			pointFeatures.add(pf);
 		}
 
-		ShapeFileWriter.writeGeometries(pointFeatures, pointOutputFile);
+		GeoFileWriter.writeGeometries(pointFeatures, pointOutputFile);
 	}
 
 	/**
@@ -228,7 +229,7 @@ public class Schedule2ShapeFile {
 			}
 		}
 
-		ShapeFileWriter.writeGeometries(features, outputFile);
+		GeoFileWriter.writeGeometries(features, outputFile);
 	}
 
 	/**

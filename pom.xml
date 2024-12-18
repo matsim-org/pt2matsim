@@ -4,17 +4,17 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.matsim</groupId>
     <artifactId>pt2matsim</artifactId>
-    <version>22.3</version>
+    <version>24.5-SNAPSHOT</version>
 
     <name>PT2MATSim</name>
     <description>Public Transport to MATSim</description>
 
     <distributionManagement>
         <repository>
-             <id>pt2matsim-releases</id>
-             <name>pt2matsim Releases Maven Repository</name>
-             <url>https://repo.matsim.org/repository/matsim-releases/</url>
-         </repository>
+            <id>pt2matsim-releases</id>
+            <name>pt2matsim Releases Maven Repository</name>
+            <url>https://repo.matsim.org/repository/matsim-releases/</url>
+        </repository>
     </distributionManagement>
 
     <repositories>
@@ -23,70 +23,118 @@
             <url>https://repo.matsim.org/repository/matsim</url>
         </repository>
         <repository>
-        	<id>osgeo</id>
-			<url>https://repo.osgeo.org/repository/release</url>
+            <id>osgeo</id>
+            <url>https://repo.osgeo.org/repository/release</url>
         </repository>
     </repositories>
 
-	<properties>
-		<geotools.version>24.2</geotools.version>
-	</properties>
+    <properties>
+        <geotools.version>29.6</geotools.version>
+        <jackson.version>2.18.2</jackson.version>
+        <jts.version>1.19.0</jts.version>
+        <log4j.version>2.23.1</log4j.version>
+        <junit.version>5.10.3</junit.version>
+    </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.matsim</groupId>
             <artifactId>matsim</artifactId>
-            <version>13.0</version>
+            <version>2024.0</version>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.1</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
-            <version>3.7</version>
+            <version>5.9</version>
         </dependency>
         <dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>2.7</version>
-		</dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.16.1</version>
+        </dependency>
         <dependency>
             <groupId>de.grundid.opendatalab</groupId>
             <artifactId>geojson-jackson</artifactId>
-            <version>1.5</version>
+            <version>1.14</version>
         </dependency>
         <dependency>
             <groupId>net.lingala.zip4j</groupId>
             <artifactId>zip4j</artifactId>
-            <version>2.9.1</version>
+            <version>2.11.5</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>33.3.1-jre</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <!-- required for tests with geojson-jackson -->
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.locationtech.jts</groupId>
+            <artifactId>jts-core</artifactId>
+            <version>${jts.version}</version>
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
-            <artifactId>gt-referencing</artifactId>
-            <version>${geotools.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.geotools</groupId>
-            <artifactId>gt-epsg-hsql</artifactId>
+            <artifactId>gt-opengis</artifactId>
             <version>${geotools.version}</version>
         </dependency>
     </dependencies>
 
+    <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>com.fasterxml.jackson</groupId>
+            <artifactId>jackson-bom</artifactId>
+            <version>${jackson.version}</version>
+            <scope>import</scope>
+            <type>pom</type>
+          </dependency>   
+        </dependencies>
+      </dependencyManagement>
+
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>3.8.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>3.13.0</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <showWarnings>false</showWarnings>
-                    <showDeprecation>false</showDeprecation>
+                    <release>17</release>
+                    <showWarnings>true</showWarnings>
+                    <showDeprecation>true</showDeprecation>
                     <encoding>UTF-8</encoding>
                     <!-- configure initial and maximal memory for compiling -->
                     <fork>true</fork>
@@ -101,7 +149,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -109,6 +157,7 @@
                         </goals>
                         <configuration>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
                             <transformers>
                                 <transformer implementation=
                                                      "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
@@ -117,16 +166,16 @@
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
                             </transformers>
-							<filters>
-								<filter>
-									<artifact>*:*</artifact>
-									<excludes>
-										<exclude>META-INF/*.SF</exclude>
-										<exclude>META-INF/*.DSA</exclude>
-										<exclude>META-INF/*.RSA</exclude>
-									</excludes>
-								</filter>
-							</filters>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                         </configuration>
                     </execution>
                 </executions>
@@ -134,7 +183,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.0.1</version>
+                <version>3.3.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>

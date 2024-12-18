@@ -95,7 +95,7 @@ public final class Osm {
 		List<Node> getNodes();
 
 		/**
-		 * @return the relations of which this node is a member
+		 * @return the relations of which this way is a member
 		 */
 		Map<Id<Relation>, Relation> getRelations();
 	}
@@ -113,7 +113,7 @@ public final class Osm {
 		String getMemberRole(Element member);
 
 		/**
-		 * @return the relations of which this node is a member
+		 * @return the relations of which this relation is a member
 		 */
 		Map<Id<Relation>, Relation> getRelations();
 	}
@@ -133,17 +133,24 @@ public final class Osm {
 		public static final String HIGHWAY = "highway";
 		public static final String SERVICE = "service";
 
-		public final static String LANES = "lanes";
-		public final static String MAXSPEED = "maxspeed";
-		public final static String JUNCTION = "junction";
-		public final static String ONEWAY = "oneway";
-		public final static String ACCESS = "access";
+		public static final String LANES = "lanes";
+		public static final String MAXSPEED = "maxspeed";
+		public static final String JUNCTION = "junction";
+		public static final String ONEWAY = "oneway";
+		public static final String ACCESS = "access";
 		public static final String PSV = "psv";
 		public static final String BUS = "bus";
 		public static final String TAXI = "taxi";
 		
-		public final static String FORWARD = "forward";
-		public final static String BACKWARD = "backward";
+		public static final String FORWARD = "forward";
+		public static final String BACKWARD = "backward";
+
+		public static final String RESTRICTION = "restriction";
+		public static final String PROHIBITORY_RESTRICTION_PREFIX = "no_";
+		public static final String MANDATORY_RESTRICTION_PREFIX = "only_";
+		public static final String EXCEPT = "except";
+		public static final String MOTORCAR = "motorcar";
+		public static final String BICYCLE = "bicycle";
 
 		// rarely used
 		public static final String TYPE = "type";
@@ -195,9 +202,9 @@ public final class Osm {
 		public static final String RESIDENTIAL = "residential";
 		public static final String LIVING_STREET = "living_street";
 		public static final String SERVICE = "service";
-		public final static String STOP_POSITION = "stop_position";
-		public final static String BUS = "bus";
-		public final static String TROLLEYBUS = "trolleybus";
+		public static final String STOP_POSITION = "stop_position";
+		public static final String BUS = "bus";
+		public static final String TROLLEYBUS = "trolleybus";
 
 		public static final String FERRY = "ferry";
 
@@ -217,6 +224,12 @@ public final class Osm {
 		// values for maxspeed=*
 		public static final String WALK = "walk";
 		public static final String NONE = "none";
+
+		// turn restriction roles
+		public static final String FROM = "from";
+		public static final String VIA = "via";
+		public static final String TO = "to";
+
 	}
 
 

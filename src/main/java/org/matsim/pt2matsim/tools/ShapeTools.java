@@ -19,6 +19,8 @@
 package org.matsim.pt2matsim.tools;
 
 import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
+
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -30,8 +32,8 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
+import org.matsim.core.utils.gis.GeoFileWriter;
 import org.matsim.core.utils.gis.PolylineFeatureFactory;
-import org.matsim.core.utils.gis.ShapeFileWriter;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions;
@@ -226,7 +228,7 @@ public final class ShapeTools {
 				}
 			}
 		}
-		ShapeFileWriter.writeGeometries(features, outFile);
+		GeoFileWriter.writeGeometries(features, outFile);
 	}
 
 	/**
@@ -255,7 +257,7 @@ public final class ShapeTools {
 				features.add(f);
 			}
 		}
-		ShapeFileWriter.writeGeometries(features, filename);
+		GeoFileWriter.writeGeometries(features, filename);
 
 	}
 
@@ -263,9 +265,7 @@ public final class ShapeTools {
 		Map<Id<RouteShape>, RouteShape> shapes = new HashMap<>();
 		CoordinateTransformation ct = TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem);
 
-		CSVReader reader;
-		try {
-			reader = new CSVReader(new FileReader(shapeFile));
+		try (CSVReader reader = new CSVReader(new FileReader(shapeFile))) {
 			String[] header = reader.readNext();
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.SHAPES.columns);
 			String[] line = reader.readNext();
@@ -280,7 +280,6 @@ public final class ShapeTools {
 				currentShape.addPoint(ct.transform(point), Integer.parseInt(line[col.get(GtfsDefinitions.SHAPE_PT_SEQUENCE)]));
 				line = reader.readNext();
 			}
-			reader.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			throw new RuntimeException("File not found!");
@@ -288,6 +287,8 @@ public final class ShapeTools {
 			throw new RuntimeException("Emtpy line found file!");
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (CsvValidationException e) {
+			throw new RuntimeException(e);
 		}
 		return shapes;
 	}

@@ -1,12 +1,13 @@
 package org.matsim.pt2matsim.mapping.networkRouter;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.core.router.FastAStarLandmarksFactory;
+import org.matsim.core.router.speedy.SpeedyALTFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
 import org.matsim.core.router.util.TravelDisutility;
@@ -35,7 +36,7 @@ import java.util.Set;
  */
 public class ScheduleRoutersStandard implements ScheduleRouters {
 
-	protected static Logger log = Logger.getLogger(ScheduleRoutersStandard.class);
+	protected static Logger log = LogManager.getLogger(ScheduleRoutersStandard.class);
 
 	// standard fields
 	private final TransitSchedule schedule;
@@ -78,7 +79,7 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 		log.info("==============================================");
 		log.info("Creating network routers for transit routes...");
 		log.info("Initiating network and router for transit routes...");
-		LeastCostPathCalculatorFactory factory = new FastAStarLandmarksFactory(nThreads);
+		LeastCostPathCalculatorFactory factory = new SpeedyALTFactory();
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				String scheduleMode = transitRoute.getTransportMode();

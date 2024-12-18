@@ -18,8 +18,10 @@
 
 package org.matsim.pt2matsim.run;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.core.utils.io.IOUtils;
@@ -47,7 +49,7 @@ import static org.matsim.pt2matsim.gtfs.GtfsConverter.*;
  */
 public final class Gtfs2TransitSchedule {
 
-	protected static Logger log = Logger.getLogger(Gtfs2TransitSchedule.class);
+	protected static Logger log = LogManager.getLogger(Gtfs2TransitSchedule.class);
 	
 	private static final String INFO_OUTPUT_OPTION_SCHEDULE = "schedule";
 
@@ -112,7 +114,7 @@ public final class Gtfs2TransitSchedule {
 	 *     				             	</ul>
 	 */
 	public static void run(String gtfsFolder, String sampleDayParam, String outputCoordinateSystem, String scheduleFile, String vehicleFile, String additionalLineInfoFile) {
-		Logger.getLogger(MGC.class).setLevel(Level.ERROR);
+		Configurator.setLevel(LogManager.getLogger(MGC.class).getName(), Level.ERROR);
 
 		// check sample day parameter
 		if(!isValidSampleDayParam(sampleDayParam)) {

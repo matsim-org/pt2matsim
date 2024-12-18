@@ -19,7 +19,8 @@
 
 package org.matsim.pt2matsim.osm;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -44,7 +45,7 @@ import java.util.*;
  */
 public class OsmTransitScheduleConverter {
 
-	protected static final Logger log = Logger.getLogger(OsmTransitScheduleConverter.class);
+	protected static final Logger log = LogManager.getLogger(OsmTransitScheduleConverter.class);
 
 	protected final OsmData osmData;
 
@@ -235,7 +236,7 @@ public class OsmTransitScheduleConverter {
 			}
 		}
 
-		NetworkRoute networkRoute = (linkSequenceForward.size() == 0 ? null : RouteUtils.createNetworkRoute(linkSequenceForward, null));
+		NetworkRoute networkRoute = (linkSequenceForward.size() == 0 ? null : RouteUtils.createNetworkRoute(linkSequenceForward));
 
 		if(stopSequenceForward.size() == 0) {
 			return null;

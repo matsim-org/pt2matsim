@@ -18,7 +18,8 @@
 
 package org.matsim.pt2matsim.tools;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
@@ -26,6 +27,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.NetworkFactory;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.core.config.groups.NetworkConfigGroup;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkTransform;
 import org.matsim.core.network.filter.NetworkFilterManager;
@@ -53,7 +55,7 @@ import static org.matsim.pt2matsim.tools.ScheduleTools.getTransitRouteLinkIds;
  */
 public final class NetworkTools {
 
-	protected static Logger log = Logger.getLogger(NetworkTools.class);
+	protected static Logger log = LogManager.getLogger(NetworkTools.class);
 
 	private NetworkTools() {}
 
@@ -180,7 +182,10 @@ public final class NetworkTools {
 	 * For opposite links, the link which has the coordinate on its right side is sorted "closer" to the coordinate.
 	 * If more than two links have the exact same distance, links are sorted by distance to their respective closest node.
 	 * After that, behaviour is undefined.
+	 * 
+	 * @deprecated See https://github.com/matsim-org/pt2matsim/issues/199
 	 */
+	@Deprecated(since = "23.10-SNAPSHOT")
 	public static List<Link> findClosestLinksSorted(Network network, Coord coord, double nodeSearchRadius, Set<String> allowedTransportModes) {
 		List<Link> links = new ArrayList<>();
 		Map<Double, Set<Link>> sortedLinks = findClosestLinks(network, coord, nodeSearchRadius, allowedTransportModes);
@@ -201,7 +206,7 @@ public final class NetworkTools {
 				Map<Double, Link> tmp = new HashMap<>();
 				for(Link l : list) {
 					double fromNodeDist = CoordUtils.calcEuclideanDistance(l.getFromNode().getCoord(), coord);
-					double toNodeDist = CoordUtils.calcEuclideanDistance(l.getFromNode().getCoord(), coord);
+					double toNodeDist = CoordUtils.calcEuclideanDistance(l.getToNode().getCoord(), coord);
 					double nodeDist = fromNodeDist < toNodeDist ? fromNodeDist : toNodeDist;
 
 					double d = nodeDist + (coordIsOnRightSideOfLink(coord, l) ? 1 : 100);
@@ -225,7 +230,7 @@ public final class NetworkTools {
 	 * @return the filtered new network
 	 */
 	public static Network createFilteredNetworkByLinkMode(Network network, Set<String> transportModes) {
-		NetworkFilterManager filterManager = new NetworkFilterManager(network);
+		NetworkFilterManager filterManager = new NetworkFilterManager(network, new NetworkConfigGroup());
 		filterManager.addLinkFilter(new LinkFilter(transportModes));
 		Network newNetwork = filterManager.applyFilters();
 		removeNotUsedNodes(newNetwork);
@@ -233,7 +238,7 @@ public final class NetworkTools {
 	}
 
 	public static Network createFilteredNetworkExceptLinkMode(Network network, Set<String> transportModes) {
-		NetworkFilterManager filterManager = new NetworkFilterManager(network);
+		NetworkFilterManager filterManager = new NetworkFilterManager(network, new NetworkConfigGroup());
 		filterManager.addLinkFilter(new InverseLinkFilter(transportModes));
 		return filterManager.applyFilters();
 	}

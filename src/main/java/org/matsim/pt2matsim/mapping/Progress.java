@@ -1,9 +1,10 @@
 package org.matsim.pt2matsim.mapping;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 public class Progress {
-	private Logger logger = Logger.getLogger(Progress.class);
+	private Logger logger = LogManager.getLogger(Progress.class);
 
 	private final long total;
 	private final String description;

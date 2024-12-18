@@ -1,8 +1,8 @@
 package org.matsim.pt2matsim.osm.lib;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * @author polettif
  */
-public class AllowedTagsFilterTest {
+class AllowedTagsFilterTest {
 
 	private AllowedTagsFilter filter1;
 	private AllowedTagsFilter filter2;
@@ -21,7 +21,7 @@ public class AllowedTagsFilterTest {
 	private Osm.Element way22;
 	private Osm.Element node;
 
-	@Before
+	@BeforeEach
 	public void prepare() {
 		filter1 = new AllowedTagsFilter();
 		filter1.add(Osm.ElementType.WAY, "key", "value1");
@@ -63,43 +63,43 @@ public class AllowedTagsFilterTest {
 	}
 
 	@Test
-	public void matches() {
-		Assert.assertTrue(filter1.matches(way11));
-		Assert.assertTrue(filter1.matches(way12));
-		Assert.assertTrue(filter1.matches(way21));
-		Assert.assertFalse(filter1.matches(way22));
-		Assert.assertFalse(filter1.matches(node));
+	void matches() {
+		Assertions.assertTrue(filter1.matches(way11));
+		Assertions.assertTrue(filter1.matches(way12));
+		Assertions.assertTrue(filter1.matches(way21));
+		Assertions.assertFalse(filter1.matches(way22));
+		Assertions.assertFalse(filter1.matches(node));
 
-		Assert.assertFalse(filter2.matches(way11));
-		Assert.assertTrue(filter2.matches(way12));
-		Assert.assertTrue(filter2.matches(way21));
-		Assert.assertTrue(filter2.matches(way22));
-		Assert.assertTrue(filter2.matches(node));
+		Assertions.assertFalse(filter2.matches(way11));
+		Assertions.assertTrue(filter2.matches(way12));
+		Assertions.assertTrue(filter2.matches(way21));
+		Assertions.assertTrue(filter2.matches(way22));
+		Assertions.assertTrue(filter2.matches(node));
 
-		Assert.assertTrue(filter3.matches(way11));
-		Assert.assertTrue(filter3.matches(way12));
-		Assert.assertFalse(filter3.matches(way21));
-		Assert.assertFalse(filter3.matches(way22));
+		Assertions.assertTrue(filter3.matches(way11));
+		Assertions.assertTrue(filter3.matches(way12));
+		Assertions.assertFalse(filter3.matches(way21));
+		Assertions.assertFalse(filter3.matches(way22));
 	}
 
 	@Test
-	public void mergeFilter() {
+	void mergeFilter() {
 		AllowedTagsFilter merged12 = new AllowedTagsFilter();
 		merged12.mergeFilter(filter1);
 		merged12.mergeFilter(filter2);
-		Assert.assertTrue(merged12.matches(way11));
-		Assert.assertTrue(merged12.matches(way12));
-		Assert.assertTrue(merged12.matches(way21));
-		Assert.assertTrue(merged12.matches(way22));
+		Assertions.assertTrue(merged12.matches(way11));
+		Assertions.assertTrue(merged12.matches(way12));
+		Assertions.assertTrue(merged12.matches(way21));
+		Assertions.assertTrue(merged12.matches(way22));
 
 		AllowedTagsFilter merged123 = new AllowedTagsFilter();
 		merged123.mergeFilter(filter1);
 		merged123.mergeFilter(filter2);
 		merged123.mergeFilter(filter3);
-		Assert.assertTrue(merged123.matches(way11));
-		Assert.assertTrue(merged123.matches(way12));
-		Assert.assertFalse(merged123.matches(way21));
-		Assert.assertFalse(merged123.matches(way22));
+		Assertions.assertTrue(merged123.matches(way11));
+		Assertions.assertTrue(merged123.matches(way12));
+		Assertions.assertFalse(merged123.matches(way21));
+		Assertions.assertFalse(merged123.matches(way22));
 	}
 
 }

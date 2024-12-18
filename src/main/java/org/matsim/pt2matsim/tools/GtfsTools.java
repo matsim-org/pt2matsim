@@ -137,7 +137,7 @@ public final class GtfsTools {
 	 * usually the largest file.
 	 */
 	public static void writeStopTimes(Collection<Trip> trips, String folder) throws IOException {
-		CSVWriter stopTimesWriter = new CSVWriter(new FileWriter(folder + GtfsDefinitions.Files.STOP_TIMES.fileName), ',');
+		CSVWriter stopTimesWriter = new CSVWriter(new FileWriter(folder + GtfsDefinitions.Files.STOP_TIMES.fileName));
 		String[] header = GtfsDefinitions.Files.STOP_TIMES.columns;
 		stopTimesWriter.writeNext(header, true);
 
@@ -161,7 +161,7 @@ public final class GtfsTools {
 	 * Experimental class to write stops.txt (i.e. after filtering for one date)
 	 */
 	public static void writeStops(Collection<Stop> stops, String path) throws IOException {
-		CSVWriter stopsWriter = new CSVWriter(new FileWriter(path + GtfsDefinitions.Files.STOPS.fileName), ',');
+		CSVWriter stopsWriter = new CSVWriter(new FileWriter(path + GtfsDefinitions.Files.STOPS.fileName));
 		String[] header = GtfsDefinitions.Files.STOPS.columns;
 		stopsWriter.writeNext(header, true);
 		for(Stop stop : stops) {
@@ -180,7 +180,7 @@ public final class GtfsTools {
 	 * Experimental class to write trips.txt (i.e. after filtering for one date)
 	 */
 	public static void writeTrips(Collection<Trip> trips, String path) throws IOException {
-		CSVWriter tripsWriter = new CSVWriter(new FileWriter(path + GtfsDefinitions.Files.TRIPS.fileName), ',');
+		CSVWriter tripsWriter = new CSVWriter(new FileWriter(path + GtfsDefinitions.Files.TRIPS.fileName));
 		String[] header = GtfsDefinitions.Files.TRIPS.columns;
 		tripsWriter.writeNext(header, true);
 		for(Trip trip : trips) {
@@ -198,7 +198,7 @@ public final class GtfsTools {
 	 * Experimental class to write transfers.txt (i.e. after creating additional walk transfer)
 	 */
 	public static void writeTransfers(Collection<Transfer> transfers, String path) throws IOException {
-		CSVWriter transfersWiter = new CSVWriter(new FileWriter(path + GtfsDefinitions.Files.TRANSFERS.fileName), ',');
+		CSVWriter transfersWiter = new CSVWriter(new FileWriter(path + GtfsDefinitions.Files.TRANSFERS.fileName));
 		String[] columns = GtfsDefinitions.Files.TRANSFERS.columns;
 		String[] optionalColumns = GtfsDefinitions.Files.TRANSFERS.optionalColumns;
 		String[] header = Stream.concat(Arrays.stream(columns), Arrays.stream(optionalColumns)).toArray(String[]::new);

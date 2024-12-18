@@ -20,6 +20,8 @@
 package org.matsim.pt2matsim.tools;
 
 import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
+
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.collections.Tuple;
 
@@ -142,15 +144,16 @@ public final class CsvTools {
 
 	public static Map<String, Map<String, String>> readNestedMapFromFile(String fileName, boolean ignoreFirstLine) throws IOException {
 		Map<String, Map<String, String>> map = new HashMap<>();
-
-		CSVReader reader = new CSVReader(new FileReader(fileName));
-		if(ignoreFirstLine) reader.readNext();
-		String[] line = reader.readNext();
-		while(line != null) {
-			MapUtils.getMap(line[0], map).put(line[1], line[2]);
-			line = reader.readNext();
+		try(CSVReader reader = new CSVReader(new FileReader(fileName))) {
+			if(ignoreFirstLine) reader.readNext();
+			String[] line = reader.readNext();
+			while(line != null) {
+				MapUtils.getMap(line[0], map).put(line[1], line[2]);
+				line = reader.readNext();
+			}
+		} catch (CsvValidationException e) {
+			throw new RuntimeException(e);
 		}
-		reader.close();
 		return map;
 	}
 

@@ -1,6 +1,7 @@
 package org.matsim.pt2matsim.hafas.lib;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
 import org.matsim.pt.transitSchedule.api.MinimalTransferTimes;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
@@ -16,7 +17,7 @@ import java.io.*;
  */
 public class MinimalTransferTimesReader {
 
-    protected static Logger log = Logger.getLogger(MinimalTransferTimesReader.class);
+    protected static Logger log = LogManager.getLogger(MinimalTransferTimesReader.class);
 
     public static void run(TransitSchedule schedule, String pathToHafasFolder, String UMSTEIGB, String METABHF) throws IOException {
 
@@ -25,8 +26,11 @@ public class MinimalTransferTimesReader {
         // read from UMSTEIGB
         if (new File(pathToHafasFolder, UMSTEIGB).exists()) {
             BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToHafasFolder + UMSTEIGB), "utf-8"));
-            String newLine = readsLines.readLine();
-            while (newLine != null) {
+            String newLine;
+            while ((newLine = readsLines.readLine()) != null) {
+                if (newLine.startsWith("*")) {
+                    continue;
+                }
                 /*
                 1-7 INT32 Die Nummer der Haltestelle.
                 9-10 INT16 Umsteigezeit IC-IC
@@ -36,7 +40,6 @@ public class MinimalTransferTimesReader {
                 Id<TransitStopFacility> stopId = Id.create(newLine.substring(0, 7), TransitStopFacility.class);
                 double transferTime = Integer.parseInt(newLine.substring(11, 13)) * 60;
                 minimalTransferTimes.set(stopId, stopId, transferTime);
-                newLine = readsLines.readLine();
             }
             readsLines.close();
         } else {

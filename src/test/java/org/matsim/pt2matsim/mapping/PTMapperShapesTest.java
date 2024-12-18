@@ -1,8 +1,8 @@
 package org.matsim.pt2matsim.mapping;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -29,13 +29,13 @@ import static org.matsim.pt2matsim.mapping.PTMapperTest.initPTMConfig;
 /**
  * @author polettif
  */
-public class PTMapperShapesTest {
+class PTMapperShapesTest {
 
 	public Network network;
 	public TransitSchedule schedule;
 	public PublicTransitMappingConfigGroup ptmConfig;
 
-	@Before
+	@BeforeEach
 	public void prepare() {
 		ptmConfig = initPTMConfig();
 		network = NetworkToolsTest.initNetwork();
@@ -50,20 +50,20 @@ public class PTMapperShapesTest {
 	}
 
 	@Test
-	public void validateMappedSchedule() {
-		Assert.assertTrue(TransitScheduleValidator.validateAll(schedule, network).isValid());
+	void validateMappedSchedule() {
+		Assertions.assertTrue(TransitScheduleValidator.validateAll(schedule, network).isValid());
 	}
 
 
 	@Test
-	public void allowedModes() {
+	void allowedModes() {
 		for(Link l : network.getLinks().values()) {
-			Assert.assertFalse(l.getAllowedModes().contains(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE));
+			Assertions.assertFalse(l.getAllowedModes().contains(PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE));
 		}
 	}
 
 	@Test
-	public void linkSequences() {
+	void linkSequences() {
 		TransitSchedule initSchedule = ScheduleToolsTest.initSchedule();
 
 		for(TransitLine l : schedule.getTransitLines().values()) {
@@ -71,7 +71,7 @@ public class PTMapperShapesTest {
 				TransitRoute initRoute = initSchedule.getTransitLines().get(l.getId()).getRoutes().get(r.getId());
 				List<Id<Link>> initLinkIds = ScheduleTools.getTransitRouteLinkIds(initRoute);
 				List<Id<Link>> linkIds = ScheduleTools.getTransitRouteLinkIds(r);
-				Assert.assertEquals(initLinkIds, linkIds);
+				Assertions.assertEquals(initLinkIds, linkIds);
 			}
 		}
 	}
