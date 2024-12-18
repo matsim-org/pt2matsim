@@ -40,6 +40,8 @@ public interface GtfsFeed {
 	Map<String, Service> getServices();
 
 	Map<String, Trip> getTrips();
+	
+	Map<String, Agency> getAgencies();
 
 	Map<Id<RouteShape>, RouteShape> getShapes();
 

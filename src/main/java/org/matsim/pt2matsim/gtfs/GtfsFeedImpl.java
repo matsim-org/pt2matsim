@@ -801,5 +801,10 @@ public class GtfsFeedImpl implements GtfsFeed {
 	public Map<String, Trip> getTrips() {
 		return trips;
 	}
+	
+	@Override
+	public Map<String, Agency> getAgencies() {
+		return agencies;
+	}
 
 }
