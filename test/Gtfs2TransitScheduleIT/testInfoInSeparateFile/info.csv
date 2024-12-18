@@ -1,0 +1,4 @@
+"lineId","shortName","longName","type","description","agencyId","agencyName","agencyURL","numTransitRoutes","totalDepartures"
+"lineA","Line A","Bus Line A","bus","","S42","Service 42","htpps://google.com","2","6"
+"lineB","Line B","Tram Line B","tram","","P2M","pt2matsim","https://github.com/matsim-org/pt2matsim","1","4"
+"lineC","Line C","Something else","other","","P2M","pt2matsim","https://github.com/matsim-org/pt2matsim","0","0"

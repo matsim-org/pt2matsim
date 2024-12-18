@@ -8,6 +8,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt.utils.TransitScheduleValidator;
+import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions.RouteType;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ScheduleToolsTest;
 
@@ -160,6 +161,41 @@ class GtfsConverterTest {
 		}
 
 		Assertions.assertEquals(expectedTransferTimes, actualTransferTime);
+	}
+	
+	@Test
+	void testAdditionalLineInfo() {
+		Assertions.assertEquals(3, gtfsConverter.getAdditionalLineInfo().size());
+
+		AdditionalTransitLineInfo lineA = gtfsConverter.getAdditionalLineInfo().get(Id.create("lineA", TransitLine.class));
+		Assertions.assertNotNull(lineA);
+		Assertions.assertEquals("lineA", lineA.getId());
+		Assertions.assertEquals("Line A", lineA.getShortName());
+		Assertions.assertEquals("Bus Line A", lineA.getLongName());
+		Assertions.assertEquals(RouteType.BUS, lineA.getRouteType());
+		Assertions.assertEquals("S42", lineA.getAgencyId());
+		Assertions.assertEquals("Service 42", lineA.getAgencyName());
+		Assertions.assertEquals("htpps://google.com", lineA.getAgencyURL());
+		
+		AdditionalTransitLineInfo lineB = gtfsConverter.getAdditionalLineInfo().get(Id.create("lineB", TransitLine.class));
+		Assertions.assertNotNull(lineB);
+		Assertions.assertEquals("lineB", lineB.getId());
+		Assertions.assertEquals("Line B", lineB.getShortName());
+		Assertions.assertEquals("Tram Line B", lineB.getLongName());
+		Assertions.assertEquals(RouteType.TRAM, lineB.getRouteType());
+		Assertions.assertEquals("P2M", lineB.getAgencyId());
+		Assertions.assertEquals("pt2matsim", lineB.getAgencyName());
+		Assertions.assertEquals("https://github.com/matsim-org/pt2matsim", lineB.getAgencyURL());
+		
+		AdditionalTransitLineInfo lineC = gtfsConverter.getAdditionalLineInfo().get(Id.create("lineC", TransitLine.class));
+		Assertions.assertNotNull(lineC);
+		Assertions.assertEquals("lineC", lineC.getId());
+		Assertions.assertEquals("Line C", lineC.getShortName());
+		Assertions.assertEquals("Something else", lineC.getLongName());
+		Assertions.assertEquals(RouteType.OTHER, lineC.getRouteType());
+		Assertions.assertEquals("P2M", lineC.getAgencyId());
+		Assertions.assertEquals("pt2matsim", lineC.getAgencyName());
+		Assertions.assertEquals("https://github.com/matsim-org/pt2matsim", lineC.getAgencyURL());
 	}
 
 	private String getTransferTimeTestString(MinimalTransferTimes.MinimalTransferTimesIterator iterator) {

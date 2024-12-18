@@ -33,6 +33,9 @@ public interface Route {
 
 	/** required **/
 	String getLongName();
+	
+	/** required **/
+	Agency getAgency();
 
 	/** required **/
 	GtfsDefinitions.RouteType getRouteType();
@@ -43,4 +46,9 @@ public interface Route {
 	 * The base route types are part of the extended set, does not return <tt>null</tt>
 	 */
 	GtfsDefinitions.ExtendedRouteType getExtendedRouteType();
+	
+	/** optional **/
+	void setDescription(String description);
+	
+	String getDescription();
 }

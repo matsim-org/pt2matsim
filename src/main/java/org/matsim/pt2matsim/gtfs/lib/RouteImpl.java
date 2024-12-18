@@ -31,23 +31,27 @@ public class RouteImpl implements Route {
 	private final String routeId;
 	private final String shortName;
 	private final String longName;
+	private final Agency agency;
 	private final RouteType routeType;
 	private final GtfsDefinitions.ExtendedRouteType extendedRouteType;
+	private String description = "";
 
 	private final Map<String, Trip> trips = new HashMap<>();
 
-	public RouteImpl(String routeId, String shortName, String longName, RouteType routeType) {
+	public RouteImpl(String routeId, String shortName, String longName, Agency agency, RouteType routeType) {
 		this.routeId = routeId;
 		this.shortName = shortName;
 		this.longName = longName;
+		this.agency = agency;
 		this.routeType = routeType;
 		this.extendedRouteType = GtfsDefinitions.ExtendedRouteType.getExtendedRouteType(routeType);
 	}
 
-	public RouteImpl(String routeId, String shortName, String longName, GtfsDefinitions.ExtendedRouteType extendedRouteType) {
+	public RouteImpl(String routeId, String shortName, String longName, Agency agency, GtfsDefinitions.ExtendedRouteType extendedRouteType) {
 		this.routeId = routeId;
 		this.shortName = shortName;
 		this.longName = longName;
+		this.agency = agency;
 		this.routeType = extendedRouteType.routeType;
 		this.extendedRouteType = extendedRouteType;
 	}
@@ -77,6 +81,11 @@ public class RouteImpl implements Route {
 	public String getLongName() {
 		return longName;
 	}
+	
+	@Override
+	public Agency getAgency() {
+		return agency;
+	}
 
 	/** required */
 	@Override
@@ -92,6 +101,16 @@ public class RouteImpl implements Route {
 	@Override
 	public GtfsDefinitions.ExtendedRouteType getExtendedRouteType() {
 		return extendedRouteType;
+	}
+	
+	@Override
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
+	@Override
+	public String getDescription() {
+		return description;
 	}
 
 	@Override

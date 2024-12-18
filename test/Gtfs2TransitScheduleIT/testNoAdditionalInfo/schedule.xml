@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE transitSchedule SYSTEM "http://www.matsim.org/files/dtd/transitSchedule_v2.dtd">
+
+<transitSchedule>
+
+	<transitStops>
+		<stopFacility id="stop1" x="2600021.0" y="1200060.0" name="One" isBlocking="false"/>
+		<stopFacility id="stop2" x="2600040.0" y="1200050.0" name="Two" isBlocking="false"/>
+		<stopFacility id="stop3" x="2600049.0" y="1200044.0" name="Three" isBlocking="false"/>
+		<stopFacility id="stop4" x="2600065.0" y="1200022.0" name="Four" isBlocking="false"/>
+		<stopFacility id="stop5" x="2600039.0" y="1200035.0" name="Five" isBlocking="false"/>
+		<stopFacility id="stop6" x="2600055.0" y="1200015.0" name="Six" isBlocking="false"/>
+	</transitStops>
+	<minimalTransferTimes>
+		<relation fromStop="stop4" toStop="stop3" transferTime="10.0"/>
+		<relation fromStop="stop2" toStop="stop3" transferTime="0.0"/>
+		<relation fromStop="stop3" toStop="stop4" transferTime="10.0"/>
+		<relation fromStop="stop3" toStop="stop2" transferTime="0.0"/>
+	</minimalTransferTimes>
+	<transitLine id="lineA" name="Line A">
+		<transitRoute id="routeA2">
+			<transportMode>bus</transportMode>
+			<routeProfile>
+				<stop refId="stop4" arrivalOffset="00:00:00" departureOffset="00:00:00" awaitDeparture="true"/>
+				<stop refId="stop3" arrivalOffset="00:00:40" departureOffset="00:00:40" awaitDeparture="true"/>
+				<stop refId="stop2" arrivalOffset="00:01:00" departureOffset="00:01:00" awaitDeparture="true"/>
+				<stop refId="stop1" arrivalOffset="00:01:20" departureOffset="00:00:00" awaitDeparture="true"/>
+			</routeProfile>
+			<departures>
+				<departure id="routeA2_09:00:00" departureTime="09:00:00" vehicleRefId="veh_0_bus"/>
+				<departure id="routeA2_12:00:00" departureTime="12:00:00" vehicleRefId="veh_1_bus"/>
+				<departure id="routeA2_15:00:00" departureTime="15:00:00" vehicleRefId="veh_2_bus"/>
+			</departures>
+		</transitRoute>
+		<transitRoute id="routeA1">
+			<transportMode>bus</transportMode>
+			<routeProfile>
+				<stop refId="stop1" arrivalOffset="00:00:00" departureOffset="00:00:00" awaitDeparture="true"/>
+				<stop refId="stop2" arrivalOffset="00:00:20" departureOffset="00:00:20" awaitDeparture="true"/>
+				<stop refId="stop3" arrivalOffset="00:00:40" departureOffset="00:00:40" awaitDeparture="true"/>
+				<stop refId="stop4" arrivalOffset="00:01:20" departureOffset="00:00:00" awaitDeparture="true"/>
+			</routeProfile>
+			<departures>
+				<departure id="routeA1_08:00:00" departureTime="08:00:00" vehicleRefId="veh_3_bus"/>
+				<departure id="routeA1_11:00:00" departureTime="11:00:00" vehicleRefId="veh_4_bus"/>
+				<departure id="routeA1_14:00:00" departureTime="14:00:00" vehicleRefId="veh_5_bus"/>
+			</departures>
+		</transitRoute>
+	</transitLine>
+	<transitLine id="lineB" name="Line B">
+		<transitRoute id="routeB">
+			<transportMode>tram</transportMode>
+			<routeProfile>
+				<stop refId="stop1" arrivalOffset="00:00:00" departureOffset="00:00:00" awaitDeparture="true"/>
+				<stop refId="stop3" arrivalOffset="00:01:20" departureOffset="00:01:20" awaitDeparture="true"/>
+				<stop refId="stop5" arrivalOffset="00:01:40" departureOffset="00:01:40" awaitDeparture="true"/>
+				<stop refId="stop6" arrivalOffset="00:02:20" departureOffset="00:02:20" awaitDeparture="true"/>
+				<stop refId="stop4" arrivalOffset="00:02:40" departureOffset="00:00:00" awaitDeparture="true"/>
+			</routeProfile>
+			<departures>
+				<departure id="routeB_07:00:00" departureTime="07:00:00" vehicleRefId="veh_6_tram"/>
+				<departure id="routeB_10:00:00" departureTime="10:00:00" vehicleRefId="veh_7_tram"/>
+				<departure id="routeB_13:00:00" departureTime="13:00:00" vehicleRefId="veh_8_tram"/>
+				<departure id="routeB_16:00:00" departureTime="16:00:00" vehicleRefId="veh_9_tram"/>
+			</departures>
+		</transitRoute>
+	</transitLine>
+	<transitLine id="lineC" name="Line C">
+	</transitLine>
+</transitSchedule>
