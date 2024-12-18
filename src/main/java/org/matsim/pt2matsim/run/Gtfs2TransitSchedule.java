@@ -75,6 +75,12 @@ public final class Gtfs2TransitSchedule {
 	 *                  Use 'WGS84' for no transformation (though this may lead to errors with PT mapping).<br/>
 	 *              [3] output transit schedule file
 	 *              [4] (optional) output default vehicles file
+	 *              [5] (optional) output for additional line info. One of the following:
+	 * 					<ul>
+	 *     				<li>empty -> will not be written</li>
+	 *     				<li>"schedule" -> will be written as attributable in the schedule</li>
+	 *     				<li>output file path (.csv) -> will be written as specified csv file</li>
+	 *     				</ul>
 	 * Calls {@link #run}.
 	 */
 	public static void main(final String[] args) {
