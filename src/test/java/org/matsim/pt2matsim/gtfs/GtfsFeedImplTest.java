@@ -52,6 +52,12 @@ class GtfsFeedImplTest {
 		Assertions.assertEquals(3, feed.getShapes().size());
 		Assertions.assertEquals(6, feed.getTrips().size());
 		Assertions.assertEquals(6, feed.getTransfers().size());
+		Assertions.assertEquals(2, feed.getAgencies().size());
+	}
+	
+	@Test
+	void agencyAssociation() {
+		feed.getRoutes().values().forEach(route -> Assertions.assertNotNull(route.getAgency(), "no agency in route " + route.getId()));
 	}
 
 	@Test
