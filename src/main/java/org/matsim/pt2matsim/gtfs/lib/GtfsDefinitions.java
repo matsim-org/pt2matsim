@@ -107,7 +107,7 @@ public final class GtfsDefinitions {
 	 * Values
 	 */
 	public enum Files {
-		AGENCY("Agency", "agancy.txt",
+		AGENCY("Agency", "agency.txt",
 				new String[]{AGENCY_ID, AGENCY_NAME, AGENCY_URL, AGENCY_TIMEZONE},
 				new String[]{AGENCY_LANG, AGENCY_PHONE, AGENCY_FARE_URL, AGENCY_EMAIL}),
 		
