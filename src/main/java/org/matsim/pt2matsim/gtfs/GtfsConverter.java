@@ -20,7 +20,6 @@ package org.matsim.pt2matsim.gtfs;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
-import org.matsim.core.utils.misc.OptionalTime;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.gtfs.lib.*;
@@ -35,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Converts a GTFS feed to a MATSim transit schedule
@@ -56,6 +56,7 @@ public class GtfsConverter {
 
 	protected TransitSchedule transitSchedule;
 	protected Vehicles vehiclesContainer;
+	protected Map<Id<TransitLine>, AdditionalTransitLineInfo> additionalLineInfo = new TreeMap<>();
 
 	protected int noStopTimeTrips;
 	protected int stopPairsWithoutOffset;
@@ -79,6 +80,10 @@ public class GtfsConverter {
 
 	public Vehicles getVehicles() {
 		return this.vehiclesContainer;
+	}
+	
+	public Map<Id<TransitLine>, AdditionalTransitLineInfo> getAdditionalLineInfo() {
+		return this.additionalLineInfo;
 	}
 
 	/**
@@ -184,6 +189,7 @@ public class GtfsConverter {
 		for(Route gtfsRoute : this.feed.getRoutes().values()) {
 			// create a MATSim TransitLine for each Route
 			TransitLine newTransitLine = createTransitLine(gtfsRoute);
+			AdditionalTransitLineInfo info = additionalLineInfo.get(newTransitLine.getId());
 			if(newTransitLine != null) {
 				schedule.addTransitLine(newTransitLine);
 
@@ -194,6 +200,7 @@ public class GtfsConverter {
 						TransitRoute transitRoute = createTransitRoute(trip, schedule.getFacilities());
 						if(transitRoute != null) {
 							newTransitLine.addRoute(transitRoute);
+							info.countRoute(transitRoute.getDepartures().size());
 						}
 					}
 				}
@@ -215,6 +222,8 @@ public class GtfsConverter {
 		Id<TransitLine> id = createTransitLineId(gtfsRoute);
 		TransitLine line = this.scheduleFactory.createTransitLine(id);
 		line.setName(gtfsRoute.getShortName());
+		AdditionalTransitLineInfo info = new AdditionalTransitLineInfo(gtfsRoute);
+		additionalLineInfo.put(id, info);
 		return line;
 	}
 

@@ -26,6 +26,15 @@ import java.util.TreeMap;
 public final class GtfsDefinitions {
 
 	// column names
+	public static final String AGENCY_ID = "agency_id";
+	public static final String AGENCY_NAME = "agency_name";
+	public static final String AGENCY_URL = "agency_url";
+	public static final String AGENCY_TIMEZONE = "agency_timezone";
+	public static final String AGENCY_LANG = "agency_lang";
+	public static final String AGENCY_PHONE = "agency_phone";
+	public static final String AGENCY_FARE_URL = "agency_fare_url";
+	public static final String AGENCY_EMAIL = "agency_email";
+	
 	public static final String SHAPE_ID = "shape_id";
 	public static final String SHAPE_PT_LON = "shape_pt_lon";
 	public static final String SHAPE_PT_LAT = "shape_pt_lat";
@@ -98,6 +107,10 @@ public final class GtfsDefinitions {
 	 * Values
 	 */
 	public enum Files {
+		AGENCY("Agency", "agancy.txt",
+				new String[]{AGENCY_ID, AGENCY_NAME, AGENCY_URL, AGENCY_TIMEZONE},
+				new String[]{AGENCY_LANG, AGENCY_PHONE, AGENCY_FARE_URL, AGENCY_EMAIL}),
+		
 		STOPS("Stop", "stops.txt",
 				new String[]{STOP_ID, STOP_LON, STOP_LAT, STOP_NAME},
 				new String[]{STOP_CODE, STOP_DESC, ZONE_ID, STOP_URL, LOCATION_TYPE, PARENT_STATION, STOP_TIMEZONE, WHEELCHAIR_BOARDING}),
@@ -119,7 +132,7 @@ public final class GtfsDefinitions {
 
 		ROUTES("Route",
 				"routes.txt",
-				new String[]{ROUTE_ID, ROUTE_SHORT_NAME, ROUTE_LONG_NAME, ROUTE_TYPE},
+				new String[]{ROUTE_ID, AGENCY_ID, ROUTE_SHORT_NAME, ROUTE_LONG_NAME, ROUTE_TYPE},
 				new String[]{ROUTE_DESC, ROUTE_URL, ROUTE_COLOR, ROUTE_TEXT_COLOR}),
 
 		TRIPS("Trip",

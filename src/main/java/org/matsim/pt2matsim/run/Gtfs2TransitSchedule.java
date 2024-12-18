@@ -20,13 +20,23 @@ package org.matsim.pt2matsim.run;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.geotools.MGC;
+import org.matsim.core.utils.io.IOUtils;
+import org.matsim.pt.transitSchedule.api.TransitLine;
+import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.pt2matsim.gtfs.AdditionalTransitLineInfo;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
+import com.opencsv.CSVWriter;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.time.LocalDate;
+import java.util.Map;
 
 import static org.matsim.pt2matsim.gtfs.GtfsConverter.*;
 
@@ -38,6 +48,8 @@ import static org.matsim.pt2matsim.gtfs.GtfsConverter.*;
 public final class Gtfs2TransitSchedule {
 
 	protected static Logger log = Logger.getLogger(Gtfs2TransitSchedule.class);
+	
+	private static final String INFO_OUTPUT_OPTION_SCHEDULE = "schedule";
 
 	private Gtfs2TransitSchedule() {
 	}
@@ -64,10 +76,12 @@ public final class Gtfs2TransitSchedule {
 	 * Calls {@link #run}.
 	 */
 	public static void main(final String[] args) {
-		if(args.length == 5) {
-			run(args[0], args[1], args[2], args[3], args[4]);
+		if(args.length == 6) {
+			run(args[0], args[1], args[2], args[3], args[4], args[5]);
+		} else if(args.length == 5) {
+			run(args[0], args[1], args[2], args[3], args[4], null);
 		} else if(args.length == 4) {
-			run(args[0], args[1], args[2], args[3], null);
+			run(args[0], args[1], args[2], args[3], null, null);
 		} else {
 			throw new IllegalArgumentException("Wrong number of input arguments.");
 		}
@@ -90,8 +104,14 @@ public final class Gtfs2TransitSchedule {
 	 * @param outputCoordinateSystem 	the output coordinate system. Use WGS84 for no transformation.
 	 * @param scheduleFile              output transit schedule file
 	 * @param vehicleFile               output default vehicles file (optional)
+	 * @param additionalLineInfoFile    output for additional line info (optional). One of the following:
+	 * 									<ul>
+	 *     				             	<li>empty -> will not be written</li>
+	 *     				             	<li>"schedule" -> will be written as attributable in the schedule</li>
+	 *     				             	<li>output file path (.csv) -> will be written as specified csv file</li>
+	 *     				             	</ul>
 	 */
-	public static void run(String gtfsFolder, String sampleDayParam, String outputCoordinateSystem, String scheduleFile, String vehicleFile) {
+	public static void run(String gtfsFolder, String sampleDayParam, String outputCoordinateSystem, String scheduleFile, String vehicleFile, String additionalLineInfoFile) {
 		Logger.getLogger(MGC.class).setLevel(Level.ERROR);
 
 		// check sample day parameter
@@ -107,10 +127,16 @@ public final class Gtfs2TransitSchedule {
 		GtfsConverter converter = new GtfsConverter(gtfsFeed);
 		converter.convert(param, outputCoordinateSystem);
 
+		if (additionalLineInfoFile != null && additionalLineInfoFile.equals(INFO_OUTPUT_OPTION_SCHEDULE)) {
+			writeInfoToSchedule(converter.getSchedule(), converter.getAdditionalLineInfo());
+		}
 		// write Files
 		ScheduleTools.writeTransitSchedule(converter.getSchedule(), scheduleFile);
 		if(vehicleFile != null) {
 			ScheduleTools.writeVehicles(converter.getVehicles(), vehicleFile);
+		}
+		if (additionalLineInfoFile != null && !additionalLineInfoFile.equals(INFO_OUTPUT_OPTION_SCHEDULE)) {
+			writeInfoToFile(additionalLineInfoFile, converter.getAdditionalLineInfo());
 		}
 	}
 
@@ -126,6 +152,55 @@ public final class Gtfs2TransitSchedule {
 			}
 		}
 		return true;
+	}
+	
+	private static void writeInfoToSchedule(TransitSchedule schedule, Map<Id<TransitLine>, AdditionalTransitLineInfo> infos) {
+		for (TransitLine line : schedule.getTransitLines().values()) {
+			AdditionalTransitLineInfo info = infos.get(line.getId());
+			if (info == null) {
+				log.warn("Could not find info for transit line " + line.getId().toString());
+				return;
+			}
+			line.getAttributes().putAttribute(AdditionalTransitLineInfo.INFO_COLUMN_LONGNAME, info.getLongName());
+			line.getAttributes().putAttribute(AdditionalTransitLineInfo.INFO_COLUMN_TYPE, info.getRouteType().name);
+			line.getAttributes().putAttribute(AdditionalTransitLineInfo.INFO_COLUMN_DESCRIPTION, info.getRouteDescription());
+			line.getAttributes().putAttribute(AdditionalTransitLineInfo.INFO_COLUMN_AGENCY_ID, info.getAgencyId());
+			line.getAttributes().putAttribute(AdditionalTransitLineInfo.INFO_COLUMN_AGENCY_NAME, info.getAgencyName());
+			line.getAttributes().putAttribute(AdditionalTransitLineInfo.INFO_COLUMN_AGENCY_URL, info.getAgencyURL());
+		}
+	}
+	
+	private static void writeInfoToFile(String filename, Map<Id<TransitLine>, AdditionalTransitLineInfo> infos) {
+		try(CSVWriter writer = new CSVWriter(IOUtils.getBufferedWriter(filename))) {
+			writer.writeNext(new String[] {
+					AdditionalTransitLineInfo.INFO_COLUMN_ID, 
+					AdditionalTransitLineInfo.INFO_COLUMN_SHORTNAME,
+					AdditionalTransitLineInfo.INFO_COLUMN_LONGNAME,
+					AdditionalTransitLineInfo.INFO_COLUMN_TYPE,
+					AdditionalTransitLineInfo.INFO_COLUMN_DESCRIPTION,
+					AdditionalTransitLineInfo.INFO_COLUMN_AGENCY_ID,
+					AdditionalTransitLineInfo.INFO_COLUMN_AGENCY_NAME,
+					AdditionalTransitLineInfo.INFO_COLUMN_AGENCY_URL,
+					AdditionalTransitLineInfo.INFO_COLUMN_NUM_TRANSIT_ROUTES,
+					AdditionalTransitLineInfo.INFO_COLUMN_NUM_TOTAL_DEPARTURES
+					});
+			for (AdditionalTransitLineInfo info : infos.values()) {
+				writer.writeNext(new String[] {
+						info.getId(),
+						info.getShortName(),
+						info.getLongName(),
+						info.getRouteType().name,
+						info.getRouteDescription(),
+						info.getAgencyId(),
+						info.getAgencyName(),
+						info.getAgencyURL(),
+						Integer.toString(info.getNumberOfTransitRoutes()),
+						Integer.toString(info.getTotalNumberOfDepartures())
+				});
+			}
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 
 }
