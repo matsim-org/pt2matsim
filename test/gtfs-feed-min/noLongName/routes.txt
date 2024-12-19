@@ -1,0 +1,4 @@
+route_id,route_short_name,route_type,agency_id
+lineA,Line A,3,S42
+lineB,Line B,0,P2M
+lineC,Line C,907,P2M

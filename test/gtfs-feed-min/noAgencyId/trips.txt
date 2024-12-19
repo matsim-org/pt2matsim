@@ -1,0 +1,7 @@
+route_id,service_id,trip_id,shape_id
+lineA,WEEK,routeA1,shapeA1
+lineA,WEEK,routeA2,shapeA2
+lineB,EXPR,routeB,shapeB
+lineA,WEND,routeA1_weekend,shapeA1
+lineA,WEND,routeA2_weekend,shapeA2
+lineB,WEND,routeB_weekend,shapeB

@@ -108,8 +108,8 @@ public final class GtfsDefinitions {
 	 */
 	public enum Files {
 		AGENCY("Agency", "agency.txt",
-				new String[]{AGENCY_ID, AGENCY_NAME, AGENCY_URL, AGENCY_TIMEZONE},
-				new String[]{AGENCY_LANG, AGENCY_PHONE, AGENCY_FARE_URL, AGENCY_EMAIL}),
+				new String[]{AGENCY_NAME, AGENCY_URL, AGENCY_TIMEZONE},
+				new String[]{AGENCY_ID, AGENCY_LANG, AGENCY_PHONE, AGENCY_FARE_URL, AGENCY_EMAIL}),
 		
 		STOPS("Stop", "stops.txt",
 				new String[]{STOP_ID, STOP_LON, STOP_LAT, STOP_NAME},
@@ -132,8 +132,8 @@ public final class GtfsDefinitions {
 
 		ROUTES("Route",
 				"routes.txt",
-				new String[]{ROUTE_ID, AGENCY_ID, ROUTE_SHORT_NAME, ROUTE_LONG_NAME, ROUTE_TYPE},
-				new String[]{ROUTE_DESC, ROUTE_URL, ROUTE_COLOR, ROUTE_TEXT_COLOR}),
+				new String[]{ROUTE_ID, ROUTE_TYPE},
+				new String[]{AGENCY_ID, ROUTE_SHORT_NAME, ROUTE_LONG_NAME, ROUTE_DESC, ROUTE_URL, ROUTE_COLOR, ROUTE_TEXT_COLOR}),
 
 		TRIPS("Trip",
 				"trips.txt",

@@ -1,0 +1,5 @@
+service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date
+WEEK,1,1,1,1,1,0,0,20181001,20181007
+EXPR,0,0,0,0,0,0,0,20181001,20181007
+WEND,0,0,0,0,0,1,1,20181001,20181007
+EMPT,1,0,1,1,0,1,0,20181001,20181007
