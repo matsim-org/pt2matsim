@@ -210,7 +210,9 @@ public class GtfsFeedImpl implements GtfsFeed {
 			String[] line = reader.readNext();
 			while(line != null) {
 				l++;
-				String agencyId = line[col.get(GtfsDefinitions.AGENCY_ID)];
+				String agencyId = col.containsKey(GtfsDefinitions.AGENCY_ID) ? 
+						line[col.get(GtfsDefinitions.AGENCY_ID)] :
+						line[col.get(GtfsDefinitions.AGENCY_NAME)];
 				AgencyImpl agency = new AgencyImpl(agencyId, line[col.get(GtfsDefinitions.AGENCY_NAME)], line[col.get(GtfsDefinitions.AGENCY_URL)], line[col.get(GtfsDefinitions.AGENCY_TIMEZONE)]);
 				agencies.put(agencyId, agency);
 
@@ -218,6 +220,12 @@ public class GtfsFeedImpl implements GtfsFeed {
 			}
 
 			reader.close();
+			
+			if (this.agencies.isEmpty()) {
+				throw new IllegalArgumentException("agencies file must contain at least one agency!");
+			} else if (this.agencies.size() > 1 && !col.containsKey(GtfsDefinitions.AGENCY_ID)) {
+				throw new IllegalArgumentException("agencies file has more than one entry but no id column!");
+			}
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new RuntimeException("Line " + l + " in agency.txt is empty or malformed.");
 		} catch (CsvValidationException e) {
@@ -442,7 +450,16 @@ public class GtfsFeedImpl implements GtfsFeed {
 			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.ROUTES.fileName);
 			String[] header = reader.readNext();
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.ROUTES.columns, GtfsDefinitions.Files.ROUTES.optionalColumns);
-
+			if (!col.containsKey(GtfsDefinitions.ROUTE_SHORT_NAME) && !col.containsKey(GtfsDefinitions.ROUTE_LONG_NAME)) {
+				throw new IllegalArgumentException("at least one of 'route_short_name' or 'route_long_name' is required but the dataset has neither column!");
+			}
+			Agency defaultAgency = null;
+			if (this.agencies.size() > 1 && !col.containsKey(GtfsDefinitions.AGENCY_ID)) {
+				throw new IllegalArgumentException("there is no column 'agency_id' in the routes file but there are multiple agencies in the agency file");
+			} else if (this.agencies.size() == 1) {
+				defaultAgency = this.agencies.values().stream().findAny().get();
+			}
+			
 			String[] line = reader.readNext();
 			while(line != null) {
 				l++;
@@ -455,12 +472,18 @@ public class GtfsFeedImpl implements GtfsFeed {
 					extendedRouteType = ExtendedRouteType.Unknown;
 				}
 				String routeId = line[col.get(GtfsDefinitions.ROUTE_ID)];
-				String shortName = line[col.get(GtfsDefinitions.ROUTE_SHORT_NAME)];
-				String longName = line[col.get(GtfsDefinitions.ROUTE_LONG_NAME)];
+				String shortName = col.containsKey(GtfsDefinitions.ROUTE_SHORT_NAME) ?
+							line[col.get(GtfsDefinitions.ROUTE_SHORT_NAME)] :
+							line[col.get(GtfsDefinitions.ROUTE_LONG_NAME)];
+				String longName = col.containsKey(GtfsDefinitions.ROUTE_LONG_NAME) ?
+							line[col.get(GtfsDefinitions.ROUTE_LONG_NAME)] :
+							line[col.get(GtfsDefinitions.ROUTE_SHORT_NAME)];
 				
-				Agency agency = this.agencies.get(line[col.get(GtfsDefinitions.AGENCY_ID)]);
+				Agency agency = col.containsKey(GtfsDefinitions.AGENCY_ID) ?
+							this.agencies.get(line[col.get(GtfsDefinitions.AGENCY_ID)]) : 
+							defaultAgency;
 				if (agency == null) {
-					throw new RuntimeException("Line " + l + " in routes.txt references unknown agency id " + line[col.get(GtfsDefinitions.AGENCY_ID)]);
+					throw new IllegalArgumentException("Line " + l + " in routes.txt references unknown agency id " + line[col.get(GtfsDefinitions.AGENCY_ID)]);
 				}
 				Route newGtfsRoute = new RouteImpl(routeId, shortName, longName, agency, extendedRouteType);
 				routes.put(line[col.get(GtfsDefinitions.ROUTE_ID)], newGtfsRoute);
