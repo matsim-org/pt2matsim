@@ -73,6 +73,7 @@ public class GtfsFeedImpl implements GtfsFeed {
 	protected Set<String> serviceIdsNotInCalendarTxt = new HashSet<>();
 
 	// containers for storing gtfs data
+	protected Map<String, Agency> agencies = new HashMap<>();
 	protected Map<String, Stop> stops = new HashMap<>();
 	protected Map<String, Route> routes = new TreeMap<>();
 	protected Map<String, Service> services = new HashMap<>();
@@ -139,6 +140,11 @@ public class GtfsFeedImpl implements GtfsFeed {
 
 		log.info("Loading GTFS files from " + root);
 		try {
+			loadAgencies();
+		} catch (IOException e) {
+			throw new RuntimeException("File agency.txt not found!");
+		}
+		try {
 			loadStops();
 		} catch (IOException e) {
 			throw new RuntimeException("File stops.txt not found!");
@@ -180,6 +186,44 @@ public class GtfsFeedImpl implements GtfsFeed {
 	protected CSVReader createCSVReader(String path) throws FileNotFoundException {
 		InputStream stream = new BOMInputStream(new FileInputStream(path));
 		return new CSVReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+	}
+	
+	/**
+	 * Reads all agencies and puts them in {@link #agencies}
+	 * <p/>
+	 * <br/><br/>
+	 * agency.txt <i>[https://developers.google.com/transit/gtfs/reference]</i><br/>
+	 * Transit agencies with service represented in this dataset.
+	 * @throws FileNotFoundException 
+	 *
+	 * @throws IOException
+	 */
+	protected void loadAgencies() throws IOException {
+		log.info("Loading agency.txt");
+
+		int l = 1;
+		try {
+			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.AGENCY.fileName);
+			String[] header = reader.readNext(); // read header
+			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.AGENCY.columns, GtfsDefinitions.Files.AGENCY.optionalColumns); // get column numbers for required fields
+
+			String[] line = reader.readNext();
+			while(line != null) {
+				l++;
+				String agencyId = line[col.get(GtfsDefinitions.AGENCY_ID)];
+				AgencyImpl agency = new AgencyImpl(agencyId, line[col.get(GtfsDefinitions.AGENCY_NAME)], line[col.get(GtfsDefinitions.AGENCY_URL)], line[col.get(GtfsDefinitions.AGENCY_TIMEZONE)]);
+				agencies.put(agencyId, agency);
+
+				line = reader.readNext();
+			}
+
+			reader.close();
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new RuntimeException("Line " + l + " in agency.txt is empty or malformed.");
+		} catch (CsvValidationException e) {
+			throw new RuntimeException(e);
+		}
+		log.info("...     agency.txt loaded");
 	}
 
 	/**
@@ -413,7 +457,12 @@ public class GtfsFeedImpl implements GtfsFeed {
 				String routeId = line[col.get(GtfsDefinitions.ROUTE_ID)];
 				String shortName = line[col.get(GtfsDefinitions.ROUTE_SHORT_NAME)];
 				String longName = line[col.get(GtfsDefinitions.ROUTE_LONG_NAME)];
-				Route newGtfsRoute = new RouteImpl(routeId, shortName, longName, extendedRouteType);
+				
+				Agency agency = this.agencies.get(line[col.get(GtfsDefinitions.AGENCY_ID)]);
+				if (agency == null) {
+					throw new RuntimeException("Line " + l + " in routes.txt references unknown agency id " + line[col.get(GtfsDefinitions.AGENCY_ID)]);
+				}
+				Route newGtfsRoute = new RouteImpl(routeId, shortName, longName, agency, extendedRouteType);
 				routes.put(line[col.get(GtfsDefinitions.ROUTE_ID)], newGtfsRoute);
 
 				line = reader.readNext();
@@ -751,6 +800,11 @@ public class GtfsFeedImpl implements GtfsFeed {
 	@Override
 	public Map<String, Trip> getTrips() {
 		return trips;
+	}
+	
+	@Override
+	public Map<String, Agency> getAgencies() {
+		return agencies;
 	}
 
 }
