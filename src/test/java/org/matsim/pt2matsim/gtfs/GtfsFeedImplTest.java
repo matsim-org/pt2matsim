@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
+import org.matsim.pt2matsim.gtfs.lib.GtfsDefinitions;
 import org.matsim.pt2matsim.gtfs.lib.Service;
 import org.matsim.pt2matsim.gtfs.lib.Stop;
 import org.matsim.pt2matsim.gtfs.lib.StopImpl;
@@ -58,6 +59,16 @@ class GtfsFeedImplTest {
 	@Test
 	void agencyAssociation() {
 		feed.getRoutes().values().forEach(route -> Assertions.assertNotNull(route.getAgency(), "no agency in route " + route.getId()));
+		Assertions.assertEquals("Service 42", feed.getRoutes().get("lineA").getAgency().getAgencyName());
+		Assertions.assertEquals("https://github.com/matsim-org/pt2matsim", feed.getRoutes().get("lineB").getAgency().getAgencyUrl());
+		Assertions.assertEquals("Europe/Zurich", feed.getRoutes().get("lineC").getAgency().getAgencyTimeZone());
+	}
+	
+	@Test
+	void routeData() {
+		Assertions.assertEquals("Line A", feed.getRoutes().get("lineA").getShortName());
+		Assertions.assertEquals("Bus Line A", feed.getRoutes().get("lineA").getLongName());
+		Assertions.assertEquals(GtfsDefinitions.RouteType.BUS, feed.getRoutes().get("lineA").getRouteType());
 	}
 
 	@Test
