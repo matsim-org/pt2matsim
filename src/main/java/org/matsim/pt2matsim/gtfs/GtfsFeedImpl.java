@@ -256,34 +256,64 @@ public class GtfsFeedImpl implements GtfsFeed {
 			while(line != null) {
 				l++;
 				String stopId = line[col.get(GtfsDefinitions.STOP_ID)];
-				StopImpl stop = new StopImpl(stopId, line[col.get(GtfsDefinitions.STOP_NAME)], Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LON)]), Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LAT)]));
+				GtfsDefinitions.LocationType locationType = col.containsKey(GtfsDefinitions.LOCATION_TYPE) && !line[col.get(GtfsDefinitions.LOCATION_TYPE)].isEmpty() ?
+						GtfsDefinitions.LocationType.values()[Integer.parseInt(line[col.get(GtfsDefinitions.LOCATION_TYPE)])] :
+						GtfsDefinitions.LocationType.STOP;
+				
+				String parentStation = null;
+				if (col.containsKey(GtfsDefinitions.PARENT_STATION)) {
+					if (line[col.get(GtfsDefinitions.PARENT_STATION)].isEmpty()) {
+						if (locationType.index == 2 || locationType.index == 3 || locationType.index == 4) {
+							throw new IllegalArgumentException("stop " + stopId + " has no parent but its type requires one");
+						}
+					} else {
+						if (locationType.index == 1) {
+							throw new IllegalArgumentException("stop " + stopId + " has a parent but its type forbids one");
+						} else {
+							parentStation = line[col.get(GtfsDefinitions.PARENT_STATION)];
+						}
+					}
+				} else {
+					if (locationType.index == 1 || locationType.index == 2 || locationType.index == 3) {
+						throw new IllegalArgumentException("the dataset has no parent_station column but the type of stop " + stopId + " requires one");
+					}
+				}
+				
+				StopImpl stop = new StopImpl(stopId, line[col.get(GtfsDefinitions.STOP_NAME)], locationType, parentStation);
+				
+				if (col.containsKey(GtfsDefinitions.STOP_LON) && col.containsKey(GtfsDefinitions.STOP_LAT) && !line[col.get(GtfsDefinitions.STOP_LON)].isEmpty() && !line[col.get(GtfsDefinitions.STOP_LAT)].isEmpty()) {
+					stop.setLocation(Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LON)]), Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LAT)]));
+				} else if (locationType.index == 0 || locationType.index == 1 || locationType.index == 2) {
+					throw new IllegalArgumentException("stop " + stopId + " has no Coord but its type requires one!");
+				} // in case of type 3 or 4 we can set it via the parent later
+				
 				stops.put(stopId, stop);
-
-				// location type
-				if(col.get(GtfsDefinitions.LOCATION_TYPE) != null) {
-					if(line[col.get(GtfsDefinitions.LOCATION_TYPE)].equals("0")) {
-						stop.setLocationType(GtfsDefinitions.LocationType.STOP);
-					}
-					if(line[col.get(GtfsDefinitions.LOCATION_TYPE)].equals("1")) {
-						stop.setLocationType(GtfsDefinitions.LocationType.STATION);
-					}
-				}
-
-				// parent station
-				if(col.get(GtfsDefinitions.PARENT_STATION) != null && !line[col.get(GtfsDefinitions.PARENT_STATION)].isEmpty()) {
-					stop.setParentStation(line[col.get(GtfsDefinitions.PARENT_STATION)]);
-				}
-
 				line = reader.readNext();
 			}
-
 			reader.close();
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new RuntimeException("Line " + l + " in stops.txt is empty or malformed.");
 		} catch (CsvValidationException e) {
 			throw new RuntimeException(e);
 		}
+		
+		for (Stop stop : stops.values()) {
+			setStopCoordFromParentRecursively(stop);
+		}
+		
 		log.info("...     stops.txt loaded");
+	}
+	
+	private void setStopCoordFromParentRecursively(Stop stop) {
+		if (stop.getCoord() == null) {
+			if (stop.getParentStationId() != null) {
+				Stop parentStop = stops.get(stop.getParentStationId());
+				setStopCoordFromParentRecursively(parentStop);
+				((StopImpl) stop).setLocation(parentStop.getCoord().getX(), parentStop.getCoord().getY());
+			} else {
+				throw new IllegalArgumentException("stop " + stop.getId() + " has no Coord an no parent to derive it from!");
+			}
+		}
 	}
 
 	/**

@@ -420,9 +420,24 @@ public final class GtfsDefinitions {
 	 * The location type field can have the following values:<br/>
 	 * 0 or blank: Stop. A location where passengers board or disembark from a transit vehicle<br/>
 	 * 1: Station. A physical structure or area that contains one or more stop<br/>
+	 * 2: Entrance/Exit. A location where passengers can enter or exit a station from the street. If an entrance/exit belongs to multiple stations, it may be linked by pathways to both, but the data provider must pick one of them as parent.
+	 * 3: Generic Node. A location within a station, not matching any other location_type, that may be used to link together pathways define in pathways.txt.
+	 * 4: Boarding Area. A specific location on a platform, where passengers can board and/or alight vehicles.
 	 */
 	public enum LocationType {
-		STOP, STATION
+		STOP(0, "stop"),
+		STATION(1, "station"),
+		ENTRANCE(2, "entrance / exit"),
+		NODE(3, "generic node"),
+		BOARDING_AREA(4, "boarding area");
+		
+		public int index;
+		public String name;
+
+		LocationType(int index, String name) {
+			this.index = index;
+			this.name = name;
+		}
 	}
 
 	public enum FareTransferType {

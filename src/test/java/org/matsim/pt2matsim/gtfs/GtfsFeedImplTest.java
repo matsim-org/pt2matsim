@@ -47,7 +47,8 @@ class GtfsFeedImplTest {
 
 	@Test
 	void statistics() {
-		Assertions.assertEquals(6, feed.getStops().size());
+		Assertions.assertEquals(12, feed.getStops().size());
+		Assertions.assertEquals(6, feed.getStops().values().stream().filter(s -> s.getLocationType().index==0).count());
 		Assertions.assertEquals(3, feed.getRoutes().size());
 		Assertions.assertEquals(4, feed.getServices().size());
 		Assertions.assertEquals(3, feed.getShapes().size());
