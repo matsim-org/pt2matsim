@@ -30,32 +30,24 @@ public class StopImpl implements Stop {
 
 	private final String id;
 	private final String name;
-	private final double lon;
-	private final double lat;
-	/** optional **/
-	private GtfsDefinitions.LocationType locationType = null;
-	/** optional **/
-	private String parentStationId = null;
-
+	private String parentStationId;
+	private final GtfsDefinitions.LocationType locationType;
+	
+	private double lon;
+	private double lat;
 	private Coord coord;
 	private final Collection<Trip> trips = new HashSet<>();
 
-	public StopImpl(String id, String name, double lon, double lat) {
+	public StopImpl(String id, String name, GtfsDefinitions.LocationType locationType, String parentStationId) {
 		this.id = id;
-		this.lon = lon;
-		this.lat = lat;
-		this.coord = new Coord(lon, lat);
-		this.name = name;
-	}
-
-	public StopImpl(String id, String name, double lon, double lat, GtfsDefinitions.LocationType locationType, String parentStationId) {
-		this.id = id;
-		this.lon = lon;
-		this.lat = lat;
-		this.coord = new Coord(lon, lat);
 		this.name = name;
 		this.locationType = locationType;
 		this.parentStationId = parentStationId;
+	}
+	
+	public StopImpl(String id, String name, double lon, double lat, GtfsDefinitions.LocationType locationType, String parentStationId) {
+		this(id, name, locationType, parentStationId);
+		setLocation(lon, lat);
 	}
 
 	@Override
@@ -98,12 +90,10 @@ public class StopImpl implements Stop {
 		return coord;
 	}
 
-	public void setLocationType(GtfsDefinitions.LocationType type) {
-		this.locationType = type;
-	}
-
-	public void setParentStation(String id) {
-		this.parentStationId = id;
+	public void setLocation(double lon, double lat) {
+		this.lon = lon;
+		this.lat = lat;
+		this.coord = new Coord(lon, lat);
 	}
 
 	public void addTrip(Trip trip) {

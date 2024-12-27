@@ -210,7 +210,9 @@ public class GtfsFeedImpl implements GtfsFeed {
 			String[] line = reader.readNext();
 			while(line != null) {
 				l++;
-				String agencyId = line[col.get(GtfsDefinitions.AGENCY_ID)];
+				String agencyId = col.containsKey(GtfsDefinitions.AGENCY_ID) ? 
+						line[col.get(GtfsDefinitions.AGENCY_ID)] :
+						line[col.get(GtfsDefinitions.AGENCY_NAME)];
 				AgencyImpl agency = new AgencyImpl(agencyId, line[col.get(GtfsDefinitions.AGENCY_NAME)], line[col.get(GtfsDefinitions.AGENCY_URL)], line[col.get(GtfsDefinitions.AGENCY_TIMEZONE)]);
 				agencies.put(agencyId, agency);
 
@@ -218,6 +220,12 @@ public class GtfsFeedImpl implements GtfsFeed {
 			}
 
 			reader.close();
+			
+			if (this.agencies.isEmpty()) {
+				throw new IllegalArgumentException("agencies file must contain at least one agency!");
+			} else if (this.agencies.size() > 1 && !col.containsKey(GtfsDefinitions.AGENCY_ID)) {
+				throw new IllegalArgumentException("agencies file has more than one entry but no id column!");
+			}
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new RuntimeException("Line " + l + " in agency.txt is empty or malformed.");
 		} catch (CsvValidationException e) {
@@ -248,34 +256,64 @@ public class GtfsFeedImpl implements GtfsFeed {
 			while(line != null) {
 				l++;
 				String stopId = line[col.get(GtfsDefinitions.STOP_ID)];
-				StopImpl stop = new StopImpl(stopId, line[col.get(GtfsDefinitions.STOP_NAME)], Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LON)]), Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LAT)]));
+				GtfsDefinitions.LocationType locationType = col.containsKey(GtfsDefinitions.LOCATION_TYPE) && !line[col.get(GtfsDefinitions.LOCATION_TYPE)].isEmpty() ?
+						GtfsDefinitions.LocationType.values()[Integer.parseInt(line[col.get(GtfsDefinitions.LOCATION_TYPE)])] :
+						GtfsDefinitions.LocationType.STOP;
+				
+				String parentStation = null;
+				if (col.containsKey(GtfsDefinitions.PARENT_STATION)) {
+					if (line[col.get(GtfsDefinitions.PARENT_STATION)].isEmpty()) {
+						if (locationType.index == 2 || locationType.index == 3 || locationType.index == 4) {
+							throw new IllegalArgumentException("stop " + stopId + " has no parent but its type requires one");
+						}
+					} else {
+						if (locationType.index == 1) {
+							throw new IllegalArgumentException("stop " + stopId + " has a parent but its type forbids one");
+						} else {
+							parentStation = line[col.get(GtfsDefinitions.PARENT_STATION)];
+						}
+					}
+				} else {
+					if (locationType.index == 1 || locationType.index == 2 || locationType.index == 3) {
+						throw new IllegalArgumentException("the dataset has no parent_station column but the type of stop " + stopId + " requires one");
+					}
+				}
+				
+				StopImpl stop = new StopImpl(stopId, line[col.get(GtfsDefinitions.STOP_NAME)], locationType, parentStation);
+				
+				if (col.containsKey(GtfsDefinitions.STOP_LON) && col.containsKey(GtfsDefinitions.STOP_LAT) && !line[col.get(GtfsDefinitions.STOP_LON)].isEmpty() && !line[col.get(GtfsDefinitions.STOP_LAT)].isEmpty()) {
+					stop.setLocation(Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LON)]), Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LAT)]));
+				} else if (locationType.index == 0 || locationType.index == 1 || locationType.index == 2) {
+					throw new IllegalArgumentException("stop " + stopId + " has no Coord but its type requires one!");
+				} // in case of type 3 or 4 we can set it via the parent later
+				
 				stops.put(stopId, stop);
-
-				// location type
-				if(col.get(GtfsDefinitions.LOCATION_TYPE) != null) {
-					if(line[col.get(GtfsDefinitions.LOCATION_TYPE)].equals("0")) {
-						stop.setLocationType(GtfsDefinitions.LocationType.STOP);
-					}
-					if(line[col.get(GtfsDefinitions.LOCATION_TYPE)].equals("1")) {
-						stop.setLocationType(GtfsDefinitions.LocationType.STATION);
-					}
-				}
-
-				// parent station
-				if(col.get(GtfsDefinitions.PARENT_STATION) != null && !line[col.get(GtfsDefinitions.PARENT_STATION)].isEmpty()) {
-					stop.setParentStation(line[col.get(GtfsDefinitions.PARENT_STATION)]);
-				}
-
 				line = reader.readNext();
 			}
-
 			reader.close();
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new RuntimeException("Line " + l + " in stops.txt is empty or malformed.");
 		} catch (CsvValidationException e) {
 			throw new RuntimeException(e);
 		}
+		
+		for (Stop stop : stops.values()) {
+			setStopCoordFromParentRecursively(stop);
+		}
+		
 		log.info("...     stops.txt loaded");
+	}
+	
+	private void setStopCoordFromParentRecursively(Stop stop) {
+		if (stop.getCoord() == null) {
+			if (stop.getParentStationId() != null) {
+				Stop parentStop = stops.get(stop.getParentStationId());
+				setStopCoordFromParentRecursively(parentStop);
+				((StopImpl) stop).setLocation(parentStop.getCoord().getX(), parentStop.getCoord().getY());
+			} else {
+				throw new IllegalArgumentException("stop " + stop.getId() + " has no Coord an no parent to derive it from!");
+			}
+		}
 	}
 
 	/**
@@ -442,7 +480,16 @@ public class GtfsFeedImpl implements GtfsFeed {
 			CSVReader reader = createCSVReader(root + GtfsDefinitions.Files.ROUTES.fileName);
 			String[] header = reader.readNext();
 			Map<String, Integer> col = getIndices(header, GtfsDefinitions.Files.ROUTES.columns, GtfsDefinitions.Files.ROUTES.optionalColumns);
-
+			if (!col.containsKey(GtfsDefinitions.ROUTE_SHORT_NAME) && !col.containsKey(GtfsDefinitions.ROUTE_LONG_NAME)) {
+				throw new IllegalArgumentException("at least one of 'route_short_name' or 'route_long_name' is required but the dataset has neither column!");
+			}
+			Agency defaultAgency = null;
+			if (this.agencies.size() > 1 && !col.containsKey(GtfsDefinitions.AGENCY_ID)) {
+				throw new IllegalArgumentException("there is no column 'agency_id' in the routes file but there are multiple agencies in the agency file");
+			} else if (this.agencies.size() == 1) {
+				defaultAgency = this.agencies.values().stream().findAny().get();
+			}
+			
 			String[] line = reader.readNext();
 			while(line != null) {
 				l++;
@@ -455,12 +502,18 @@ public class GtfsFeedImpl implements GtfsFeed {
 					extendedRouteType = ExtendedRouteType.Unknown;
 				}
 				String routeId = line[col.get(GtfsDefinitions.ROUTE_ID)];
-				String shortName = line[col.get(GtfsDefinitions.ROUTE_SHORT_NAME)];
-				String longName = line[col.get(GtfsDefinitions.ROUTE_LONG_NAME)];
+				String shortName = col.containsKey(GtfsDefinitions.ROUTE_SHORT_NAME) ?
+							line[col.get(GtfsDefinitions.ROUTE_SHORT_NAME)] :
+							line[col.get(GtfsDefinitions.ROUTE_LONG_NAME)];
+				String longName = col.containsKey(GtfsDefinitions.ROUTE_LONG_NAME) ?
+							line[col.get(GtfsDefinitions.ROUTE_LONG_NAME)] :
+							line[col.get(GtfsDefinitions.ROUTE_SHORT_NAME)];
 				
-				Agency agency = this.agencies.get(line[col.get(GtfsDefinitions.AGENCY_ID)]);
+				Agency agency = col.containsKey(GtfsDefinitions.AGENCY_ID) ?
+							this.agencies.get(line[col.get(GtfsDefinitions.AGENCY_ID)]) : 
+							defaultAgency;
 				if (agency == null) {
-					throw new RuntimeException("Line " + l + " in routes.txt references unknown agency id " + line[col.get(GtfsDefinitions.AGENCY_ID)]);
+					throw new IllegalArgumentException("Line " + l + " in routes.txt references unknown agency id " + line[col.get(GtfsDefinitions.AGENCY_ID)]);
 				}
 				Route newGtfsRoute = new RouteImpl(routeId, shortName, longName, agency, extendedRouteType);
 				routes.put(line[col.get(GtfsDefinitions.ROUTE_ID)], newGtfsRoute);

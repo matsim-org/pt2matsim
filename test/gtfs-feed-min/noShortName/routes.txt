@@ -1,0 +1,4 @@
+route_id,route_long_name,route_type,agency_id,
+lineA,Bus Line A,3,S42
+lineB,Tram Line B,0,P2M
+lineC,Something else,907,P2M
