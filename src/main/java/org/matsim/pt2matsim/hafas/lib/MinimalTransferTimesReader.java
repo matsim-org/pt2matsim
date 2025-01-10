@@ -39,7 +39,7 @@ public class MinimalTransferTimesReader {
                 15ff CHAR (optional) Klartext des Haltestellennamens Nur zur besseren Lesbarkeit
 				 */
                 Id<TransitStopFacility> stopId = Id.create(newLine.substring(0, 7), TransitStopFacility.class);
-                double transferTime = Integer.parseInt(newLine.substring(11, 13)) * 60;
+                double transferTime = Integer.parseInt(newLine.substring(11, 13).replace(' ', '0')) * 60;
                 minimalTransferTimes.set(stopId, stopId, transferTime);
             }
             readsLines.close();
