@@ -84,7 +84,8 @@ public class FPLANReader {
 						busToBePotentiallyRemoved = false;
 
 						// get operator
-						String operator = operators.get(newLine.substring(10, 16).trim());
+						String operatorCode = newLine.substring(10, 16).trim();
+						String operator = operators.get(operatorCode);
 
 						// get the fahrtnummer
 						String fahrtnummer = newLine.substring(3, 9).trim();
@@ -96,7 +97,7 @@ public class FPLANReader {
 							cycleTime = Integer.parseInt(newLine.substring(27, 30));
 						} catch (Exception ignored) {
 						}
-						currentFPLANRoute = new FPLANRoute(operator, fahrtnummer, numberOfDepartures, cycleTime);
+						currentFPLANRoute = new FPLANRoute(operator, operatorCode, fahrtnummer, numberOfDepartures, cycleTime);
 						hafasRoutes.add(currentFPLANRoute);
 					}
 

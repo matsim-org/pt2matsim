@@ -49,6 +49,7 @@ public class FPLANRoute {
 	public static final String PT = "pt";
 
 	private final String operator;
+	private final String operatorCode;
 	private final String fahrtNummer;
 	private String routeDescription;
 
@@ -65,8 +66,9 @@ public class FPLANRoute {
 		FPLANRoute.scheduleFactory = schedule.getFactory();
 	}
 
-	public FPLANRoute(String operator, String fahrtNummer, int numberOfDepartures, int cycleTime) {
+	public FPLANRoute(String operator, String operatorCode, String fahrtNummer, int numberOfDepartures, int cycleTime) {
 		this.operator = operator;
+		this.operatorCode = operatorCode;
 		this.fahrtNummer = fahrtNummer;
 		this.numberOfDepartures = numberOfDepartures + 1; // Number gives all occurrences of route additionally to first... => +1
 		this.cycleTime = cycleTime * 60; // Cycle time is given in minutes in HAFAS -> Have to change it here...
@@ -203,7 +205,7 @@ public class FPLANRoute {
 	}
 
 	private Departure createDeparture(Id<Departure> departureId, double departureTime, Id<Vehicle> vehicleId) {
-		Departure departure = scheduleFactory.createDeparture(departureId, departureTime);
+		Departure departure = scheduleFactory.createDeparture(Id.create(this.fahrtNummer, Departure.class), departureTime);
 		departure.setVehicleId(vehicleId);
 		return departure;
 	}
@@ -231,6 +233,10 @@ public class FPLANRoute {
 
 	public String getOperator() {
 		return operator;
+	}
+
+	public String getOperatorCode() {
+		return operatorCode;
 	}
 
 	public Id<VehicleType> getVehicleTypeId() {
