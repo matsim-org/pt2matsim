@@ -123,6 +123,9 @@ public class GtfsConverter {
 
 		// clean the schedule
 		cleanSchedule(schedule);
+		
+		// add departure info to attributes (needs to be done after cleaning to account for merging of lines/routes)
+		addDepartureInfoToAttributes(schedule);
 
 		// create default vehicles
 		createVehicles(schedule, vehicles);
@@ -190,7 +193,6 @@ public class GtfsConverter {
 		for(Route gtfsRoute : this.feed.getRoutes().values()) {
 			// create a MATSim TransitLine for each Route
 			TransitLine newTransitLine = createTransitLine(gtfsRoute);
-			AdditionalTransitLineInfo info = additionalLineInfo.get(newTransitLine.getId());
 			if(newTransitLine != null) {
 				schedule.addTransitLine(newTransitLine);
 
@@ -201,7 +203,6 @@ public class GtfsConverter {
 						TransitRoute transitRoute = createTransitRoute(trip, schedule.getFacilities());
 						if(transitRoute != null) {
 							newTransitLine.addRoute(transitRoute);
-							info.countRoute(transitRoute.getDepartures().size());
 						}
 					}
 				}
@@ -310,6 +311,15 @@ public class GtfsConverter {
 	protected void cleanSchedule(TransitSchedule schedule) {
 		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
 		ScheduleCleaner.removeNotUsedMinimalTransferTimes(schedule);
+	}
+	
+	protected void addDepartureInfoToAttributes(TransitSchedule schedule) {
+		for (TransitLine transitLine : schedule.getTransitLines().values()) {
+			AdditionalTransitLineInfo info = additionalLineInfo.get(transitLine.getId());
+			for (TransitRoute transitRoute : transitLine.getRoutes().values()) {
+				info.countRoute(transitRoute.getDepartures().size());
+			}
+		}
 	}
 
 	protected Id<TransitLine> createTransitLineId(Route gtfsRoute) {
