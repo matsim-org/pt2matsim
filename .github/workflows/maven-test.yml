@@ -18,4 +18,4 @@ jobs:
       with:
         java-version: 1.17
     - name: Build with Maven
-      run: mvn test -B -Dmatsim.preferLocalDtds=true
+      run: mvn verify -B -Dmatsim.preferLocalDtds=true
