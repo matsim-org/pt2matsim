@@ -82,6 +82,8 @@ public class OsmMultimodalNetworkConverter {
 
 	private static final Logger log = LogManager.getLogger(OsmMultimodalNetworkConverter.class);
 
+	private static final String OSM_TURN_RESTRICTION_ATTRIBUTE_NAME = OsmTurnRestriction.class.getSimpleName();
+
 	/**
 	 * mode == null means "all modes"
 	 */
@@ -444,7 +446,7 @@ public class OsmMultimodalNetworkConverter {
 				l.setNumberOfLanes(laneCountForward);
 				l.setAllowedModes(modes);
 				if (config.parseTurnRestrictions) {
-					l.getAttributes().putAttribute(OsmTurnRestriction.class.getSimpleName(), osmTurnRestrictions);
+					l.getAttributes().putAttribute(OSM_TURN_RESTRICTION_ATTRIBUTE_NAME, osmTurnRestrictions);
 				}
 
 				network.addLink(l);
@@ -462,7 +464,7 @@ public class OsmMultimodalNetworkConverter {
 				l.setNumberOfLanes(laneCountBackward);
 				l.setAllowedModes(modes);
 				if (config.parseTurnRestrictions) {
-					l.getAttributes().putAttribute(OsmTurnRestriction.class.getSimpleName(), osmTurnRestrictions);
+					l.getAttributes().putAttribute(OSM_TURN_RESTRICTION_ATTRIBUTE_NAME, osmTurnRestrictions);
 				}
 
 				network.addLink(l);
@@ -853,7 +855,7 @@ public class OsmMultimodalNetworkConverter {
 
 			// get turn restrictions
 			List<OsmTurnRestriction> osmTurnRestrictions = (List<OsmTurnRestriction>) link.getAttributes()
-					.getAttribute(OsmTurnRestriction.class.getSimpleName());
+					.getAttribute(OSM_TURN_RESTRICTION_ATTRIBUTE_NAME);
 			if (osmTurnRestrictions == null) {
 				break;
 			}
@@ -890,7 +892,7 @@ public class OsmMultimodalNetworkConverter {
 			}
 
 			// remove attribute
-			link.getAttributes().removeAttribute(OsmTurnRestriction.class.getSimpleName());
+			link.getAttributes().removeAttribute(OSM_TURN_RESTRICTION_ATTRIBUTE_NAME);
 		}
 	}
 
