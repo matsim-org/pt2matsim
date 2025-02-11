@@ -6,9 +6,9 @@
 	<transitStops>
 		<stopFacility id="stop1" x="2600021.0" y="1200060.0" name="One" isBlocking="false"/>
 		<stopFacility id="stop2" x="2600040.0" y="1200050.0" name="Two" isBlocking="false"/>
-		<stopFacility id="stop3" x="2600049.0" y="1200044.0" name="Three" isBlocking="false"/>
-		<stopFacility id="stop4" x="2600065.0" y="1200022.0" name="Four" isBlocking="false"/>
-		<stopFacility id="stop5" x="2600039.0" y="1200035.0" name="Five" isBlocking="false"/>
+		<stopFacility id="stop3" x="2600049.0" y="1200044.0" name="Three" stopAreaId="station1" isBlocking="false"/>
+		<stopFacility id="stop4" x="2600065.0" y="1200022.0" name="Four" stopAreaId="station1" isBlocking="false"/>
+		<stopFacility id="stop5" x="2600039.0" y="1200035.0" name="Five" stopAreaId="station1" isBlocking="false"/>
 		<stopFacility id="stop6" x="2600055.0" y="1200015.0" name="Six" isBlocking="false"/>
 	</transitStops>
 	<minimalTransferTimes>
