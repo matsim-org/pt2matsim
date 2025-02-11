@@ -29,6 +29,7 @@
     </repositories>
 
     <properties>
+        <maven.compiler.release>21</maven.compiler.release>
         <geotools.version>29.6</geotools.version>
         <jackson.version>2.18.2</jackson.version>
         <jts.version>1.20.0</jts.version>
