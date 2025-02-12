@@ -2,6 +2,7 @@ package org.matsim.pt2matsim.osm;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -59,12 +60,16 @@ class OsmMultimodalNetworkConverterTurnRestrictionsTest {
 		Id<Link> lId124 = Id.createLinkId("124");
 		Link l124 = network.getLinks().get(lId124);
 		DisallowedNextLinks dnl = NetworkUtils.getDisallowedNextLinks(l124);
+		long noOfDnl = network.getLinks().values().stream()
+				.map(NetworkUtils::getDisallowedNextLinks)
+				.filter(Objects::nonNull)
+				.count();
 
 		Assertions.assertEquals(Map.of(
 				"bus", List.of(List.of(Id.createLinkId("68"), Id.createLinkId("414"))),
 				TransportMode.car, List.of(List.of(Id.createLinkId("68"), Id.createLinkId("414"))),
 				TransportMode.pt, List.of(List.of(Id.createLinkId("68"), Id.createLinkId("414")))), dnl.getAsMap());
-
+		Assertions.assertEquals(11L, noOfDnl);
 	}
 
 }

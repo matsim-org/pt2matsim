@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
@@ -81,6 +82,8 @@ import org.matsim.pt2matsim.tools.NetworkTools;
 public class OsmMultimodalNetworkConverter {
 
 	private static final Logger log = LogManager.getLogger(OsmMultimodalNetworkConverter.class);
+
+	private static final String OSM_TURN_RESTRICTION_ATTRIBUTE_NAME = OsmTurnRestriction.class.getSimpleName();
 
 	/**
 	 * mode == null means "all modes"
@@ -444,7 +447,7 @@ public class OsmMultimodalNetworkConverter {
 				l.setNumberOfLanes(laneCountForward);
 				l.setAllowedModes(modes);
 				if (config.parseTurnRestrictions) {
-					l.getAttributes().putAttribute(OsmTurnRestriction.class.getSimpleName(), osmTurnRestrictions);
+					l.getAttributes().putAttribute(OSM_TURN_RESTRICTION_ATTRIBUTE_NAME, osmTurnRestrictions);
 				}
 
 				network.addLink(l);
@@ -462,7 +465,7 @@ public class OsmMultimodalNetworkConverter {
 				l.setNumberOfLanes(laneCountBackward);
 				l.setAllowedModes(modes);
 				if (config.parseTurnRestrictions) {
-					l.getAttributes().putAttribute(OsmTurnRestriction.class.getSimpleName(), osmTurnRestrictions);
+					l.getAttributes().putAttribute(OSM_TURN_RESTRICTION_ATTRIBUTE_NAME, osmTurnRestrictions);
 				}
 
 				network.addLink(l);
@@ -849,20 +852,24 @@ public class OsmMultimodalNetworkConverter {
 			return;
 		}
 
-		for (Link link : network.getLinks().values()) {
+		Map<Id<Link>, DisallowedNextLinks> map = network.getLinks().entrySet().parallelStream().map(e -> {
 
 			// get turn restrictions
+			Link link = e.getValue();
+			@SuppressWarnings("unchecked")
 			List<OsmTurnRestriction> osmTurnRestrictions = (List<OsmTurnRestriction>) link.getAttributes()
-					.getAttribute(OsmTurnRestriction.class.getSimpleName());
+					.getAttribute(OSM_TURN_RESTRICTION_ATTRIBUTE_NAME);
 			if (osmTurnRestrictions == null) {
-				break;
+				return null;
 			}
 
-			// create DisallowedNextLink
+			// create DisallowedNextLinks
+			DisallowedNextLinks dnl = null;
 			for (OsmTurnRestriction tr : osmTurnRestrictions) {
 
 				// find next link ids from next way ids
-				List<Id<Link>> nextLinkIds = findLinkIds(wayLinkMap, network, link.getToNode(), tr.nextWayIds);
+				List<Id<Link>> nextLinkIds = findLinkIds(this.wayLinkMap, this.network, link.getToNode(),
+						tr.nextWayIds);
 				if (nextLinkIds.size() == tr.nextWayIds.size()) { // found next link ids from this link's toNode
 
 					// find link id lists to disallow
@@ -878,20 +885,29 @@ public class OsmMultimodalNetworkConverter {
 					}
 
 					// attach DisallowedNextLinks objects
-					DisallowedNextLinks dnl = new DisallowedNextLinks();
+					if (dnl == null) {
+						dnl = new DisallowedNextLinks();
+					}
 					for (List<Id<Link>> disallowedNextLinkIds : disallowedNextLinkIdLists) {
 						for (String mode : tr.modes) {
 							dnl.addDisallowedLinkSequence(mode, disallowedNextLinkIds);
 						}
 					}
-					disallowedNextLinks.put(link.getId(), dnl);
 				}
-
 			}
 
 			// remove attribute
-			link.getAttributes().removeAttribute(OsmTurnRestriction.class.getSimpleName());
-		}
+			link.getAttributes().removeAttribute(OSM_TURN_RESTRICTION_ATTRIBUTE_NAME);
+
+			if (dnl != null) {
+				return Map.entry(e.getKey(), dnl);
+			}
+			return null;
+		})
+				.filter(Objects::nonNull)
+				.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+
+		this.disallowedNextLinks.putAll(map);
 	}
 
 	// Statics
