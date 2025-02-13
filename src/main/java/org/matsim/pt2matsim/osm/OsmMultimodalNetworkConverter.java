@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -88,7 +89,8 @@ public class OsmMultimodalNetworkConverter {
 	/**
 	 * mode == null means "all modes"
 	 */
-	static record OsmTurnRestriction(Set<String> modes, List<Id<Osm.Way>> nextWayIds, RestrictionType restrictionType) {
+	record OsmTurnRestriction(@Nullable Set<String> modes, List<Id<Osm.Way>> nextWayIds,
+			@Nullable Id<Osm.Node> viaNodeId, RestrictionType restrictionType) {
 
 		enum RestrictionType {
 			PROHIBITIVE, // no_*
@@ -127,6 +129,11 @@ public class OsmMultimodalNetworkConverter {
 	 * connects osm way ids and link ids of the generated network
 	 **/
 	protected final Map<Id<Link>, Id<Osm.Way>> osmIds = new HashMap<>();
+	/**
+	 * From one OSM way, multiple MATSim links can be created:
+	 * 1) forward & reverse links
+	 * 2) long or curvy ways will be split into multiple links
+	 */
 	protected final Map<Id<Osm.Way>, List<Id<Link>>> wayLinkMap = new HashMap<>(); // reverse of osmIds
 	protected final Map<Id<Link>, DisallowedNextLinks> disallowedNextLinks = new IdMap<>(Link.class);
 	protected OsmConverterConfigGroup config;
@@ -329,6 +336,10 @@ public class OsmMultimodalNetworkConverter {
 		log.info("MATSim: # nodes created: {}", this.network.getNodes().size());
 		log.info("MATSim: # links created: {}", this.network.getLinks().size());
 
+		if (!this.disallowedNextLinks.isEmpty()) {
+			log.info("MATSim: # DisallowedNextLinks attributes created: {}", this.disallowedNextLinks.size());
+		}
+
 		if (!this.unknownHighways.isEmpty()) {
 			log.info("The following highway-types had no defaults set and were thus NOT converted:");
 			for(String highwayType : this.unknownHighways) {
@@ -446,8 +457,14 @@ public class OsmMultimodalNetworkConverter {
 				l.setCapacity(laneCountForward * laneCapacity);
 				l.setNumberOfLanes(laneCountForward);
 				l.setAllowedModes(modes);
-				if (config.parseTurnRestrictions) {
-					l.getAttributes().putAttribute(OSM_TURN_RESTRICTION_ATTRIBUTE_NAME, osmTurnRestrictions);
+				if (config.parseTurnRestrictions && !osmTurnRestrictions.isEmpty()) {
+					// filter turn restrictions to those for which this link could be the from link
+					List<OsmTurnRestriction> thisOsmTurnRestrictions = osmTurnRestrictions.stream()
+							.filter(tr -> tr.viaNodeId() == null || tr.viaNodeId().toString().equals(toId.toString()))
+							.toList();
+					log.debug("Link {}: {}/{} turn restrictions attached", linkId, thisOsmTurnRestrictions.size(),
+							osmTurnRestrictions.size());
+					l.getAttributes().putAttribute(OSM_TURN_RESTRICTION_ATTRIBUTE_NAME, thisOsmTurnRestrictions);
 				}
 
 				network.addLink(l);
@@ -464,8 +481,14 @@ public class OsmMultimodalNetworkConverter {
 				l.setCapacity(laneCountBackward * laneCapacity);
 				l.setNumberOfLanes(laneCountBackward);
 				l.setAllowedModes(modes);
-				if (config.parseTurnRestrictions) {
-					l.getAttributes().putAttribute(OSM_TURN_RESTRICTION_ATTRIBUTE_NAME, osmTurnRestrictions);
+				if (config.parseTurnRestrictions && !osmTurnRestrictions.isEmpty()) {
+					// filter turn restrictions to those for which this link could be the from link
+					List<OsmTurnRestriction> thisOsmTurnRestrictions = osmTurnRestrictions.stream()
+							.filter(tr -> tr.viaNodeId() == null || tr.viaNodeId().toString().equals(fromId.toString()))
+							.toList();
+					log.debug("Link {}: {}/{} turn restrictions attached", linkId, thisOsmTurnRestrictions.size(),
+							osmTurnRestrictions.size());
+					l.getAttributes().putAttribute(OSM_TURN_RESTRICTION_ATTRIBUTE_NAME, thisOsmTurnRestrictions);
 				}
 
 				network.addLink(l);
@@ -830,18 +853,21 @@ public class OsmMultimodalNetworkConverter {
 			// create intermediate turn restriction record
 			List<Id<Osm.Way>> nextWayIds = new ArrayList<>();
 			Id<Osm.Way> toWayId = null;
+			Id<Osm.Node> viaNodeId = null;
 			for (Osm.Element element : relation.getMembers()) {
+				List<String> memberRoles = relation.getMemberRoles(element);
 				if (element instanceof Osm.Way wayElement) {
-					List<String> memberRoles = relation.getMemberRoles(wayElement);
 					if (memberRoles.contains(Osm.Value.TO)) {
 						toWayId = wayElement.getId();
 					} else if (memberRoles.contains(Osm.Value.VIA)) {
 						nextWayIds.add(wayElement.getId());
 					}
+				} else if (element instanceof Osm.Node nodeElement && memberRoles.contains(Osm.Value.VIA)) {
+					viaNodeId = nodeElement.getId();
 				}
 			}
 			nextWayIds.add(toWayId);
-			osmTurnRestrictions.add(new OsmTurnRestriction(restrictionModes, nextWayIds, restrictionType));
+			osmTurnRestrictions.add(new OsmTurnRestriction(restrictionModes, nextWayIds, viaNodeId, restrictionType));
 		}
 
 		return osmTurnRestrictions;
@@ -854,9 +880,10 @@ public class OsmMultimodalNetworkConverter {
 		}
 
 		Map<Id<Link>, DisallowedNextLinks> map = network.getLinks().entrySet().parallelStream().map(e -> {
-
-			// get turn restrictions
 			Link link = e.getValue();
+
+			// Note, that these turn restriction attributes are attached to both forward and
+			// reverse MATSim links, but only one is valid.
 			@SuppressWarnings("unchecked")
 			List<OsmTurnRestriction> osmTurnRestrictions = (List<OsmTurnRestriction>) link.getAttributes()
 					.getAttribute(OSM_TURN_RESTRICTION_ATTRIBUTE_NAME);
@@ -871,28 +898,31 @@ public class OsmMultimodalNetworkConverter {
 				// find next link ids from next way ids
 				List<Id<Link>> nextLinkIds = findLinkIds(this.wayLinkMap, this.network, link.getToNode(),
 						tr.nextWayIds);
-				if (nextLinkIds.size() == tr.nextWayIds.size()) { // found next link ids from this link's toNode
+				if (nextLinkIds.isEmpty()) {
+					continue;
+				}
 
-					// find link id lists to disallow
-					List<List<Id<Link>>> disallowedNextLinkIdLists = new ArrayList<>();
-					if (tr.restrictionType.equals(OsmTurnRestriction.RestrictionType.PROHIBITIVE)) {
-						disallowedNextLinkIdLists.add(nextLinkIds);
-					} else if (tr.restrictionType.equals(OsmTurnRestriction.RestrictionType.MANDATORY)) {
-						// we need to exclude all other links originating from fromWay's toNode
-						link.getToNode().getOutLinks().values().stream()
-								.map(Link::getId)
-								.filter(lId -> !lId.equals(nextLinkIds.get(0)))
-								.forEach(lId -> disallowedNextLinkIdLists.add(List.of(lId)));
-					}
+				// find link id lists to disallow
+				List<List<Id<Link>>> disallowedNextLinkIdLists = new ArrayList<>();
+				if (tr.restrictionType.equals(OsmTurnRestriction.RestrictionType.PROHIBITIVE)) {
+					disallowedNextLinkIdLists.add(nextLinkIds);
+				} else if (tr.restrictionType.equals(OsmTurnRestriction.RestrictionType.MANDATORY)) {
+					// we need to exclude all other links originating from fromWay's toNode
+					link.getToNode().getOutLinks().values().stream()
+							.map(Link::getId)
+							.filter(lId -> !lId.equals(nextLinkIds.get(0)))
+							.forEach(lId -> disallowedNextLinkIdLists.add(List.of(lId)));
+				}
 
-					// attach DisallowedNextLinks objects
-					if (dnl == null) {
-						dnl = new DisallowedNextLinks();
-					}
-					for (List<Id<Link>> disallowedNextLinkIds : disallowedNextLinkIdLists) {
-						for (String mode : tr.modes) {
-							dnl.addDisallowedLinkSequence(mode, disallowedNextLinkIds);
-						}
+				// attach DisallowedNextLinks objects
+				if (dnl == null && !disallowedNextLinkIdLists.isEmpty()) {
+					dnl = new DisallowedNextLinks();
+					log.debug("Link {}: modes={} disallowedNextLinkIdLists={}", e.getKey(),
+							Arrays.toString(tr.modes.toArray()), Arrays.toString(disallowedNextLinkIdLists.toArray()));
+				}
+				for (List<Id<Link>> disallowedNextLinkIds : disallowedNextLinkIdLists) {
+					for (String mode : tr.modes) {
+						dnl.addDisallowedLinkSequence(mode, disallowedNextLinkIds);
 					}
 				}
 			}
@@ -926,32 +956,102 @@ public class OsmMultimodalNetworkConverter {
 	protected static List<Id<Link>> findLinkIds(Map<Id<Osm.Way>, List<Id<Link>>> wayLinkMap, Network network,
 			Node lastNode, List<Id<Osm.Way>> wayIds) {
 
-		List<Id<Link>> linkIds = new ArrayList<>();
+		Map<Id<Link>, ? extends Link> links = network.getLinks();
+		List<Entry<Id<Osm.Way>, Id<Link>>> linkIds = new ArrayList<>();
 
-		int i = 0;
-		do {
-			Id<Osm.Way> wayId = wayIds.get(i);
+		log.debug("Ways {}: Checking for valid turn restriction", Arrays.toString(wayIds.toArray()));
+
+		for (Id<Osm.Way> wayId : wayIds) {
+
 			// for every link id, that could stem from this way
 			List<Id<Link>> linkIdCandidates = wayLinkMap.get(wayId);
 			if (linkIdCandidates == null) {
 				// requested way id has no link ids -> turn restriction is incomplete
+				log.debug("Invalid: Way {} has no links in MATSim network.", wayId);
 				return Collections.emptyList();
+			} else {
+				linkIdCandidates = new ArrayList<>(linkIdCandidates);
 			}
-			for (Id<Link> linkIdCandidate : linkIdCandidates) {
-				if (lastNode.getId().equals(network.getLinks().get(linkIdCandidate).getFromNode().getId())) {
-					linkIds.add(linkIdCandidate);
-					i += 1;
-					lastNode = network.getLinks().get(linkIds.get(linkIds.size() - 1)).getToNode();
-					break;
-				}
-				// try next link candidate
-			}
-			if (i == 0) { // no linkCandidate was fitting -> lastNode is not attached to way ids
-				return Collections.emptyList();
-			}
-		} while (i < wayIds.size());
 
-		return linkIds;
+			// Ensure, there is only one link candidate starting from lastNode. If there are
+			// two, the turn restriction is not valid as we do not know which one to take as
+			// the start.
+			int linksStartingAtLastNode = 0;
+			for (Id<Link> linkIdCandidate : linkIdCandidates) {
+				Link linkCandidate = links.get(linkIdCandidate);
+				if (lastNode.getId().equals(linkCandidate.getFromNode().getId())) {
+					linksStartingAtLastNode++;
+				}
+				if (linksStartingAtLastNode > 1) {
+					log.debug("Invalid: Way {} has multiple links starting from lastNode.", wayId);
+					return Collections.emptyList();
+				}
+			}
+
+			
+			log.debug("  Way {} might belong to valid turn restriction with links {}", wayId,Arrays.toString(linkIdCandidates.toArray()));
+
+			// find link sequence from way
+			Link nextLink;
+			do {
+				nextLink = null;
+
+				// find next link id
+				for (Iterator<Id<Link>> linkIdIt = linkIdCandidates.listIterator(); linkIdIt.hasNext();) {
+					Id<Link> linkIdCandidate = linkIdIt.next();
+					Link linkCandidate = links.get(linkIdCandidate);
+
+					if (lastNode.getId().equals(linkCandidate.getFromNode().getId())) {
+						nextLink = linkCandidate; // subsequent link found from lastNode
+						linkIds.add(Map.entry(wayId, linkIdCandidate));
+						log.debug("  Way {}: Next link {}", wayId, linkIdCandidate);
+
+						// remove this link from candidates
+						linkIdIt.remove();
+
+						lastNode = linkCandidate.getToNode();
+						break; // we need to remove the reverse link first, before continuing
+					}
+				}
+
+				// remove reverse link of found link, so it is not found in next iteration
+				if (nextLink != null) {
+					for (Iterator<Id<Link>> linkIdIt = linkIdCandidates.listIterator(); linkIdIt.hasNext();) {
+						Id<Link> linkIdCandidate = linkIdIt.next();
+						Link linkCandidate = links.get(linkIdCandidate);
+
+						if (isReverse(nextLink, linkCandidate)) {
+							linkIdIt.remove();
+							log.debug("  Way {}: Next link {} -> removed reverse link {}", wayId, nextLink.getId(),
+									linkIdCandidate);
+						}
+					}
+				}
+
+				// repeat until no new next link is found
+				log.debug("  Way {}: Next link {} -> remaining linkIdCandidates={}", wayId,
+								nextLink == null ? "(null)" : nextLink.getId(),
+						Arrays.toString(linkIdCandidates.toArray()));
+			} while (nextLink != null && !linkIdCandidates.isEmpty());
+
+		}
+
+		// turn restrictions are only valid, if at least one link is found for each way
+		if (linkIds.size() < wayIds.size()) {
+			log.debug("Invalid: Ways {} did not have at least one MATSim link each.",
+					Arrays.toString(wayIds.toArray()));
+			return Collections.emptyList(); // turn restriction could not be matched to MATSim network
+		}
+
+		log.debug("Valid: Ways {} have valid turn restriction.", Arrays.toString(wayIds.toArray()));
+		linkIds.forEach(e -> log.debug("  Way {}: {}", e.getKey(), e.getValue()));
+
+		return linkIds.stream().map(Entry::getValue).toList();
+	}
+
+	private static boolean isReverse(Link f, Link r) {
+		return f.getToNode().getId().equals(r.getFromNode().getId())
+				&& f.getFromNode().getId().equals(r.getToNode().getId());
 	}
 
 }

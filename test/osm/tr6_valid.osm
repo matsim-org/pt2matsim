@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' generator='JOSM'>
+  <node id='-25927' action='modify' visible='true' lat='52.2741866167' lon='10.47263669729' />
+  <node id='-25930' action='modify' visible='true' lat='52.27412572376' lon='10.48602175298' />
+  <node id='-25931' action='modify' visible='true' lat='52.27409527727' lon='10.49806332724' />
+  <node id='-25934' action='modify' visible='true' lat='52.28024504539' lon='10.48592223583' />
+  <node id='-25935' action='modify' visible='true' lat='52.26919311828' lon='10.48607151155' />
+  <way id='-1301' action='modify' visible='true'>
+    <nd ref='-25927' />
+    <nd ref='-25930' />
+    <tag k='highway' v='residential' />
+    <tag k='name' v='west' />
+  </way>
+  <way id='-1302' action='modify' visible='true'>
+    <nd ref='-25931' />
+    <nd ref='-25930' />
+    <tag k='highway' v='residential' />
+    <tag k='name' v='east' />
+  </way>
+  <way id='-1305' action='modify' visible='true'>
+    <nd ref='-25934' />
+    <nd ref='-25930' />
+    <tag k='highway' v='residential' />
+    <tag k='name' v='north' />
+  </way>
+  <way id='-1306' action='modify' visible='true'>
+    <nd ref='-25935' />
+    <nd ref='-25930' />
+    <tag k='highway' v='residential' />
+    <tag k='name' v='south' />
+  </way>
+  <relation id='-84' action='modify' visible='true'>
+    <member type='way' ref='-1301' role='from' />
+    <member type='node' ref='-25930' role='via' />
+    <member type='way' ref='-1302' role='to' />
+    <tag k='restriction' v='only_straight_on' />
+    <tag k='type' v='restriction' />
+  </relation>
+</osm>

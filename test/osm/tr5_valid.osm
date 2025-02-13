@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' generator='JOSM'>
+  <node id='-25631' action='modify' visible='true' lat='52.27523702531' lon='10.46979227258' />
+  <node id='-25632' action='modify' visible='true' lat='52.27529621706' lon='10.50083434774' />
+  <node id='-25633' action='modify' visible='true' lat='52.2851178459' lon='10.49532549442' />
+  <node id='-25634' action='modify' visible='true' lat='52.26097319333' lon='10.49459593357' />
+  <node id='-25635' action='modify' visible='true' lat='52.27540369904' lon='10.4950061767' />
+  <node id='-25636' action='modify' visible='true' lat='52.27256935051' lon='10.49486151695' />
+  <node id='-25637' action='modify' visible='true' lat='52.27249057' lon='10.46979895592' />
+  <node id='-25762' action='modify' visible='true' lat='52.2725430641' lon='10.50091262341' />
+  <node id='-25848' action='modify' visible='true' lat='52.26613512135' lon='10.49065585613' />
+  <node id='-25866' action='modify' visible='true' lat='52.28018413894' lon='10.48842421532' />
+  <way id='-996' action='modify' visible='true'>
+    <nd ref='-25635' />
+    <nd ref='-25866' />
+    <nd ref='-25631' />
+    <tag k='highway' v='residential' />
+    <tag k='name' v='to (west)' />
+    <tag k='oneway' v='yes' />
+  </way>
+  <way id='-997' action='modify' visible='true'>
+    <nd ref='-25636' />
+    <nd ref='-25634' />
+    <nd ref='-25637' />
+    <tag k='highway' v='residential' />
+    <tag k='name' v='south' />
+  </way>
+  <way id='-998' action='modify' visible='true'>
+    <nd ref='-25635' />
+    <nd ref='-25632' />
+    <tag k='highway' v='residential' />
+    <tag k='name' v='east' />
+  </way>
+  <way id='-999' action='modify' visible='true'>
+    <nd ref='-25631' />
+    <nd ref='-25633' />
+    <nd ref='-25635' />
+    <tag k='highway' v='residential' />
+    <tag k='name' v='north' />
+  </way>
+  <way id='-1000' action='modify' visible='true'>
+    <nd ref='-25635' />
+    <nd ref='-25636' />
+    <tag k='highway' v='residential' />
+    <tag k='name' v='via (north-south)' />
+  </way>
+  <way id='-1001' action='modify' visible='true'>
+    <nd ref='-25637' />
+    <nd ref='-25848' />
+    <nd ref='-25636' />
+    <tag k='highway' v='residential' />
+    <tag k='name' v='from (west)' />
+    <tag k='oneway' v='yes' />
+  </way>
+  <way id='-1068' action='modify' visible='true'>
+    <nd ref='-25631' />
+    <nd ref='-25637' />
+    <tag k='highway' v='residential' />
+    <tag k='name' v='south (west)' />
+  </way>
+  <way id='-1129' action='modify' visible='true'>
+    <nd ref='-25636' />
+    <nd ref='-25762' />
+    <tag k='highway' v='residential' />
+    <tag k='name' v='east' />
+  </way>
+  <relation id='-69' action='modify' visible='true'>
+    <member type='way' ref='-996' role='to' />
+    <member type='way' ref='-1000' role='via' />
+    <member type='way' ref='-1001' role='from' />
+    <tag k='restriction' v='no_u_turn' />
+    <tag k='type' v='restriction' />
+  </relation>
+</osm>

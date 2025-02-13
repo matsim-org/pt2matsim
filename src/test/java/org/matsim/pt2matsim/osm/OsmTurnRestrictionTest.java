@@ -9,7 +9,9 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -28,6 +30,16 @@ class OsmTurnRestrictionTest {
 	protected static final Map<Id<Link>, Id<Osm.Way>> osmIds = new HashMap<>();
 	protected static final Map<Id<Osm.Way>, List<Id<Link>>> wayLinkMap = new HashMap<>(); // reverse of osmIds
 	protected static final Network network = NetworkUtils.createNetwork();
+
+	private static final boolean DEBUG = false;
+
+	@BeforeEach
+	void setLogLevel() {
+		if (DEBUG) {
+			Configurator.setLevel(LogManager.getLogger(OsmMultimodalNetworkConverter.class),
+					org.apache.logging.log4j.Level.DEBUG);
+		}
+	}
 
 	static {
 
@@ -114,6 +126,7 @@ class OsmTurnRestrictionTest {
 		OsmMultimodalNetworkConverter.OsmTurnRestriction tr = new OsmMultimodalNetworkConverter.OsmTurnRestriction(null,
 				List.of(Id.create("1221", Osm.Way.class),
 						Id.create("2332", Osm.Way.class)),
+				null,
 				OsmMultimodalNetworkConverter.OsmTurnRestriction.RestrictionType.PROHIBITIVE);
 		LOG.info(tr.nextWayIds());
 
@@ -134,6 +147,7 @@ class OsmTurnRestrictionTest {
 		OsmMultimodalNetworkConverter.OsmTurnRestriction tr = new OsmMultimodalNetworkConverter.OsmTurnRestriction(null,
 				List.of(Id.create("1221", Osm.Way.class),
 						Id.create("2332", Osm.Way.class)),
+				null,
 				OsmMultimodalNetworkConverter.OsmTurnRestriction.RestrictionType.PROHIBITIVE);
 		LOG.info(tr.nextWayIds());
 
@@ -154,6 +168,7 @@ class OsmTurnRestrictionTest {
 				List.of(Id.create("1221", Osm.Way.class),
 						Id.create("2332", Osm.Way.class),
 						Id.create("3443", Osm.Way.class)),
+				null,
 				OsmMultimodalNetworkConverter.OsmTurnRestriction.RestrictionType.PROHIBITIVE);
 		LOG.info(tr.nextWayIds());
 
@@ -176,6 +191,7 @@ class OsmTurnRestrictionTest {
 						Id.create("3443", Osm.Way.class),
 						Id.create("3443", Osm.Way.class),
 						Id.create("2332", Osm.Way.class)),
+				null,
 				OsmMultimodalNetworkConverter.OsmTurnRestriction.RestrictionType.PROHIBITIVE);
 		LOG.info(tr.nextWayIds());
 
@@ -205,6 +221,7 @@ class OsmTurnRestrictionTest {
 						Id.create("2332", Osm.Way.class),
 						Id.create("1221", Osm.Way.class),
 						Id.create("1551", Osm.Way.class)),
+				null,
 				OsmMultimodalNetworkConverter.OsmTurnRestriction.RestrictionType.PROHIBITIVE);
 		LOG.info(tr.nextWayIds());
 
@@ -224,4 +241,155 @@ class OsmTurnRestrictionTest {
 				Id.createLinkId("21"),
 				Id.createLinkId("15")), linkIds);
 	}
+
+	@Test
+	void findLinkIds0() {
+
+		Network network = NetworkUtils.createNetwork();
+		Node n0 = NetworkUtils.createNode(Id.createNodeId("0"));
+		Node n1 = NetworkUtils.createNode(Id.createNodeId("1"));
+		Node n2 = NetworkUtils.createNode(Id.createNodeId("2"));
+		Node n3 = NetworkUtils.createNode(Id.createNodeId("3"));
+		network.addNode(n0);
+		network.addNode(n1);
+		network.addNode(n2);
+		network.addNode(n3);
+		Id<Link> l0fId = Id.createLinkId("l0f");
+		Id<Link> l0rId = Id.createLinkId("l0r");
+		Id<Link> l1fId = Id.createLinkId("l1f");
+		Id<Link> l1rId = Id.createLinkId("l1r");
+		Id<Link> l2fId = Id.createLinkId("l2f");
+		Id<Link> l2rId = Id.createLinkId("l2r");
+		Link l0f = NetworkUtils.createLink(l0fId, n0, n1, network, 1, 1, 300, 1);
+		Link l0r = NetworkUtils.createLink(l0rId, n1, n0, network, 1, 1, 300, 1);
+		Link l1f = NetworkUtils.createLink(l1fId, n1, n2, network, 1, 1, 300, 1);
+		Link l1r = NetworkUtils.createLink(l1rId, n2, n1, network, 1, 1, 300, 1);
+		Link l2f = NetworkUtils.createLink(l2fId, n2, n3, network, 1, 1, 300, 1);
+		Link l2r = NetworkUtils.createLink(l2rId, n3, n2, network, 1, 1, 300, 1);
+		network.addLink(l0f);
+		network.addLink(l0r);
+		network.addLink(l1f);
+		network.addLink(l1r);
+		network.addLink(l2f);
+		network.addLink(l2r);
+
+		Id<Osm.Way> w0Id = Id.create("w0", Osm.Way.class);
+		Id<Osm.Way> w1Id = Id.create("w1", Osm.Way.class);
+		Id<Osm.Way> w2Id = Id.create("w2", Osm.Way.class);
+		Map<Id<Osm.Way>, List<Id<Link>>> wayLinkMap = Map.of(
+				w0Id, List.of(l0fId, l0rId),
+				w1Id, List.of(l1fId, l1rId),
+				w2Id, List.of(l2fId, l2rId));
+
+		Node lastNode = n0;
+
+		List<Id<Osm.Way>> wayIds = List.of(w0Id, w1Id); // = disallowed next ways
+
+		// --------------------------------------------------------------------
+
+		List<Id<Link>> linkIds = OsmMultimodalNetworkConverter.findLinkIds(wayLinkMap, network, lastNode, wayIds);
+
+		Assertions.assertEquals(List.of(l0fId, l1fId), linkIds);
+	}
+
+	@Test
+	void findLinkIdsFirstLinkMissing() {
+
+		Network network = NetworkUtils.createNetwork();
+		Node n0 = NetworkUtils.createNode(Id.createNodeId("0"));
+		Node n1 = NetworkUtils.createNode(Id.createNodeId("1"));
+		Node n2 = NetworkUtils.createNode(Id.createNodeId("2"));
+		Node n3 = NetworkUtils.createNode(Id.createNodeId("3"));
+		network.addNode(n0);
+		network.addNode(n1);
+		network.addNode(n2);
+		network.addNode(n3);
+		// Id<Link> l0fId = Id.createLinkId("l0f");
+		Id<Link> l0rId = Id.createLinkId("l0r");
+		Id<Link> l1fId = Id.createLinkId("l1f");
+		Id<Link> l1rId = Id.createLinkId("l1r");
+		Id<Link> l2fId = Id.createLinkId("l2f");
+		Id<Link> l2rId = Id.createLinkId("l2r");
+		// Link l0f = NetworkUtils.createLink(l0fId, n0, n1, network, 1, 1, 300, 1);
+		Link l0r = NetworkUtils.createLink(l0rId, n1, n0, network, 1, 1, 300, 1);
+		Link l1f = NetworkUtils.createLink(l1fId, n1, n2, network, 1, 1, 300, 1);
+		Link l1r = NetworkUtils.createLink(l1rId, n2, n1, network, 1, 1, 300, 1);
+		Link l2f = NetworkUtils.createLink(l2fId, n2, n3, network, 1, 1, 300, 1);
+		Link l2r = NetworkUtils.createLink(l2rId, n3, n2, network, 1, 1, 300, 1);
+		// network.addLink(l0f);
+		network.addLink(l0r);
+		network.addLink(l1f);
+		network.addLink(l1r);
+		network.addLink(l2f);
+		network.addLink(l2r);
+
+		Id<Osm.Way> w0Id = Id.create("w0", Osm.Way.class);
+		Id<Osm.Way> w1Id = Id.create("w1", Osm.Way.class);
+		Id<Osm.Way> w2Id = Id.create("w2", Osm.Way.class);
+		Map<Id<Osm.Way>, List<Id<Link>>> wayLinkMap = Map.of(
+				w0Id, List.of( /* l0fId, */ l0rId),
+				w1Id, List.of(l1fId, l1rId),
+				w2Id, List.of(l2fId, l2rId));
+
+		Node lastNode = n0;
+
+		List<Id<Osm.Way>> wayIds = List.of(w0Id, w1Id); // = disallowed next ways
+
+		// --------------------------------------------------------------------
+
+		List<Id<Link>> linkIds = OsmMultimodalNetworkConverter.findLinkIds(wayLinkMap, network, lastNode, wayIds);
+
+		Assertions.assertEquals(Collections.emptyList(), linkIds);
+	}
+
+	@Test
+	void findLinkIdsSecondLinkMissing() {
+
+		Network network = NetworkUtils.createNetwork();
+		Node n0 = NetworkUtils.createNode(Id.createNodeId("0"));
+		Node n1 = NetworkUtils.createNode(Id.createNodeId("1"));
+		Node n2 = NetworkUtils.createNode(Id.createNodeId("2"));
+		Node n3 = NetworkUtils.createNode(Id.createNodeId("3"));
+		network.addNode(n0);
+		network.addNode(n1);
+		network.addNode(n2);
+		network.addNode(n3);
+		Id<Link> l0fId = Id.createLinkId("l0f");
+		Id<Link> l0rId = Id.createLinkId("l0r");
+		// Id<Link> l1fId = Id.createLinkId("l1f");
+		Id<Link> l1rId = Id.createLinkId("l1r");
+		Id<Link> l2fId = Id.createLinkId("l2f");
+		Id<Link> l2rId = Id.createLinkId("l2r");
+		Link l0f = NetworkUtils.createLink(l0fId, n0, n1, network, 1, 1, 300, 1);
+		Link l0r = NetworkUtils.createLink(l0rId, n1, n0, network, 1, 1, 300, 1);
+		// Link l1f = NetworkUtils.createLink(l1fId, n1, n2, network, 1, 1, 300, 1);
+		Link l1r = NetworkUtils.createLink(l1rId, n2, n1, network, 1, 1, 300, 1);
+		Link l2f = NetworkUtils.createLink(l2fId, n2, n3, network, 1, 1, 300, 1);
+		Link l2r = NetworkUtils.createLink(l2rId, n3, n2, network, 1, 1, 300, 1);
+		network.addLink(l0f);
+		network.addLink(l0r);
+		// network.addLink(l1f);
+		network.addLink(l1r);
+		network.addLink(l2f);
+		network.addLink(l2r);
+
+		Id<Osm.Way> w0Id = Id.create("w0", Osm.Way.class);
+		Id<Osm.Way> w1Id = Id.create("w1", Osm.Way.class);
+		Id<Osm.Way> w2Id = Id.create("w2", Osm.Way.class);
+		Map<Id<Osm.Way>, List<Id<Link>>> wayLinkMap = Map.of(
+				w0Id, List.of(l0fId, l0rId),
+				w1Id, List.of( /* l1fId, */ l1rId),
+				w2Id, List.of(l2fId, l2rId));
+
+		Node lastNode = n0;
+
+		List<Id<Osm.Way>> wayIds = List.of(w0Id, w1Id); // = disallowed next ways
+
+		// --------------------------------------------------------------------
+
+		List<Id<Link>> linkIds = OsmMultimodalNetworkConverter.findLinkIds(wayLinkMap, network, lastNode, wayIds);
+
+		Assertions.assertEquals(Collections.emptyList(), linkIds);
+	}
+
 }
