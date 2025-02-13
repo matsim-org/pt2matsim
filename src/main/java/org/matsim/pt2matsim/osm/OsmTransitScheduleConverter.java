@@ -108,7 +108,7 @@ public class OsmTransitScheduleConverter {
 
 				// create a facility for each member
 				for(Osm.Element member : relation.getMembers()) {
-					if(relation.getMemberRole(member).equals(Osm.Value.STOP) && member.getType().equals(Osm.ElementType.NODE)) {
+					if(relation.getMemberRoles(member).contains(Osm.Value.STOP) && member.getType().equals(Osm.ElementType.NODE)) {
 						Osm.Node n = (Osm.Node) member;
 						TransitStopFacility newStopFacility = createStopFacilityFromOsmNode(n, stopPostAreaId);
 
@@ -219,7 +219,8 @@ public class OsmTransitScheduleConverter {
 			Osm.Element member = relation.getMembers().get(i);
 
 			// route Stops
-			if(member.getType().equals(Osm.ElementType.NODE) && (Osm.Value.STOP.equals(relation.getMemberRole(member)) || Osm.Value.STOP_FORWARD.equals(relation.getMemberRole(member)))) {
+			List<String> memberRoles = relation.getMemberRoles(member);
+			if(member.getType().equals(Osm.ElementType.NODE) && (memberRoles.contains(Osm.Value.STOP) || memberRoles.contains(Osm.Value.STOP_FORWARD))) {
 				Id<TransitStopFacility> id = Id.create(((Osm.Node) member).getId(), TransitStopFacility.class);
 				TransitStopFacility transitStopFacility = transitSchedule.getFacilities().get(id);
 				if(transitStopFacility != null) {

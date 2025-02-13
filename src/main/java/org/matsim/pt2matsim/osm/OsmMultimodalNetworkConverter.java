@@ -776,7 +776,7 @@ public class OsmMultimodalNetworkConverter {
 			// - it is a turn restriction relation and
 			// - this way is the "from" link
 			if (!(Osm.Key.RESTRICTION.equals(relationTags.get(Osm.Key.TYPE))
-					&& Osm.Value.FROM.equals(relation.getMemberRole(way)))) {
+					&& relation.getMemberRoles(way).contains(Osm.Value.FROM))) {
 				continue;
 			}
 
@@ -832,9 +832,10 @@ public class OsmMultimodalNetworkConverter {
 			Id<Osm.Way> toWayId = null;
 			for (Osm.Element element : relation.getMembers()) {
 				if (element instanceof Osm.Way wayElement) {
-					if (Osm.Value.TO.equals(relation.getMemberRole(wayElement))) {
+					List<String> memberRoles = relation.getMemberRoles(wayElement);
+					if (memberRoles.contains(Osm.Value.TO)) {
 						toWayId = wayElement.getId();
-					} else if (Osm.Value.VIA.equals(relation.getMemberRole(wayElement))) {
+					} else if (memberRoles.contains(Osm.Value.VIA)) {
 						nextWayIds.add(wayElement.getId());
 					}
 				}

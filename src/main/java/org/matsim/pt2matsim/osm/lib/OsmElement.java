@@ -21,6 +21,7 @@ package org.matsim.pt2matsim.osm.lib;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -192,7 +193,7 @@ public class OsmElement {
 		private final Map<String, String> tags;
 		private final Map<Id<Osm.Relation>, Osm.Relation> relations = new HashMap<>();
 		private List<Osm.Element> members;
-		private Map<Osm.Element, String> memberRoles;
+		private Map<Osm.Element, List<String>> memberRoles;
 
 		public Relation(long id, Map<String, String> tags) {
 			this.id = Id.create(id, Osm.Relation.class);
@@ -233,11 +234,11 @@ public class OsmElement {
 			return relations;
 		}
 
-		public String getMemberRole(Osm.Element member) {
-			return memberRoles.get(member);
+		public List<String> getMemberRoles(Osm.Element member) {
+			return memberRoles.getOrDefault(member, Collections.emptyList());
 		}
 
-		/*pckg*/ void setMembers(List<Osm.Element> memberList, Map<Osm.Element, String> memberRoles) {
+		/*pckg*/ void setMembers(List<Osm.Element> memberList, Map<Osm.Element, List<String>> memberRoles) {
 			if(members != null) {
 				throw new IllegalArgumentException("Relation members have already been set");
 			}

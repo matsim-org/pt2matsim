@@ -108,7 +108,7 @@ public class OsmDataImpl implements OsmData {
 
 			Osm.Relation currentRel = relations.get(Id.create(pr.id, Osm.Relation.class));
 
-			Map<Osm.Element, String> memberRoles = new HashMap<>();
+			Map<Osm.Element, List<String>> memberRoles = new HashMap<>();
 			List<Osm.Element> memberList = new ArrayList<>();
 			for(OsmFileReader.ParsedRelationMember pMember : pr.members) {
 				Osm.Element member = null;
@@ -125,8 +125,8 @@ public class OsmDataImpl implements OsmData {
 				}
 				// relation member might be outside of map area
 				if(member != null) {
-					memberList.add(member);
-					memberRoles.put(member, pMember.role);
+					memberList.add(member); // this will add members with multiple roles multiple times
+					memberRoles.computeIfAbsent(member, m -> new ArrayList<>()).add(pMember.role);
 				}
 
 				// add relations to nodes/ways/relations
