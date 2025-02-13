@@ -107,10 +107,10 @@ public final class Osm {
 		List<Element> getMembers();
 
 		/**
-		 * @return the role the given member has. <tt>null</tt> if element is not
-		 * a member or no role is assigned
+		 * @return the role(s) the given member has. Empty list, if element is
+		 *         not a member or list with null value(s) if no role(s) are assigned.
 		 */
-		String getMemberRole(Element member);
+		List<String> getMemberRoles(Element member);
 
 		/**
 		 * @return the relations of which this relation is a member
