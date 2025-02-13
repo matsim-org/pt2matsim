@@ -24,7 +24,7 @@ import org.matsim.pt2matsim.tools.NetworkTools;
 
 class OsmMultimodalNetworkConverterTurnRestrictionsTest {
 
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 
 	@BeforeEach
 	void setLogLevel() {
