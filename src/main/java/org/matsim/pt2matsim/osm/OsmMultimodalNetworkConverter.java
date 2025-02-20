@@ -52,6 +52,7 @@ import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.network.turnRestrictions.DisallowedNextLinks;
+import org.matsim.core.network.turnRestrictions.DisallowedNextLinksUtils;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
@@ -683,6 +684,7 @@ public class OsmMultimodalNetworkConverter {
 				NetworkUtils.setDisallowedNextLinks(link, dnl);
 			}
 		});
+		DisallowedNextLinksUtils.clean(network);
 	}
 
 	/**
