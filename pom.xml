@@ -29,7 +29,6 @@
     </repositories>
 
     <properties>
-        <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <geotools.version>29.6</geotools.version>
         <jackson.version>2.18.2</jackson.version>
