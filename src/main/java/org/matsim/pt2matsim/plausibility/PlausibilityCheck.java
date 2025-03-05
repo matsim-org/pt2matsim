@@ -24,6 +24,7 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.LogManager;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -43,7 +44,6 @@ import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.plausibility.log.*;
 import org.matsim.pt2matsim.tools.*;
-import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
