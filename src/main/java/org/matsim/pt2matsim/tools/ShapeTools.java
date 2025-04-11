@@ -21,6 +21,7 @@ package org.matsim.pt2matsim.tools;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -41,7 +42,6 @@ import org.matsim.pt2matsim.gtfs.lib.GtfsShape;
 import org.matsim.pt2matsim.gtfs.lib.Route;
 import org.matsim.pt2matsim.gtfs.lib.Trip;
 import org.matsim.pt2matsim.tools.lib.RouteShape;
-import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
