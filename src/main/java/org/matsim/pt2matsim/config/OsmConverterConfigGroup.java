@@ -392,11 +392,13 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	    
 		public static final String SET_NAME = "routableSubnetwork";
 	    
-	    /** Network mode, for which a consistent routable network is created **/
-	    private String subnetworkMode;
+		@Parameter
+		@Comment("Network mode, for which a consistent routable network is created")
+		public String subnetworkMode;
 	    
-	    /** The allowed transport modes that are considered for this sub-network  **/
-	    private Set<String> allowedTransportModes;
+		@Parameter
+		@Comment("The allowed transport modes that are considered for this sub-network")
+		public Set<String> allowedTransportModes;
 	    
 	    public RoutableSubnetworkParams() {
 	        super(SET_NAME);
@@ -407,34 +409,6 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	        
 	        this.subnetworkMode = subnetworkMode;
 	        this.allowedTransportModes = allowedTransportModes;
-	    }
-	    
-	    @StringGetter("subnetworkMode")
-	    public String getSubnetworkMode() {
-	        return subnetworkMode;
-	    }
-
-	    @StringSetter("subnetworkMode")
-	    public void setSubnetworkMode(String subNetworkMode) {
-	        this.subnetworkMode = subNetworkMode;
-	    }
-	    
-	    public Set<String> getAllowedTransportModes() {
-	        return this.allowedTransportModes;
-	    }
-
-	    public void setAllowedTransportModes(Set<String> allowedTransportModes) {
-	        this.allowedTransportModes = allowedTransportModes;
-	    }
-
-	    @StringGetter("allowedTransportModes")
-	    private String getAllowedTransportModesString() {
-	        return CollectionUtils.setToString(allowedTransportModes);
-	    }
-
-	    @StringSetter("allowedTransportModes")
-	    private void setAllowedTransportModesString(String allowedTransportModesString) {
-	        this.allowedTransportModes = CollectionUtils.stringToSet(allowedTransportModesString);
-	    }
+		}
 	}
 }

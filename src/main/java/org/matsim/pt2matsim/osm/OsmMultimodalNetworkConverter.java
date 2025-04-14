@@ -738,13 +738,15 @@ public class OsmMultimodalNetworkConverter {
 	    
 	    for (ConfigGroup params : config.getParameterSets(OsmConverterConfigGroup.RoutableSubnetworkParams.SET_NAME)) {
 	        OsmConverterConfigGroup.RoutableSubnetworkParams subnetworkParams = (OsmConverterConfigGroup.RoutableSubnetworkParams) params;
-	        subnetworkModes.add(subnetworkParams.getSubnetworkMode());
+	        String subnetworkMode = subnetworkParams.subnetworkMode;
+			Set<String> allowedTransportModes = subnetworkParams.allowedTransportModes;
+			subnetworkModes.add(subnetworkMode);
 	        
-	        log.info(String.format("Creating clean subnetwork for '%s' considering links of: %s", subnetworkParams.getSubnetworkMode(), subnetworkParams.getAllowedTransportModes().toString()));
+	        log.info(String.format("Creating clean subnetwork for '%s' considering links of: %s", subnetworkMode, allowedTransportModes.toString()));
 	        
-	        Network subnetwork = NetworkTools.createFilteredNetworkByLinkMode(network, subnetworkParams.getAllowedTransportModes());
+	        Network subnetwork = NetworkTools.createFilteredNetworkByLinkMode(network, allowedTransportModes);
 	        new NetworkCleaner().run(subnetwork);
-	        subnetwork.getLinks().values().forEach(l -> l.setAllowedModes(Collections.singleton(subnetworkParams.getSubnetworkMode())));
+	        subnetwork.getLinks().values().forEach(l -> l.setAllowedModes(Collections.singleton(subnetworkMode)));
 	        subnetworks.add(subnetwork);
 	    }
 	    
