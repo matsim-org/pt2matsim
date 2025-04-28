@@ -464,7 +464,7 @@ public final class NetworkTools {
 			config.addParameterSet(mra);
 		}
 
-		return new ScheduleRoutersStandard.Factory(schedule, network, modeAssignments, PublicTransitMappingConfigGroup.TravelCostType.linkLength, true);
+		return new ScheduleRoutersStandard.Factory(schedule, network, modeAssignments, PublicTransitMappingConfigGroup.TravelCostType.linkLength, true, config.getNetworkRouter());
 	}
 
 	/**

@@ -25,6 +25,8 @@
 		performance. Somewhere between 4 and 10 seems reasonable for bus stops, depending on the
 		accuracy of the stop facility coordinates and performance desires. Default: 6 -->
 		<param name="nLinkThreshold" value="6" />
+		<!-- The router that should be used. Possible options are: [SpeedyALT, AStarLandmarks] -->
+		<param name="networkRouter" value="SpeedyALT" />
 		<!-- Defines the number of numOfThreads that should be used for pseudoRouting. Default: 2. -->
 		<param name="numOfThreads" value="2" />
 		<!-- Path to the output network file. Not needed if PTMapper is used within another class. -->
