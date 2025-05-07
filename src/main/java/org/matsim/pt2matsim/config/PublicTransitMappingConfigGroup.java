@@ -22,6 +22,8 @@ package org.matsim.pt2matsim.config;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.api.internal.MatsimParameters;
 import org.matsim.core.config.*;
+import org.matsim.core.config.groups.ControllerConfigGroup;
+import org.matsim.core.config.groups.ControllerConfigGroup.RoutingAlgorithmType;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt2matsim.run.PublicTransitMapper;
@@ -66,6 +68,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private static final String MAX_LINK_CANDIDATE_DISTANCE = "maxLinkCandidateDistance";
 
 	private static final String ROUTING_WITH_CANDIDATE_DISTANCE = "routingWithCandidateDistance";
+	
+	private static final String NETWORK_ROUTER = "networkRouter";
 
 	// default values
 	private Map<String, Set<String>> transportModeAssignment = new HashMap<>();
@@ -86,6 +90,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private int nLinkThreshold = 6;
 	private double maxLinkCandidateDistance = 90;
 	private double candiateDistanceMulitplier = 1.6;
+	
+	private RoutingAlgorithmType networkRouter = ControllerConfigGroup.RoutingAlgorithmType.SpeedyALT;
 
 	public PublicTransitMappingConfigGroup() {
 		super(GROUP_NAME);
@@ -173,6 +179,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		map.put(MAX_LINK_CANDIDATE_DISTANCE,
 				"The maximal distance [meter] a link candidate is allowed to have from the stop facility.\n" +
 				"\t\tNo link candidates beyond this distance are added.");
+		map.put(NETWORK_ROUTER,
+				"The router that should be used. Possible options are: [SpeedyALT, AStarLandmarks]");
 		return map;
 	}
 
@@ -466,6 +474,16 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	@StringSetter(CANDIDATE_DISTANCE_MULTIPLIER)
 	public void setCandidateDistanceMultiplier(double multiplier) {
 		this.candiateDistanceMulitplier = multiplier < 1 ? 1 : multiplier;
+	}
+	
+	@StringGetter(NETWORK_ROUTER)
+	public RoutingAlgorithmType getNetworkRouter() {
+		return networkRouter;
+	}
+
+	@StringSetter(NETWORK_ROUTER)
+	public void setNetworkRouter(RoutingAlgorithmType networkRouter) {
+		this.networkRouter = networkRouter;
 	}
 
 
