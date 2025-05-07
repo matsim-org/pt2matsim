@@ -87,53 +87,38 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 		log.info("Initiating network and router for transit routes...");
 		
 		
+		LeastCostPathCalculatorFactory factory = null;
+
 		if (this.networkRouter.equals(RoutingAlgorithmType.SpeedyALT)) {
-			LeastCostPathCalculatorFactory factory = new SpeedyALTFactory();
-			for(TransitLine transitLine : schedule.getTransitLines().values()) {
-				for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
-					String scheduleMode = transitRoute.getTransportMode();
-					PathCalculator tmpRouter = pathCalculatorsByMode.get(scheduleMode);
-					if(tmpRouter == null) {
-						log.info("New router for schedule mode " + scheduleMode);
-						Set<String> networkTransportModes = transportModeAssignment.get(scheduleMode);
-
-						Network filteredNetwork = NetworkTools.createFilteredNetworkByLinkMode(this.network, networkTransportModes);
-
-						LocalRouter r = new LocalRouter();
-
-						tmpRouter = new PathCalculator(factory.createPathCalculator(filteredNetwork, r, r));
-
-						pathCalculatorsByMode.put(scheduleMode, tmpRouter);
-						networksByMode.put(scheduleMode, filteredNetwork);
-					}
-				}
-			}
-		}
-		
-		else if (this.networkRouter.equals(RoutingAlgorithmType.AStarLandmarks)) {
-			LeastCostPathCalculatorFactory factory = new AStarLandmarksFactory(nThreads);
-			for(TransitLine transitLine : schedule.getTransitLines().values()) {
-				for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
-					String scheduleMode = transitRoute.getTransportMode();
-					PathCalculator tmpRouter = pathCalculatorsByMode.get(scheduleMode);
-					if(tmpRouter == null) {
-						log.info("New router for schedule mode " + scheduleMode);
-						Set<String> networkTransportModes = transportModeAssignment.get(scheduleMode);
-
-						Network filteredNetwork = NetworkTools.createFilteredNetworkByLinkMode(this.network, networkTransportModes);
-
-						LocalRouter r = new LocalRouter();
-
-						tmpRouter = new PathCalculator(factory.createPathCalculator(filteredNetwork, r, r));
-
-						pathCalculatorsByMode.put(scheduleMode, tmpRouter);
-						networksByMode.put(scheduleMode, filteredNetwork);
-					}
-				}
-			}
+		    factory = new SpeedyALTFactory();
+		} else if (this.networkRouter.equals(RoutingAlgorithmType.AStarLandmarks)) {
+		    factory = new AStarLandmarksFactory(nThreads);
 		}
 		else
 			new RuntimeException("You are trying to use the routing algorithm that is not supported.");
+
+		if (factory != null) { // at this point it should not be null
+		    for (TransitLine transitLine : schedule.getTransitLines().values()) {
+		        for (TransitRoute transitRoute : transitLine.getRoutes().values()) {
+		            String scheduleMode = transitRoute.getTransportMode();
+		            PathCalculator tmpRouter = pathCalculatorsByMode.get(scheduleMode);
+		            if (tmpRouter == null) {
+		                log.info("New router for schedule mode " + scheduleMode);
+		                Set<String> networkTransportModes = transportModeAssignment.get(scheduleMode);
+
+		                Network filteredNetwork = NetworkTools.createFilteredNetworkByLinkMode(this.network, networkTransportModes);
+
+		                LocalRouter r = new LocalRouter();
+		                tmpRouter = new PathCalculator(factory.createPathCalculator(filteredNetwork, r, r));
+
+		                pathCalculatorsByMode.put(scheduleMode, tmpRouter);
+		                networksByMode.put(scheduleMode, filteredNetwork);
+		            }
+		        }
+		    }
+		}
+		else
+			new RuntimeException("LeastCostPathCalculatorFactory is null but it should not be!");
 		
 	}
 
