@@ -1,7 +1,6 @@
 package org.matsim.pt2matsim.osm;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import org.apache.logging.log4j.LogManager;
@@ -10,12 +9,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.core.network.DisallowedNextLinks;
-import org.matsim.core.network.DisallowedNextLinksUtils;
 import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.network.io.MatsimNetworkReader;
+import org.matsim.core.network.turnRestrictions.DisallowedNextLinks;
+import org.matsim.core.network.turnRestrictions.DisallowedNextLinksUtils;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.osm.lib.OsmData;
 import org.matsim.pt2matsim.osm.lib.OsmDataImpl;
@@ -203,22 +201,18 @@ class OsmMultimodalNetworkConverterTurnRestrictionsTest {
 
 		// --------------------------------------------------------------------
 
-		Id<Link> lId124 = Id.createLinkId("124");
-		Link l124 = network.getLinks().get(lId124);
-		DisallowedNextLinks dnl = NetworkUtils.getDisallowedNextLinks(l124);
-
 		Assertions.assertTrue(DisallowedNextLinksUtils.isValid(network));
 
 		long noOfDnl = network.getLinks().values().stream()
 				.map(NetworkUtils::getDisallowedNextLinks)
 				.filter(Objects::nonNull)
 				.count();
-		Assertions.assertEquals(11L, noOfDnl);
+		Assertions.assertEquals(10L, noOfDnl);
 
-		Assertions.assertEquals(Map.of(
-				"bus", List.of(List.of(Id.createLinkId("68"), Id.createLinkId("414"))),
-				TransportMode.car, List.of(List.of(Id.createLinkId("68"), Id.createLinkId("414"))),
-				TransportMode.pt, List.of(List.of(Id.createLinkId("68"), Id.createLinkId("414")))), dnl.getAsMap());
+		Network convertedNetwork = NetworkUtils.createNetwork();
+		new MatsimNetworkReader(convertedNetwork).readFile("test/osm/Rudolfplatz_expected.xml");
+		// this checks for DisallowedNextLinks since https://github.com/matsim-org/matsim-libs/pull/3685
+		Assertions.assertTrue(NetworkUtils.compare(network, convertedNetwork));
 	}
 
 	// Helpers

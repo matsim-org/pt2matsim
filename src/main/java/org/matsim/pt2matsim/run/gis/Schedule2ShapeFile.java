@@ -18,6 +18,7 @@
 
 package org.matsim.pt2matsim.run.gis;
 
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.locationtech.jts.geom.Coordinate;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -33,7 +34,6 @@ import org.matsim.core.utils.gis.PolylineFeatureFactory;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
-import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.*;
 

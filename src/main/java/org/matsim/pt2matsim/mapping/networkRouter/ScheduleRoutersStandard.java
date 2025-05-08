@@ -125,19 +125,23 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 
 	@Override
 	public LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, TransitLine transitLine, TransitRoute transitRoute) {
-		return this.calcLeastCostPath(fromLinkCandidate.getLink().getToNode().getId(), toLinkCandidate.getLink().getFromNode().getId(), transitLine, transitRoute);
+		return this.calcLeastCostPath(fromLinkCandidate.getLink().getId(), toLinkCandidate.getLink().getId(), transitLine, transitRoute);
 	}
 
 	@Override
-	public LeastCostPathCalculator.Path calcLeastCostPath(Id<Node> fromNodeId, Id<Node> toNodeId, TransitLine transitLine, TransitRoute transitRoute) {
+	public LeastCostPathCalculator.Path calcLeastCostPath(Id<Link> fromLinkId, Id<Link> toLinkId, TransitLine transitLine, TransitRoute transitRoute) {
 		Network n = networksByMode.get(transitRoute.getTransportMode());
-		if(n == null) return null;
+		if (n == null) {
+			return null;
+		}
 
-		Node fromNode = n.getNodes().get(fromNodeId);
-		Node toNode = n.getNodes().get(toNodeId);
-		if(fromNode == null || toNode == null) return null;
+		Link fromLink = n.getLinks().get(fromLinkId);
+		Link toLink = n.getLinks().get(toLinkId);
+		if (fromLink == null || toLink == null) {
+			return null;
+		}
 
-		return pathCalculatorsByMode.get(transitRoute.getTransportMode()).calcPath(fromNode, toNode);
+		return pathCalculatorsByMode.get(transitRoute.getTransportMode()).calcPath(fromLink, toLink);
 	}
 
 	@Override

@@ -48,9 +48,10 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.config.ConfigGroup;
-import org.matsim.core.network.DisallowedNextLinks;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
+import org.matsim.core.network.turnRestrictions.DisallowedNextLinks;
+import org.matsim.core.network.turnRestrictions.DisallowedNextLinksUtils;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
@@ -682,6 +683,7 @@ public class OsmMultimodalNetworkConverter {
 				NetworkUtils.setDisallowedNextLinks(link, dnl);
 			}
 		});
+		DisallowedNextLinksUtils.clean(network);
 	}
 
 	/**
@@ -736,13 +738,15 @@ public class OsmMultimodalNetworkConverter {
 	    
 	    for (ConfigGroup params : config.getParameterSets(OsmConverterConfigGroup.RoutableSubnetworkParams.SET_NAME)) {
 	        OsmConverterConfigGroup.RoutableSubnetworkParams subnetworkParams = (OsmConverterConfigGroup.RoutableSubnetworkParams) params;
-	        subnetworkModes.add(subnetworkParams.getSubnetworkMode());
+	        String subnetworkMode = subnetworkParams.subnetworkMode;
+			Set<String> allowedTransportModes = subnetworkParams.allowedTransportModes;
+			subnetworkModes.add(subnetworkMode);
 	        
-	        log.info(String.format("Creating clean subnetwork for '%s' considering links of: %s", subnetworkParams.getSubnetworkMode(), subnetworkParams.getAllowedTransportModes().toString()));
+	        log.info(String.format("Creating clean subnetwork for '%s' considering links of: %s", subnetworkMode, allowedTransportModes.toString()));
 	        
-	        Network subnetwork = NetworkTools.createFilteredNetworkByLinkMode(network, subnetworkParams.getAllowedTransportModes());
+	        Network subnetwork = NetworkTools.createFilteredNetworkByLinkMode(network, allowedTransportModes);
 	        new NetworkCleaner().run(subnetwork);
-	        subnetwork.getLinks().values().forEach(l -> l.setAllowedModes(Collections.singleton(subnetworkParams.getSubnetworkMode())));
+	        subnetwork.getLinks().values().forEach(l -> l.setAllowedModes(Collections.singleton(subnetworkMode)));
 	        subnetworks.add(subnetwork);
 	    }
 	    

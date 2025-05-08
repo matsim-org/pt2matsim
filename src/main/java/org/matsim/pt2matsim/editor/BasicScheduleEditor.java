@@ -37,6 +37,9 @@ import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidate;
+import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateImpl;
+import org.matsim.pt2matsim.mapping.linkCandidateCreation.PublicTransitStopImpl;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.PTMapperTools;
@@ -282,8 +285,8 @@ public class BasicScheduleEditor implements ScheduleEditor {
 		NetworkRoute routeBeforeCut = transitRoute.getRoute().getSubRoute(transitRoute.getRoute().getStartLinkId(), cutFromLinkId);
 		NetworkRoute routeAfterCut = transitRoute.getRoute().getSubRoute(cutToLinkId, transitRoute.getRoute().getEndLinkId());
 
-		LeastCostPathCalculator.Path path1 = routers.calcLeastCostPath(cutFromLink.getToNode().getId(), viaLink.getFromNode().getId(), transitLine, transitRoute);
-		LeastCostPathCalculator.Path path2 = routers.calcLeastCostPath(viaLink.getToNode().getId(), cutToLink.getFromNode().getId(), transitLine, transitRoute);
+		LeastCostPathCalculator.Path path1 = routers.calcLeastCostPath(cutFromLink.getId(), viaLink.getId(), transitLine, transitRoute);
+		LeastCostPathCalculator.Path path2 = routers.calcLeastCostPath(viaLink.getId(), cutToLink.getId(), transitLine, transitRoute);
 
 		if(path1 != null && path2 != null) {
 			List<Id<Link>> newLinkSequence = new ArrayList<>(routeBeforeCut.getLinkIds());
@@ -483,7 +486,7 @@ public class BasicScheduleEditor implements ScheduleEditor {
 			Link currentLink = network.getLinks().get(currentLinkId);
 			Link nextLink = network.getLinks().get(routeStops.get(i + 1).getStopFacility().getLinkId());
 
-			List<Id<Link>> path = PTMapperTools.getLinkIdsFromPath(routers.calcLeastCostPath(currentLink.getToNode().getId(), nextLink.getFromNode().getId(), transitLine, transitRoute));
+			List<Id<Link>> path = PTMapperTools.getLinkIdsFromPath(routers.calcLeastCostPath(currentLink.getId(), nextLink.getId(), transitLine, transitRoute));
 
 			if(path != null)
 				linkSequence.addAll(path);

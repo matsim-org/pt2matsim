@@ -31,11 +31,13 @@
 		Defaults to false. Set true to scale the speed limit down by the value specified by the wayDefaultParams) -->
 		<param name="scaleMaxSpeed" value="false" />
 		<parameterset type="routableSubnetwork" >
+			<!-- The allowed transport modes that are considered for this sub-network -->
 			<param name="allowedTransportModes" value="car" />
+			<!-- Network mode, for which a consistent routable network is created -->
 			<param name="subnetworkMode" value="car" />
 		</parameterset>
 		<parameterset type="routableSubnetwork" >
-			<param name="allowedTransportModes" value="bus,car" />
+			<param name="allowedTransportModes" value="bus, car" />
 			<param name="subnetworkMode" value="bus" />
 		</parameterset>
 		<parameterset type="wayDefaultParams" >
