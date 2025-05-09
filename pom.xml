@@ -40,7 +40,7 @@
         <dependency>
             <groupId>org.matsim</groupId>
             <artifactId>matsim</artifactId>
-            <version>2025.0</version>
+            <version>2026.0-PR3933</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
