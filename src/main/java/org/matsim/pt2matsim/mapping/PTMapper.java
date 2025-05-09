@@ -115,7 +115,7 @@ public class PTMapper {
 		}
 		
 		if(scheduleRoutersFactory == null) {
-			scheduleRoutersFactory = new ScheduleRoutersStandard.Factory(schedule, network, config.getTransportModeAssignment(), config.getTravelCostType(), config.getRoutingWithCandidateDistance());
+			scheduleRoutersFactory = new ScheduleRoutersStandard.Factory(schedule, network, config.getTransportModeAssignment(), config.getTravelCostType(), config.getRoutingWithCandidateDistance(), config.getNetworkRouter());
 		}
 
 		run(linkCandidateCreator,
