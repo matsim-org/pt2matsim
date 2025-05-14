@@ -423,19 +423,21 @@ public class OsmMultimodalNetworkConverter {
 
 		// MODES
 		// public transport: get relation which this way is part of, then get the relations route=* (-> the mode)
+		Set<String> ptModes = new HashSet<>();
 		for(Osm.Relation rel : way.getRelations().values()) {
-			String mode = rel.getTags().get(Osm.Key.ROUTE);
-			if(ptFilter.matches(rel) && mode != null) {
-				if(mode.equals(Osm.Value.TROLLEYBUS)) {
-					mode = Osm.Value.BUS;
+			String osmMode = rel.getTags().get(Osm.Key.ROUTE);
+			if (ptFilter.matches(rel) && osmMode != null) {
+				if (osmMode.equals(Osm.Value.TROLLEYBUS)) {
+					osmMode = Osm.Value.BUS;
 				}
-				modes.add(mode);
+				modes.add(osmMode);
 				modes.add(TransportMode.pt);
+				ptModes.add(osmMode); // remember, that this is a pt mode
 			}
 		}
 
 		// TURN RESTRICTIONS
-		List<OsmTurnRestriction> osmTurnRestrictions = this.parseTurnRestrictions(way, modes);
+		List<OsmTurnRestriction> osmTurnRestrictions = this.parseTurnRestrictions(way, modes, ptModes);
 
 		// LENGTH
 		if (length == 0.0) {
@@ -787,7 +789,7 @@ public class OsmMultimodalNetworkConverter {
 	// Turn Restrictions
 
 	@Nullable
-	private List<OsmTurnRestriction> parseTurnRestrictions(final Osm.Way way, Set<String> modes) {
+	private List<OsmTurnRestriction> parseTurnRestrictions(final Osm.Way way, Set<String> modes, Set<String> ptModes) {
 
 		if (!config.parseTurnRestrictions) {
 			return null;
@@ -809,11 +811,17 @@ public class OsmMultimodalNetworkConverter {
 			// identify modes
 			Set<String> restrictionModes = new HashSet<>(modes);
 			// remove except modes
-			String exceptModesString = relationTags.get(Osm.Key.EXCEPT);
-			if (exceptModesString != null) {
-				for (String exceptMode : exceptModesString.split(";")) {
-					String matsimExceptMode = OSM_2_MATSIM_MODE_MAP.getOrDefault(exceptMode, exceptMode);
-					modes.remove(matsimExceptMode);
+			String exceptOsmModesString = relationTags.get(Osm.Key.EXCEPT);
+			if (exceptOsmModesString != null) {
+				Set<String> exceptOsmModes = Set.of(exceptOsmModesString.split(";"));
+				Set<String> exceptModes = exceptOsmModes.stream()
+						.map(m -> OSM_2_MATSIM_MODE_MAP.getOrDefault(m, m))
+						.collect(Collectors.toSet());
+				restrictionModes.removeAll(exceptModes);
+				// remove pt, if all pt modes are excluded
+				if (!ptModes.isEmpty() && exceptModes.containsAll(ptModes)) {
+					restrictionModes.remove(TransportMode.pt);
+					log.info("OSM:{} Removed pt from restricted modes: {}", way.getId(), ptModes);
 				}
 			}
 
@@ -834,14 +842,14 @@ public class OsmMultimodalNetworkConverter {
 					// - suffix specified it and
 					// - it is a MATSim mode
 					if (suffix.length() > 1) {
-						String mode = suffix.substring(1);
-						String matsimMode = OSM_2_MATSIM_MODE_MAP.get(mode);
-						if (matsimMode == null) {
+						String osmMode = suffix.substring(1);
+						String mode = OSM_2_MATSIM_MODE_MAP.get(osmMode);
+						if (mode == null) {
 							// skip this, if not one of MATSim modes
 							restrictionType = null;
 							continue;
 						}
-						restrictionModes.add(matsimMode);
+						restrictionModes.add(mode);
 					}
 
 					break; // take first one
