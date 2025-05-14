@@ -101,6 +101,7 @@ public class OsmMultimodalNetworkConverter {
 
 	private static final Map<String, String> OSM_2_MATSIM_MODE_MAP = Map.of(
 			Osm.Key.BUS, "bus",
+			Osm.Value.TROLLEYBUS, "bus",
 			Osm.Key.BICYCLE, TransportMode.bike,
 			Osm.Key.MOTORCYCLE, TransportMode.motorcycle,
 			Osm.Key.MOTORCAR, TransportMode.car);
