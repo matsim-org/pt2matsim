@@ -25,7 +25,7 @@
 		<param name="outputDetailedLinkGeometryFile" value="null" />
 		<param name="outputNetworkFile" value="null" />
 		<!-- If true: OSM turn restrictions are parsed and written as disallowedNextLinks attribute to the first link. -->
-		<param name="parseTurnRestrictions" value="false" />
+		<param name="parseTurnRestrictions" value="true" />
 		<!-- In case the speed limit allowed does not represent the speed a vehicle can actually realize, 
 		e.g. by constrains of traffic lights not explicitly modeled, a kind of "average simulated speed" can be used.
 		Defaults to false. Set true to scale the speed limit down by the value specified by the wayDefaultParams) -->
