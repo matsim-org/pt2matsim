@@ -49,7 +49,7 @@ class RoutableSubnetworkTest {
 		converter.convert(osmConfig);
 
 		Network network1 = converter.getNetwork();
-		NetworkUtils.writeNetwork(network1, "1.xml");
+		// NetworkUtils.writeNetwork(network1, "1.xml");
 
 		// Since some car links are not connected, we expect that there are more (uncleaned) passenger links now
 		Link l2 = network1.getLinks().get(Id.createLinkId("2"));
@@ -64,10 +64,10 @@ class RoutableSubnetworkTest {
 		OsmMultimodalNetworkConverter converter2 = new OsmMultimodalNetworkConverter(osm);
 		converter2.convert(osmConfig);
 		Network network2 = converter2.getNetwork();
-		NetworkUtils.writeNetwork(network2, "2.xml");
+		// NetworkUtils.writeNetwork(network2, "2.xml");
 
 		NetworkUtils.cleanNetwork(network2, Set.of("car"));
-		NetworkUtils.writeNetwork(network2, "3.xml");
+		// NetworkUtils.writeNetwork(network2, "3.xml");
 
 		int carLinks2 = countModeLinks(network2, "car");
 		int carPassengerLinks2 = countModeLinks(network2, "car_passenger");
@@ -120,7 +120,7 @@ class RoutableSubnetworkTest {
 		OsmMultimodalNetworkConverter converter2 = new OsmMultimodalNetworkConverter(osm);
 		converter2.convert(osmConfig);
 		Network network2 = converter2.getNetwork();
-		NetworkUtils.writeNetwork(network2, "waterloo2.xml");
+		// NetworkUtils.writeNetwork(network2, "waterloo2.xml");
 
 		NetworkUtils.cleanNetwork(network2, Set.of("car"));
 
