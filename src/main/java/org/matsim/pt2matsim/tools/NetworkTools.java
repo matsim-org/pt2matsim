@@ -27,13 +27,13 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.NetworkFactory;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.core.config.groups.NetworkConfigGroup;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkTransform;
-import org.matsim.core.network.filter.NetworkFilterManager;
+import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
 import org.matsim.core.network.filter.NetworkLinkFilter;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.network.io.NetworkWriter;
+import org.matsim.core.network.turnRestrictions.DisallowedNextLinks;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
@@ -43,8 +43,10 @@ import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersFactory;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersStandard;
+import org.matsim.utils.objectattributes.attributable.AttributesUtils;
 
 import java.util.*;
+import java.util.Map.Entry;
 
 import static org.matsim.pt2matsim.tools.ScheduleTools.getTransitRouteLinkIds;
 
@@ -230,17 +232,12 @@ public final class NetworkTools {
 	 * @return the filtered new network
 	 */
 	public static Network createFilteredNetworkByLinkMode(Network network, Set<String> transportModes) {
-		NetworkFilterManager filterManager = new NetworkFilterManager(network, new NetworkConfigGroup());
-		filterManager.addLinkFilter(new LinkFilter(transportModes));
-		Network newNetwork = filterManager.applyFilters();
-		removeNotUsedNodes(newNetwork);
-		return newNetwork;
-	}
-
-	public static Network createFilteredNetworkExceptLinkMode(Network network, Set<String> transportModes) {
-		NetworkFilterManager filterManager = new NetworkFilterManager(network, new NetworkConfigGroup());
-		filterManager.addLinkFilter(new InverseLinkFilter(transportModes));
-		return filterManager.applyFilters();
+		TransportModeNetworkFilter mnf = new TransportModeNetworkFilter(network);
+		Network filteredNetwork = NetworkUtils.createNetwork();
+		mnf.filter(filteredNetwork, transportModes);
+		NetworkUtils.removeLinksWithoutModes(filteredNetwork);
+		NetworkUtils.removeNodesWithoutLinks(filteredNetwork);
+		return filteredNetwork;
 	}
 
 	public static void cutNetwork(Network network, Coord SW, Coord NE) {
@@ -377,6 +374,11 @@ public final class NetworkTools {
 				newLink.setLength(link.getLength());
 				newLink.setNumberOfLanes(link.getNumberOfLanes());
 				networkA.addLink(newLink);
+				AttributesUtils.copyAttributesFromTo(link, newLink);
+				DisallowedNextLinks disallowedNextLinks = NetworkUtils.getDisallowedNextLinks(link);
+				if (disallowedNextLinks != null) {
+					NetworkUtils.setDisallowedNextLinks(newLink, disallowedNextLinks.copy());
+				}
 			} else if (mergeModes) {
 				Link existingLink = networkA.getLinks().get(linkId);
 				
@@ -400,6 +402,16 @@ public final class NetworkTools {
 				
 				if (link.getNumberOfLanes() != existingLink.getNumberOfLanes()) {
 					throw new IllegalStateException("Number of lanes must be equal for integration");
+				}
+
+				DisallowedNextLinks disallowedNextLinks = NetworkUtils.getDisallowedNextLinks(link);
+				if (disallowedNextLinks != null) {
+					for (Entry<String, List<List<Id<Link>>>> e : disallowedNextLinks.getAsMap().entrySet()) {
+						String mode = e.getKey();
+						for (List<Id<Link>> linkSequence : e.getValue()) {
+							NetworkUtils.addDisallowedNextLinks(existingLink, mode, linkSequence);
+						}
+					}
 				}
 			}
 		}
@@ -505,17 +517,6 @@ public final class NetworkTools {
 			}
 		}
 		return returnSet;
-	}
-
-	/**
-	 * Removes all nodes with no in- or outgoing links from a network
-	 */
-	public static void removeNotUsedNodes(Network network) {
-		for(Node n : new HashSet<>(network.getNodes().values())) {
-			if(n.getInLinks().size() == 0 && n.getOutLinks().size() == 0) {
-				network.removeNode(n.getId());
-			}
-		}
 	}
 
 	/**

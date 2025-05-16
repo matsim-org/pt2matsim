@@ -53,8 +53,6 @@
 		</node>
 		<node id="21409008" x="602688.3595365603" y="5792352.011534235" >
 		</node>
-		<node id="2174961454" x="603114.4350463026" y="5792141.732844985" >
-		</node>
 		<node id="2383164953" x="602836.9511223905" y="5791915.621110816" >
 		</node>
 		<node id="2383212394" x="602694.3315082053" y="5791746.267986735" >
@@ -376,8 +374,6 @@
 		<node id="5269694765" x="602916.2564360324" y="5792376.31316873" >
 		</node>
 		<node id="5502205331" x="602450.0041987558" y="5792161.750346126" >
-		</node>
-		<node id="5689801551" x="602996.4171845921" y="5792117.930895347" >
 		</node>
 		<node id="5689801553" x="602994.9177944082" y="5792108.319592132" >
 		</node>
@@ -1259,7 +1255,7 @@
 		</link>
 		<link id="182" from="3790696312" to="3790696309" length="7.880829698856581" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
-				<attribute name="disallowedNextLinks" class="org.matsim.core.network.turnRestrictions.DisallowedNextLinks">{"car":[["181"],["329"]]}</attribute>
+				<attribute name="disallowedNextLinks" class="org.matsim.core.network.turnRestrictions.DisallowedNextLinks">{"bus":[["181"],["329"]],"car":[["181"],["329"]]}</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">505847200</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Celler Straße</attribute>
@@ -1888,7 +1884,7 @@
 		</link>
 		<link id="250" from="3790696283" to="3790696281" length="6.940804661389716" freespeed="4.166666666666667" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
-				<attribute name="disallowedNextLinks" class="org.matsim.core.network.turnRestrictions.DisallowedNextLinks">{"car":[["249"]]}</attribute>
+				<attribute name="disallowedNextLinks" class="org.matsim.core.network.turnRestrictions.DisallowedNextLinks">{"bus":[["249"]],"car":[["249"]]}</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">394076988</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Rennelbergstraße</attribute>
@@ -1902,14 +1898,6 @@
 				<attribute name="osm:way:highway" class="java.lang.String">secondary_link</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">394076993</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Petristraße</attribute>
-				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
-			</attributes>
-		</link>
-		<link id="252" from="3790696297" to="3971103633" length="6.596633672084892" freespeed="4.166666666666667" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
-			<attributes>
-				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
-				<attribute name="osm:way:id" class="java.lang.Long">394076991</attribute>
-				<attribute name="osm:way:name" class="java.lang.String">Celler Straße</attribute>
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
@@ -2898,13 +2886,6 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="359" from="3790696297" to="5689801551" length="7.252254890463718" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
-			<attributes>
-				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
-				<attribute name="osm:way:id" class="java.lang.Long">1058192642</attribute>
-				<attribute name="osm:way:name" class="java.lang.String">Eulenstraße</attribute>
-			</attributes>
-		</link>
 		<link id="36" from="3790696312" to="26154005" length="18.371303016071504" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="disallowedNextLinks" class="org.matsim.core.network.turnRestrictions.DisallowedNextLinks">{"bus":[["394"]],"car":[["394"]]}</attribute>
@@ -2914,13 +2895,6 @@
 				<attribute name="osm:way:lanes" class="java.lang.String">2</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Celler Straße</attribute>
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
-			</attributes>
-		</link>
-		<link id="360" from="5689801551" to="3790696297" length="7.252254890463718" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
-			<attributes>
-				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
-				<attribute name="osm:way:id" class="java.lang.Long">1058192642</attribute>
-				<attribute name="osm:way:name" class="java.lang.String">Eulenstraße</attribute>
 			</attributes>
 		</link>
 		<link id="361" from="3775597861" to="1361664892" length="13.04362641956632" freespeed="13.88888888888889" capacity="3000.0" permlanes="3.0" oneway="1" modes="bus,car,pt" >
@@ -3194,7 +3168,7 @@
 		</link>
 		<link id="393" from="3275026679" to="26154005" length="25.27007257361987" freespeed="13.88888888888889" capacity="1000.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
-				<attribute name="disallowedNextLinks" class="org.matsim.core.network.turnRestrictions.DisallowedNextLinks">{"car":[["176"],["394"]]}</attribute>
+				<attribute name="disallowedNextLinks" class="org.matsim.core.network.turnRestrictions.DisallowedNextLinks">{"bus":[["176"],["394"]],"car":[["176"],["394"]]}</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">secondary</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">375727031</attribute>
 				<attribute name="osm:way:lanes" class="java.lang.String">1</attribute>
@@ -3209,20 +3183,6 @@
 				<attribute name="osm:way:lanes" class="java.lang.String">1</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Celler Straße</attribute>
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
-			</attributes>
-		</link>
-		<link id="395" from="5689801551" to="2174961454" length="120.39415035525671" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
-			<attributes>
-				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
-				<attribute name="osm:way:id" class="java.lang.Long">375727032</attribute>
-				<attribute name="osm:way:name" class="java.lang.String">Eulenstraße</attribute>
-			</attributes>
-		</link>
-		<link id="396" from="2174961454" to="5689801551" length="120.39415035525671" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
-			<attributes>
-				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
-				<attribute name="osm:way:id" class="java.lang.Long">375727032</attribute>
-				<attribute name="osm:way:name" class="java.lang.String">Eulenstraße</attribute>
 			</attributes>
 		</link>
 		<link id="397" from="10966108596" to="27376059" length="63.48290844706304" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
@@ -3444,7 +3404,6 @@
 		</link>
 		<link id="42" from="5689801553" to="3790696297" length="9.92446686060875" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
-				<attribute name="disallowedNextLinks" class="org.matsim.core.network.turnRestrictions.DisallowedNextLinks">{"bus":[["252"],["359"]],"car":[["252"],["359"]]}</attribute>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">secondary</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">501406796</attribute>

@@ -1,7 +1,9 @@
 package org.matsim.pt2matsim.osm;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -15,6 +17,7 @@ import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.network.turnRestrictions.DisallowedNextLinks;
 import org.matsim.core.network.turnRestrictions.DisallowedNextLinksUtils;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
+import org.matsim.pt2matsim.config.OsmConverterConfigGroup.RoutableSubnetworkParams;
 import org.matsim.pt2matsim.osm.lib.OsmData;
 import org.matsim.pt2matsim.osm.lib.OsmDataImpl;
 import org.matsim.pt2matsim.osm.lib.OsmFileReader;
@@ -78,7 +81,7 @@ class OsmMultimodalNetworkConverterTurnRestrictionsTest {
 		// This is a uturn, where from & to is the same way
 		// It needs to be ensured, that only one Turn restriction is created at the via
 		// node.
-		Network network = convert("tr2_valid.osm");
+		Network network = convert("tr2_valid.osm", Set.of("car"));
 
 		// --------------------------------------------------------------------
 
@@ -198,6 +201,7 @@ class OsmMultimodalNetworkConverterTurnRestrictionsTest {
 	void testRudolfplatz() {
 
 		Network network = convert("Rudolfplatz.osm");
+		// NetworkUtils.writeNetwork(network, "test/osm/Rudolfplatz_expected.xml");
 
 		// --------------------------------------------------------------------
 
@@ -207,7 +211,7 @@ class OsmMultimodalNetworkConverterTurnRestrictionsTest {
 				.map(NetworkUtils::getDisallowedNextLinks)
 				.filter(Objects::nonNull)
 				.count();
-		Assertions.assertEquals(10L, noOfDnl);
+		Assertions.assertEquals(9L, noOfDnl);
 
 		Network convertedNetwork = NetworkUtils.createNetwork();
 		new MatsimNetworkReader(convertedNetwork).readFile("test/osm/Rudolfplatz_expected.xml");
@@ -218,6 +222,10 @@ class OsmMultimodalNetworkConverterTurnRestrictionsTest {
 	// Helpers
 
 	static Network convert(String filename) {
+		return convert(filename, Collections.emptySet());
+	}
+
+	static Network convert(String filename, Set<String> routableSubNetworkModes) {
 
 		// setup config
 		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.createDefaultConfig();
@@ -226,6 +234,32 @@ class OsmMultimodalNetworkConverterTurnRestrictionsTest {
 		osmConfig.setOutputNetworkFile("test/osm/" + filename.replace(".osm", "") + ".xml");
 		osmConfig.setMaxLinkLength(1000);
 		osmConfig.parseTurnRestrictions = true;
+		if (!routableSubNetworkModes.isEmpty()) {
+			if (routableSubNetworkModes.contains("bus")) {
+				List<RoutableSubnetworkParams> routableSubnetworkParams = osmConfig
+						.getParameterSets(RoutableSubnetworkParams.SET_NAME).stream()
+						.filter(RoutableSubnetworkParams.class::isInstance)
+						.map(RoutableSubnetworkParams.class::cast)
+						.toList();
+				routableSubnetworkParams.forEach(osmConfig::removeParameterSet);
+
+				// add only bus
+				osmConfig.addParameterSet(
+						new RoutableSubnetworkParams("bus", Set.of("car", "bus")));
+			}
+			if (routableSubNetworkModes.contains("car")) {
+				List<RoutableSubnetworkParams> routableSubnetworkParams = osmConfig
+						.getParameterSets(RoutableSubnetworkParams.SET_NAME).stream()
+						.filter(RoutableSubnetworkParams.class::isInstance)
+						.map(RoutableSubnetworkParams.class::cast)
+						.toList();
+				routableSubnetworkParams.forEach(osmConfig::removeParameterSet);
+
+				// add only car
+				osmConfig.addParameterSet(
+						new RoutableSubnetworkParams("car", Set.of("car")));
+			}
+		}
 
 		// read OSM file
 		OsmData osm = new OsmDataImpl();
