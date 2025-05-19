@@ -69,7 +69,7 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 
 	@Parameter
 	@Comment("If true: OSM turn restrictions are parsed and written as disallowedNextLinks attribute to the first link.")
-	public boolean parseTurnRestrictions = false;
+	public boolean parseTurnRestrictions = true;
 
 	public OsmConverterConfigGroup() {
 		super(GROUP_NAME);
