@@ -159,8 +159,11 @@ public final class FPLANReader {
 						currentFPLANRoute.addLocalBitfeldNr(localBitfeldnr, startStopId, endStopId);
 					}
 
-					// Bahnersatz: *A BE
+					// Bahnersatz bzw. Schienenersatzverkehr: *A BE, *A SV
 					else if(newLine.charAt(1) == 'A' && newLine.charAt(3) == 'B' && newLine.charAt(4) == 'E') {
+						currentFPLANRoute.setIsRailReplacementBus();
+					}
+					else if(newLine.charAt(1) == 'A' && newLine.charAt(3) == 'S' && newLine.charAt(4) == 'V') {
 						currentFPLANRoute.setIsRailReplacementBus();
 					}
 
@@ -232,6 +235,13 @@ public final class FPLANReader {
 
 				newLine = readsLines.readLine();
 				counter.incCounter();
+
+				// store last route
+				if (newLine == null && currentFPLANRoute != null) {
+					if (keepRoute(currentFPLANRoute, filters)) {
+						hafasRoutes.add(currentFPLANRoute);
+					}
+				}
 			}
 			readsLines.close();
 			counter.printCounter();
