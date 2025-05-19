@@ -1,5 +1,6 @@
 package org.matsim.pt2matsim.hafas.lib;
 
+import java.nio.charset.Charset;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
@@ -17,9 +18,9 @@ public class ECKDATENReader {
         2 1−10 CHAR Fahrplanende im Format TT.MM.JJJJ
         3 1ff CHAR Fahrplanbezeichnung
      */
-    public static LocalDate getFahrPlanStart(String pathToHafasFolder) throws IOException {
+    public static LocalDate getFahrPlanStart(String pathToHafasFolder, Charset encodingCharset) throws IOException {
         if (new File(pathToHafasFolder, ECKDATEN).exists()) {
-            BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToHafasFolder + ECKDATEN), "utf-8"));
+            BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToHafasFolder + ECKDATEN), encodingCharset));
             String line;
             String firstLineAfterComments = null;
 
@@ -39,9 +40,9 @@ public class ECKDATENReader {
         }
     }
 
-    public static LocalDate getFahrPlanEnd(String pathToHafasFolder) throws IOException {
+    public static LocalDate getFahrPlanEnd(String pathToHafasFolder, Charset encodingCharset) throws IOException {
         if (new File(pathToHafasFolder, ECKDATEN).exists()) {
-            BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToHafasFolder + ECKDATEN), "utf-8"));
+            BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToHafasFolder + ECKDATEN), encodingCharset));
             String line;
             String secondLineAfterComments = null;
 

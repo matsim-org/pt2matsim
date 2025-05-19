@@ -76,11 +76,21 @@ public final class ScheduleCleaner {
 	 * @param schedule the schedule in which the facilities should be removed
 	 */
 	public static void removeNotUsedStopFacilities(TransitSchedule schedule) {
+		removeNotUsedStopFacilities(schedule, new HashSet<>());
+	}
+
+	/**
+	 * Removes all stop facilities not used by a transit route. Modifies the schedule.
+	 *
+	 * @param schedule the schedule in which the facilities should be removed
+	 * @param stopsToKeep stops which should be ignored in the removed and kept in the timetable
+	 */
+	public static void removeNotUsedStopFacilities(TransitSchedule schedule, Set<Id<TransitStopFacility>> stopsToKeep) {
 		log.info("... Removing not used stop facilities");
 		int removed = 0;
+        Set<Id<TransitStopFacility>> usedStopFacilities = new HashSet<>(stopsToKeep);
 
 		// Collect all used stop facilities:
-		Set<Id<TransitStopFacility>> usedStopFacilities = new HashSet<>();
 		for(TransitLine line : schedule.getTransitLines().values()) {
 			for(TransitRoute route : line.getRoutes().values()) {
 				for(TransitRouteStop stop : route.getStops()) {
@@ -327,10 +337,14 @@ public final class ScheduleCleaner {
 				if(routeList.size() > 1) {
 					TransitRoute finalRoute = routeList.get(0);
 					for(int i = 1; i < routeList.size(); i++) {
-						TransitRoute routeToRemove = routeList.get(i);
-						routeToRemove.getDepartures().values().forEach(finalRoute::addDeparture);
-						transitLine.removeRoute(routeToRemove);
-						combined++;
+						TransitRoute routeToPotentiallyRemove = routeList.get(i);
+						boolean noDepartureIdOverlap = routeToPotentiallyRemove.getDepartures().keySet().stream().filter(d -> finalRoute.getDepartures().containsKey(d)).toList().isEmpty();
+						if (noDepartureIdOverlap) {
+							routeToPotentiallyRemove.getDepartures().values().forEach(finalRoute::addDeparture);
+							transitLine.removeRoute(routeToPotentiallyRemove);
+							combined++;
+						}
+
 					}
 				}
 			}

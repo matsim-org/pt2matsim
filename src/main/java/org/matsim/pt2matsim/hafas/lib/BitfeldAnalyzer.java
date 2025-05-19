@@ -21,6 +21,7 @@
 
 package org.matsim.pt2matsim.hafas.lib;
 
+import java.nio.charset.Charset;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
@@ -154,7 +155,7 @@ public class BitfeldAnalyzer {
 		return posMaxFNumber;
 	}
 
-	public static Set<Integer> getBitfieldsAtValidDay(final int dayNr, final String hafasFolder) throws IOException {
+	public static Set<Integer> getBitfieldsAtValidDay(final int dayNr, final String hafasFolder, Charset encodingCharset) throws IOException {
         /*
         Spalte          Typ                 Bedeutung                                                       Hinweis
         1-6             INT32               Bitfeldnummer                                                   Nicht durchgehend nummeriert.
@@ -166,7 +167,7 @@ public class BitfeldAnalyzer {
 
 		Set<Integer> validBitfields = new HashSet<>();
 
-		BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathFile), "utf-8"));
+		BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathFile), encodingCharset));
 		String newLine;
 		while ((newLine = readsLines.readLine()) != null) {
 			if (newLine.startsWith("*")) {

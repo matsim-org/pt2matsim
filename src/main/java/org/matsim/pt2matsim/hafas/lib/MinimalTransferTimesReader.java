@@ -1,5 +1,6 @@
 package org.matsim.pt2matsim.hafas.lib;
 
+import java.nio.charset.Charset;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
@@ -15,17 +16,24 @@ import java.io.*;
  *
  * @author jlieberherr
  */
-public class MinimalTransferTimesReader {
+public final class MinimalTransferTimesReader {
 
-    protected static Logger log = LogManager.getLogger(MinimalTransferTimesReader.class);
+    private static final Logger log = LogManager.getLogger(MinimalTransferTimesReader.class);
 
-    public static void run(TransitSchedule schedule, String pathToHafasFolder, String UMSTEIGB, String METABHF) throws IOException {
+    private MinimalTransferTimesReader() {
+    }
+
+    public static void run(TransitSchedule schedule, String pathToHafasFolder, String UMSTEIGB, String METABHF, Charset encodingCharset) throws IOException {
+        run(schedule, pathToHafasFolder, UMSTEIGB, METABHF, encodingCharset, -1.0);
+    }
+
+    public static void run(TransitSchedule schedule, String pathToHafasFolder, String UMSTEIGB, String METABHF, Charset encodingCharset, double defaultMinTransferTime) throws IOException {
 
         MinimalTransferTimes minimalTransferTimes = schedule.getMinimalTransferTimes();
 
         // read from UMSTEIGB
         if (new File(pathToHafasFolder, UMSTEIGB).exists()) {
-            BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToHafasFolder + UMSTEIGB), "utf-8"));
+            BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToHafasFolder + UMSTEIGB), encodingCharset));
             String newLine;
             while ((newLine = readsLines.readLine()) != null) {
                 if (newLine.startsWith("*")) {
@@ -38,7 +46,7 @@ public class MinimalTransferTimesReader {
                 15ff CHAR (optional) Klartext des Haltestellennamens Nur zur besseren Lesbarkeit
 				 */
                 Id<TransitStopFacility> stopId = Id.create(newLine.substring(0, 7), TransitStopFacility.class);
-                double transferTime = Integer.parseInt(newLine.substring(11, 13)) * 60;
+                double transferTime = Integer.parseInt(newLine.substring(11, 13).replace(' ', '0')) * 60;
                 minimalTransferTimes.set(stopId, stopId, transferTime);
             }
             readsLines.close();
@@ -48,7 +56,7 @@ public class MinimalTransferTimesReader {
 
         // read from METABHF
         if (new File(pathToHafasFolder, METABHF).exists()) {
-            BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToHafasFolder + METABHF), "utf-8"));
+            BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToHafasFolder + METABHF), encodingCharset));
             String newLine = readsLines.readLine();
             while (newLine != null) {
                 /*
@@ -72,6 +80,14 @@ public class MinimalTransferTimesReader {
             readsLines.close();
         } else {
             log.info("   METABHF does not exist!");
+        }
+        if (defaultMinTransferTime > 0.0) {
+            for (Id<TransitStopFacility> stopId : schedule.getFacilities().keySet()) {
+                double mtt = schedule.getMinimalTransferTimes().get(stopId, stopId);
+                if (Double.isNaN(mtt)) {
+                    schedule.getMinimalTransferTimes().set(stopId, stopId, defaultMinTransferTime);
+                }
+            }
         }
     }
 

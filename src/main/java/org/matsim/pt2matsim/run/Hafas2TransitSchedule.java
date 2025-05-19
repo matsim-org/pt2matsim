@@ -21,11 +21,15 @@
 
 package org.matsim.pt2matsim.run;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.hafas.HafasConverter;
+import org.matsim.pt2matsim.hafas.filter.OperationDayFilter;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
@@ -74,7 +78,9 @@ public final class Hafas2TransitSchedule {
 		CoordinateTransformation transformation = !outputCoordinateSystem.equals("null") ?
 				TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem) : new IdentityTransformation();
 
-		HafasConverter.run(hafasFolder, schedule, transformation, vehicles, chosenDateString);
+		Charset encodingCharset = StandardCharsets.UTF_8;
+		OperationDayFilter operationDayFilter = new OperationDayFilter(chosenDateString, hafasFolder, encodingCharset);
+		HafasConverter.run(hafasFolder, schedule, transformation, vehicles, List.of(operationDayFilter), encodingCharset, false);
 
 		ScheduleTools.writeTransitSchedule(schedule, outputScheduleFile);
 		ScheduleTools.writeVehicles(vehicles, outputVehicleFile);
