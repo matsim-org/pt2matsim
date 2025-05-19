@@ -47,7 +47,7 @@ public class OperatorReader {
 				String abbrevationOperator = newLine.split("\"")[1].replace(" ","");
 
 				String[] operatorIds;
-				if (newLine.split(":").length == 0) { // handle format variants
+				if (newLine.split(":").length == 1) { // handle format variants
 					newLine = readsLines.readLine();
 					if (newLine == null) break;
 					operatorIds = newLine.substring(8).trim().split("\\s+");
