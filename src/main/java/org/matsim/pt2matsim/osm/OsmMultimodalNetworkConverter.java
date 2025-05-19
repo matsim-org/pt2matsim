@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -49,9 +50,9 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.network.NetworkUtils;
-import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.network.turnRestrictions.DisallowedNextLinks;
 import org.matsim.core.network.turnRestrictions.DisallowedNextLinksUtils;
+import org.matsim.core.network.turnRestrictions.TurnRestrictionsNetworkCleaner;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
@@ -63,6 +64,8 @@ import org.matsim.pt2matsim.osm.lib.AllowedTagsFilter;
 import org.matsim.pt2matsim.osm.lib.Osm;
 import org.matsim.pt2matsim.osm.lib.OsmData;
 import org.matsim.pt2matsim.tools.NetworkTools;
+
+import com.google.common.base.Verify;
 
 /**
  * Converts {@link OsmData} to a MATSim network, uses a config file
@@ -101,6 +104,7 @@ public class OsmMultimodalNetworkConverter {
 
 	private static final Map<String, String> OSM_2_MATSIM_MODE_MAP = Map.of(
 			Osm.Key.BUS, "bus",
+			Osm.Value.TROLLEYBUS, "bus",
 			Osm.Key.BICYCLE, TransportMode.bike,
 			Osm.Key.MOTORCYCLE, TransportMode.motorcycle,
 			Osm.Key.MOTORCAR, TransportMode.car);
@@ -161,10 +165,10 @@ public class OsmMultimodalNetworkConverter {
 		initPT();
 		readWayParams();
 		convertToNetwork(transformation);
-		cleanNetwork();
 		if (config.parseTurnRestrictions) {
 			addDisallowedNextLinksAttributes();
 		}
+		cleanNetwork();
 		if(config.getKeepTagsAsAttributes()) addAttributes();
 
 		if (this.config.getOutputDetailedLinkGeometryFile() != null) {
@@ -423,19 +427,21 @@ public class OsmMultimodalNetworkConverter {
 
 		// MODES
 		// public transport: get relation which this way is part of, then get the relations route=* (-> the mode)
+		Set<String> ptModes = new HashSet<>();
 		for(Osm.Relation rel : way.getRelations().values()) {
-			String mode = rel.getTags().get(Osm.Key.ROUTE);
-			if(ptFilter.matches(rel) && mode != null) {
-				if(mode.equals(Osm.Value.TROLLEYBUS)) {
-					mode = Osm.Value.BUS;
+			String osmMode = rel.getTags().get(Osm.Key.ROUTE);
+			if (ptFilter.matches(rel) && osmMode != null) {
+				if (osmMode.equals(Osm.Value.TROLLEYBUS)) {
+					osmMode = Osm.Value.BUS;
 				}
-				modes.add(mode);
+				modes.add(osmMode);
 				modes.add(TransportMode.pt);
+				ptModes.add(osmMode); // remember, that this is a pt mode
 			}
 		}
 
 		// TURN RESTRICTIONS
-		List<OsmTurnRestriction> osmTurnRestrictions = this.parseTurnRestrictions(way, modes);
+		List<OsmTurnRestriction> osmTurnRestrictions = this.parseTurnRestrictions(way, modes, ptModes);
 
 		// LENGTH
 		if (length == 0.0) {
@@ -683,7 +689,6 @@ public class OsmMultimodalNetworkConverter {
 				NetworkUtils.setDisallowedNextLinks(link, dnl);
 			}
 		});
-		DisallowedNextLinksUtils.clean(network);
 	}
 
 	/**
@@ -737,25 +742,48 @@ public class OsmMultimodalNetworkConverter {
 	    List<Network> subnetworks = new LinkedList<>();
 	    
 	    for (ConfigGroup params : config.getParameterSets(OsmConverterConfigGroup.RoutableSubnetworkParams.SET_NAME)) {
-	        OsmConverterConfigGroup.RoutableSubnetworkParams subnetworkParams = (OsmConverterConfigGroup.RoutableSubnetworkParams) params;
-	        String subnetworkMode = subnetworkParams.subnetworkMode;
-			Set<String> allowedTransportModes = subnetworkParams.allowedTransportModes;
+			OsmConverterConfigGroup.RoutableSubnetworkParams subnetworkParams = (OsmConverterConfigGroup.RoutableSubnetworkParams) params;
+			final String subnetworkMode = subnetworkParams.subnetworkMode;
+			final Set<String> allowedTransportModes = subnetworkParams.allowedTransportModes;
 			subnetworkModes.add(subnetworkMode);
-	        
 	        log.info(String.format("Creating clean subnetwork for '%s' considering links of: %s", subnetworkMode, allowedTransportModes.toString()));
 	        
 	        Network subnetwork = NetworkTools.createFilteredNetworkByLinkMode(network, allowedTransportModes);
-	        new NetworkCleaner().run(subnetwork);
-	        subnetwork.getLinks().values().forEach(l -> l.setAllowedModes(Collections.singleton(subnetworkMode)));
-	        subnetworks.add(subnetwork);
+
+			joinDisallowedNextLinks(subnetwork, allowedTransportModes); // if there are > 1 allowedTransportModes
+
+			// move everything to one mode for network cleaning
+			final String tmpMode = "___" + String.join("_", allowedTransportModes.toArray(new String[0])) + "___";
+			copyToTmpModeAndRemoveDnlOfSubnetworkMode(subnetwork, subnetworkMode, allowedTransportModes, tmpMode);
+
+			// clean
+			DisallowedNextLinksUtils.clean(subnetwork);
+			new TurnRestrictionsNetworkCleaner().run(subnetwork, tmpMode);
+
+			// remove all links without tmpMode
+			subnetwork.getLinks().values().stream()
+					.filter(link -> !link.getAllowedModes().contains(tmpMode))
+					.map(Link::getId)
+					.toList()
+					.forEach(subnetwork::removeLink);
+			NetworkUtils.removeLinksWithoutModes(subnetwork);
+			NetworkUtils.removeNodesWithoutLinks(subnetwork);
+
+			// assign subnetworkMode to remaining links of tmpMode
+			DisallowedNextLinksUtils.copy(subnetwork, tmpMode, subnetworkMode);
+			Set<String> subnetworkModeSingleton = Collections.singleton(subnetworkMode);
+			subnetwork.getLinks().values().stream()
+					.filter(link -> link.getAllowedModes().contains(tmpMode)) // should not exclude anything anymore
+					.forEach(link -> link.setAllowedModes(subnetworkModeSingleton));
+			DisallowedNextLinksUtils.clean(subnetwork);
+
+			subnetworks.add(subnetwork);
 	    }
 	    
-	    Set<String> remainingModes = new HashSet<>();
-	    
+		Set<String> remainingModes = new HashSet<>();
 	    for (Link link : network.getLinks().values()) {
 	    	remainingModes.addAll(link.getAllowedModes());
-	    }
-	    
+		}
 	    remainingModes.removeAll(subnetworkModes);
 	    
 	    log.info(String.format("Creating remaining network with modes: %s", remainingModes.toString()));
@@ -772,10 +800,10 @@ public class OsmMultimodalNetworkConverter {
 	    log.info("Creating combined network");
 	    Network combinedNetwork = NetworkUtils.createNetwork();
 	    subnetworks.forEach(n -> NetworkTools.integrateNetwork(combinedNetwork, n, true));
-	    
+		DisallowedNextLinksUtils.clean(combinedNetwork);
+
 	    this.network = combinedNetwork;
 	}
-
 
 	/**
 	 * @return the network
@@ -787,7 +815,7 @@ public class OsmMultimodalNetworkConverter {
 	// Turn Restrictions
 
 	@Nullable
-	private List<OsmTurnRestriction> parseTurnRestrictions(final Osm.Way way, Set<String> modes) {
+	private List<OsmTurnRestriction> parseTurnRestrictions(final Osm.Way way, Set<String> modes, Set<String> ptModes) {
 
 		if (!config.parseTurnRestrictions) {
 			return null;
@@ -809,11 +837,17 @@ public class OsmMultimodalNetworkConverter {
 			// identify modes
 			Set<String> restrictionModes = new HashSet<>(modes);
 			// remove except modes
-			String exceptModesString = relationTags.get(Osm.Key.EXCEPT);
-			if (exceptModesString != null) {
-				for (String exceptMode : exceptModesString.split(";")) {
-					String matsimExceptMode = OSM_2_MATSIM_MODE_MAP.getOrDefault(exceptMode, exceptMode);
-					modes.remove(matsimExceptMode);
+			String exceptOsmModesString = relationTags.get(Osm.Key.EXCEPT);
+			if (exceptOsmModesString != null) {
+				Set<String> exceptOsmModes = Set.of(exceptOsmModesString.split(";"));
+				Set<String> exceptModes = exceptOsmModes.stream()
+						.map(m -> OSM_2_MATSIM_MODE_MAP.getOrDefault(m, m))
+						.collect(Collectors.toSet());
+				restrictionModes.removeAll(exceptModes);
+				// remove pt, if all pt modes are excluded
+				if (!ptModes.isEmpty() && exceptModes.containsAll(ptModes)) {
+					restrictionModes.remove(TransportMode.pt);
+					log.info("OSM:{} Removed pt from restricted modes: {}", way.getId(), ptModes);
 				}
 			}
 
@@ -834,14 +868,14 @@ public class OsmMultimodalNetworkConverter {
 					// - suffix specified it and
 					// - it is a MATSim mode
 					if (suffix.length() > 1) {
-						String mode = suffix.substring(1);
-						String matsimMode = OSM_2_MATSIM_MODE_MAP.get(mode);
-						if (matsimMode == null) {
+						String osmMode = suffix.substring(1);
+						String mode = OSM_2_MATSIM_MODE_MAP.get(osmMode);
+						if (mode == null) {
 							// skip this, if not one of MATSim modes
 							restrictionType = null;
 							continue;
 						}
-						restrictionModes.add(matsimMode);
+						restrictionModes.add(mode);
 					}
 
 					break; // take first one
@@ -945,6 +979,118 @@ public class OsmMultimodalNetworkConverter {
 	}
 
 	// Statics
+
+	private static void copyToTmpModeAndRemoveDnlOfSubnetworkMode(Network subnetwork, String subnetworkMode,
+			Set<String> allowedTransportModes, String tmpMode) {
+		Verify.verify(subnetwork.getLinks().values().stream()
+				.noneMatch(link -> link.getAllowedModes().contains(tmpMode)));
+		subnetwork.getLinks().values().forEach(link -> NetworkUtils.addAllowedMode(link, tmpMode));
+		// copy remaining DNLs from allowed modes to tmpMode
+		for (String allowedMode : allowedTransportModes) {
+			DisallowedNextLinksUtils.copy(subnetwork, allowedMode, tmpMode);
+			// remove DNLs from subnetworkMode, as final mode will be subnetworkMode
+			for (Link link : subnetwork.getLinks().values()) {
+				DisallowedNextLinks dnl = NetworkUtils.getDisallowedNextLinks(link);
+				if (dnl != null) {
+					dnl.removeDisallowedLinkSequences(subnetworkMode);
+					if (dnl.isEmpty()) {
+						NetworkUtils.removeDisallowedNextLinks(link);
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * If we want to create a routable subnetwork on multiple modes, adding all turn
+	 * restrictions of both modes might be too restrictive on the joined network, so
+	 * we remove turn restrictions that would have previously forbidden to transfer
+	 * between links that have different allowed modes (only considering
+	 * allowedTransportModes).
+	 * 
+	 * @param subnetwork
+	 * @param allowedTransportModes
+	 */
+	private static void joinDisallowedNextLinks(Network subnetwork, Set<String> allowedTransportModes) {
+
+		if (allowedTransportModes.size() > 1) {
+			return; // skip, as there are no DNLs to join from multiple modes
+		}
+
+		// Note: DNLs are not cleaned yet!
+		// When joining subnetworks from allowedTransportModes, remove all DNL link
+		// sequences, that would prohibit traversing between links with *different*
+		// allowedModes.
+		List<List<Id<Link>>> linkConnectionsToRemove = new ArrayList<>();
+		for (Link link : subnetwork.getLinks().values()) {
+			Set<String> modes = new HashSet<>(link.getAllowedModes());
+			modes.retainAll(allowedTransportModes);
+
+			for (Link otherLink : link.getToNode().getOutLinks().values()) {
+				Set<String> otherModes = new HashSet<>(otherLink.getAllowedModes());
+				otherModes.retainAll(allowedTransportModes);
+
+				if (!modes.equals(otherModes)) {
+					linkConnectionsToRemove.add(List.of(link.getId(), otherLink.getId()));
+				}
+			}
+		}
+		// remove some link connections from DNLs
+		// a) link connection starts from link 1 -> link2 is first in a DNL sequence
+		linkConnectionsToRemove.forEach(t -> {
+			Link link1 = subnetwork.getLinks().get(t.get(0));
+			Link link2 = subnetwork.getLinks().get(t.get(1));
+
+			DisallowedNextLinks dnl = NetworkUtils.getDisallowedNextLinks(link1);
+			if (dnl != null) {
+				for (String allowedMode : allowedTransportModes) {
+					List<List<Id<Link>>> linkSequences = new ArrayList<>(
+							dnl.getDisallowedLinkSequences(allowedMode));
+					boolean removedLinkSequence = false;
+					for (ListIterator<List<Id<Link>>> it = linkSequences.listIterator(); it.hasNext();) {
+						List<Id<Link>> linkSequence = it.next();
+						if (linkSequence.size() == 1 && linkSequence.get(0).equals(link2.getId())) {
+							it.remove();
+							removedLinkSequence = true;
+							log.warn("Removed link sequence {} from {} for {}", linkSequence.toString(),
+									link1.getId(), allowedMode); // ! DEBUG
+						}
+					}
+					if (removedLinkSequence) {
+						dnl.removeDisallowedLinkSequences(allowedMode);
+						linkSequences.forEach(ls -> dnl.addDisallowedLinkSequence(allowedMode, ls));
+					}
+				}
+			}
+		});
+		// b) both links of link connection are in the link sequence of another DNL
+		subnetwork.getLinks().values().parallelStream().forEach(link -> {
+			DisallowedNextLinks dnl = NetworkUtils.getDisallowedNextLinks(link);
+			if (dnl != null) {
+				for (String allowedMode : allowedTransportModes) {
+					List<List<Id<Link>>> linkSequences = new ArrayList<>(
+							dnl.getDisallowedLinkSequences(allowedMode));
+					boolean removedLinkSequence = false;
+					for (ListIterator<List<Id<Link>>> it = linkSequences.listIterator(); it.hasNext();) {
+						List<Id<Link>> linkSequence = it.next();
+						for (List<Id<Link>> linkConnection : linkConnectionsToRemove) { // not very efficient
+							if (Collections.indexOfSubList(linkSequence, linkConnection) >= 0) {
+								it.remove();
+								removedLinkSequence = true;
+								log.warn("Removed link sequence {} from {} for {}", linkSequence.toString(),
+										link.getId(), allowedMode); // ! DEBUG
+							}
+						}
+					}
+					if (removedLinkSequence) {
+						dnl.removeDisallowedLinkSequences(allowedMode);
+						linkSequences.forEach(
+								linkSequence -> dnl.addDisallowedLinkSequence(allowedMode, linkSequence));
+					}
+				}
+			}
+		});
+	}
 
 	/**
 	 * Finds list of link ids starting from {@code lastNode} from list of OSM way
