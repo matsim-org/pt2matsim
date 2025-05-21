@@ -5,7 +5,7 @@
 <!-- ====================================================================== -->
 
 	<nodes>
-		<node id="10589825668" x="602907.4501476942" y="5792542.540111613" >
+		<node id="10589825668" x="602907.4501476941" y="5792542.540111613" >
 		</node>
 		<node id="10589839543" x="602955.0275007712" y="5792559.397796375" >
 		</node>
@@ -19,11 +19,11 @@
 		</node>
 		<node id="10957536553" x="602874.6799394628" y="5791525.66078196" >
 		</node>
-		<node id="10960140085" x="602690.2665195998" y="5791673.804797368" >
+		<node id="10960140085" x="602690.2665195998" y="5791673.804797367" >
 		</node>
 		<node id="10960140086" x="602692.1876665412" y="5791683.524879485" >
 		</node>
-		<node id="10962022166" x="602988.8124922467" y="5792335.7659843275" >
+		<node id="10962022166" x="602988.8124922466" y="5792335.765984328" >
 		</node>
 		<node id="10962105606" x="602940.1197236612" y="5792604.984704247" >
 		</node>
@@ -71,9 +71,9 @@
 		</node>
 		<node id="25456527" x="602378.3422633936" y="5792059.079839453" >
 		</node>
-		<node id="25456535" x="602435.5559007503" y="5791450.838551975" >
+		<node id="25456535" x="602435.5559007502" y="5791450.838551975" >
 		</node>
-		<node id="2573305873" x="602436.6214500206" y="5792102.65762145" >
+		<node id="2573305873" x="602436.6214500205" y="5792102.65762145" >
 		</node>
 		<node id="26030437" x="602829.9638876503" y="5792409.53234514" >
 		</node>
@@ -91,7 +91,7 @@
 		</node>
 		<node id="26154005" x="602859.0666147376" y="5792354.860806702" >
 		</node>
-		<node id="26155631" x="602667.3006624869" y="5791987.365751794" >
+		<node id="26155631" x="602667.3006624869" y="5791987.365751795" >
 		</node>
 		<node id="26155633" x="602600.3554976077" y="5791961.074135668" >
 		</node>
@@ -143,7 +143,7 @@
 		</node>
 		<node id="27375090" x="602540.6483902228" y="5791496.010726888" >
 		</node>
-		<node id="27375091" x="602547.778125325" y="5791728.2042563055" >
+		<node id="27375091" x="602547.778125325" y="5791728.204256305" >
 		</node>
 		<node id="27375095" x="602809.9073084692" y="5791924.705279316" >
 		</node>
@@ -175,15 +175,15 @@
 		</node>
 		<node id="27376061" x="602024.6643375936" y="5791997.434810538" >
 		</node>
-		<node id="28201794" x="602361.361212821" y="5791781.77564917" >
+		<node id="28201794" x="602361.3612128209" y="5791781.775649169" >
 		</node>
 		<node id="2859337885" x="602689.0773673791" y="5791664.66738207" >
 		</node>
-		<node id="2941126931" x="602675.597352658" y="5792359.145568497" >
+		<node id="2941126931" x="602675.597352658" y="5792359.145568495" >
 		</node>
 		<node id="2955946188" x="602460.0490361035" y="5792079.25441665" >
 		</node>
-		<node id="2975396628" x="602444.94512808" y="5792139.7371555595" >
+		<node id="2975396628" x="602444.9451280799" y="5792139.7371555595" >
 		</node>
 		<node id="2975396629" x="602434.5584074218" y="5792115.577371412" >
 		</node>
@@ -201,7 +201,7 @@
 		</node>
 		<node id="327504086" x="602044.8211590631" y="5792387.882501028" >
 		</node>
-		<node id="3323412072" x="602775.8678731133" y="5792504.174036468" >
+		<node id="3323412072" x="602775.8678731134" y="5792504.174036468" >
 		</node>
 		<node id="337767290" x="602449.2031559559" y="5792195.781201557" >
 		</node>
@@ -245,7 +245,7 @@
 		</node>
 		<node id="364040805" x="602480.1253837106" y="5792130.897649952" >
 		</node>
-		<node id="364040806" x="602501.3052994501" y="5792123.058682835" >
+		<node id="364040806" x="602501.3052994501" y="5792123.058682834" >
 		</node>
 		<node id="367340098" x="601902.3193221991" y="5792357.581610445" >
 		</node>
@@ -273,7 +273,7 @@
 		</node>
 		<node id="3790696283" x="603079.7741371664" y="5792021.208953656" >
 		</node>
-		<node id="3790696291" x="603007.4820979227" y="5792093.048634136" >
+		<node id="3790696291" x="603007.4820979226" y="5792093.048634136" >
 		</node>
 		<node id="3790696297" x="602989.3068580772" y="5792116.503149625" >
 		</node>
@@ -311,7 +311,7 @@
 		</node>
 		<node id="3814642430" x="602092.8710118469" y="5792298.805157369" >
 		</node>
-		<node id="3814642434" x="602031.452372856" y="5792328.579872751" >
+		<node id="3814642434" x="602031.4523728561" y="5792328.579872749" >
 		</node>
 		<node id="3814642437" x="602019.546640352" y="5792334.943265487" >
 		</node>
@@ -337,7 +337,7 @@
 		</node>
 		<node id="443454358" x="602979.9275914064" y="5791867.204094158" >
 		</node>
-		<node id="443459289" x="602551.2402790664" y="5791987.404011309" >
+		<node id="443459289" x="602551.2402790664" y="5791987.40401131" >
 		</node>
 		<node id="443459290" x="602567.9029022515" y="5791969.980563985" >
 		</node>
@@ -367,7 +367,7 @@
 		</node>
 		<node id="5119194954" x="602950.9321647455" y="5792127.898411809" >
 		</node>
-		<node id="5162682665" x="601784.2054836862" y="5792082.301570986" >
+		<node id="5162682665" x="601784.2054836862" y="5792082.301570989" >
 		</node>
 		<node id="5269655663" x="602695.2928514195" y="5792367.198835135" >
 		</node>
@@ -375,7 +375,7 @@
 		</node>
 		<node id="5502205331" x="602450.0041987558" y="5792161.750346126" >
 		</node>
-		<node id="5689801553" x="602994.9177944082" y="5792108.319592131" >
+		<node id="5689801553" x="602994.9177944082" y="5792108.319592132" >
 		</node>
 		<node id="5689801572" x="602963.1302319582" y="5792134.784021541" >
 		</node>
@@ -389,9 +389,9 @@
 		</node>
 		<node id="59654685" x="602784.1124976038" y="5792297.133910593" >
 		</node>
-		<node id="59654686" x="602791.4717409632" y="5792156.301227848" >
+		<node id="59654686" x="602791.4717409632" y="5792156.301227849" >
 		</node>
-		<node id="59654687" x="602833.5165443626" y="5792122.3495095" >
+		<node id="59654687" x="602833.5165443626" y="5792122.349509499" >
 		</node>
 		<node id="59654689" x="602632.934250524" y="5792240.940055896" >
 		</node>
@@ -423,7 +423,7 @@
 		</node>
 		<node id="59663460" x="602908.5641341412" y="5791407.822854535" >
 		</node>
-		<node id="59702203" x="602681.5964698601" y="5791737.892091248" >
+		<node id="59702203" x="602681.5964698601" y="5791737.892091247" >
 		</node>
 		<node id="59817624" x="602740.8267115497" y="5792579.295719142" >
 		</node>
@@ -479,7 +479,7 @@
 		</node>
 		<node id="90708176" x="601935.829944445" y="5792231.340661087" >
 		</node>
-		<node id="90708206" x="602000.1518036022" y="5791746.035543066" >
+		<node id="90708206" x="602000.1518036022" y="5791746.035543067" >
 		</node>
 		<node id="90708295" x="602325.1279368937" y="5792044.803866073" >
 		</node>
@@ -502,7 +502,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="10" from="59654686" to="59654689" length="230.68220971299456" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="10" from="59654686" to="59654689" length="230.68220971314446" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">7975391</attribute>
@@ -532,14 +532,14 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">no</attribute>
 			</attributes>
 		</link>
-		<link id="103" from="2383164953" to="443454358" length="151.2223761475112" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="103" from="2383164953" to="443454358" length="151.22237614751123" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">323437934</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Klosterstraße</attribute>
 			</attributes>
 		</link>
-		<link id="104" from="443454358" to="2383164953" length="151.2223761475112" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="104" from="443454358" to="2383164953" length="151.22237614751123" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">323437934</attribute>
@@ -592,14 +592,14 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="11" from="59654689" to="59654686" length="230.68220971299456" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="11" from="59654689" to="59654686" length="230.68220971314446" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">7975391</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Münstedter Straße</attribute>
 			</attributes>
 		</link>
-		<link id="110" from="447866901" to="25456521" length="116.35243256935708" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
+		<link id="110" from="447866901" to="25456521" length="116.35243256935135" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus,detour,road</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">secondary</attribute>
@@ -619,21 +619,21 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="112" from="10962022166" to="443933540" length="28.729883023388737" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="112" from="10962022166" to="443933540" length="28.72988302427646" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">1180283151</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Blasiusstraße</attribute>
 			</attributes>
 		</link>
-		<link id="113" from="443933540" to="10962022166" length="28.729883023388737" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="113" from="443933540" to="10962022166" length="28.72988302427646" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">1180283151</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Blasiusstraße</attribute>
 			</attributes>
 		</link>
-		<link id="114" from="2975396628" to="2975396629" length="26.29789223655161" freespeed="13.88888888888889" capacity="9999.0" permlanes="1.0" oneway="1" modes="pt" >
+		<link id="114" from="2975396628" to="2975396629" length="26.297892236505632" freespeed="13.88888888888889" capacity="9999.0" permlanes="1.0" oneway="1" modes="pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">bus_stop</attribute>
@@ -643,7 +643,7 @@
 				<attribute name="osm:way:public_transport" class="java.lang.String">platform</attribute>
 			</attributes>
 		</link>
-		<link id="115" from="2975396629" to="2975396628" length="26.29789223655161" freespeed="13.88888888888889" capacity="9999.0" permlanes="1.0" oneway="1" modes="pt" >
+		<link id="115" from="2975396629" to="2975396628" length="26.297892236505632" freespeed="13.88888888888889" capacity="9999.0" permlanes="1.0" oneway="1" modes="pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">bus_stop</attribute>
@@ -701,7 +701,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="121" from="443459289" to="443459290" length="24.108494935581493" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
+		<link id="121" from="443459289" to="443459290" length="24.10849493625457" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
@@ -722,7 +722,7 @@
 				<attribute name="osm:way:id" class="java.lang.Long">326240462</attribute>
 			</attributes>
 		</link>
-		<link id="124" from="4578931503" to="35519431" length="216.53406485911384" freespeed="13.88888888888889" capacity="3000.0" permlanes="2.0" oneway="1" modes="pt" >
+		<link id="124" from="4578931503" to="35519431" length="216.5340648591135" freespeed="13.88888888888889" capacity="3000.0" permlanes="2.0" oneway="1" modes="pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus,road</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">primary</attribute>
@@ -786,7 +786,7 @@
 				<attribute name="osm:way:name" class="java.lang.String">Honrothstraße</attribute>
 			</attributes>
 		</link>
-		<link id="131" from="59702203" to="449201260" length="9.857832826908584" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="131" from="59702203" to="449201260" length="9.857832826074972" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">1162822990</attribute>
@@ -795,7 +795,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="132" from="443459290" to="26155633" length="36.16202431115187" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
+		<link id="132" from="443459290" to="26155633" length="36.162024310814616" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
@@ -813,7 +813,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="134" from="59654710" to="59702203" length="7.972326923130211" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="134" from="59654710" to="59702203" length="7.972326923859807" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">1162822991</attribute>
@@ -850,7 +850,7 @@
 				<attribute name="osm:way:name" class="java.lang.String">Marenholtzstraße</attribute>
 			</attributes>
 		</link>
-		<link id="139" from="10814687525" to="27375091" length="3.583017605721081" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="139" from="10814687525" to="27375091" length="3.5830176052961002" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">1162822997</attribute>
@@ -865,28 +865,28 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">no</attribute>
 			</attributes>
 		</link>
-		<link id="140" from="27375091" to="10814687525" length="3.583017605721081" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="140" from="27375091" to="10814687525" length="3.5830176052961002" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">1162822997</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Honrothstraße</attribute>
 			</attributes>
 		</link>
-		<link id="141" from="27375091" to="10814647728" length="1.5905437763297126" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="141" from="27375091" to="10814647728" length="1.5905437767895392" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">1162822997</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Honrothstraße</attribute>
 			</attributes>
 		</link>
-		<link id="142" from="10814647728" to="27375091" length="1.5905437763297126" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="142" from="10814647728" to="27375091" length="1.5905437767895392" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">1162822997</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Honrothstraße</attribute>
 			</attributes>
 		</link>
-		<link id="143" from="59654717" to="354925275" length="70.14858052391706" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
+		<link id="143" from="59654717" to="354925275" length="70.14858052391311" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus,detour</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">secondary</attribute>
@@ -925,7 +925,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="147" from="301223476" to="2955946188" length="81.89534607706757" freespeed="4.166666666666667" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="147" from="301223476" to="2955946188" length="81.89534607739829" freespeed="4.166666666666667" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">7975434</attribute>
@@ -961,14 +961,14 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">no</attribute>
 			</attributes>
 		</link>
-		<link id="150" from="28201794" to="27375105" length="84.7547111451534" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="150" from="28201794" to="27375105" length="84.75471114480239" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">8074188</attribute>
 				<attribute name="osm:way:oneway" class="java.lang.String">no</attribute>
 			</attributes>
 		</link>
-		<link id="151" from="27375105" to="28201794" length="84.7547111451534" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="151" from="27375105" to="28201794" length="84.75471114480239" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">8074188</attribute>
@@ -1029,21 +1029,21 @@
 				<attribute name="osm:way:public_transport" class="java.lang.String">platform</attribute>
 			</attributes>
 		</link>
-		<link id="158" from="1786939963" to="301224170" length="196.3778732826359" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="158" from="1786939963" to="301224170" length="196.37787328263596" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">8074174</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Calvördestraße</attribute>
 			</attributes>
 		</link>
-		<link id="159" from="301224170" to="1786939963" length="196.3778732826359" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="159" from="301224170" to="1786939963" length="196.37787328263596" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">8074174</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Calvördestraße</attribute>
 			</attributes>
 		</link>
-		<link id="16" from="59654691" to="59654690" length="132.60172010183555" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="16" from="59654691" to="59654690" length="132.60172010183868" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">7975394</attribute>
@@ -1074,28 +1074,28 @@
 				<attribute name="osm:way:name" class="java.lang.String">Thomaestraße</attribute>
 			</attributes>
 		</link>
-		<link id="163" from="34671957" to="59663460" length="370.2377172510813" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="163" from="34671957" to="59663460" length="370.2377172510814" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">7975413</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Königstieg</attribute>
 			</attributes>
 		</link>
-		<link id="164" from="59663460" to="34671957" length="370.2377172510813" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="164" from="59663460" to="34671957" length="370.2377172510814" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">7975413</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Königstieg</attribute>
 			</attributes>
 		</link>
-		<link id="165" from="10957536553" to="4089847988" length="242.92440083681194" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="165" from="10957536553" to="4089847988" length="242.924400836812" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">7975414</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Holwedestraße</attribute>
 			</attributes>
 		</link>
-		<link id="166" from="4089847988" to="10957536553" length="242.92440083681194" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="166" from="4089847988" to="10957536553" length="242.924400836812" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">7975414</attribute>
@@ -1134,7 +1134,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="170" from="21409007" to="26604207" length="60.00975243484833" freespeed="13.88888888888889" capacity="3000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
+		<link id="170" from="21409007" to="26604207" length="60.00975243485153" freespeed="13.88888888888889" capacity="3000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus,detour,road</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">primary</attribute>
@@ -1184,7 +1184,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="175" from="21402336" to="3323412072" length="96.06451411254403" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
+		<link id="175" from="21402336" to="3323412072" length="96.06451411249209" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus,detour,road</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">secondary</attribute>
@@ -1194,7 +1194,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="176" from="26154005" to="26030437" length="62.01536056526169" freespeed="13.88888888888889" capacity="4000.0" permlanes="4.0" oneway="1" modes="bus,car,pt" >
+		<link id="176" from="26154005" to="26030437" length="62.01536056523739" freespeed="13.88888888888889" capacity="4000.0" permlanes="4.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">secondary</attribute>
@@ -1275,7 +1275,7 @@
 				<attribute name="osm:way:name" class="java.lang.String">Blasiusstraße</attribute>
 			</attributes>
 		</link>
-		<link id="185" from="3814642437" to="3814642434" length="13.500833347588518" freespeed="13.88888888888889" capacity="3000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
+		<link id="185" from="3814642437" to="3814642434" length="13.500833348593158" freespeed="13.88888888888889" capacity="3000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus,detour,road</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">primary</attribute>
@@ -1285,7 +1285,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="186" from="3814642434" to="3814642409" length="308.6976770988324" freespeed="13.88888888888889" capacity="3000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
+		<link id="186" from="3814642434" to="3814642409" length="308.6976770977475" freespeed="13.88888888888889" capacity="3000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus,detour,road</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">primary</attribute>
@@ -1305,14 +1305,14 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="188" from="90708176" to="5162682665" length="212.60909555848426" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="188" from="90708176" to="5162682665" length="212.60909555652572" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">531922111</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Schölkestraße</attribute>
 			</attributes>
 		</link>
-		<link id="189" from="5162682665" to="90708176" length="212.60909555848426" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="189" from="5162682665" to="90708176" length="212.60909555652572" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">531922111</attribute>
@@ -1341,14 +1341,14 @@
 				<attribute name="osm:way:name" class="java.lang.String">Triftweg</attribute>
 			</attributes>
 		</link>
-		<link id="192" from="90708295" to="90654969" length="133.2448091517262" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="192" from="90708295" to="90654969" length="133.24480915172313" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">484593099</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Triftweg</attribute>
 			</attributes>
 		</link>
-		<link id="193" from="90654969" to="90708295" length="133.2448091517262" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="193" from="90654969" to="90708295" length="133.24480915172313" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">484593099</attribute>
@@ -1383,7 +1383,7 @@
 				<attribute name="osm:way:name" class="java.lang.String">Hermannstraße</attribute>
 			</attributes>
 		</link>
-		<link id="198" from="90654819" to="90654905" length="130.1241206577033" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
+		<link id="198" from="90654819" to="90654905" length="130.1241206577031" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
@@ -1391,7 +1391,7 @@
 				<attribute name="osm:way:name" class="java.lang.String">Ernst-Amme-Straße</attribute>
 			</attributes>
 		</link>
-		<link id="199" from="90654905" to="90654819" length="130.1241206577033" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
+		<link id="199" from="90654905" to="90654819" length="130.1241206577031" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
@@ -1430,14 +1430,14 @@
 				<attribute name="osm:way:name" class="java.lang.String">Ernst-Amme-Straße</attribute>
 			</attributes>
 		</link>
-		<link id="202" from="90654851" to="3790696900" length="137.17643292523653" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="202" from="90654851" to="3790696900" length="137.17643292520293" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">10522159</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Diesterwegstraße</attribute>
 			</attributes>
 		</link>
-		<link id="203" from="3790696900" to="90654851" length="137.17643292523653" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="203" from="3790696900" to="90654851" length="137.17643292520293" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">10522159</attribute>
@@ -1547,7 +1547,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="216" from="260701296" to="10589825668" length="7.825719514637374" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="216" from="260701296" to="10589825668" length="7.8257195145280125" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">1136020809</attribute>
@@ -1569,7 +1569,7 @@
 				<attribute name="osm:way:name" class="java.lang.String">Triftweg</attribute>
 			</attributes>
 		</link>
-		<link id="219" from="3971103776" to="3790696281" length="14.842004230420148" freespeed="4.166666666666667" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="219" from="3971103776" to="3790696281" length="14.842004230416872" freespeed="4.166666666666667" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">394077052</attribute>
@@ -1584,7 +1584,7 @@
 				<attribute name="osm:way:name" class="java.lang.String">Oswald-Berkhan-Straße</attribute>
 			</attributes>
 		</link>
-		<link id="220" from="3790696281" to="3971103776" length="14.842004230420148" freespeed="4.166666666666667" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="220" from="3790696281" to="3971103776" length="14.842004230416872" freespeed="4.166666666666667" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">394077052</attribute>
@@ -1630,7 +1630,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="225" from="4861790131" to="59654687" length="117.2222938691154" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="225" from="4861790131" to="59654687" length="117.22229386955837" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">394088909</attribute>
@@ -1678,7 +1678,7 @@
 				<attribute name="osm:way:public_transport" class="java.lang.String">platform</attribute>
 			</attributes>
 		</link>
-		<link id="23" from="59654716" to="26581508" length="36.69453041788881" freespeed="13.88888888888889" capacity="3000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
+		<link id="23" from="59654716" to="26581508" length="36.694530417918756" freespeed="13.88888888888889" capacity="3000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus,detour,road</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">primary</attribute>
@@ -1820,14 +1820,14 @@
 				<attribute name="osm:way:name" class="java.lang.String">Chemnitzstraße</attribute>
 			</attributes>
 		</link>
-		<link id="244" from="3792043768" to="34672403" length="69.44912008931655" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="244" from="3792043768" to="34672403" length="69.44912008930991" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">375862675</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Amalienplatz</attribute>
 			</attributes>
 		</link>
-		<link id="245" from="34672403" to="3792043768" length="69.44912008931655" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="245" from="34672403" to="3792043768" length="69.44912008930991" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">375862675</attribute>
@@ -1872,7 +1872,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">no</attribute>
 			</attributes>
 		</link>
-		<link id="25" from="26581511" to="2573305873" length="16.194169731041015" freespeed="13.88888888888889" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
+		<link id="25" from="26581511" to="2573305873" length="16.19416973095707" freespeed="13.88888888888889" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
@@ -1909,14 +1909,14 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="254" from="27375095" to="270103572" length="111.9920163649267" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="254" from="27375095" to="270103572" length="111.99201636489657" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">218253719</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Thomaestraße</attribute>
 			</attributes>
 		</link>
-		<link id="255" from="270103572" to="27375095" length="111.9920163649267" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="255" from="270103572" to="27375095" length="111.99201636489657" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">218253719</attribute>
@@ -1951,7 +1951,7 @@
 				<attribute name="osm:way:name" class="java.lang.String">Amalienstraße</attribute>
 			</attributes>
 		</link>
-		<link id="26" from="2573305873" to="26193282" length="13.365269523652788" freespeed="13.88888888888889" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
+		<link id="26" from="2573305873" to="26193282" length="13.36526952373787" freespeed="13.88888888888889" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
@@ -1961,14 +1961,14 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="260" from="5269694765" to="4762024116" length="47.620856652187264" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="260" from="5269694765" to="4762024116" length="47.62085665218846" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">483465546</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Amalienstraße</attribute>
 			</attributes>
 		</link>
-		<link id="261" from="4762024116" to="5269694765" length="47.620856652187264" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="261" from="4762024116" to="5269694765" length="47.62085665218846" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">483465546</attribute>
@@ -2041,28 +2041,28 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="270" from="27375109" to="90708206" length="112.25133950490363" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="270" from="27375109" to="90708206" length="112.25133950474626" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">218253717</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Kälberwiese</attribute>
 			</attributes>
 		</link>
-		<link id="271" from="90708206" to="27375109" length="112.25133950490363" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="271" from="90708206" to="27375109" length="112.25133950474626" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">218253717</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Kälberwiese</attribute>
 			</attributes>
 		</link>
-		<link id="272" from="90708206" to="27375110" length="71.70396677581653" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="272" from="90708206" to="27375110" length="71.70396677597222" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">218253717</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Kälberwiese</attribute>
 			</attributes>
 		</link>
-		<link id="273" from="27375110" to="90708206" length="71.70396677581653" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="273" from="27375110" to="90708206" length="71.70396677597222" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">218253717</attribute>
@@ -2083,14 +2083,14 @@
 				<attribute name="osm:way:name" class="java.lang.String">Kälberwiese</attribute>
 			</attributes>
 		</link>
-		<link id="276" from="90654969" to="27375107" length="48.01430142673116" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="276" from="90654969" to="27375107" length="48.01430142673046" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">218253720</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Triftweg</attribute>
 			</attributes>
 		</link>
-		<link id="277" from="27375107" to="90654969" length="48.01430142673116" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="277" from="27375107" to="90654969" length="48.01430142673046" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">218253720</attribute>
@@ -2111,7 +2111,7 @@
 				<attribute name="osm:way:name" class="java.lang.String">Triftweg</attribute>
 			</attributes>
 		</link>
-		<link id="28" from="2955946188" to="443459289" length="129.4414395380772" freespeed="13.88888888888889" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
+		<link id="28" from="2955946188" to="443459289" length="129.44143953741752" freespeed="13.88888888888889" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
@@ -2193,7 +2193,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="289" from="5269655663" to="1339580745" length="39.79396228918336" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
+		<link id="289" from="5269655663" to="1339580745" length="39.793962289183284" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
@@ -2220,7 +2220,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="291" from="3790696283" to="3790696291" length="102.36555787431828" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
+		<link id="291" from="3790696283" to="3790696291" length="102.36555787439451" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">secondary</attribute>
@@ -2230,7 +2230,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="292" from="2941126931" to="3790696900" length="219.90532277011584" freespeed="13.88888888888889" capacity="3000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
+		<link id="292" from="2941126931" to="3790696900" length="219.90532276937134" freespeed="13.88888888888889" capacity="3000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus,detour,road</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">primary</attribute>
@@ -2250,7 +2250,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="294" from="1339580745" to="2941126931" length="36.67125836179909" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
+		<link id="294" from="1339580745" to="2941126931" length="36.671258363660904" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
@@ -2259,7 +2259,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">no</attribute>
 			</attributes>
 		</link>
-		<link id="295" from="2941126931" to="1339580745" length="36.67125836179909" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
+		<link id="295" from="2941126931" to="1339580745" length="36.671258363660904" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
@@ -2292,7 +2292,7 @@
 				<attribute name="osm:way:name" class="java.lang.String">Vogelsang</attribute>
 			</attributes>
 		</link>
-		<link id="299" from="10960140086" to="26190024" length="13.8499395689627" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="299" from="10960140086" to="26190024" length="13.849939568966409" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">hiking</attribute>
 				<attribute name="osm:way:access" class="java.lang.String">no</attribute>
@@ -2317,7 +2317,7 @@
 				<attribute name="osm:way:name" class="java.lang.String">Celler Straße</attribute>
 			</attributes>
 		</link>
-		<link id="300" from="26190024" to="10960140086" length="13.8499395689627" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="300" from="26190024" to="10960140086" length="13.849939568966409" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">hiking</attribute>
 				<attribute name="osm:way:access" class="java.lang.String">no</attribute>
@@ -2328,7 +2328,7 @@
 				<attribute name="osm:way:vehicle" class="java.lang.String">destination</attribute>
 			</attributes>
 		</link>
-		<link id="301" from="10960140085" to="10960140086" length="9.908117981550202" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="301" from="10960140085" to="10960140086" length="9.90811798246385" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">hiking</attribute>
 				<attribute name="osm:way:access" class="java.lang.String">no</attribute>
@@ -2339,7 +2339,7 @@
 				<attribute name="osm:way:vehicle" class="java.lang.String">destination</attribute>
 			</attributes>
 		</link>
-		<link id="302" from="10960140086" to="10960140085" length="9.908117981550202" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="302" from="10960140086" to="10960140085" length="9.90811798246385" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">hiking</attribute>
 				<attribute name="osm:way:access" class="java.lang.String">no</attribute>
@@ -2414,7 +2414,7 @@
 				<attribute name="osm:way:public_transport" class="java.lang.String">platform</attribute>
 			</attributes>
 		</link>
-		<link id="31" from="26155636" to="26155633" length="58.64833246272231" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="31" from="26155636" to="26155633" length="58.648332462691016" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">4365022</attribute>
@@ -2432,7 +2432,7 @@
 				<attribute name="osm:way:public_transport" class="java.lang.String">platform</attribute>
 			</attributes>
 		</link>
-		<link id="311" from="364040805" to="364040806" length="22.58402810031767" freespeed="13.88888888888889" capacity="9999.0" permlanes="1.0" oneway="1" modes="pt" >
+		<link id="311" from="364040805" to="364040806" length="22.58402810064112" freespeed="13.88888888888889" capacity="9999.0" permlanes="1.0" oneway="1" modes="pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">bus_stop</attribute>
@@ -2442,7 +2442,7 @@
 				<attribute name="osm:way:public_transport" class="java.lang.String">platform</attribute>
 			</attributes>
 		</link>
-		<link id="312" from="364040806" to="364040805" length="22.58402810031767" freespeed="13.88888888888889" capacity="9999.0" permlanes="1.0" oneway="1" modes="pt" >
+		<link id="312" from="364040806" to="364040805" length="22.58402810064112" freespeed="13.88888888888889" capacity="9999.0" permlanes="1.0" oneway="1" modes="pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">bus_stop</attribute>
@@ -2472,7 +2472,7 @@
 				<attribute name="osm:way:public_transport" class="java.lang.String">platform</attribute>
 			</attributes>
 		</link>
-		<link id="315" from="59654717" to="337769798" length="41.10704385565512" freespeed="13.88888888888889" capacity="3000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
+		<link id="315" from="59654717" to="337769798" length="41.10704385597297" freespeed="13.88888888888889" capacity="3000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus,road</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">primary</attribute>
@@ -2482,7 +2482,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="316" from="367891514" to="25456535" length="297.86491506418486" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="pt" >
+		<link id="316" from="367891514" to="25456535" length="297.86491506413967" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">secondary</attribute>
@@ -2502,14 +2502,14 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="318" from="10814695908" to="27375090" length="205.8724050084565" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="318" from="10814695908" to="27375090" length="205.87240500845652" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">38075402</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Marenholtzstraße</attribute>
 			</attributes>
 		</link>
-		<link id="319" from="27375090" to="10814695908" length="205.8724050084565" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="319" from="27375090" to="10814695908" length="205.87240500845652" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">38075402</attribute>
@@ -2538,7 +2538,7 @@
 				<attribute name="osm:way:name" class="java.lang.String">Chemnitzstraße</attribute>
 			</attributes>
 		</link>
-		<link id="322" from="90654829" to="1339580745" length="170.15629425280235" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
+		<link id="322" from="90654829" to="1339580745" length="170.15629425280343" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
@@ -2546,7 +2546,7 @@
 				<attribute name="osm:way:name" class="java.lang.String">Ernst-Amme-Straße</attribute>
 			</attributes>
 		</link>
-		<link id="323" from="1339580745" to="90654829" length="170.15629425280235" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
+		<link id="323" from="1339580745" to="90654829" length="170.15629425280343" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
@@ -2554,7 +2554,7 @@
 				<attribute name="osm:way:name" class="java.lang.String">Ernst-Amme-Straße</attribute>
 			</attributes>
 		</link>
-		<link id="324" from="90654754" to="1365939793" length="71.42665650559697" freespeed="13.88888888888889" capacity="6000.0" permlanes="4.0" oneway="1" modes="pt" >
+		<link id="324" from="90654754" to="1365939793" length="71.42665650558344" freespeed="13.88888888888889" capacity="6000.0" permlanes="4.0" oneway="1" modes="pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus,detour,road</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">primary</attribute>
@@ -2564,14 +2564,14 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="325" from="26153467" to="59817624" length="402.55631145173396" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="325" from="26153467" to="59817624" length="402.55631145173294" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">25270811</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Eichtalstraße</attribute>
 			</attributes>
 		</link>
-		<link id="326" from="59817624" to="26153467" length="402.55631145173396" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="326" from="59817624" to="26153467" length="402.55631145173294" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">25270811</attribute>
@@ -2598,7 +2598,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="329" from="3790696309" to="3790696302" length="173.60607523609718" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
+		<link id="329" from="3790696309" to="3790696302" length="173.60607523609772" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">secondary</attribute>
@@ -2616,28 +2616,28 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="330" from="59654683" to="59654686" length="69.61942073899633" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="330" from="59654683" to="59654686" length="69.61942073817735" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">1180060839</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Haeckelstraße</attribute>
 			</attributes>
 		</link>
-		<link id="331" from="59654686" to="59654683" length="69.61942073899633" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="331" from="59654686" to="59654683" length="69.61942073817735" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">1180060839</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Haeckelstraße</attribute>
 			</attributes>
 		</link>
-		<link id="332" from="59654687" to="59654694" length="51.654796062114826" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="332" from="59654687" to="59654694" length="51.654796061299905" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">1180060838</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Haeckelstraße</attribute>
 			</attributes>
 		</link>
-		<link id="333" from="59654694" to="59654687" length="51.654796062114826" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="333" from="59654694" to="59654687" length="51.654796061299905" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">1180060838</attribute>
@@ -2739,7 +2739,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="345" from="25456527" to="28201794" length="280.136658808571" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
+		<link id="345" from="25456527" to="28201794" length="280.1366588093932" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus,detour</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">secondary</attribute>
@@ -2749,7 +2749,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="346" from="28201794" to="367891514" length="41.91599373578653" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="pt" >
+		<link id="346" from="28201794" to="367891514" length="41.91599373493735" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus,detour</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">secondary</attribute>
@@ -2759,7 +2759,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="347" from="301223476" to="26581511" length="69.34944834304729" freespeed="13.88888888888889" capacity="4000.0" permlanes="4.0" oneway="1" modes="bus,car,pt" >
+		<link id="347" from="301223476" to="26581511" length="69.34944834308072" freespeed="13.88888888888889" capacity="4000.0" permlanes="4.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="disallowedNextLinks" class="org.matsim.core.network.turnRestrictions.DisallowedNextLinks">{"bus":[["25"]],"pt":[["25"]],"car":[["25"]]}</attribute>
 				<attribute name="osm:relation:route" class="java.lang.String">bus,detour,road</attribute>
@@ -2770,7 +2770,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="347_spec" from="301223476" to="26581511" length="69.34944834304729" freespeed="13.88888888888889" capacity="1000.0" permlanes="1.0" oneway="1" modes="bus,pt,taxi" >
+		<link id="347_spec" from="301223476" to="26581511" length="69.34944834308072" freespeed="13.88888888888889" capacity="1000.0" permlanes="1.0" oneway="1" modes="bus,pt,taxi" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus,detour,road</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">secondary</attribute>
@@ -2790,7 +2790,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="349" from="84846444" to="26581513" length="19.937183978971902" freespeed="13.88888888888889" capacity="1800.0" permlanes="3.0" oneway="1" modes="bus,car,pt" >
+		<link id="349" from="84846444" to="26581513" length="19.937183978971134" freespeed="13.88888888888889" capacity="1800.0" permlanes="3.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="disallowedNextLinks" class="org.matsim.core.network.turnRestrictions.DisallowedNextLinks">{"bus":[["118"]],"pt":[["118"]],"car":[["118"]]}</attribute>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
@@ -2821,14 +2821,14 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="351" from="25456521" to="28201794" length="10.641810754673795" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="351" from="25456521" to="28201794" length="10.641810754970457" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">1209147381</attribute>
 				<attribute name="osm:way:oneway" class="java.lang.String">no</attribute>
 			</attributes>
 		</link>
-		<link id="352" from="28201794" to="25456521" length="10.641810754673795" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="352" from="28201794" to="25456521" length="10.641810754970457" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">1209147381</attribute>
@@ -2999,7 +2999,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="37" from="2859337885" to="10960140085" length="9.250180924837732" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="37" from="2859337885" to="10960140085" length="9.25018092392395" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">hiking</attribute>
 				<attribute name="osm:way:access" class="java.lang.String">no</attribute>
@@ -3010,7 +3010,7 @@
 				<attribute name="osm:way:vehicle" class="java.lang.String">destination</attribute>
 			</attributes>
 		</link>
-		<link id="370" from="3323412072" to="260701225" length="23.29987403161902" freespeed="13.88888888888889" capacity="3000.0" permlanes="3.0" oneway="1" modes="bus,car,pt" >
+		<link id="370" from="3323412072" to="260701225" length="23.299874031668416" freespeed="13.88888888888889" capacity="3000.0" permlanes="3.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus,detour,road</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">secondary</attribute>
@@ -3030,7 +3030,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="372" from="59817624" to="90654272" length="305.57417619651653" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="pt" >
+		<link id="372" from="59817624" to="90654272" length="305.57417619651454" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus,detour,road</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">secondary</attribute>
@@ -3107,7 +3107,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">no</attribute>
 			</attributes>
 		</link>
-		<link id="38" from="10960140085" to="2859337885" length="9.250180924837732" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="38" from="10960140085" to="2859337885" length="9.25018092392395" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">hiking</attribute>
 				<attribute name="osm:way:access" class="java.lang.String">no</attribute>
@@ -3127,7 +3127,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">no</attribute>
 			</attributes>
 		</link>
-		<link id="381" from="270103572" to="59654691" length="146.02301735658253" freespeed="13.88888888888889" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
+		<link id="381" from="270103572" to="59654691" length="146.0230173566337" freespeed="13.88888888888889" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
@@ -3136,7 +3136,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="382" from="26155633" to="26155631" length="71.92399262643904" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
+		<link id="382" from="26155633" to="26155631" length="71.92399262677684" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
@@ -3145,7 +3145,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="383" from="26155631" to="270103572" length="96.12847059082812" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
+		<link id="383" from="26155631" to="270103572" length="96.12847059048973" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
@@ -3164,14 +3164,14 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="390" from="34672403" to="35519435" length="101.18609799528332" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="390" from="34672403" to="35519435" length="101.18609799528335" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">5140732</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Gartenstraße</attribute>
 			</attributes>
 		</link>
-		<link id="391" from="35519435" to="34672403" length="101.18609799528332" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="391" from="35519435" to="34672403" length="101.18609799528335" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">5140732</attribute>
@@ -3233,7 +3233,7 @@
 				<attribute name="osm:way:name" class="java.lang.String">Rennelbergstraße</attribute>
 			</attributes>
 		</link>
-		<link id="40" from="3790696291" to="5689801553" length="19.778896787800566" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
+		<link id="40" from="3790696291" to="5689801553" length="19.77889678845552" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">secondary</attribute>
@@ -3280,21 +3280,21 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="404" from="3959807595" to="443454358" length="125.73980544235465" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="404" from="3959807595" to="443454358" length="125.73980544236954" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">5134806</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Freisestraße</attribute>
 			</attributes>
 		</link>
-		<link id="405" from="443454358" to="3959807595" length="125.73980544235465" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="405" from="443454358" to="3959807595" length="125.73980544236954" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">5134806</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Freisestraße</attribute>
 			</attributes>
 		</link>
-		<link id="406" from="1365939719" to="2690473701" length="68.35828194309008" freespeed="13.88888888888889" capacity="3000.0" permlanes="2.0" oneway="1" modes="pt" >
+		<link id="406" from="1365939719" to="2690473701" length="68.35828194308847" freespeed="13.88888888888889" capacity="3000.0" permlanes="2.0" oneway="1" modes="pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus,detour,road</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">primary</attribute>
@@ -3331,7 +3331,7 @@
 				<attribute name="osm:way:name" class="java.lang.String">Hannoversche Straße</attribute>
 			</attributes>
 		</link>
-		<link id="41" from="3971103634" to="3790696307" length="194.28103263014768" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
+		<link id="41" from="3971103634" to="3790696307" length="194.2810326301442" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">secondary</attribute>
@@ -3422,7 +3422,7 @@
 				<attribute name="osm:way:name" class="java.lang.String">Goslarsche Straße</attribute>
 			</attributes>
 		</link>
-		<link id="42" from="5689801553" to="3790696297" length="9.924466861365778" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
+		<link id="42" from="5689801553" to="3790696297" length="9.92446686060875" freespeed="13.88888888888889" capacity="2000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">secondary</attribute>
@@ -3439,7 +3439,7 @@
 				<attribute name="osm:way:name" class="java.lang.String">Goslarsche Straße</attribute>
 			</attributes>
 		</link>
-		<link id="421" from="84846444" to="2573305873" length="43.171795762099755" freespeed="13.88888888888889" capacity="9999.0" permlanes="1.0" oneway="1" modes="pt" >
+		<link id="421" from="84846444" to="2573305873" length="43.17179576214646" freespeed="13.88888888888889" capacity="9999.0" permlanes="1.0" oneway="1" modes="pt" >
 			<attributes>
 				<attribute name="osm:way:access" class="java.lang.String">private</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">service</attribute>
@@ -3479,7 +3479,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="46" from="27375099" to="27375104" length="360.8794311145197" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="46" from="27375099" to="27375104" length="360.8794311149231" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">7975406</attribute>
@@ -3544,7 +3544,7 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="54" from="260701297" to="26189932" length="45.076101688714026" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="54" from="260701297" to="26189932" length="45.0761016887166" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">5140764</attribute>
@@ -3552,35 +3552,35 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="55" from="26155631" to="59654703" length="143.7609239665595" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="55" from="26155631" to="59654703" length="143.76092396714648" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">7975408</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Görgesstraße</attribute>
 			</attributes>
 		</link>
-		<link id="56" from="59654703" to="26155631" length="143.7609239665595" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="56" from="59654703" to="26155631" length="143.76092396714648" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">7975408</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Görgesstraße</attribute>
 			</attributes>
 		</link>
-		<link id="57" from="27375088" to="27375091" length="210.06618767433088" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="57" from="27375088" to="27375091" length="210.0661876734718" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">7975409</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Alerdsweg</attribute>
 			</attributes>
 		</link>
-		<link id="58" from="27375091" to="27375088" length="210.06618767433088" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="58" from="27375091" to="27375088" length="210.0661876734718" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">7975409</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Alerdsweg</attribute>
 			</attributes>
 		</link>
-		<link id="59" from="27375091" to="27375100" length="108.27065242239104" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="59" from="27375091" to="27375100" length="108.27065242324608" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">7975409</attribute>
@@ -3594,14 +3594,14 @@
 				<attribute name="osm:way:name" class="java.lang.String">Chemnitzstraße</attribute>
 			</attributes>
 		</link>
-		<link id="60" from="27375100" to="27375091" length="108.27065242239104" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="60" from="27375100" to="27375091" length="108.27065242324608" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">7975409</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Alerdsweg</attribute>
 			</attributes>
 		</link>
-		<link id="61" from="10589825668" to="10589839543" length="50.47559867228219" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="61" from="10589825668" to="10589839543" length="50.47559867239192" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">24038681</attribute>
@@ -3609,14 +3609,14 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="62" from="26155640" to="443459316" length="174.70279830905963" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="62" from="26155640" to="443459316" length="174.7027983091128" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">7975401</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Höfenstraße</attribute>
 			</attributes>
 		</link>
-		<link id="63" from="443459316" to="26155640" length="174.70279830905963" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="63" from="443459316" to="26155640" length="174.7027983091128" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">7975401</attribute>
@@ -3676,28 +3676,28 @@
 				<attribute name="osm:way:name" class="java.lang.String">Petristraße</attribute>
 			</attributes>
 		</link>
-		<link id="71" from="27375105" to="27376050" length="179.22599854357986" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="71" from="27375105" to="27376050" length="179.2259985435798" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">8074220</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Wachtelstieg</attribute>
 			</attributes>
 		</link>
-		<link id="72" from="27376050" to="27375105" length="179.22599854357986" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="72" from="27376050" to="27375105" length="179.2259985435798" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">8074220</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Wachtelstieg</attribute>
 			</attributes>
 		</link>
-		<link id="73" from="27375108" to="27375109" length="243.71797864364717" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="73" from="27375108" to="27375109" length="243.7179786436465" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">8074208</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Sommerlust</attribute>
 			</attributes>
 		</link>
-		<link id="74" from="27375109" to="27375108" length="243.71797864364717" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="74" from="27375109" to="27375108" length="243.7179786436465" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">8074208</attribute>
@@ -3718,14 +3718,14 @@
 				<attribute name="osm:way:name" class="java.lang.String">Calvördestraße</attribute>
 			</attributes>
 		</link>
-		<link id="77" from="27375110" to="923421352" length="103.2997192491687" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="77" from="27375110" to="923421352" length="103.29971924916876" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">8074205</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Kälberwiese</attribute>
 			</attributes>
 		</link>
-		<link id="78" from="923421352" to="27375110" length="103.2997192491687" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="78" from="923421352" to="27375110" length="103.29971924916876" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">8074205</attribute>
@@ -3741,35 +3741,35 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="8" from="59654686" to="59654687" length="56.14081711276749" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="8" from="59654686" to="59654687" length="56.14081711371613" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">7975390</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Haeckelstraße</attribute>
 			</attributes>
 		</link>
-		<link id="80" from="26604193" to="3814642434" length="7.537771496030706" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="80" from="26604193" to="3814642434" length="7.537771497519101" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">8074213</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Schölkestraße</attribute>
 			</attributes>
 		</link>
-		<link id="81" from="3814642434" to="26604193" length="7.537771496030706" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="81" from="3814642434" to="26604193" length="7.537771497519101" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">8074213</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Schölkestraße</attribute>
 			</attributes>
 		</link>
-		<link id="82" from="3814642434" to="301224170" length="130.41962937504306" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="82" from="3814642434" to="301224170" length="130.419629373513" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">8074213</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Schölkestraße</attribute>
 			</attributes>
 		</link>
-		<link id="83" from="301224170" to="3814642434" length="130.41962937504306" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="83" from="301224170" to="3814642434" length="130.419629373513" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">8074213</attribute>
@@ -3799,42 +3799,42 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="87" from="27375106" to="27375107" length="250.8621397320677" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="87" from="27375106" to="27375107" length="250.8621397320679" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">8074201</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Spatzenstieg</attribute>
 			</attributes>
 		</link>
-		<link id="88" from="27375107" to="27375106" length="250.8621397320677" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="88" from="27375107" to="27375106" length="250.8621397320679" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">8074201</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Spatzenstieg</attribute>
 			</attributes>
 		</link>
-		<link id="89" from="4762024116" to="10962022166" length="63.30707391945086" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="89" from="4762024116" to="10962022166" length="63.30707391856309" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">5140348</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Blasiusstraße</attribute>
 			</attributes>
 		</link>
-		<link id="9" from="59654687" to="59654686" length="56.14081711276749" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="9" from="59654687" to="59654686" length="56.14081711371613" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">7975390</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Haeckelstraße</attribute>
 			</attributes>
 		</link>
-		<link id="90" from="10962022166" to="4762024116" length="63.30707391945086" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="90" from="10962022166" to="4762024116" length="63.30707391856309" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">5140348</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Blasiusstraße</attribute>
 			</attributes>
 		</link>
-		<link id="91" from="5269655663" to="2941126931" length="21.281673193582286" freespeed="13.88888888888889" capacity="3000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
+		<link id="91" from="5269655663" to="2941126931" length="21.281673194331134" freespeed="13.88888888888889" capacity="3000.0" permlanes="2.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus,detour,road</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">primary</attribute>
@@ -3880,14 +3880,14 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
-		<link id="97" from="27376059" to="90708206" length="184.52362032619143" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="97" from="27376059" to="90708206" length="184.52362032526858" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">10526052</attribute>
 				<attribute name="osm:way:name" class="java.lang.String">Lerchenfeld</attribute>
 			</attributes>
 		</link>
-		<link id="98" from="90708206" to="27376059" length="184.52362032619143" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
+		<link id="98" from="90708206" to="27376059" length="184.52362032526858" freespeed="8.333333333333334" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car" >
 			<attributes>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">10526052</attribute>
