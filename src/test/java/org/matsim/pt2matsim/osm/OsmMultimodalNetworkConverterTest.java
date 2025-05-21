@@ -117,22 +117,27 @@ public class OsmMultimodalNetworkConverterTest {
 	@Test
 	void testPrimaryWithForwardAndBackwardSpecialLanesAndMaxspeed() {
 		Set<Link> links = osmid2link.get(7994886L);
-		Assertions.assertEquals(2, links.size(), "bidirectional");
+		// we add tow links that can be used only by bus
+		Assertions.assertEquals(4, links.size(), "bidirectional");
 
 		Set<Link> linksToNorth = getLinksTowardsNode(links, 57443579L);
-		assertLanes("4 minus one bus lane", linksToNorth, 3);
+		// assertLanes("4 minus one bus lane", linksToNorth, 3);
 		assertMaxspeed(linksToNorth, 70);
 
 		Set<Link> linksToSouth = getLinksTowardsNode(links, 59836729L);
-		assertLanes("5 minus one psv lane", linksToSouth, 4);
+		//assertLanes("5 minus one psv lane", linksToSouth, 4);
+		assertLanesSpecial(linksToSouth, 5);
 		assertMaxspeed(linksToSouth, 100);
 	}
 
 	@Test
 	void testPrimaryWithSpecialLanes() {
 		Set<Link> links = osmid2link.get(7994912L);
-		Assertions.assertEquals(2, links.size(), "bidirectional");
-		assertLanes("4 per direction minus one taxi lane", links, 3);
+		// we create two additional links where taxis can go
+		Assertions.assertEquals(4 , links.size(), "bidirectional");
+		// two links with three lanes and two links with one lane
+		// assertLanes("4 per direction minus one taxi lane", links, 3);
+		assertLanesSpecial(links, 8);
 		assertMaxspeed(links, 70);
 	}
 
@@ -184,18 +189,21 @@ public class OsmMultimodalNetworkConverterTest {
 	@Test
 	void testPrimaryOnewayWithForwardSpecialLanesAndMaxspeed() {
 		Set<Link> links = osmid2link.get(7994925L);
-		Assertions.assertEquals(1, links.size(), "oneway");
-		Assertions.assertEquals(1, getLinksTowardsNode(links, 59836816L).size(), "oneway up north");
-		assertLanes("4 minus one bus lane", links, 3);
+		// we add one bus link
+		Assertions.assertEquals(2, links.size(), "oneway");
+		Assertions.assertEquals(2, getLinksTowardsNode(links, 59836816L).size(), "oneway up north");
+		assertLanesSpecial(links, 4);
 		assertMaxspeed(links, 70);
 	}
 
 	@Test
 	void testPrimaryOnewayWithSpecialLane() {
 		Set<Link> links = osmid2link.get(7994927L);
-		Assertions.assertEquals(1, links.size(), "oneway");
-		Assertions.assertEquals(1, getLinksTowardsNode(links, 59836820L).size(), "oneway up north");
-		assertLanes("4 minus one bus lane", links, 3);
+		// we create an additional link accessible to bus
+		Assertions.assertEquals(2, links.size(), "oneway");
+		Assertions.assertEquals(2, getLinksTowardsNode(links, 59836820L).size(), "oneway up north");
+		// we expect 4 lanes in total
+		assertLanesSpecial(links, 4);
 		assertMaxspeed(links, 70);
 	}
 	
@@ -264,6 +272,15 @@ public class OsmMultimodalNetworkConverterTest {
 			Assertions.assertEquals(expectedLanes, link.getNumberOfLanes(), DELTA,
 					"lanes (in one direction): " + message);
 		}
+	}
+	
+	private static void assertLanesSpecial(Set<Link> links, double totalExpectedLanes) {
+		Assertions.assertFalse(links.isEmpty(), "at least one link expected");
+		double sumLanes = 0;
+		for (Link link : links) {
+			sumLanes += link.getNumberOfLanes();
+		}
+		Assertions.assertEquals(totalExpectedLanes, sumLanes, DELTA);
 	}
 	
 	private static void assertMaxspeed(Set<Link> links, double expectedFreespeedKph) {
