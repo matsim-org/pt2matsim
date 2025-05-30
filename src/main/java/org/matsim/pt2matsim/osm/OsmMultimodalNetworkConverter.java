@@ -524,7 +524,7 @@ public class OsmMultimodalNetworkConverter {
 								.toList();
 						log.debug("Link {}: {}/{} turn restrictions attached", linkIdBus, thisOsmTurnRestrictions.size(),
 								osmTurnRestrictions.size());
-						l.getAttributes().putAttribute(OSM_TURN_RESTRICTION_ATTRIBUTE_NAME, thisOsmTurnRestrictions);
+						lBus.getAttributes().putAttribute(OSM_TURN_RESTRICTION_ATTRIBUTE_NAME, thisOsmTurnRestrictions);
 					}
 
 					network.addLink(lBus);
@@ -589,7 +589,7 @@ public class OsmMultimodalNetworkConverter {
 								.toList();
 						log.debug("Link {}: {}/{} turn restrictions attached", linkIdBus, thisOsmTurnRestrictions.size(),
 								osmTurnRestrictions.size());
-						l.getAttributes().putAttribute(OSM_TURN_RESTRICTION_ATTRIBUTE_NAME, thisOsmTurnRestrictions);
+						lBus.getAttributes().putAttribute(OSM_TURN_RESTRICTION_ATTRIBUTE_NAME, thisOsmTurnRestrictions);
 					}
 
 					network.addLink(lBus);
@@ -655,7 +655,6 @@ public class OsmMultimodalNetworkConverter {
 	
 	private double calculateLaneCount(final Osm.Way way, boolean forward, boolean isOneway, double defaultLaneCount) {
 		double laneCount = parseLanesValue(way, Osm.Key.LANES).orElse(defaultLaneCount);
-		// subtract lanes not accessible for cars
 		
 		if(!isOneway)
 			laneCount /= 2;
