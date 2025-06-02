@@ -88,7 +88,7 @@ public class OsmMultimodalNetworkConverter {
 	private static final Logger log = LogManager.getLogger(OsmMultimodalNetworkConverter.class);
 
 	private static final String OSM_TURN_RESTRICTION_ATTRIBUTE_NAME = OsmTurnRestriction.class.getSimpleName();
-
+	private static final String OSM_SPECIAL_LANE = "_spec";
 	/**
 	 * mode == null means "all modes"
 	 */
@@ -419,9 +419,16 @@ public class OsmMultimodalNetworkConverter {
 
 		// LANES
 		double laneCountDefault = wayDefaultParams.getLanes();
+		
 		double laneCountForward = calculateLaneCount(way, true, oneway || onewayReverse, laneCountDefault);
+		Result psvLanesForward = calcualteBlockingCount(way, true, oneway || onewayReverse, laneCountDefault);
+		
+		laneCountForward -= psvLanesForward.count;
+		
 		double laneCountBackward = calculateLaneCount(way, false, oneway || onewayReverse, laneCountDefault);
-
+		Result psvLanesBackward = calcualteBlockingCount(way, false, oneway || onewayReverse, laneCountDefault);
+		
+		laneCountBackward -= psvLanesBackward.count;
 		// CAPACITY
 		//double capacity = laneCountDefault * laneCapacity;
 
@@ -476,6 +483,56 @@ public class OsmMultimodalNetworkConverter {
 				network.addLink(l);
 				osmIds.put(l.getId(), way.getId());
 				geometryExporter.addLinkDefinition(linkId, new LinkDefinition(fromNode, toNode, way));
+				
+				// we might have dedicated lanes
+				// we need to create another link for that
+				
+				if (psvLanesForward.count > 0 && modes.contains("car")) {
+					
+					Id<Link> linkIdBus = Id.create(String.valueOf(this.id) + OSM_SPECIAL_LANE, Link.class);
+					Link lBus = network.getFactory().createLink(linkIdBus, network.getNodes().get(fromId), network.getNodes().get(toId));
+					lBus.setLength(length);
+					lBus.setFreespeed(freeSpeedForward);
+					lBus.setCapacity(psvLanesForward.count * laneCapacity);
+					lBus.setNumberOfLanes(psvLanesForward.count);
+					
+					// we adjust the modes allowed on other lanes
+					// while this is in practice not true, it makes it better
+					// for routing buses as otherwise they might end up on the 
+					// other lane
+					Set<String> cmodes = new HashSet<>(modes);
+					if (psvLanesForward.mode.equals(Osm.Key.BUS)) {
+						lBus.setAllowedModes(Set.of(Osm.Key.BUS, "pt"));
+						cmodes.remove(Osm.Key.BUS);
+					}
+					else if (psvLanesForward.mode.equals(Osm.Key.TAXI)) {
+						lBus.setAllowedModes(Set.of("taxi"));
+						cmodes.remove(Osm.Key.TAXI);
+					}
+					else {
+						lBus.setAllowedModes(Set.of(Osm.Key.BUS, "pt", Osm.Key.TAXI));
+						cmodes.remove(Osm.Key.TAXI);
+						cmodes.remove(Osm.Key.BUS);
+					}
+					
+					
+					l.setAllowedModes(cmodes);
+					if (config.parseTurnRestrictions && !osmTurnRestrictions.isEmpty()) {
+						// filter turn restrictions to those for which this link could be the from link
+						List<OsmTurnRestriction> thisOsmTurnRestrictions = osmTurnRestrictions.stream()
+								.filter(tr -> tr.viaNodeId() == null || tr.viaNodeId().toString().equals(toId.toString()))
+								.toList();
+						log.debug("Link {}: {}/{} turn restrictions attached", linkIdBus, thisOsmTurnRestrictions.size(),
+								osmTurnRestrictions.size());
+						lBus.getAttributes().putAttribute(OSM_TURN_RESTRICTION_ATTRIBUTE_NAME, thisOsmTurnRestrictions);
+					}
+
+					network.addLink(lBus);
+					osmIds.put(lBus.getId(), way.getId());
+					geometryExporter.addLinkDefinition(linkIdBus, new LinkDefinition(fromNode, toNode, way));
+				}
+				
+				
 				this.id++;
 			}
 			// backward link
@@ -500,6 +557,45 @@ public class OsmMultimodalNetworkConverter {
 				network.addLink(l);
 				osmIds.put(l.getId(), way.getId());
 				geometryExporter.addLinkDefinition(linkId, new LinkDefinition(toNode, fromNode, way));
+				
+				if (psvLanesBackward.count > 0 && modes.contains("car")) {
+					
+					Id<Link> linkIdBus = Id.create(String.valueOf(this.id) + "_spec", Link.class);
+					Link lBus = network.getFactory().createLink(linkIdBus, network.getNodes().get(toId), network.getNodes().get(fromId));
+					lBus.setLength(length);
+					lBus.setFreespeed(freeSpeedBackward);
+					lBus.setCapacity(psvLanesBackward.count * laneCapacity);
+					lBus.setNumberOfLanes(psvLanesBackward.count);
+					
+					Set<String> cmodes = new HashSet<>(modes);
+					if (psvLanesBackward.mode.equals(Osm.Key.BUS)) {
+						lBus.setAllowedModes(Set.of(Osm.Key.BUS, "pt"));
+						cmodes.remove(Osm.Key.BUS);
+					}
+					else if (psvLanesBackward.mode.equals(Osm.Key.TAXI)) {
+						lBus.setAllowedModes(Set.of(Osm.Key.TAXI));
+						cmodes.remove(Osm.Key.TAXI);
+					}
+					else {
+						lBus.setAllowedModes(Set.of(Osm.Key.BUS, "pt", Osm.Key.TAXI));
+						cmodes.remove(Osm.Key.TAXI);
+						cmodes.remove(Osm.Key.BUS);
+					}
+					l.setAllowedModes(cmodes);
+					if (config.parseTurnRestrictions && !osmTurnRestrictions.isEmpty()) {
+						// filter turn restrictions to those for which this link could be the from link
+						List<OsmTurnRestriction> thisOsmTurnRestrictions = osmTurnRestrictions.stream()
+								.filter(tr -> tr.viaNodeId() == null || tr.viaNodeId().toString().equals(fromId.toString()))
+								.toList();
+						log.debug("Link {}: {}/{} turn restrictions attached", linkIdBus, thisOsmTurnRestrictions.size(),
+								osmTurnRestrictions.size());
+						lBus.getAttributes().putAttribute(OSM_TURN_RESTRICTION_ATTRIBUTE_NAME, thisOsmTurnRestrictions);
+					}
+
+					network.addLink(lBus);
+					osmIds.put(lBus.getId(), way.getId());
+					geometryExporter.addLinkDefinition(linkIdBus, new LinkDefinition(fromNode, toNode, way));
+				}
 				this.id++;
 			}
 		}
@@ -559,11 +655,6 @@ public class OsmMultimodalNetworkConverter {
 	
 	private double calculateLaneCount(final Osm.Way way, boolean forward, boolean isOneway, double defaultLaneCount) {
 		double laneCount = parseLanesValue(way, Osm.Key.LANES).orElse(defaultLaneCount);
-
-		// subtract lanes not accessible for cars
-		List<String> blockingMots = Arrays.asList(Osm.Key.BUS, Osm.Key.PSV, Osm.Key.TAXI);
-		for(String blockingMot : blockingMots)
-			laneCount -= parseLanesValue(way, Osm.Key.combinedKey(Osm.Key.LANES, blockingMot)).orElse(0d);
 		
 		if(!isOneway)
 			laneCount /= 2;
@@ -573,8 +664,6 @@ public class OsmMultimodalNetworkConverter {
 		Optional<Double> directedLaneCount = parseLanesValue(way, Osm.Key.combinedKey(Osm.Key.LANES, direction));
 		if(directedLaneCount.isPresent()) {
 			laneCount = directedLaneCount.get();
-			for(String blockingMot : blockingMots)
-				laneCount -= parseLanesValue(way, Osm.Key.combinedKey(Osm.Key.LANES, blockingMot, direction)).orElse(0d);
 		}
 
 		// sanitize
@@ -582,6 +671,52 @@ public class OsmMultimodalNetworkConverter {
 			laneCount = 1;
 		
 		return laneCount;
+	}
+	
+	public record Result(double count, String mode) { }
+	
+	private Result calcualteBlockingCount(final Osm.Way way, boolean forward, boolean isOneway, double defaultLaneCount) {
+		// subtract lanes not accessible for cars
+		List<String> blockingMots = Arrays.asList(Osm.Key.BUS, Osm.Key.PSV, Osm.Key.TAXI);
+		double lanestoremove = 0;
+		String mode = "";
+		for(String blockingMot : blockingMots) {
+			lanestoremove = parseReservedLanesValue(way, Osm.Key.combinedKey(Osm.Key.LANES, blockingMot)).orElse(0d);
+			if (lanestoremove != 0) {
+				mode = blockingMot;
+				break;
+			}
+			lanestoremove = parseReservedLanesValue(way, Osm.Key.combinedKey(blockingMot, Osm.Key.LANES)).orElse(0d);
+			if (lanestoremove != 0) {
+				mode = blockingMot;
+				break;
+			}
+		}
+		
+		// in case a specific lane count per direction is available this overrules the standard lanes
+		String direction = forward ? Osm.Key.FORWARD : Osm.Key.BACKWARD;
+		Optional<Double> directedLaneCount = parseLanesValue(way, Osm.Key.combinedKey(Osm.Key.LANES, direction));
+		if(directedLaneCount.isPresent()) {
+			lanestoremove = 0;
+			for(String blockingMot : blockingMots) {
+				lanestoremove = parseReservedLanesValue(way, Osm.Key.combinedKey(Osm.Key.LANES, blockingMot, direction)).orElse(0d);
+				if (lanestoremove != 0) {
+					mode = blockingMot;
+					break;
+				}
+				lanestoremove = parseReservedLanesValue(way, Osm.Key.combinedKey(blockingMot, Osm.Key.LANES, direction)).orElse(0d);
+				if (lanestoremove != 0) {
+					mode = blockingMot;
+					break;
+				}
+			}
+			
+		}
+		
+		if(!isOneway)
+			lanestoremove /= 2;
+		
+		return new Result(lanestoremove, mode);
 	}
 	
 	private Optional<Double> parseLanesValue(final Osm.Way way, String key) {
@@ -602,6 +737,44 @@ public class OsmMultimodalNetworkConverter {
 			}
 			return Optional.empty();
 		}
+	}
+	
+	private Optional<Double> parseReservedLanesValue(final Osm.Way way, String key) {
+		String value = way.getTags().get(key);
+		if(value == null)
+			return Optional.empty();
+		
+		// it is possible that the number of blocked lanes is not reported with a number
+		// but with specific designation per lane e.g., for two lanes: designated|yes
+		// meaning that left lane is for pt and right one for both
+				
+		String[] parts = value.split("\\|");
+        int count = 0;
+        for (String p : parts) {
+            // if you want to ignore leading/trailing spaces:
+            if (p.trim().equals(Osm.Value.DESIGNATED)) {
+                count++;
+            }
+        }
+        if (count > 0)
+        	return Optional.of((double)count);
+        
+        // it can happen that the value is given as a numeric
+        // take first value if more values are given
+ 		if(value.contains(";"))
+ 			value = value.split(";")[0];
+ 		
+ 		try {
+ 			return Optional.of(Double.parseDouble(value));
+ 		} catch (NumberFormatException e) {
+ 			if(!unknownLanesTags.contains(value)) {
+ 				unknownLanesTags.add(value);
+ 				log.warn("Could not parse '{}': {} (way {})", key, e.getMessage(), way.getId());
+ 			}
+ 			return Optional.empty();
+ 		}
+		
+		
 	}
 
 	private void initPT() {

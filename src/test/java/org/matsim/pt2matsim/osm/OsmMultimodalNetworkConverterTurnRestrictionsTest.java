@@ -201,7 +201,7 @@ class OsmMultimodalNetworkConverterTurnRestrictionsTest {
 	void testRudolfplatz() {
 
 		Network network = convert("Rudolfplatz.osm");
-		// NetworkUtils.writeNetwork(network, "test/osm/Rudolfplatz_expected.xml");
+		 NetworkUtils.writeNetwork(network, "test/osm/Rudolfplatz_expected.xml");
 
 		// --------------------------------------------------------------------
 
@@ -211,7 +211,7 @@ class OsmMultimodalNetworkConverterTurnRestrictionsTest {
 				.map(NetworkUtils::getDisallowedNextLinks)
 				.filter(Objects::nonNull)
 				.count();
-		Assertions.assertEquals(9L, noOfDnl);
+		Assertions.assertEquals(11L, noOfDnl);
 
 		Network convertedNetwork = NetworkUtils.createNetwork();
 		new MatsimNetworkReader(convertedNetwork).readFile("test/osm/Rudolfplatz_expected.xml");

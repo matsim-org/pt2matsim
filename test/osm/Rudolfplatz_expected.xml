@@ -2770,6 +2770,17 @@
 				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
 			</attributes>
 		</link>
+		<link id="347_spec" from="301223476" to="26581511" length="69.34944834308072" freespeed="13.88888888888889" capacity="1000.0" permlanes="1.0" oneway="1" modes="bus,pt,taxi" >
+			<attributes>
+				<attribute name="disallowedNextLinks" class="org.matsim.core.network.turnRestrictions.DisallowedNextLinks">{"bus":[["25"]],"pt":[["25"]]}</attribute>
+				<attribute name="osm:relation:route" class="java.lang.String">bus,detour,road</attribute>
+				<attribute name="osm:way:highway" class="java.lang.String">secondary</attribute>
+				<attribute name="osm:way:id" class="java.lang.Long">31722495</attribute>
+				<attribute name="osm:way:lanes" class="java.lang.String">5</attribute>
+				<attribute name="osm:way:name" class="java.lang.String">Rudolfplatz</attribute>
+				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
+			</attributes>
+		</link>
 		<link id="348" from="59654718" to="84846444" length="12.422049582960499" freespeed="13.88888888888889" capacity="1800.0" permlanes="3.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="osm:relation:route" class="java.lang.String">bus</attribute>
@@ -2828,6 +2839,17 @@
 		<link id="353" from="59654717" to="26581511" length="41.325623789735765" freespeed="13.88888888888889" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,car,pt" >
 			<attributes>
 				<attribute name="disallowedNextLinks" class="org.matsim.core.network.turnRestrictions.DisallowedNextLinks">{"bus":[["177"]],"pt":[["177"]],"car":[["177"]]}</attribute>
+				<attribute name="osm:relation:route" class="java.lang.String">bus,detour</attribute>
+				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
+				<attribute name="osm:way:id" class="java.lang.Long">30128601</attribute>
+				<attribute name="osm:way:lanes" class="java.lang.String">2</attribute>
+				<attribute name="osm:way:name" class="java.lang.String">Rudolfplatz</attribute>
+				<attribute name="osm:way:oneway" class="java.lang.String">yes</attribute>
+			</attributes>
+		</link>
+		<link id="353_spec" from="59654717" to="26581511" length="41.325623789735765" freespeed="13.88888888888889" capacity="600.0" permlanes="1.0" oneway="1" modes="bus,pt,taxi" >
+			<attributes>
+				<attribute name="disallowedNextLinks" class="org.matsim.core.network.turnRestrictions.DisallowedNextLinks">{"bus":[["177"]],"pt":[["177"]]}</attribute>
 				<attribute name="osm:relation:route" class="java.lang.String">bus,detour</attribute>
 				<attribute name="osm:way:highway" class="java.lang.String">residential</attribute>
 				<attribute name="osm:way:id" class="java.lang.Long">30128601</attribute>
