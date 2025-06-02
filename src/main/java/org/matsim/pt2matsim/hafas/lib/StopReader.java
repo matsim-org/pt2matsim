@@ -21,6 +21,7 @@
 
 package org.matsim.pt2matsim.hafas.lib;
 
+import java.nio.charset.Charset;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Coord;
@@ -59,13 +60,13 @@ public class StopReader {
 		this.pathToBFKOORD_WGSFile = pathToBFKOORD_WGSFile;
 	}
 
-	public static void run(TransitSchedule schedule, CoordinateTransformation transformation, String pathToBFKOORD_WGSFile) throws IOException {
-		new StopReader(schedule, transformation, pathToBFKOORD_WGSFile).createStops();
+	public static void run(TransitSchedule schedule, CoordinateTransformation transformation, String pathToBFKOORD_WGSFile, Charset encodingCharset) throws IOException {
+		new StopReader(schedule, transformation, pathToBFKOORD_WGSFile).createStops(encodingCharset);
 	}
 
-	private void createStops() throws IOException {
+	private void createStops(Charset encodingCharset) throws IOException {
 		log.info("  Read transit stops...");
-			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToBFKOORD_WGSFile), "utf-8"));
+			BufferedReader readsLines = new BufferedReader(new InputStreamReader(new FileInputStream(pathToBFKOORD_WGSFile), encodingCharset));
 			String newLine;
 			while ((newLine = readsLines.readLine()) != null) {
 				if (newLine.startsWith("*")) {
@@ -78,14 +79,15 @@ public class StopReader {
 				33−38 INT16 Z-Koordinate (Tunnel und andere Streckenelemente ohne eigentliche Haltestelle haben keine Z-Koordinate)
 				40ff CHAR Kommentarzeichen "%"gefolgt vom Klartext des Haltestellennamens (optional zur besseren Lesbarkeit)
 				 */
-				Id<TransitStopFacility> stopId = Id.create(newLine.substring(0, 7), TransitStopFacility.class);
-				double xCoord = Double.parseDouble(newLine.substring(8, 19));
-				double yCoord = Double.parseDouble(newLine.substring(20, 31));
+				String[] parts = newLine.split(" +");
+				Id<TransitStopFacility> stopId = Id.create(parts[0].trim(), TransitStopFacility.class);
+				double xCoord = Double.parseDouble(parts[1].trim());
+				double yCoord = Double.parseDouble(parts[2].trim());
 				Coord coord = new Coord(xCoord, yCoord);
 				if (this.transformation != null) {
 					coord = this.transformation.transform(coord);
 				}
-				String stopName = newLine.substring(41);
+				String stopName = newLine.substring(39).replace("% ", "").trim();
 				createStop(stopId, coord, stopName);
 			}
 			readsLines.close();

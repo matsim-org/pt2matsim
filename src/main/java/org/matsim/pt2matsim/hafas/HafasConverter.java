@@ -21,14 +21,36 @@
 
 package org.matsim.pt2matsim.hafas;
 
-import org.apache.logging.log4j.Logger;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.misc.Counter;
-import org.matsim.pt.transitSchedule.api.*;
-import org.matsim.pt2matsim.hafas.lib.*;
+import org.matsim.pt.transitSchedule.api.Departure;
+import org.matsim.pt.transitSchedule.api.TransitLine;
+import org.matsim.pt.transitSchedule.api.TransitRoute;
+import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.pt.transitSchedule.api.TransitScheduleFactory;
+import org.matsim.pt.transitSchedule.api.TransitStopFacility;
+import org.matsim.pt2matsim.hafas.filter.BoundingBoxStopFilter;
+import org.matsim.pt2matsim.hafas.filter.HafasFilter;
+import org.matsim.pt2matsim.hafas.filter.OperationDayFilter;
+import org.matsim.pt2matsim.hafas.filter.StopsFilter;
+import org.matsim.pt2matsim.hafas.lib.FPLANReader;
+import org.matsim.pt2matsim.hafas.lib.FPLANRoute;
+import org.matsim.pt2matsim.hafas.lib.MinimalTransferTimesReader;
+import org.matsim.pt2matsim.hafas.lib.OperatorReader;
+import org.matsim.pt2matsim.hafas.lib.StopReader;
 import org.matsim.pt2matsim.tools.VehicleTypeDefaults;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 import org.matsim.vehicles.VehicleCapacity;
@@ -37,99 +59,69 @@ import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 import org.matsim.vehicles.VehiclesFactory;
 
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 /**
  * Converts hafas files to a matsim transit schedule.
  *
  * @author polettif
  */
-public class HafasConverter {
+public final class HafasConverter {
 
-	protected static Logger log = LogManager.getLogger(HafasConverter.class);
+	static Logger log = LogManager.getLogger(HafasConverter.class);
 
-	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles) throws IOException {
-		run(hafasFolder, schedule, transformation, vehicles, -1);
+    private HafasConverter() {
+    }
+
+    public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles) throws IOException {
+		run(hafasFolder, schedule, transformation, vehicles, new ArrayList<>(), StandardCharsets.UTF_8, false);
 	}
 
-	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, String chosenDateString) throws IOException {
-		if(!hafasFolder.endsWith("/")) hafasFolder += "/";
-
-		// 3a. Get start_fahrplan date
-		LocalDate fahrplanStartDate = ECKDATENReader.getFahrPlanStart(hafasFolder);
-		LocalDate fahrplanEndDate = ECKDATENReader.getFahrPlanEnd(hafasFolder);
-		try {
-			LocalDate chosenDate = ECKDATENReader.getDate(chosenDateString);
-
-			if (chosenDate.isBefore(fahrplanStartDate) || chosenDate.isAfter(fahrplanEndDate)) {
-				throw new IllegalArgumentException(
-						String.format("Chosen date %s is outside fahrplan period: (%s, %s)", chosenDate, fahrplanStartDate, fahrplanEndDate)
-				);
-			}
-
-			int dayNr = (int) ChronoUnit.DAYS.between(fahrplanStartDate, chosenDate);
-			run(hafasFolder, schedule, transformation, vehicles, dayNr);
-
-		} catch (DateTimeParseException ex) {
-			throw new IllegalArgumentException(
-					"Format of chosen date (should be dd.MM.yyyy) is invalid: " + chosenDateString
-			);
-		}
+	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, List<HafasFilter> filters, Charset encodingCharset,
+		boolean keepStopsInFilter) throws IOException {
+		run(hafasFolder, schedule, transformation, vehicles, filters, encodingCharset, keepStopsInFilter, 0.0);
 	}
 
-	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, int dayNr) throws IOException {
+	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, List<HafasFilter> filters, Charset encodingCharset,
+		boolean keepStopsInFilter, double defaultMinTransferTime) throws IOException {
 		if(!hafasFolder.endsWith("/")) hafasFolder += "/";
 
 		log.info("Creating the schedule based on HAFAS...");
 
 		// 1. Read and create stop facilities
 		log.info("  Read transit stops...");
-		StopReader.run(schedule, transformation, hafasFolder + "BFKOORD_WGS");
+		StopReader.run(schedule, transformation, hafasFolder + "BFKOORD_WGS", encodingCharset);
 		log.info("  Read transit stops... done.");
 
 		// 1.a Read minimal transfer times
 		log.info("  Read minimal transfer times...");
-		MinimalTransferTimesReader.run(schedule, hafasFolder, "UMSTEIGB","METABHF");
+		MinimalTransferTimesReader.run(schedule, hafasFolder, "UMSTEIGB","METABHF", encodingCharset, defaultMinTransferTime);
 		log.info("  Read minimal transfer times... done.");
 
 		// 2. Read all operators from BETRIEB_DE
 		log.info("  Read operators...");
-		Map<String, String> operators = OperatorReader.readOperators(hafasFolder + "BETRIEB_DE");
+		Map<String, String> operators = OperatorReader.readOperators(hafasFolder + "BETRIEB_DE", encodingCharset);
 		log.info("  Read operators... done.");
-
-		// 3. Read all ids for work-day-routes from HAFAS-BITFELD
-		log.info("  Read bitfeld numbers...");
-		Set<Integer> bitfeldNummern;
-		if (dayNr < 0) {
-			bitfeldNummern = BitfeldAnalyzer.findBitfeldnumbersOfBusiestDay(hafasFolder + "FPLAN", hafasFolder + "BITFELD");
-			log.info("      nb of bitfields at busiest day: " + bitfeldNummern.size());
-		} else {
-			// TODO: check if dayNr is within the timetable period defined in ECKDATEN
-			bitfeldNummern = BitfeldAnalyzer.getBitfieldsAtValidDay(dayNr, hafasFolder);
-			log.info("      nb of bitfields valid at day " + dayNr + ": " + bitfeldNummern.size());
-		}
-		log.info("  Read bitfeld numbers... done.");
 
 		// 4. Create all lines from HAFAS-Schedule
 		log.info("  Read transit lines...");
-		List<FPLANRoute> routes = FPLANReader.parseFPLAN(bitfeldNummern, operators, hafasFolder + "FPLAN");
+		// set schedule so fplanRoutes have stopfacilities available
+		FPLANRoute.setSchedule(schedule);
+		List<FPLANRoute> routes = FPLANReader.parseFPLAN(operators, hafasFolder + "FPLAN", filters, encodingCharset);
 		log.info("  Read transit lines... done.");
 
 		// TODO another important HAFAS-file is DURCHBI. This feature is not supported by MATSim yet (but in Switzerland, for example, locally very important.
 
 		log.info("  Creating transit routes...");
-		createTransitRoutesFromFPLAN(routes, schedule, vehicles);
+		OperationDayFilter operationDayFilter = (OperationDayFilter) filters.stream().filter(f -> f instanceof OperationDayFilter).findAny().orElse(null);
+		Set<Integer> bitfeldNummern = operationDayFilter == null ? new HashSet<>() : operationDayFilter.getBitfeldNummern();
+		createTransitRoutesFromFPLAN(routes, schedule, vehicles, bitfeldNummern);
 		log.info("  Creating transit routes... done.");
 
 		// 5. Clean schedule
-		ScheduleCleaner.removeNotUsedStopFacilities(schedule);
+		Set<Id<TransitStopFacility>> stopsToKeep = new HashSet<>();
+		if (keepStopsInFilter) {
+			stopsToKeep = getStopsFromFilters(schedule, filters);
+		}
+		ScheduleCleaner.removeNotUsedStopFacilities(schedule, stopsToKeep);
 		ScheduleCleaner.removeNotUsedMinimalTransferTimes(schedule);
 		ScheduleCleaner.combineIdenticalTransitRoutes(schedule);
 		ScheduleCleaner.cleanDepartures(schedule);
@@ -138,15 +130,30 @@ public class HafasConverter {
 		log.info("Creating the schedule based on HAFAS... done.");
 	}
 
-	private static void createTransitRoutesFromFPLAN(List<FPLANRoute> routes, TransitSchedule schedule, Vehicles vehicles) {
+	private static Set<Id<TransitStopFacility>> getStopsFromFilters(TransitSchedule schedule, List<HafasFilter> filters) {
+		Set<Id<TransitStopFacility>> stopsToKeep = new HashSet<>();
+		for (HafasFilter filter : filters) {
+			for (TransitStopFacility stopFacility : schedule.getFacilities().values()) {
+				if (filter instanceof BoundingBoxStopFilter) {
+					if(((BoundingBoxStopFilter) filter).stopInBoundingBox(stopFacility)) {
+						stopsToKeep.add(stopFacility.getId());
+					}
+				} else if (filter instanceof StopsFilter) {
+					if(((StopsFilter) filter).getStopIds().contains(stopFacility.getId().toString())) {
+						stopsToKeep.add(stopFacility.getId());
+					}
+				}
+			}
+		}
+		return stopsToKeep;
+	}
+
+	private static void createTransitRoutesFromFPLAN(List<FPLANRoute> routes, TransitSchedule schedule, Vehicles vehicles, Set<Integer> bitfeldNummern) {
 		TransitScheduleFactory scheduleFactory = schedule.getFactory();
 		VehiclesFactory vehicleFactory = vehicles.getFactory();
 		Map<Id<TransitLine>, Integer> routeNrs = new HashMap<>();
 
 		Counter lineCounter = new Counter(" TransitLine # ");
-
-		// set schedule so fplanRoutes have stopfacilities available
-		FPLANRoute.setSchedule(schedule);
 
 		for(FPLANRoute fplanRoute : routes) {
 			Id<VehicleType> vehicleTypeId = fplanRoute.getVehicleTypeId();
@@ -169,6 +176,8 @@ public class HafasConverter {
 				TransitLine transitLine;
 				if(!schedule.getTransitLines().containsKey(lineId)) {
 					transitLine = scheduleFactory.createTransitLine(lineId);
+					transitLine.getAttributes().putAttribute("operator", String.valueOf(fplanRoute.getOperator()));
+					transitLine.getAttributes().putAttribute("operatorCode", String.valueOf(fplanRoute.getOperatorCode()));
 					schedule.addTransitLine(transitLine);
 					lineCounter.incCounter();
 				} else {
@@ -201,7 +210,7 @@ public class HafasConverter {
 				routeNrs.put(lineId, routeNr);
 
 				// create actual TransitRoute
-				TransitRoute transitRoute = scheduleFactory.createTransitRoute(routeId, null, fplanRoute.getTransitRouteStops(), fplanRoute.getMode());
+				TransitRoute transitRoute = scheduleFactory.createTransitRoute(routeId, null, fplanRoute.getTransitRouteStops(bitfeldNummern), fplanRoute.getMode());
 				for(Departure departure : fplanRoute.getDepartures()) {
 					transitRoute.addDeparture(departure);
 					try {
@@ -220,7 +229,11 @@ public class HafasConverter {
 	}
 
 	private static Id<TransitLine> createLineId(FPLANRoute route) {
-		if(route.getOperator().equals("SBB")) {
+		String operator = route.getOperator();
+		if(operator == null) {
+			operator = route.getOperatorCode();
+		}
+		if(operator.equals("SBB")) {
 			long firstStopId;
 			long lastStopId;
 
@@ -242,9 +255,9 @@ public class HafasConverter {
 			}
 		}
 		else if(route.getRouteDescription() == null) {
-			return Id.create(route.getOperator(), TransitLine.class);
+			return Id.create(operator, TransitLine.class);
 		} else {
-			return Id.create(route.getOperator() + "_line" + route.getRouteDescription(), TransitLine.class);
+			return Id.create(operator + "_line" + route.getRouteDescription(), TransitLine.class);
 		}
 	}
 
