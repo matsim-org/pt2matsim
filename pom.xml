@@ -29,7 +29,7 @@
     </repositories>
 
     <properties>
-        <geotools.version>29.6</geotools.version>
+        <geotools.version>33.1</geotools.version>
         <jackson.version>2.19.1</jackson.version>
         <jts.version>1.20.0</jts.version>
         <log4j.version>2.24.3</log4j.version>
@@ -104,7 +104,7 @@
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
-            <artifactId>gt-opengis</artifactId>
+            <artifactId>gt-api</artifactId>
             <version>${geotools.version}</version>
         </dependency>
     </dependencies>
