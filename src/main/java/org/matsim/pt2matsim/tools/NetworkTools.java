@@ -18,8 +18,23 @@
 
 package org.matsim.pt2matsim.tools;
 
-import org.apache.logging.log4j.Logger;
+import static org.matsim.pt2matsim.tools.ScheduleTools.getTransitRouteLinkIds;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
@@ -41,14 +56,10 @@ import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
+import org.matsim.pt2matsim.config.TransportModeParameterSet;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersFactory;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersStandard;
 import org.matsim.utils.objectattributes.attributable.AttributesUtils;
-
-import java.util.*;
-import java.util.Map.Entry;
-
-import static org.matsim.pt2matsim.tools.ScheduleTools.getTransitRouteLinkIds;
 
 /**
  * Provides Tools for analysing and manipulating networks.
@@ -471,8 +482,8 @@ public final class NetworkTools {
 		// setup config
 		PublicTransitMappingConfigGroup config = new PublicTransitMappingConfigGroup();
 		for(Map.Entry<String, Set<String>> entry : modeAssignments.entrySet()) {
-			PublicTransitMappingConfigGroup.TransportModeAssignment mra = new PublicTransitMappingConfigGroup.TransportModeAssignment(entry.getKey());
-			mra.setNetworkModes(entry.getValue());
+			TransportModeParameterSet mra = new TransportModeParameterSet(entry.getKey());
+			mra.setNetworkModesStr(String.join(",", entry.getValue()));
 			config.addParameterSet(mra);
 		}
 

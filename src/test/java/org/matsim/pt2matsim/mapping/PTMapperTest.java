@@ -1,12 +1,15 @@
 package org.matsim.pt2matsim.mapping;
 
+import static org.matsim.pt2matsim.tools.ScheduleToolsTest.ROUTE_B;
+
+import java.util.List;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.core.config.groups.ControllerConfigGroup.RoutingAlgorithmType;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
@@ -14,14 +17,11 @@ import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
+import org.matsim.pt2matsim.config.TransportModeParameterSet;
 import org.matsim.pt2matsim.run.CreateDefaultPTMapperConfig;
 import org.matsim.pt2matsim.tools.NetworkToolsTest;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ScheduleToolsTest;
-
-import java.util.List;
-
-import static org.matsim.pt2matsim.tools.ScheduleToolsTest.ROUTE_B;
 
 /**
  * @author polettif
@@ -40,7 +40,7 @@ public class PTMapperTest {
 		config.setMaxLinkCandidateDistance(999.0);
 		config.setCandidateDistanceMultiplier(1.0);
 
-		PublicTransitMappingConfigGroup.TransportModeAssignment mraBus = new PublicTransitMappingConfigGroup.TransportModeAssignment("bus");
+		TransportModeParameterSet mraBus = new TransportModeParameterSet("bus");
 		mraBus.setNetworkModesStr("car,bus");
 		config.addParameterSet(mraBus);
 

@@ -104,9 +104,9 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		PublicTransitMappingConfigGroup config = new PublicTransitMappingConfigGroup();
 		config.getModesToKeepOnCleanUp().add("car");
 
-		TransportModeAssignment tmaBus = new TransportModeAssignment("bus");
+		TransportModeParameterSet tmaBus = new TransportModeParameterSet("bus");
 		tmaBus.setNetworkModesStr("car,bus");
-		TransportModeAssignment tmaRail = new TransportModeAssignment("rail");
+		TransportModeParameterSet tmaRail = new TransportModeParameterSet("rail");
 		tmaRail.setNetworkModesStr("rail,light_rail");
 		config.addParameterSet(tmaBus);
 		config.addParameterSet(tmaRail);
@@ -187,8 +187,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	@Override
 	public ConfigGroup createParameterSet(final String type) {
 		switch(type) {
-			case TransportModeAssignment.SET_NAME:
-				return new TransportModeAssignment();
+			case TransportModeParameterSet.GROUP_NAME:
+				return new TransportModeParameterSet();
 			default:
 				throw new IllegalArgumentException("Unknown parameterset name!");
 		}
@@ -204,9 +204,9 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	 * Loads the parameter set for TransportModeAssignment for easier access
 	 */
 	private void loadParameterSets() {
-		for(ConfigGroup e : this.getParameterSets(TransportModeAssignment.SET_NAME)) {
-			TransportModeAssignment mra = (TransportModeAssignment) e;
-			transportModeAssignment.put(mra.getScheduleMode(), mra.getNetworkModes());
+		for(ConfigGroup e : this.getParameterSets(TransportModeParameterSet.GROUP_NAME)) {
+			TransportModeParameterSet tmps = (TransportModeParameterSet) e;
+			transportModeAssignment.put(tmps.getScheduleMode(), tmps.getNetworkModes());
 		}
 	}
 
@@ -487,69 +487,5 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	}
 
 
-	/**
-	 * Parameterset that define which network transport modes the router
-	 * can use for each schedule transport mode. If no networkModes are set, the
-	 * transit route is mapped artificially<p/>
-	 * <p>
-	 * Network transport modes are the ones in {@link Link#getAllowedModes()}, schedule
-	 * transport modes are from {@link TransitRoute#getTransportMode()}.
-	 */
-	public static class TransportModeAssignment extends ReflectiveConfigGroup implements MatsimParameters {
-
-		public static final String SET_NAME = "transportModeAssignment";
-
-		private static final String SCHEDULE_MODE = "scheduleMode";
-		private static final String NETWORK_MODES = "networkModes";
-
-		private String scheduleMode;
-		private Set<String> networkModes;
-
-		public TransportModeAssignment() {
-			super(SET_NAME);
-		}
-
-		public TransportModeAssignment(String scheduleMode) {
-			super(SET_NAME);
-			this.scheduleMode = scheduleMode;
-		}
-
-		@Override
-		public Map<String, String> getComments() {
-			Map<String, String> map = super.getComments();
-			map.put(NETWORK_MODES,
-					"Transit Routes with the given scheduleMode can only use links with at least one of the network modes\n" +
-					"\t\t\tdefined here. Separate multiple modes by comma. If no network modes are defined, the transit route will\n" +
-					"\t\t\tuse artificial links.");
-			return map;
-		}
-
-		@StringGetter(SCHEDULE_MODE)
-		public String getScheduleMode() {
-			return scheduleMode;
-		}
-
-		@StringSetter(SCHEDULE_MODE)
-		public void setScheduleMode(String scheduleMode) {
-			this.scheduleMode = scheduleMode;
-		}
-
-		@StringGetter(NETWORK_MODES)
-		public String getNetworkModesStr() {
-			return CollectionUtils.setToString(networkModes);
-		}
-
-		@StringSetter(NETWORK_MODES)
-		public void setNetworkModesStr(String networkModesStr) {
-			this.networkModes = CollectionUtils.stringToSet(networkModesStr);
-		}
-
-		public Set<String> getNetworkModes() {
-			return this.networkModes;
-		}
-
-		public void setNetworkModes(Set<String> networkModes) {
-			this.networkModes = networkModes;
-		}
-	}
+	
 }

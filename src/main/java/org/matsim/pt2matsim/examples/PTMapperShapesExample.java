@@ -1,8 +1,11 @@
 package org.matsim.pt2matsim.examples;
 
+import java.io.File;
+
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
+import org.matsim.pt2matsim.config.TransportModeParameterSet;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
@@ -15,8 +18,6 @@ import org.matsim.pt2matsim.tools.GtfsTools;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ShapeTools;
-
-import java.io.File;
 
 /**
  * @author polettif
@@ -57,7 +58,7 @@ public class PTMapperShapesExample {
 		config.setMaxLinkCandidateDistance(100);
 		config.setCandidateDistanceMultiplier(1.1);
 
-		PublicTransitMappingConfigGroup.TransportModeAssignment mraBus = new PublicTransitMappingConfigGroup.TransportModeAssignment("bus");
+		TransportModeParameterSet mraBus = new TransportModeParameterSet("bus");
 		mraBus.setNetworkModesStr("car,bus");
 		config.addParameterSet(mraBus);
 
