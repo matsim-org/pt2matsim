@@ -3,6 +3,7 @@ package org.matsim.pt2matsim.mapping;
 import static org.matsim.pt2matsim.tools.ScheduleToolsTest.ROUTE_B;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,7 +49,7 @@ public class PTMapperTest {
 	}
 
 	@BeforeEach
-	public void prepare() {
+	public void prepare() throws InterruptedException, ExecutionException {
 		ptmConfig = initPTMConfig();
 		network = NetworkToolsTest.initNetwork();
 		schedule = ScheduleToolsTest.initUnmappedSchedule();
@@ -91,7 +92,7 @@ public class PTMapperTest {
 	}
 
 	@Test
-	void artificialLinks() {
+	void artificialLinks() throws InterruptedException, ExecutionException {
 		PublicTransitMappingConfigGroup ptmConfig2 = initPTMConfig();
 		ptmConfig2.setMaxLinkCandidateDistance(3);
 
@@ -104,7 +105,7 @@ public class PTMapperTest {
 		Assertions.assertEquals(9, schedule2.getFacilities().size());
 	}
 	@Test
-	void noTransportModeAssignment() {
+	void noTransportModeAssignment() throws InterruptedException, ExecutionException {
 		PublicTransitMappingConfigGroup noTMAConfig = new PublicTransitMappingConfigGroup();
 		noTMAConfig.getModesToKeepOnCleanUp().add("car");
 		noTMAConfig.setNumOfThreads(2);

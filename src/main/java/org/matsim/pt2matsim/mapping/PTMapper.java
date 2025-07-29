@@ -47,6 +47,7 @@ import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 /**
  * References an unmapped transit schedule to a network. Combines
@@ -72,7 +73,7 @@ public class PTMapper {
 	private Network network;
 	private TransitSchedule schedule;
 
-	public static void mapScheduleToNetwork(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
+	public static void mapScheduleToNetwork(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) throws InterruptedException, ExecutionException {
 		if(config.getInputNetworkFile() != null) {
 			log.warn("The input network file set in PublicTransitMappingConfigGroup is ignored");
 		}
@@ -97,14 +98,16 @@ public class PTMapper {
 		this.network = network;
 	}
 
-	public void run(PublicTransitMappingConfigGroup config) {
+	public void run(PublicTransitMappingConfigGroup config) throws InterruptedException, ExecutionException {
 		run(config, null, null);
 	}
 	
 	/**
 	 * Maps the schedule to the network with parameters defined in config
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
-	public void run(PublicTransitMappingConfigGroup config, LinkCandidateCreator linkCandidateCreator, ScheduleRoutersFactory scheduleRoutersFactory) {
+	public void run(PublicTransitMappingConfigGroup config, LinkCandidateCreator linkCandidateCreator, ScheduleRoutersFactory scheduleRoutersFactory) throws InterruptedException, ExecutionException {
 		// use defaults
 		if(linkCandidateCreator == null) {
 			linkCandidateCreator = new LinkCandidateCreatorStandard(schedule, network,
@@ -124,8 +127,10 @@ public class PTMapper {
 
 	/**
 	 * Maps the schedule to the network
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
-	public void run(LinkCandidateCreator linkCandidates, ScheduleRoutersFactory scheduleRoutersFactory, int numThreads, double maxTravelCostFactor, Set<String> scheduleFreespeedModes, Set<String> modesToKeepOnCleanup, boolean removeNotUsedStopFacilities) {
+	public void run(LinkCandidateCreator linkCandidates, ScheduleRoutersFactory scheduleRoutersFactory, int numThreads, double maxTravelCostFactor, Set<String> scheduleFreespeedModes, Set<String> modesToKeepOnCleanup, boolean removeNotUsedStopFacilities) throws InterruptedException, ExecutionException {
 		if(schedule == null) throw new RuntimeException("No schedule defined!");
 		if(network == null) throw new RuntimeException("No network defined!");
 

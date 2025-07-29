@@ -1,6 +1,7 @@
 package org.matsim.pt2matsim.examples;
 
 import java.io.File;
+import java.util.concurrent.ExecutionException;
 
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
@@ -40,7 +41,7 @@ public class PTMapperShapesExample {
 	private static String networkOutput2 = outputFolder + "shapes_network.xml.gz";
 	private static String scheduleOutput2 = outputFolder + "shapes_schedule.xml.gz";
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException, ExecutionException {
 		new File(outputFolder).mkdir();
 
 		convertGtfs();
@@ -74,7 +75,7 @@ public class PTMapperShapesExample {
 		ScheduleTools.writeTransitSchedule(gtfsConverter.getSchedule(), unmappedScheduleFile);
 	}
 
-	private static void runNormalMapping() {
+	private static void runNormalMapping() throws InterruptedException, ExecutionException {
 		PublicTransitMappingConfigGroup config = createTestPTMConfig();
 
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(unmappedScheduleFile);
@@ -86,7 +87,7 @@ public class PTMapperShapesExample {
 		ScheduleTools.writeTransitSchedule(ptMapper.getSchedule(), scheduleOutput1);
 	}
 
-	private static void runMappingWithShapes() {
+	private static void runMappingWithShapes() throws InterruptedException, ExecutionException {
 		PublicTransitMappingConfigGroup config = createTestPTMConfig();
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(unmappedScheduleFile);
 		Network network = NetworkTools.readNetwork(networkInput);
@@ -102,7 +103,7 @@ public class PTMapperShapesExample {
 		ScheduleTools.writeTransitSchedule(ptMapper.getSchedule(), scheduleOutput2);
 	}
 
-	public static void mappingAnalysisNormal() {
+	public static void mappingAnalysisNormal() throws InterruptedException, ExecutionException {
 		runNormalMapping();
 
 		MappingAnalysis analysis = new MappingAnalysis(
@@ -115,7 +116,7 @@ public class PTMapperShapesExample {
 		analysis.writeQuantileDistancesCsv(outputFolder + "Normal_DistancesQuantile.csv");
 	}
 
-	public static void mappingAnalysisWithShapes() {
+	public static void mappingAnalysisWithShapes() throws InterruptedException, ExecutionException {
 		runMappingWithShapes();
 
 		MappingAnalysis analysis = new MappingAnalysis(

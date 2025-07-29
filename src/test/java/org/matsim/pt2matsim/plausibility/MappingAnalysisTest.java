@@ -18,6 +18,7 @@ import org.matsim.pt2matsim.tools.lib.RouteShape;
 
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author polettif
@@ -32,7 +33,7 @@ class MappingAnalysisTest {
 	private Id<TransitRoute> routeB = Id.create("routeB", TransitRoute.class);
 
 	@BeforeEach
-	public void prepare() {
+	public void prepare() throws InterruptedException, ExecutionException {
 		PublicTransitMappingConfigGroup ptmConfig = PTMapperTest.initPTMConfig();
 		Network network = NetworkToolsTest.initNetwork();
 		TransitSchedule schedule = ScheduleToolsTest.initUnmappedSchedule();

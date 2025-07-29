@@ -23,6 +23,7 @@ import org.matsim.pt2matsim.tools.lib.RouteShape;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import static org.matsim.pt2matsim.mapping.PTMapperTest.initPTMConfig;
 
@@ -36,7 +37,7 @@ class PTMapperShapesTest {
 	public PublicTransitMappingConfigGroup ptmConfig;
 
 	@BeforeEach
-	public void prepare() {
+	public void prepare() throws InterruptedException, ExecutionException {
 		ptmConfig = initPTMConfig();
 		network = NetworkToolsTest.initNetwork();
 		schedule = ScheduleToolsTest.initUnmappedSchedule();

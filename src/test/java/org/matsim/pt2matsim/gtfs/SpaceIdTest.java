@@ -3,6 +3,7 @@ package org.matsim.pt2matsim.gtfs;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.concurrent.ExecutionException;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -39,9 +40,11 @@ class SpaceIdTest {
 	 * link ID are interpreted as IDs on their own. This test fails if spaces are
 	 * allowed in stop ids, and is fixed by making sure that pt2matsim only gnerates
 	 * link IDs that do not have spaces included.
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
 	@Test
-	void testFeedWithSpacesInId() {
+	void testFeedWithSpacesInId() throws InterruptedException, ExecutionException {
 		GtfsFeed feed = new GtfsFeedImpl("test/space-feed/");
 		GtfsConverter covnerter = new GtfsConverter(feed);
 

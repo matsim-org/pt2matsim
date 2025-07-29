@@ -26,6 +26,7 @@ import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 import org.matsim.pt2matsim.tools.lib.RouteShape;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Mapping example for public transit in the zurich area (agency: ZVV).
@@ -55,7 +56,7 @@ public class ZVVexample {
 	private static String outputNetwork3 = base + "output/osm_network.xml.gz";
 	private static String outputSchedule3 = base + "output/osm_schedule.xml.gz";
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException, ExecutionException {
 		// Preparation
 		convertOsm();
 		convertSchedule();
@@ -184,8 +185,10 @@ public class ZVVexample {
 
 	/**
 	 * Runs a standard mapping
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
-	public static double runMappingStandard() {
+	public static double runMappingStandard() throws InterruptedException, ExecutionException {
 		// Load schedule and network
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
@@ -209,8 +212,10 @@ public class ZVVexample {
 
 	/**
 	 * Maps a schedule with gtfs shape information to the network
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
-	public static void runMappingShapes() {
+	public static void runMappingShapes() throws InterruptedException, ExecutionException {
 		System.out.println("===================");
 		System.out.println("Run mapping: SHAPES");
 		System.out.println("===================");
@@ -250,8 +255,10 @@ public class ZVVexample {
 
 	/**
 	 * Maps a schedule using osm pt information of the network
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
-	public static void runMappingOsm() {
+	public static void runMappingOsm() throws InterruptedException, ExecutionException {
 		TransitSchedule schedule = ScheduleTools.readTransitSchedule(inputScheduleFile);
 		Network network = NetworkTools.readNetwork(inputNetworkFile);
 
