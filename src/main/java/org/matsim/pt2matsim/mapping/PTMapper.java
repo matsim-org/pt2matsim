@@ -108,10 +108,7 @@ public class PTMapper {
 		// use defaults
 		if(linkCandidateCreator == null) {
 			linkCandidateCreator = new LinkCandidateCreatorStandard(schedule, network,
-					config.getNLinkThreshold(),
-					config.getCandidateDistanceMultiplier(),
-					config.getMaxLinkCandidateDistance(),
-					config.getTransportModeAssignment());
+					config);
 		}
 		
 		if(scheduleRoutersFactory == null) {

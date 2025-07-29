@@ -19,14 +19,7 @@
 
 package org.matsim.pt2matsim.config;
 
-import org.matsim.api.core.v01.network.Link;
-import org.matsim.core.api.internal.MatsimParameters;
-import org.matsim.core.config.*;
-import org.matsim.core.config.groups.ControllerConfigGroup;
-import org.matsim.core.config.groups.ControllerConfigGroup.RoutingAlgorithmType;
-import org.matsim.core.utils.collections.CollectionUtils;
-import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt2matsim.run.PublicTransitMapper;
+import static org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup.TravelCostType.travelTime;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +27,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup.TravelCostType.travelTime;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigGroup;
+import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.ConfigWriter;
+import org.matsim.core.config.ReflectiveConfigGroup;
+import org.matsim.core.config.groups.ControllerConfigGroup;
+import org.matsim.core.config.groups.ControllerConfigGroup.RoutingAlgorithmType;
+import org.matsim.core.utils.collections.CollectionUtils;
+import org.matsim.pt2matsim.run.PublicTransitMapper;
 
 
 /**
@@ -70,9 +71,12 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private static final String ROUTING_WITH_CANDIDATE_DISTANCE = "routingWithCandidateDistance";
 	
 	private static final String NETWORK_ROUTER = "networkRouter";
+	
+	private static final String USE_MODE_SPECIFIC_RULES = "modeSpecificRules";
 
 	// default values
 	private Map<String, Set<String>> transportModeAssignment = new HashMap<>();
+	private Map<String, TransportModeParameterSet> parameterSetsForMode = new HashMap<>();
 	private Set<String> scheduleFreespeedModes = PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE_AS_SET;
 	private Set<String> modesToKeepOnCleanUp = new HashSet<>();
 	private double maxTravelCostFactor = 5.0;
@@ -90,6 +94,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private int nLinkThreshold = 6;
 	private double maxLinkCandidateDistance = 90;
 	private double candiateDistanceMulitplier = 1.6;
+	
+	private boolean modeSpecificRules = false;
 	
 	private RoutingAlgorithmType networkRouter = ControllerConfigGroup.RoutingAlgorithmType.SpeedyALT;
 
@@ -181,6 +187,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 				"\t\tNo link candidates beyond this distance are added.");
 		map.put(NETWORK_ROUTER,
 				"The router that should be used. Possible options are: [SpeedyALT, AStarLandmarks]");
+		map.put(USE_MODE_SPECIFIC_RULES, "Instead of using general number of links and maximum search distance rule, use the schedule mode specific rules "
+				+ "to be defined within the parameter sets. For those that no information is provided the general values will be used. Options: [false, true]. Default: false.");
 		return map;
 	}
 
@@ -207,6 +215,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		for(ConfigGroup e : this.getParameterSets(TransportModeParameterSet.GROUP_NAME)) {
 			TransportModeParameterSet tmps = (TransportModeParameterSet) e;
 			transportModeAssignment.put(tmps.getScheduleMode(), tmps.getNetworkModes());
+			parameterSetsForMode.put(tmps.getScheduleMode(), tmps);
 		}
 	}
 
@@ -232,6 +241,10 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 
 	public void setTransportModeAssignment(Map<String, Set<String>> transportModeAssignment) {
 		this.transportModeAssignment = transportModeAssignment;
+	}
+	
+	public TransportModeParameterSet getParameterSetForMode(String scheduleMode) {
+		return this.parameterSetsForMode.get(scheduleMode);
 	}
 
 	/**
@@ -484,6 +497,16 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	@StringSetter(NETWORK_ROUTER)
 	public void setNetworkRouter(RoutingAlgorithmType networkRouter) {
 		this.networkRouter = networkRouter;
+	}
+	
+	@StringGetter(USE_MODE_SPECIFIC_RULES)
+	public boolean getMdeSpecificRules() {
+		return this.modeSpecificRules;
+	}
+
+	@StringSetter(USE_MODE_SPECIFIC_RULES)
+	public void setModeSpecificRules(String modeSpecificRules) {
+		this.modeSpecificRules = Boolean.parseBoolean(modeSpecificRules);
 	}
 
 

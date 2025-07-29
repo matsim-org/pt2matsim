@@ -31,6 +31,7 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
+import org.matsim.pt2matsim.config.TransportModeParameterSet;
 import org.matsim.pt2matsim.mapping.Progress;
 import org.matsim.pt2matsim.tools.MiscUtils;
 import org.matsim.pt2matsim.tools.NetworkTools;
@@ -59,29 +60,26 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 	private final double maxDistance;
 	private final Map<String, Set<String>> transportModeAssignments;
 	private double nodeSearchRadius;
+	private PublicTransitMappingConfigGroup mapperConfig;
 
 
-	public LinkCandidateCreatorStandard(TransitSchedule schedule, Network network, int nLinks, double distanceMultiplier, double maxDistance, Map<String, Set<String>> transportModeAssignments) {
+	public LinkCandidateCreatorStandard(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
 		this.schedule = schedule;
 		this.network = network;
-		this.nLinks = nLinks;
-		this.distanceMultiplier = distanceMultiplier;
-		this.maxDistance = maxDistance;
-		this.transportModeAssignments = transportModeAssignments;
-
+		this.nLinks = config.getNLinkThreshold();
+		this.distanceMultiplier = config.getCandidateDistanceMultiplier();
+		this.maxDistance = config.getMaxLinkCandidateDistance();
+		this.transportModeAssignments = config.getTransportModeAssignment();
+		this.mapperConfig = config;
+		
 		load();
 	}
 
-	public LinkCandidateCreatorStandard(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
-		this(schedule, network, config.getNLinkThreshold(), config.getCandidateDistanceMultiplier(), config.getMaxLinkCandidateDistance(), config.getTransportModeAssignment());
-	}
-
 	private void load() {
-		this.nodeSearchRadius = maxDistance*15;
 
 		log.info("===========================");
 		log.info("Creating link candidates...");
-		log.info("   search radius: " + nodeSearchRadius);
+		// log.info("   search radius: " + nodeSearchRadius);
 		log.info("   Note: loop links for stop facilities are created if no link candidate can be found.");
 
 		Map<String, Set<Link>> closeLinksMap = new HashMap<>();
@@ -117,7 +115,7 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 				Set<Link> tmpCloseLinks = MapUtils.getSet(getCloseLinksKey(transitRoute, previousRouteStop), closeLinksMap);
 				if(tmpCloseLinks.size() == 0) {
-					tmpCloseLinks.addAll(findClosestLinks(previousRouteStop.getStopFacility().getCoord(), networkModes));
+					tmpCloseLinks.addAll(findClosestLinks(previousRouteStop.getStopFacility().getCoord(), networkModes, scheduleTransportMode));
 				}
 
 				Set<Link> previousLinks = new HashSet<>(tmpCloseLinks);
@@ -147,7 +145,7 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 						// look for closes links in network
 						if(closeLinks.size() == 0) {
-							closeLinks.addAll(findClosestLinks(currentRouteStop.getStopFacility().getCoord(), networkModes));
+							closeLinks.addAll(findClosestLinks(currentRouteStop.getStopFacility().getCoord(), networkModes, scheduleTransportMode));
 						}
 
 						currentLinks.addAll(closeLinks);
@@ -263,7 +261,25 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 	 *
 	 * @return list of the closest links from coordinate <tt>coord</tt>.
 	 */
-	private List<Link> findClosestLinks(Coord coord, Set<String> networkModes) {
+	private List<Link> findClosestLinks(Coord coord, Set<String> networkModes, String scheduleMode) {
+		
+		// searching
+		int maximumLinks = this.nLinks;
+		this.nodeSearchRadius = 15 * this.maxDistance;
+		boolean strictLinkNumRule = false;
+		if (mapperConfig.getMdeSpecificRules()) {
+			TransportModeParameterSet parameterSetForMode = mapperConfig.getParameterSetForMode(scheduleMode);
+			if (parameterSetForMode != null) {
+				nodeSearchRadius = 15 * parameterSetForMode.getMaximumSearchDistance();
+				maximumLinks = parameterSetForMode.getNumberOfLinkCandidates();
+				strictLinkNumRule = parameterSetForMode.getImposeStrictLinksRule();
+			}
+			else {
+				// continue using the default ones
+			}
+			
+		}
+		
 		List<Link> closestLinks = new ArrayList<>();
 		Map<Double, Set<Link>> sortedLinks = NetworkTools.findClosestLinks(network, coord, nodeSearchRadius, networkModes);
 
@@ -280,12 +296,14 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 			}
 
 			// when the link count limit is reached, set the soft constraint distance
-			if(nLink < this.nLinks && nLink + currentNLinks >= this.nLinks) {
+			if(nLink < this.nLinks && nLink + currentNLinks >= maximumLinks) {
 				distanceThreshold = currentDistance * this.distanceMultiplier;
+				if (strictLinkNumRule)
+					break;
 			}
 
 			// check if distance is greater than soft constraint distance
-			if(nLink + currentNLinks > this.nLinks && currentDistance > distanceThreshold) {
+			if(nLink + currentNLinks > maximumLinks && currentDistance > distanceThreshold) {
 				break;
 			}
 

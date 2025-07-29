@@ -21,9 +21,15 @@ public class TransportModeParameterSet extends ReflectiveConfigGroup{
 
 	private static final String SCHEDULE_MODE = "scheduleMode";
 	private static final String NETWORK_MODES = "networkModes";
+	private static final String NUMBER_LINK_CANDIDATES = "numberOfLinkCandidates";
+	private static final String MAXIMUM_SEARCH_DISTANCE = "maxSearchDistance";
+	private static final String IMPOSE_STRICT_LINK_RULE = "strictLinkRule";
 
 	private String scheduleMode;
 	private Set<String> networkModes;
+	private int numberOfLinkCandidates = 6;
+	private double maximumSearchDistance = 90;
+	private boolean imposeStrictLinksRule = false;
 
 	public TransportModeParameterSet() {
 		super(GROUP_NAME);
@@ -56,6 +62,34 @@ public class TransportModeParameterSet extends ReflectiveConfigGroup{
 	
 	public Set<String> getNetworkModes() {
 		return this.networkModes;
+	}
+	
+	@StringGetter(NUMBER_LINK_CANDIDATES)
+	public int getNumberOfLinkCandidates() {
+		return numberOfLinkCandidates;
+	}
+	
+	@StringSetter(NUMBER_LINK_CANDIDATES)
+	public void setNumberOfLinkCandidates(int numberOfLinkCandidates) {
+		this.numberOfLinkCandidates = numberOfLinkCandidates;
+	}
+	
+	@StringGetter(MAXIMUM_SEARCH_DISTANCE)
+	public double getMaximumSearchDistance() {
+		return maximumSearchDistance;
+	}
+	
+	@StringSetter(MAXIMUM_SEARCH_DISTANCE)
+	public void setMaximumSearchDistance(double maximumSearchDistance) {
+		this.maximumSearchDistance = maximumSearchDistance;
+	}
+	@StringGetter(IMPOSE_STRICT_LINK_RULE)
+	public boolean getImposeStrictLinksRule() {
+		return imposeStrictLinksRule;
+	}
+	@StringSetter(IMPOSE_STRICT_LINK_RULE)
+	public void setImposeStrictLinksRule(boolean imposeStrictLinksRule) {
+		this.imposeStrictLinksRule = imposeStrictLinksRule;
 	}
 
 }
