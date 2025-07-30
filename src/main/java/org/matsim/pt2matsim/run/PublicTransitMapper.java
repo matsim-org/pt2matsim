@@ -32,6 +32,7 @@ import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
 import java.util.Collections;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Allows to run an implementation
@@ -56,8 +57,10 @@ public final class PublicTransitMapper {
 	 * @see CreateDefaultPTMapperConfig
 	 *
 	 * @param args <br/>[0] PublicTransitMapping config file<br/>
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException, ExecutionException {
 		if(args.length == 1) {
 			run(args[0]);
 		} else {
@@ -72,8 +75,10 @@ public final class PublicTransitMapper {
 	 * @see CreateDefaultPTMapperConfig
 	 *
 	 * @param configFile the PublicTransitMapping config file
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
-	public static void run(String configFile) {
+	public static void run(String configFile) throws InterruptedException, ExecutionException {
 		// Load config
 		PublicTransitMappingConfigGroup config = PublicTransitMappingConfigGroup.loadConfig(configFile);
 

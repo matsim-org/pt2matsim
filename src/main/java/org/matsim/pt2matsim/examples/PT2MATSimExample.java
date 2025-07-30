@@ -28,6 +28,7 @@ import org.matsim.pt2matsim.run.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Usage test of PT2MATSim to document how the package can be used. The example region
@@ -45,7 +46,7 @@ public final class PT2MATSimExample {
 
 	private static final String addisonCountyEPSG = "EPSG:2032";
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException, ExecutionException {
 		prepare();
 
 		// 1. Convert a gtfs schedule to an unmapped transit schedule

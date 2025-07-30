@@ -1,5 +1,7 @@
 package org.matsim.pt2matsim.examples;
 
+import java.util.concurrent.ExecutionException;
+
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
@@ -21,7 +23,7 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
  */
 public class Workflow {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException, ExecutionException {
 		// Convert Network
 		OsmConverterConfigGroup osmConfig = OsmConverterConfigGroup.loadConfig("osm2matsimConfig.xml");
 		Osm2MultimodalNetwork.run(osmConfig); // or just: Osm2MultimodalNetwork.run("osm2matsimConfig.xml");
