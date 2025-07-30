@@ -69,13 +69,11 @@ public class PseudoScheduleImpl implements PseudoSchedule {
 		pseudoSchedule.addAll(otherPseudoSchedule.getPseudoRoutes());
 	}
 	
-	public void createFacilitiesAndLinkSequences(final TransitSchedule schedule) 
+	public void createFacilitiesAndLinkSequences(final TransitSchedule schedule, final int numThreads, final int chunkSize) 
 	        throws InterruptedException, ExecutionException {
 		Logger logger = LogManager.getLogger(PseudoScheduleImpl.class);
 	    // 1) Prepare your full list of pseudo‐routes:
 	    List<PseudoTransitRoute> allRoutes = new ArrayList<>(pseudoSchedule);
-	    int numThreads = 48;
-	    int chunkSize  = 100;
 	    List<List<PseudoTransitRoute>> chunks = new ArrayList<>();
 	    for (int i = 0; i < allRoutes.size(); i += chunkSize) {
 	        chunks.add(allRoutes.subList(i, Math.min(i + chunkSize, allRoutes.size())));

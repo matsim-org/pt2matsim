@@ -69,7 +69,7 @@ public interface PseudoSchedule {
 	 * @throws ExecutionException 
 	 * @throws InterruptedException 
 	 */
-	void createFacilitiesAndLinkSequences(TransitSchedule schedule) throws InterruptedException, ExecutionException, ExecutionException;
+	void createFacilitiesAndLinkSequences(TransitSchedule schedule, int numThreads, int chunkSize) throws InterruptedException, ExecutionException, ExecutionException;
 
 }
 

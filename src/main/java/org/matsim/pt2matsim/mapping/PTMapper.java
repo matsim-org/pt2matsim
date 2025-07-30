@@ -122,7 +122,7 @@ public class PTMapper {
 			scheduleRoutersFactory,
 			config.getNumOfThreads(), config.getMaxTravelCostFactor(),
 			config.getScheduleFreespeedModes(), config.getModesToKeepOnCleanUp(),
-			config.getRemoveNotUsedStopFacilities());
+			config.getRemoveNotUsedStopFacilities(), config.getChunkSize());
 	}
 
 	/**
@@ -130,7 +130,7 @@ public class PTMapper {
 	 * @throws ExecutionException 
 	 * @throws InterruptedException 
 	 */
-	public void run(LinkCandidateCreator linkCandidates, ScheduleRoutersFactory scheduleRoutersFactory, int numThreads, double maxTravelCostFactor, Set<String> scheduleFreespeedModes, Set<String> modesToKeepOnCleanup, boolean removeNotUsedStopFacilities) throws InterruptedException, ExecutionException {
+	public void run(LinkCandidateCreator linkCandidates, ScheduleRoutersFactory scheduleRoutersFactory, int numThreads, double maxTravelCostFactor, Set<String> scheduleFreespeedModes, Set<String> modesToKeepOnCleanup, boolean removeNotUsedStopFacilities, int chunkSize) throws InterruptedException, ExecutionException {
 		if(schedule == null) throw new RuntimeException("No schedule defined!");
 		if(network == null) throw new RuntimeException("No network defined!");
 
@@ -217,7 +217,7 @@ public class PTMapper {
 		 */
 		log.info("==========================================================================================");
 		log.info("Replacing parent StopFacilities in schedule, creating link sequences for transit routes...");
-		pseudoSchedule.createFacilitiesAndLinkSequences(schedule);
+		pseudoSchedule.createFacilitiesAndLinkSequences(schedule, numThreads, chunkSize);
 
 		/* [4]
 		  Now that all lines have been routed, it is possible that a route passes

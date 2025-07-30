@@ -73,6 +73,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private static final String NETWORK_ROUTER = "networkRouter";
 	
 	private static final String USE_MODE_SPECIFIC_RULES = "modeSpecificRules";
+	
+	private static final String THREAD_CHUNK_SIZE = "threadChunkSize";
 
 	// default values
 	private Map<String, Set<String>> transportModeAssignment = new HashMap<>();
@@ -81,6 +83,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private Set<String> modesToKeepOnCleanUp = new HashSet<>();
 	private double maxTravelCostFactor = 5.0;
 	private int numOfThreads = 2;
+	private int chunkSize = 100;
 	private boolean removeNotUsedStopFacilities = true;
 
 	private String inputNetworkFile = null;
@@ -189,6 +192,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 				"The router that should be used. Possible options are: [SpeedyALT, AStarLandmarks]");
 		map.put(USE_MODE_SPECIFIC_RULES, "Instead of using general number of links and maximum search distance rule, use the schedule mode specific rules "
 				+ "to be defined within the parameter sets. For those that no information is provided the general values will be used. Options: [false, true]. Default: false.");
+		map.put(THREAD_CHUNK_SIZE, "The size of the chunk that is sent to the pt mapper thread at the time to build"
+				+ "facilities and links. Default: 100.");
 		return map;
 	}
 
@@ -509,6 +514,14 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		this.modeSpecificRules = Boolean.parseBoolean(modeSpecificRules);
 	}
 
+	@StringGetter(THREAD_CHUNK_SIZE)
+	public int getChunkSize() {
+		return this.chunkSize;
+	}
 
+	@StringSetter(THREAD_CHUNK_SIZE)
+	public void setModeSpecificRules(int chunkSize) {
+		this.chunkSize = chunkSize;
+	}
 	
 }
