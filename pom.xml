@@ -33,7 +33,7 @@
         <jackson.version>2.19.2</jackson.version>
         <jts.version>1.20.0</jts.version>
         <log4j.version>2.25.1</log4j.version>
-        <junit.version>5.13.3</junit.version>
+        <junit.version>5.13.4</junit.version>
         <commons.codec.version>1.19.0</commons.codec.version>
     </properties>
 
