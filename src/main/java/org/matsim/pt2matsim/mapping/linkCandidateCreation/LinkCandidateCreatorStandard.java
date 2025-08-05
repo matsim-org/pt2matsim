@@ -267,13 +267,17 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 		
 		// searching
 		int maximumLinks = this.nLinks;
-		this.nodeSearchRadius = this.searchRadiusMultiplier * this.maxDistance;
+		double nodeSearchRadiusLocal = this.searchRadiusMultiplier * this.maxDistance;
+		double distanceThreshold = this.maxDistance;
+		double maximumDistance = this.maxDistance;
 		boolean strictLinkNumRule = false;
 		if (mapperConfig.getModeSpecificRules()) {
 			TransportModeParameterSet parameterSetForMode = mapperConfig.getParameterSetForMode(scheduleMode);
 			if (parameterSetForMode != null) {
-				nodeSearchRadius = this.searchRadiusMultiplier * parameterSetForMode.getMaximumSearchDistance();
+				nodeSearchRadiusLocal = this.searchRadiusMultiplier * parameterSetForMode.getMaximumSearchDistance();
 				maximumLinks = parameterSetForMode.getNumberOfLinkCandidates();
+				distanceThreshold = parameterSetForMode.getMaximumSearchDistance();
+				maximumDistance = parameterSetForMode.getMaximumSearchDistance();
 				strictLinkNumRule = parameterSetForMode.getImposeStrictLinksRule();
 			}
 			else {
@@ -283,9 +287,9 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 		}
 		
 		List<Link> closestLinks = new ArrayList<>();
-		Map<Double, Set<Link>> sortedLinks = NetworkTools.findClosestLinks(network, coord, nodeSearchRadius, networkModes);
+		Map<Double, Set<Link>> sortedLinks = NetworkTools.findClosestLinks(network, coord, nodeSearchRadiusLocal, networkModes);
 
-		double distanceThreshold = this.maxDistance;
+		
 		int nLink = 0;
 
 		for(Map.Entry<Double, Set<Link>> entry : sortedLinks.entrySet()) {
@@ -293,7 +297,7 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 			double currentNLinks = entry.getValue().size();
 
 			// if the distance is greater than the maximum distance
-			if(currentDistance > maxDistance) {
+			if(currentDistance > maximumDistance) {
 				break;
 			}
 
