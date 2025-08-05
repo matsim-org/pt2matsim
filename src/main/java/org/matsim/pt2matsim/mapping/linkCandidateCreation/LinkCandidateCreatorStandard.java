@@ -62,7 +62,7 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 	private double nodeSearchRadius;
 	private PublicTransitMappingConfigGroup mapperConfig;
 	
-	private final static double searchRadiusMultiplier = 15;
+	private final double searchRadiusMultiplier = 15;
 
 
 	public LinkCandidateCreatorStandard(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
