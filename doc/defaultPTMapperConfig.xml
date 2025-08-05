@@ -18,6 +18,8 @@
 		between stops from the schedule. If travelCostType is 
 		linkLength minTravel cost is the beeline distance. -->
 		<param name="maxTravelCostFactor" value="5.0" />
+		<!-- Instead of using general number of links and maximum search distance rule, use the schedule mode specific rules to be defined within the parameter sets. For those that no information is provided the general values will be used. Options: [false, true]. Default: false. -->
+		<param name="modeSpecificRules" value="false" />
 		<!-- All links that do not have a transit route on them are removed, except the ones 
 		listed in this set (typically only car). Separated by comma. -->
 		<param name="modesToKeepOnCleanUp" value="car" />
@@ -47,19 +49,24 @@
 		transit routes passing using it. This is recommended for "artificial", additional 
 		modes (especially "rail", if used) can be added, separated by commas. -->
 		<param name="scheduleFreespeedModes" value="artificial" />
+		<!-- The size of the chunk that is sent to the pt mapper thread at the time to buildfacilities and links. Default: 100. -->
+		<param name="threadChunkSize" value="100" />
 		<!-- Defines which link attribute should be used for routing. Possible values "linkLength" (default) 
 		and "travelTime". -->
 		<param name="travelCostType" value="linkLength" />
 		<parameterset type="transportModeAssignment" >
-			<!-- Transit Routes with the given scheduleMode can only use links with at least one of the network modes
-			defined here. Separate multiple modes by comma. If no network modes are defined, the transit route will
-			use artificial links. -->
+			<param name="maxLinkCandidateDistance" value="90.0" />
+			<param name="nLinkThreshold" value="6" />
 			<param name="networkModes" value="car,bus" />
 			<param name="scheduleMode" value="bus" />
+			<param name="strictLinkRule" value="false" />
 		</parameterset>
 		<parameterset type="transportModeAssignment" >
+			<param name="maxLinkCandidateDistance" value="90.0" />
+			<param name="nLinkThreshold" value="6" />
 			<param name="networkModes" value="rail,light_rail" />
 			<param name="scheduleMode" value="rail" />
+			<param name="strictLinkRule" value="false" />
 		</parameterset>
 	</module>
 
