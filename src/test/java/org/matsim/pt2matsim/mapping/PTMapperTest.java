@@ -132,6 +132,21 @@ public class PTMapperTest {
 			Assertions.assertTrue(transitStopFacility.getLinkId().toString().contains("pt_"));
 		}
 	}
+	
+	@Test
+	void modeSpecificRules() throws InterruptedException, ExecutionException {
+		PublicTransitMappingConfigGroup ptmConfig2 = initPTMConfig();
+		ptmConfig2.setModeSpecificRules("true");
+		TransportModeParameterSet tmps = ptmConfig2.getParameterSetForMode("bus");
+		tmps.setNumberOfLinkCandidates(4);
+		tmps.setMaximumSearchDistance(3);
+		TransitSchedule schedule2 = ScheduleToolsTest.initUnmappedSchedule();
+		Network network2 = NetworkToolsTest.initNetwork();
+		new PTMapper(schedule2, network2).run(ptmConfig2);
+		
+		Assertions.assertEquals(NetworkToolsTest.initNetwork().getLinks().size() + 4, network2.getLinks().size());
+		
+	}
 
 	@Test
 	void defaultConfig() {
