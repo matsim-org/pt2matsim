@@ -505,7 +505,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	}
 	
 	@StringGetter(USE_MODE_SPECIFIC_RULES)
-	public boolean getMdeSpecificRules() {
+	public boolean getModeSpecificRules() {
 		return this.modeSpecificRules;
 	}
 
