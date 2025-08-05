@@ -520,7 +520,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	}
 
 	@StringSetter(THREAD_CHUNK_SIZE)
-	public void setModeSpecificRules(int chunkSize) {
+	public void setChunkSize(int chunkSize) {
 		this.chunkSize = chunkSize;
 	}
 	
