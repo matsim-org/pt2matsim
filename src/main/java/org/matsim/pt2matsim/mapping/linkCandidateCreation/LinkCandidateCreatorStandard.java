@@ -61,6 +61,8 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 	private final Map<String, Set<String>> transportModeAssignments;
 	private double nodeSearchRadius;
 	private PublicTransitMappingConfigGroup mapperConfig;
+	
+	private final static double searchRadiusMultiplier = 15;
 
 
 	public LinkCandidateCreatorStandard(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
@@ -265,12 +267,12 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 		
 		// searching
 		int maximumLinks = this.nLinks;
-		this.nodeSearchRadius = 15 * this.maxDistance;
+		this.nodeSearchRadius = this.searchRadiusMultiplier * this.maxDistance;
 		boolean strictLinkNumRule = false;
-		if (mapperConfig.getMdeSpecificRules()) {
+		if (mapperConfig.getModeSpecificRules()) {
 			TransportModeParameterSet parameterSetForMode = mapperConfig.getParameterSetForMode(scheduleMode);
 			if (parameterSetForMode != null) {
-				nodeSearchRadius = 15 * parameterSetForMode.getMaximumSearchDistance();
+				nodeSearchRadius = this.searchRadiusMultiplier * parameterSetForMode.getMaximumSearchDistance();
 				maximumLinks = parameterSetForMode.getNumberOfLinkCandidates();
 				strictLinkNumRule = parameterSetForMode.getImposeStrictLinksRule();
 			}
