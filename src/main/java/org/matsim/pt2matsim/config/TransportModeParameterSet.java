@@ -21,8 +21,8 @@ public class TransportModeParameterSet extends ReflectiveConfigGroup{
 
 	private static final String SCHEDULE_MODE = "scheduleMode";
 	private static final String NETWORK_MODES = "networkModes";
-	private static final String NUMBER_LINK_CANDIDATES = "numberOfLinkCandidates";
-	private static final String MAXIMUM_SEARCH_DISTANCE = "maxSearchDistance";
+	private static final String NUMBER_LINK_CANDIDATES = "nLinkThreshold";
+	private static final String MAXIMUM_SEARCH_DISTANCE = "maxLinkCandidateDistance";
 	private static final String IMPOSE_STRICT_LINK_RULE = "strictLinkRule";
 
 	private String scheduleMode;
