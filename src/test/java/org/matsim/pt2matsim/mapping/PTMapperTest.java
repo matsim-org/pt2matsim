@@ -1,12 +1,16 @@
 package org.matsim.pt2matsim.mapping;
 
+import static org.matsim.pt2matsim.tools.ScheduleToolsTest.ROUTE_B;
+
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.core.config.groups.ControllerConfigGroup.RoutingAlgorithmType;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
@@ -14,14 +18,11 @@ import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
+import org.matsim.pt2matsim.config.TransportModeParameterSet;
 import org.matsim.pt2matsim.run.CreateDefaultPTMapperConfig;
 import org.matsim.pt2matsim.tools.NetworkToolsTest;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.ScheduleToolsTest;
-
-import java.util.List;
-
-import static org.matsim.pt2matsim.tools.ScheduleToolsTest.ROUTE_B;
 
 /**
  * @author polettif
@@ -40,7 +41,7 @@ public class PTMapperTest {
 		config.setMaxLinkCandidateDistance(999.0);
 		config.setCandidateDistanceMultiplier(1.0);
 
-		PublicTransitMappingConfigGroup.TransportModeAssignment mraBus = new PublicTransitMappingConfigGroup.TransportModeAssignment("bus");
+		TransportModeParameterSet mraBus = new TransportModeParameterSet("bus");
 		mraBus.setNetworkModesStr("car,bus");
 		config.addParameterSet(mraBus);
 
@@ -48,7 +49,7 @@ public class PTMapperTest {
 	}
 
 	@BeforeEach
-	public void prepare() {
+	public void prepare() throws InterruptedException, ExecutionException {
 		ptmConfig = initPTMConfig();
 		network = NetworkToolsTest.initNetwork();
 		schedule = ScheduleToolsTest.initUnmappedSchedule();
@@ -91,7 +92,7 @@ public class PTMapperTest {
 	}
 
 	@Test
-	void artificialLinks() {
+	void artificialLinks() throws InterruptedException, ExecutionException {
 		PublicTransitMappingConfigGroup ptmConfig2 = initPTMConfig();
 		ptmConfig2.setMaxLinkCandidateDistance(3);
 
@@ -104,7 +105,7 @@ public class PTMapperTest {
 		Assertions.assertEquals(9, schedule2.getFacilities().size());
 	}
 	@Test
-	void noTransportModeAssignment() {
+	void noTransportModeAssignment() throws InterruptedException, ExecutionException {
 		PublicTransitMappingConfigGroup noTMAConfig = new PublicTransitMappingConfigGroup();
 		noTMAConfig.getModesToKeepOnCleanUp().add("car");
 		noTMAConfig.setNumOfThreads(2);
@@ -130,6 +131,38 @@ public class PTMapperTest {
 		for(TransitStopFacility transitStopFacility : schedule2.getFacilities().values()) {
 			Assertions.assertTrue(transitStopFacility.getLinkId().toString().contains("pt_"));
 		}
+	}
+	
+	@Test
+	void modeSpecificRules() throws InterruptedException, ExecutionException {
+		PublicTransitMappingConfigGroup ptmConfig2 = initPTMConfig();
+		ptmConfig2.setModeSpecificRules("true");
+		TransportModeParameterSet tmps = ptmConfig2.getParameterSetForMode("bus");
+		tmps.setNumberOfLinkCandidates(4);
+		tmps.setMaximumSearchDistance(3);
+		TransitSchedule schedule2 = ScheduleToolsTest.initUnmappedSchedule();
+		Network network2 = NetworkToolsTest.initNetwork();
+		new PTMapper(schedule2, network2).run(ptmConfig2);
+		
+		Assertions.assertEquals(NetworkToolsTest.initNetwork().getLinks().size() + 4, network2.getLinks().size());
+		
+	}
+	
+	@Test
+	void modeSpecificRules2() throws InterruptedException, ExecutionException {
+		PublicTransitMappingConfigGroup ptmConfig2 = initPTMConfig();
+		ptmConfig2.setModeSpecificRules("true");
+		TransportModeParameterSet tmps = ptmConfig2.getParameterSetForMode("bus");
+		tmps.setNumberOfLinkCandidates(2);
+		tmps.setMaximumSearchDistance(300);
+		tmps.setImposeStrictLinksRule(Boolean.parseBoolean("true"));
+		
+		TransitSchedule schedule2 = ScheduleToolsTest.initUnmappedSchedule();
+		Network network2 = NetworkToolsTest.initNetwork();
+		new PTMapper(schedule2, network2).run(ptmConfig2);
+		
+		Assertions.assertEquals(NetworkToolsTest.initNetwork().getLinks().size() + 13, network2.getLinks().size());
+		
 	}
 
 	@Test

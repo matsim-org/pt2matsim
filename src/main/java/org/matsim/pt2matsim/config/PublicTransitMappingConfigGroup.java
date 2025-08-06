@@ -19,14 +19,7 @@
 
 package org.matsim.pt2matsim.config;
 
-import org.matsim.api.core.v01.network.Link;
-import org.matsim.core.api.internal.MatsimParameters;
-import org.matsim.core.config.*;
-import org.matsim.core.config.groups.ControllerConfigGroup;
-import org.matsim.core.config.groups.ControllerConfigGroup.RoutingAlgorithmType;
-import org.matsim.core.utils.collections.CollectionUtils;
-import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt2matsim.run.PublicTransitMapper;
+import static org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup.TravelCostType.travelTime;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +27,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup.TravelCostType.travelTime;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigGroup;
+import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.ConfigWriter;
+import org.matsim.core.config.ReflectiveConfigGroup;
+import org.matsim.core.config.groups.ControllerConfigGroup;
+import org.matsim.core.config.groups.ControllerConfigGroup.RoutingAlgorithmType;
+import org.matsim.core.utils.collections.CollectionUtils;
+import org.matsim.pt2matsim.run.PublicTransitMapper;
 
 
 /**
@@ -70,13 +71,19 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private static final String ROUTING_WITH_CANDIDATE_DISTANCE = "routingWithCandidateDistance";
 	
 	private static final String NETWORK_ROUTER = "networkRouter";
+	
+	private static final String USE_MODE_SPECIFIC_RULES = "modeSpecificRules";
+	
+	private static final String THREAD_CHUNK_SIZE = "threadChunkSize";
 
 	// default values
 	private Map<String, Set<String>> transportModeAssignment = new HashMap<>();
+	private Map<String, TransportModeParameterSet> parameterSetsForMode = new HashMap<>();
 	private Set<String> scheduleFreespeedModes = PublicTransitMappingStrings.ARTIFICIAL_LINK_MODE_AS_SET;
 	private Set<String> modesToKeepOnCleanUp = new HashSet<>();
 	private double maxTravelCostFactor = 5.0;
 	private int numOfThreads = 2;
+	private int chunkSize = 100;
 	private boolean removeNotUsedStopFacilities = true;
 
 	private String inputNetworkFile = null;
@@ -91,6 +98,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private double maxLinkCandidateDistance = 90;
 	private double candiateDistanceMulitplier = 1.6;
 	
+	private boolean modeSpecificRules = false;
+	
 	private RoutingAlgorithmType networkRouter = ControllerConfigGroup.RoutingAlgorithmType.SpeedyALT;
 
 	public PublicTransitMappingConfigGroup() {
@@ -104,9 +113,9 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		PublicTransitMappingConfigGroup config = new PublicTransitMappingConfigGroup();
 		config.getModesToKeepOnCleanUp().add("car");
 
-		TransportModeAssignment tmaBus = new TransportModeAssignment("bus");
+		TransportModeParameterSet tmaBus = new TransportModeParameterSet("bus");
 		tmaBus.setNetworkModesStr("car,bus");
-		TransportModeAssignment tmaRail = new TransportModeAssignment("rail");
+		TransportModeParameterSet tmaRail = new TransportModeParameterSet("rail");
 		tmaRail.setNetworkModesStr("rail,light_rail");
 		config.addParameterSet(tmaBus);
 		config.addParameterSet(tmaRail);
@@ -181,14 +190,18 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 				"\t\tNo link candidates beyond this distance are added.");
 		map.put(NETWORK_ROUTER,
 				"The router that should be used. Possible options are: [SpeedyALT, AStarLandmarks]");
+		map.put(USE_MODE_SPECIFIC_RULES, "Instead of using general number of links and maximum search distance rule, use the schedule mode specific rules "
+				+ "to be defined within the parameter sets. For those that no information is provided the general values will be used. Options: [false, true]. Default: false.");
+		map.put(THREAD_CHUNK_SIZE, "The size of the chunk that is sent to the pt mapper thread at the time to build"
+				+ "facilities and links. Default: 100.");
 		return map;
 	}
 
 	@Override
 	public ConfigGroup createParameterSet(final String type) {
 		switch(type) {
-			case TransportModeAssignment.SET_NAME:
-				return new TransportModeAssignment();
+			case TransportModeParameterSet.GROUP_NAME:
+				return new TransportModeParameterSet();
 			default:
 				throw new IllegalArgumentException("Unknown parameterset name!");
 		}
@@ -204,9 +217,10 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	 * Loads the parameter set for TransportModeAssignment for easier access
 	 */
 	private void loadParameterSets() {
-		for(ConfigGroup e : this.getParameterSets(TransportModeAssignment.SET_NAME)) {
-			TransportModeAssignment mra = (TransportModeAssignment) e;
-			transportModeAssignment.put(mra.getScheduleMode(), mra.getNetworkModes());
+		for(ConfigGroup e : this.getParameterSets(TransportModeParameterSet.GROUP_NAME)) {
+			TransportModeParameterSet tmps = (TransportModeParameterSet) e;
+			transportModeAssignment.put(tmps.getScheduleMode(), tmps.getNetworkModes());
+			parameterSetsForMode.put(tmps.getScheduleMode(), tmps);
 		}
 	}
 
@@ -232,6 +246,10 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 
 	public void setTransportModeAssignment(Map<String, Set<String>> transportModeAssignment) {
 		this.transportModeAssignment = transportModeAssignment;
+	}
+	
+	public TransportModeParameterSet getParameterSetForMode(String scheduleMode) {
+		return this.parameterSetsForMode.get(scheduleMode);
 	}
 
 	/**
@@ -485,71 +503,25 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	public void setNetworkRouter(RoutingAlgorithmType networkRouter) {
 		this.networkRouter = networkRouter;
 	}
-
-
-	/**
-	 * Parameterset that define which network transport modes the router
-	 * can use for each schedule transport mode. If no networkModes are set, the
-	 * transit route is mapped artificially<p/>
-	 * <p>
-	 * Network transport modes are the ones in {@link Link#getAllowedModes()}, schedule
-	 * transport modes are from {@link TransitRoute#getTransportMode()}.
-	 */
-	public static class TransportModeAssignment extends ReflectiveConfigGroup implements MatsimParameters {
-
-		public static final String SET_NAME = "transportModeAssignment";
-
-		private static final String SCHEDULE_MODE = "scheduleMode";
-		private static final String NETWORK_MODES = "networkModes";
-
-		private String scheduleMode;
-		private Set<String> networkModes;
-
-		public TransportModeAssignment() {
-			super(SET_NAME);
-		}
-
-		public TransportModeAssignment(String scheduleMode) {
-			super(SET_NAME);
-			this.scheduleMode = scheduleMode;
-		}
-
-		@Override
-		public Map<String, String> getComments() {
-			Map<String, String> map = super.getComments();
-			map.put(NETWORK_MODES,
-					"Transit Routes with the given scheduleMode can only use links with at least one of the network modes\n" +
-					"\t\t\tdefined here. Separate multiple modes by comma. If no network modes are defined, the transit route will\n" +
-					"\t\t\tuse artificial links.");
-			return map;
-		}
-
-		@StringGetter(SCHEDULE_MODE)
-		public String getScheduleMode() {
-			return scheduleMode;
-		}
-
-		@StringSetter(SCHEDULE_MODE)
-		public void setScheduleMode(String scheduleMode) {
-			this.scheduleMode = scheduleMode;
-		}
-
-		@StringGetter(NETWORK_MODES)
-		public String getNetworkModesStr() {
-			return CollectionUtils.setToString(networkModes);
-		}
-
-		@StringSetter(NETWORK_MODES)
-		public void setNetworkModesStr(String networkModesStr) {
-			this.networkModes = CollectionUtils.stringToSet(networkModesStr);
-		}
-
-		public Set<String> getNetworkModes() {
-			return this.networkModes;
-		}
-
-		public void setNetworkModes(Set<String> networkModes) {
-			this.networkModes = networkModes;
-		}
+	
+	@StringGetter(USE_MODE_SPECIFIC_RULES)
+	public boolean getModeSpecificRules() {
+		return this.modeSpecificRules;
 	}
+
+	@StringSetter(USE_MODE_SPECIFIC_RULES)
+	public void setModeSpecificRules(String modeSpecificRules) {
+		this.modeSpecificRules = Boolean.parseBoolean(modeSpecificRules);
+	}
+
+	@StringGetter(THREAD_CHUNK_SIZE)
+	public int getChunkSize() {
+		return this.chunkSize;
+	}
+
+	@StringSetter(THREAD_CHUNK_SIZE)
+	public void setChunkSize(int chunkSize) {
+		this.chunkSize = chunkSize;
+	}
+	
 }

@@ -26,6 +26,7 @@ import org.matsim.pt.transitSchedule.api.TransitSchedule;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Container to store multiple {@link PseudoTransitRoute}. Provides a
@@ -65,8 +66,10 @@ public interface PseudoSchedule {
 	 * child stop facility.
 	 *
 	 * Creates the link sequences for the transit routes
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
-	void createFacilitiesAndLinkSequences(TransitSchedule schedule);
+	void createFacilitiesAndLinkSequences(TransitSchedule schedule, int numThreads, int chunkSize) throws InterruptedException, ExecutionException;
 
 }
 

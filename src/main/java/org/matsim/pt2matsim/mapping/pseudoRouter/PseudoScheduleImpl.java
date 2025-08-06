@@ -24,11 +24,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.pt.transitSchedule.api.MinimalTransferTimes;
 import org.matsim.pt.transitSchedule.api.MinimalTransferTimes.MinimalTransferTimesIterator;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
@@ -60,97 +68,165 @@ public class PseudoScheduleImpl implements PseudoSchedule {
 	public void mergePseudoSchedule(PseudoSchedule otherPseudoSchedule) {
 		pseudoSchedule.addAll(otherPseudoSchedule.getPseudoRoutes());
 	}
-
-	@Override
-	public void createFacilitiesAndLinkSequences(TransitSchedule schedule) {
-		TransitScheduleFactory scheduleFactory = schedule.getFactory();
-
-		Map<Id<TransitStopFacility>, Set<Id<TransitStopFacility>>> parentsToChildren = new HashMap<>();
-
+	
+	public void createFacilitiesAndLinkSequences(final TransitSchedule schedule, final int numThreads, final int chunkSize) 
+	        throws InterruptedException, ExecutionException {
 		Logger logger = LogManager.getLogger(PseudoScheduleImpl.class);
+	    // 1) Prepare your full list of pseudo‐routes:
+	    List<PseudoTransitRoute> allRoutes = new ArrayList<>(pseudoSchedule);
+	    List<List<PseudoTransitRoute>> chunks = new ArrayList<>();
+	    for (int i = 0; i < allRoutes.size(); i += chunkSize) {
+	        chunks.add(allRoutes.subList(i, Math.min(i + chunkSize, allRoutes.size())));
+	    }
 
-		int totalNumber = pseudoSchedule.size();
-		int currentNumber = 0;
-		double lastUpdate = Double.NEGATIVE_INFINITY;
+	    // 2) Define a holder for per‐thread results:
+	    class ChunkResult {
+	        Map<Id<TransitStopFacility>, TransitStopFacility> newFacilities = new HashMap<>();
+	        Map<Id<TransitLine>, List<TransitRoute>>    newRoutes     = new HashMap<>();
+	        Map<Id<TransitStopFacility>, Set<Id<TransitStopFacility>>> parentsToChildren
+	            = new HashMap<>();
+	        // Transfer‐time records: (parentFrom, parentTo, seconds)
+	        List<Triple<Id<TransitStopFacility>,Id<TransitStopFacility>,Double>> transfers
+	            = new ArrayList<>();
+	    }
 
-		for (PseudoTransitRoute pseudoTransitRoute : pseudoSchedule) {
-			List<PseudoRouteStop> pseudoStopSequence = pseudoTransitRoute.getPseudoStops();
-			List<TransitRouteStop> newStopSequence = new ArrayList<>();
+	    // 3) Submit Callable tasks
+	    ExecutorService exec = Executors.newFixedThreadPool(numThreads);
+	    List<Future<ChunkResult>> futures = new ArrayList<>();
 
-			for (PseudoRouteStop pseudoStop : pseudoStopSequence) {
-				Id<TransitStopFacility> childStopFacilityId = ScheduleTools
-						.createChildStopFacilityId(pseudoStop.getParentStopFacilityId(), pseudoStop.getLinkId());
+	    for (List<PseudoTransitRoute> chunk : chunks) {
+	        futures.add(exec.submit(() -> {
+	            ChunkResult result = new ChunkResult();
+	            TransitScheduleFactory factory = schedule.getFactory();
 
-				// if child stop facility for this link has not yet been generated
-				if (!schedule.getFacilities().containsKey(childStopFacilityId)) {
-					TransitStopFacility newFacility = scheduleFactory.createTransitStopFacility(
-							Id.create(childStopFacilityId, TransitStopFacility.class), pseudoStop.getCoord(),
-							pseudoStop.isBlockingLane());
-					newFacility.setLinkId(pseudoStop.getLinkId());
-					newFacility.setName(pseudoStop.getFacilityName());
-					newFacility.setStopAreaId(pseudoStop.getStopAreaId());
-					schedule.addStopFacility(newFacility);
-				}
+	            for (PseudoTransitRoute ptr : chunk) {
+	                // build child facilities & new TransitRoute stops BUT only in result.newFacilities
+	                List<PseudoRouteStop> stops = ptr.getPseudoStops();
+	                List<TransitRouteStop> newStops = new ArrayList<>(stops.size());
+	                for (PseudoRouteStop ps : stops) {
+	                    Id<TransitStopFacility> childId = 
+	                        ScheduleTools.createChildStopFacilityId(ps.getParentStopFacilityId(), ps.getLinkId());
 
-				// create new TransitRouteStop and add it to the newStopSequence
-				TransitRouteStop newTransitRouteStop = scheduleFactory.createTransitRouteStop(
-						schedule.getFacilities().get(childStopFacilityId), pseudoStop.getArrivalOffset().seconds(),
-						pseudoStop.getDepartureOffset().seconds());
-				newTransitRouteStop.setAwaitDepartureTime(pseudoStop.awaitsDepartureTime());
-				newStopSequence.add(newTransitRouteStop);
+	                    // only create one facility per childId
+	                    result.newFacilities.computeIfAbsent(childId, id -> {
+	                        TransitStopFacility f = factory.createTransitStopFacility(
+	                            id, ps.getCoord(), ps.isBlockingLane());
+	                        f.setLinkId(ps.getLinkId());
+	                        f.setName(ps.getFacilityName());
+	                        f.setStopAreaId(ps.getStopAreaId());
+	                        return f;
+	                    });
 
-				parentsToChildren.computeIfAbsent(pseudoStop.getParentStopFacilityId(), id -> new HashSet<>());
-				parentsToChildren.get(pseudoStop.getParentStopFacilityId()).add(childStopFacilityId);
-			}
+	                    TransitRouteStop trs = factory.createTransitRouteStop(
+	                        result.newFacilities.get(childId), 
+	                        ps.getArrivalOffset().seconds(),
+	                        ps.getDepartureOffset().seconds());
+	                    trs.setAwaitDepartureTime(ps.awaitsDepartureTime());
+	                    newStops.add(trs);
 
-			// create a new transitRoute
-			TransitRoute newTransitRoute = scheduleFactory.createTransitRoute(
-					pseudoTransitRoute.getTransitRoute().getId(), null, newStopSequence,
-					pseudoTransitRoute.getTransitRoute().getTransportMode());
+	                    result.parentsToChildren
+	                          .computeIfAbsent(ps.getParentStopFacilityId(), k -> new HashSet<>())
+	                          .add(childId);
+	                }
 
-			// add departures
-			pseudoTransitRoute.getTransitRoute().getDepartures().values().forEach(newTransitRoute::addDeparture);
+	                // assemble new TransitRoute
+	                TransitRoute oldRoute = ptr.getTransitRoute();
+	                TransitRoute newRoute = factory.createTransitRoute(
+	                    oldRoute.getId(), null, newStops, oldRoute.getTransportMode());
+	                oldRoute.getDepartures().values().forEach(newRoute::addDeparture);
 
-			// add link sequence
-			List<Id<Link>> l = pseudoTransitRoute.getNetworkLinkIdList();
-			newTransitRoute.setRoute(new LinkSequence(l.get(0), l.subList(1, l.size() - 1), l.get(l.size() - 1)));
+	                List<Id<Link>> links = ptr.getNetworkLinkIdList();
+	                newRoute.setRoute(new LinkSequence(
+	                    links.get(0),
+	                    links.subList(1, links.size() - 1),
+	                    links.get(links.size() - 1)
+	                ));
+	                newRoute.setDescription(oldRoute.getDescription());
 
-			// add description
-			newTransitRoute.setDescription(pseudoTransitRoute.getTransitRoute().getDescription());
+	                // queue it for addition/removal later
+	                result.newRoutes
+	                      .computeIfAbsent(ptr.getTransitLineId(), id -> new ArrayList<>())
+	                      .add(newRoute);
 
-			// remove the old route
-			schedule.getTransitLines().get(pseudoTransitRoute.getTransitLineId())
-					.removeRoute(pseudoTransitRoute.getTransitRoute());
+	                // capture transfer‐time updates for this route’s parent stops
+	                MinimalTransferTimes mtt = schedule.getMinimalTransferTimes();
+	                for (MinimalTransferTimesIterator it = mtt.iterator(); it.hasNext(); ) {
+	                    it.next();
+	                    Id<TransitStopFacility> fromP = it.getFromStopId();
+	                    Id<TransitStopFacility> toP   = it.getToStopId();
+	                    if (result.parentsToChildren.containsKey(fromP) &&
+	                        result.parentsToChildren.containsKey(toP)) {
+	                        double secs = it.getSeconds();
+	                        result.transfers.add(new ImmutableTriple<>(fromP, toP, secs));
+	                    }
+	                }
+	            }
+	            return result;
+	        }));
+	    }
 
-			// add new route to container
-			schedule.getTransitLines().get(pseudoTransitRoute.getTransitLineId()).addRoute(newTransitRoute);
-			// newRoutes.add(new Tuple<>(pseudoTransitRoute.getTransitLineId(), newRoute));
+	    exec.shutdown();
+	    exec.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
 
-			// Recover minimal transfer times between child stop facilities from parent stop
-			// facilities
-			MinimalTransferTimesIterator iterator = schedule.getMinimalTransferTimes().iterator();
+	    Map<Id<TransitStopFacility>, Set<Id<TransitStopFacility>>> globalParentsToChildren = new HashMap<>();
+	    List<Triple<Id<TransitStopFacility>,Id<TransitStopFacility>,Double>> allTransfers = new ArrayList<>();
 
-			while (iterator.hasNext()) {
-				iterator.next();
+	    // 4) Merge everything on the main thread
+	    for (Future<ChunkResult> f : futures) {
+	        ChunkResult r = f.get();
 
-				Id<TransitStopFacility> fromId = iterator.getFromStopId();
-				Id<TransitStopFacility> toId = iterator.getToStopId();
+	        // 4a) Add new facilities
+	        for (TransitStopFacility fac : r.newFacilities.values()) {
+	            if (!schedule.getFacilities().containsKey(fac.getId())) {
+	                schedule.addStopFacility(fac);
+	            }
+	        }
 
-				if (parentsToChildren.containsKey(fromId) && parentsToChildren.containsKey(toId)) {
-					for (Id<TransitStopFacility> childFromId : parentsToChildren.get(fromId)) {
-						for (Id<TransitStopFacility> childToId : parentsToChildren.get(toId)) {
-							schedule.getMinimalTransferTimes().set(childFromId, childToId, iterator.getSeconds());
-						}
+	        // 4b) Remove old routes and add new ones
+	        for (Map.Entry<Id<TransitLine>,List<TransitRoute>> e : r.newRoutes.entrySet()) {
+	            TransitLine line = schedule.getTransitLines().get(e.getKey());
+	            
+
+	            // remove all old Pseudo‑routes and add new ones
+	            for (TransitRoute nr : e.getValue()) {
+	            	line.removeRoute(line.getRoutes().get(nr.getId()));
+	                line.addRoute(nr);
+	            }
+	        }
+
+	     // 4c) Accumulate parents→children and transfer records
+	        // Merge this chunk's parentsToChildren into the global map:
+	        r.parentsToChildren.forEach((parent, childSet) ->
+	            globalParentsToChildren
+	                .computeIfAbsent(parent, k -> new HashSet<>())
+	                .addAll(childSet)
+	        );
+	        
+	        // Collect all transfer triples:
+	        allTransfers.addAll(r.transfers);
+
+	    }
+	    
+	    MinimalTransferTimesIterator iterator = schedule.getMinimalTransferTimes().iterator();
+
+		while (iterator.hasNext()) {
+			iterator.next();
+
+			Id<TransitStopFacility> fromId = iterator.getFromStopId();
+			Id<TransitStopFacility> toId = iterator.getToStopId();
+
+			if (globalParentsToChildren.containsKey(fromId) && globalParentsToChildren.containsKey(toId)) {
+				for (Id<TransitStopFacility> childFromId : globalParentsToChildren.get(fromId)) {
+					for (Id<TransitStopFacility> childToId : globalParentsToChildren.get(toId)) {
+						schedule.getMinimalTransferTimes().set(childFromId, childToId, iterator.getSeconds());
 					}
 				}
 			}
-
-			currentNumber++;
-			if (System.currentTimeMillis() >= lastUpdate + 1000.0 || currentNumber == totalNumber) {
-				lastUpdate = System.currentTimeMillis();
-				logger.info(String.format("PseudoScheduleImpl::createFacilitiesAndLinkSequences %d/%d (%.2f%%)",
-						currentNumber, totalNumber, 100.0 * currentNumber / totalNumber));
-			}
 		}
+	    
+
+	    // 5) Finally, log progress or do any single‑threaded cleanup/validation
+	    logger.info("createFacilitiesAndLinkSequences done.");
 	}
+
 }
