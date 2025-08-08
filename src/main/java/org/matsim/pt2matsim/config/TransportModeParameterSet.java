@@ -60,6 +60,10 @@ public class TransportModeParameterSet extends ReflectiveConfigGroup{
 		this.networkModes = CollectionUtils.stringToSet(networkModesStr);
 	}
 	
+	public void setNetworkModes(Set<String> networkModes) {
+		this.networkModes = Set.copyOf(networkModes);
+	}
+
 	public Set<String> getNetworkModes() {
 		return this.networkModes;
 	}
