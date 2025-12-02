@@ -24,7 +24,7 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v5
         with:
-          java-version: 21
+          java-version: 25
           distribution: 'temurin'
           server-id: pt2matsim-releases
           server-username: MAVEN_USERNAME
