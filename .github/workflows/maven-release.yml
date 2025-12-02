@@ -25,7 +25,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           java-version: 21
-          distribution: 'adopt'
+          distribution: 'temurin'
           server-id: pt2matsim-releases
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
