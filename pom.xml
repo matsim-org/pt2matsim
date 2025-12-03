@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.matsim</groupId>
     <artifactId>pt2matsim</artifactId>
-    <version>25.8.1-SNAPSHOT</version>
+    <version>25.12</version>
 
     <name>PT2MATSim</name>
     <description>Public Transport to MATSim</description>
