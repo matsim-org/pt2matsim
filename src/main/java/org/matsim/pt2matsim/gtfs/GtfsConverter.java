@@ -105,7 +105,6 @@ public class GtfsConverter {
 
 		// transform feed
 		this.feed.transform(transformation);
-		ProjectionUtils.putCRS(schedule, transformation);
 
 		// get sample date
 		LocalDate extractDate = getExtractDate(serviceIdsParam);

@@ -182,7 +182,7 @@ public class OsmMultimodalNetworkConverter {
 			}
 		}
 
-		if (config.getOutputCoordinateSystem() != null) {
+		if (config.getOutputCoordinateSystem() != null && config.getWriteCRS()) {
 			ProjectionUtils.putCRS(this.network, config.getOutputCoordinateSystem());
 		}
 	}
