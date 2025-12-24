@@ -30,7 +30,7 @@ public class Workflow {
 
 		// convert schedule
 		String unmappedSchedule = "intermediate/schedule_unmapped.xml.gz";
-		Gtfs2TransitSchedule.run("gtfs", "dayWithMostTrips", osmConfig.getOutputCoordinateSystem(), unmappedSchedule, "output/vehicles.xml.gz", "schedule");
+		Gtfs2TransitSchedule.run("gtfs", "dayWithMostTrips", osmConfig.getOutputCoordinateSystem(), unmappedSchedule, "output/vehicles.xml.gz", "schedule", false);
 
 		// setup public transit mapper
 		PublicTransitMappingConfigGroup mapperConfig = PublicTransitMappingConfigGroup.createDefaultConfig();
