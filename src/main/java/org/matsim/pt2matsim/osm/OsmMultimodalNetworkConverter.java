@@ -53,6 +53,7 @@ import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.turnRestrictions.DisallowedNextLinks;
 import org.matsim.core.network.turnRestrictions.DisallowedNextLinksUtils;
 import org.matsim.core.network.turnRestrictions.TurnRestrictionsNetworkCleaner;
+import org.matsim.core.scenario.ProjectionUtils;
 import org.matsim.core.utils.collections.CollectionUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
@@ -179,6 +180,10 @@ public class OsmMultimodalNetworkConverter {
 				log.warn("Error while writing network geometry", e);
 				e.printStackTrace();
 			}
+		}
+
+		if (config.getOutputCoordinateSystem() != null && config.getWriteCRS()) {
+			ProjectionUtils.putCRS(this.network, config.getOutputCoordinateSystem());
 		}
 	}
 

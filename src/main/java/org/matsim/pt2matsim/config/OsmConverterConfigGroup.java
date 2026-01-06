@@ -71,6 +71,10 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	@Comment("If true: OSM turn restrictions are parsed and written as disallowedNextLinks attribute to the first link.")
 	public boolean parseTurnRestrictions = true;
 
+	@Parameter
+	@Comment("Defines whether to write the CRS attribute to the generated network")
+	private boolean writeCRS = false;
+
 	public OsmConverterConfigGroup() {
 		super(GROUP_NAME);
 	}
@@ -208,6 +212,14 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	@StringSetter(KEEP_WAYS_WITH_PUBLIC_TRANSIT)
 	public void setKeepHighwaysWithPT(boolean b) {
 		this.keepWaysWithPublicTransit = b;
+	}
+
+	public boolean getWriteCRS() {
+		return writeCRS;
+	}
+
+	public void setWriteCRS(boolean writeCRS) {
+		this.writeCRS = writeCRS;
 	}
 
 	@Override

@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
+import org.matsim.core.scenario.ProjectionUtils;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
@@ -85,11 +86,11 @@ public final class Gtfs2TransitSchedule {
 	 */
 	public static void main(final String[] args) {
 		if(args.length == 6) {
-			run(args[0], args[1], args[2], args[3], args[4], args[5]);
+			run(args[0], args[1], args[2], args[3], args[4], args[5], false);
 		} else if(args.length == 5) {
-			run(args[0], args[1], args[2], args[3], args[4], null);
+			run(args[0], args[1], args[2], args[3], args[4], null, false);
 		} else if(args.length == 4) {
-			run(args[0], args[1], args[2], args[3], null, null);
+			run(args[0], args[1], args[2], args[3], null, null, false);
 		} else {
 			throw new IllegalArgumentException("Wrong number of input arguments.");
 		}
@@ -119,7 +120,7 @@ public final class Gtfs2TransitSchedule {
 	 *     				             	<li>output file path (.csv) -> will be written as specified csv file</li>
 	 *     				             	</ul>
 	 */
-	public static void run(String gtfsFolder, String sampleDayParam, String outputCoordinateSystem, String scheduleFile, String vehicleFile, String additionalLineInfoFile) {
+	public static void run(String gtfsFolder, String sampleDayParam, String outputCoordinateSystem, String scheduleFile, String vehicleFile, String additionalLineInfoFile, boolean writeCrs) {
 		Configurator.setLevel(LogManager.getLogger(MGC.class).getName(), Level.ERROR);
 
 		// check sample day parameter
@@ -138,6 +139,11 @@ public final class Gtfs2TransitSchedule {
 		if (additionalLineInfoFile != null && additionalLineInfoFile.equals(INFO_OUTPUT_OPTION_SCHEDULE)) {
 			writeInfoToSchedule(converter.getSchedule(), converter.getAdditionalLineInfo());
 		}
+
+		if (writeCrs) {
+			ProjectionUtils.putCRS(converter.getSchedule(), outputCoordinateSystem);
+		}
+
 		// write Files
 		ScheduleTools.writeTransitSchedule(converter.getSchedule(), scheduleFile);
 		if(vehicleFile != null) {
