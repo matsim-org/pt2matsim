@@ -29,7 +29,7 @@
     </repositories>
 
     <properties>
-        <geotools.version>34.1</geotools.version>
+        <geotools.version>34.2</geotools.version>
         <jackson.version>2.21.0</jackson.version>
         <jts.version>1.20.0</jts.version>
         <log4j.version>2.25.3</log4j.version>
