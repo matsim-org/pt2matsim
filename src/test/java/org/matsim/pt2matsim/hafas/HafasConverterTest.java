@@ -12,6 +12,9 @@ import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * @author polettif
@@ -77,21 +80,43 @@ class HafasConverterTest {
 
 	@Test
 	void durchbindungen() {
-		// Test that durchbindungen are properly loaded and applied
-		// Based on test/BrienzRothornBahn-HAFAS/DURCHBI which links trip 000001 to 000002
 		TransitLine transitLine = schedule.getTransitLines().get(Id.create("BRB", TransitLine.class));
 		Assertions.assertNotNull(transitLine, "Transit line BRB should exist");
-		
-		// Check if durchbindung attribute is set on the first route
-		boolean foundDurchbindung = false;
-		for (TransitRoute route : transitLine.getRoutes().values()) {
-			Object durchbindungAttr = route.getAttributes().getAttribute("durchbindungTo");
-			if (durchbindungAttr != null) {
-				foundDurchbindung = true;
-				Assertions.assertEquals("000002", durchbindungAttr, "Durchbindung should link to trip 000002");
-			}
+
+		TransitRoute sourceRoute = transitLine.getRoutes().values().stream()
+			.filter(route -> route.getId().toString().startsWith("000001_"))
+			.findFirst()
+			.orElseThrow(() -> new AssertionError("Source route for trip 000001 not found"));
+
+		TransitRoute targetRoute = transitLine.getRoutes().values().stream()
+			.filter(route -> route.getId().toString().startsWith("000002_"))
+			.findFirst()
+			.orElseThrow(() -> new AssertionError("Target route for trip 000002 not found"));
+
+		List<Departure> sourceDepartures = new ArrayList<>(sourceRoute.getDepartures().values());
+		sourceDepartures.sort(Comparator.comparing(dep -> dep.getId().toString()));
+
+		List<Departure> targetDepartures = new ArrayList<>(targetRoute.getDepartures().values());
+		targetDepartures.sort(Comparator.comparing(dep -> dep.getId().toString()));
+
+		Assertions.assertFalse(sourceDepartures.isEmpty(), "Source route should have departures");
+		Assertions.assertEquals(targetDepartures.size(), sourceDepartures.size(),
+			"Source and target routes should have same number of departures for one-to-one chaining");
+
+		for (int i = 0; i < sourceDepartures.size(); i++) {
+			Departure sourceDeparture = sourceDepartures.get(i);
+			Departure targetDeparture = targetDepartures.get(i);
+
+			Assertions.assertNotNull(sourceDeparture.getChainedDepartures(), "Source departure should define chained departures");
+			Assertions.assertEquals(1, sourceDeparture.getChainedDepartures().size(),
+				"Each source departure should chain to exactly one target departure in this fixture");
+
+			ChainedDeparture chainedDeparture = sourceDeparture.getChainedDepartures().getFirst();
+			Assertions.assertEquals(transitLine.getId(), chainedDeparture.getChainedTransitLineId(), "Chained line id should match BRB line");
+			Assertions.assertEquals(targetRoute.getId(), chainedDeparture.getChainedRouteId(), "Chained route id should point to trip 000002 route");
+			Assertions.assertEquals(targetDeparture.getId(), chainedDeparture.getChainedDepartureId(),
+				"Chained departure id should point to corresponding target departure");
 		}
-		Assertions.assertTrue(foundDurchbindung, "At least one route should have durchbindung attribute set");
 	}
 
 }
