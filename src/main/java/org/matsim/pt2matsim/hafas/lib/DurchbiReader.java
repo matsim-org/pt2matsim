@@ -31,37 +31,34 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Reads the HAFAS DURCHBI file and provides durchbindungen (through-service) information.
- * DURCHBI describes cases where two separately listed trips are in reality one through-journey
- * for passengers (vehicles continue as another service without passengers having to change).
+ * Reads the HAFAS DURCHBI file and provides through-service relations.
  *
- * Format: Each line typically contains:
- * - First trip/route number
- * - Second trip/route number (continuation)
- * - Additional metadata (bitfeld nummer, etc.)
- *
- * @author copilot
+ * Fixed-width format:
+ * 1-6   INT32 Fahrtnummer 1
+ * 8-13  ASCII Verwaltung für Fahrt 1
+ * 15-21 INT32 letzter Halt der Fahrt 1
+ * 23-28 INT32 Fahrtnummer 2
+ * 30-35 ASCII Verwaltung für Fahrt 2
+ * 37-42 INT16 Verkehrstagebitfeldnummer
  */
 public class DurchbiReader {
 
 	private static final Logger log = LogManager.getLogger(DurchbiReader.class);
 
 	/**
-	 * Reads the DURCHBI file and returns a map of trip numbers to their continuation trip numbers.
-	 * Key: Initial trip number
-	 * Value: Continuation trip number (the trip that this vehicle continues as)
+	 * Reads the DURCHBI file and returns through-service relations.
 	 *
 	 * @param durchbiFile Path to the DURCHBI file
 	 * @param encodingCharset Character encoding of the file
-	 * @return Map of durchbindungen relationships
+	 * @return List of durchbindungen
 	 * @throws IOException if file cannot be read
 	 */
-	public static Map<String, String> readDurchbindungen(String durchbiFile, Charset encodingCharset) throws IOException {
-		Map<String, String> durchbindungen = new HashMap<>();
+	public static List<Durchbindung> readDurchbindungen(String durchbiFile, Charset encodingCharset) throws IOException {
+		List<Durchbindung> durchbindungen = new ArrayList<>();
 		
 		// Check if file exists
 		if (!Files.exists(Paths.get(durchbiFile))) {
@@ -80,24 +77,39 @@ public class DurchbiReader {
 				}
 
 				try {
-					// Parse the DURCHBI format
-					// According to HRDF spec, DURCHBI contains:
-					// Column 1-6: First trip number (fahrt nummer)
-					// Column 8-13: Second trip number (continuation)
-					// Additional columns may contain bitfeld nummer and other metadata
-					
-					if (line.length() < 13) {
+					if (line.length() < 42) {
 						log.warn("Line " + lineNumber + " in DURCHBI is too short, skipping: " + line);
 						continue;
 					}
 
 					String firstTrip = line.substring(0, 6).trim();
-					String secondTrip = line.substring(7, 13).trim();
+					String firstAdministration = line.substring(7, 13).trim();
+					String lastStopOfFirstTrip = line.substring(14, 21).trim();
+					String secondTrip = line.substring(22, 28).trim();
+					String secondAdministration = line.substring(29, 35).trim();
+					String bitfeldText = line.substring(36, 42).trim();
 
-					if (!firstTrip.isEmpty() && !secondTrip.isEmpty()) {
-						durchbindungen.put(firstTrip, secondTrip);
-						log.debug("Durchbindung: trip " + firstTrip + " continues as trip " + secondTrip);
+					if (firstTrip.isEmpty() || secondTrip.isEmpty()) {
+						log.warn("Line " + lineNumber + " in DURCHBI has missing trip number(s), skipping: " + line);
+						continue;
 					}
+
+					int bitfeldNumber;
+					try {
+						bitfeldNumber = bitfeldText.isEmpty() ? 0 : Integer.parseInt(bitfeldText);
+					} catch (NumberFormatException nfe) {
+						log.warn("Line " + lineNumber + " in DURCHBI has invalid bitfeld number, skipping: " + line);
+						continue;
+					}
+
+					durchbindungen.add(new Durchbindung(
+						firstTrip,
+						firstAdministration,
+						lastStopOfFirstTrip,
+						secondTrip,
+						secondAdministration,
+						bitfeldNumber
+					));
 				} catch (Exception e) {
 					log.warn("Error parsing line " + lineNumber + " in DURCHBI: " + line, e);
 				}

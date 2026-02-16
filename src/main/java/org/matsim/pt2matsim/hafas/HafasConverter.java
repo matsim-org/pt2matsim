@@ -37,11 +37,14 @@ import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.misc.Counter;
 import org.matsim.pt.transitSchedule.api.Departure;
+import org.matsim.pt.transitSchedule.api.ChainedDeparture;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitScheduleFactory;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
+import org.matsim.pt.transitSchedule.ChainedDepartureImpl;
+import org.matsim.pt2matsim.hafas.lib.Durchbindung;
 import org.matsim.pt2matsim.hafas.filter.BoundingBoxStopFilter;
 import org.matsim.pt2matsim.hafas.filter.HafasFilter;
 import org.matsim.pt2matsim.hafas.filter.OperationDayFilter;
@@ -111,7 +114,7 @@ public final class HafasConverter {
 
 		// 5. Read durchbindungen (through-services) from DURCHBI file
 		log.info("  Read durchbindungen...");
-		Map<String, String> durchbindungen = DurchbiReader.readDurchbindungen(hafasFolder + "DURCHBI", encodingCharset);
+		List<Durchbindung> durchbindungen = DurchbiReader.readDurchbindungen(hafasFolder + "DURCHBI", encodingCharset);
 		applyDurchbindungen(routes, durchbindungen);
 		log.info("  Read durchbindungen... done.");
 
@@ -155,45 +158,53 @@ public final class HafasConverter {
 
 	/**
 	 * Applies durchbindungen (through-services) to FPLANRoutes.
-	 * Sets the durchbindung reference on routes that continue as other routes.
+	 * Stores complete DURCHBI records on matching source routes.
 	 *
 	 * @param routes List of FPLANRoute objects
-	 * @param durchbindungen Map of trip numbers to their continuation trip numbers
+	 * @param durchbindungen List of DURCHBI records
 	 */
-	private static void applyDurchbindungen(List<FPLANRoute> routes, Map<String, String> durchbindungen) {
+	private static void applyDurchbindungen(List<FPLANRoute> routes, List<Durchbindung> durchbindungen) {
 		if (durchbindungen.isEmpty()) {
 			return;
 		}
 
-		// Create a map of trip numbers to routes for quick lookup
-		Map<String, FPLANRoute> tripNumberToRoute = new HashMap<>();
+		Map<String, List<FPLANRoute>> tripAdminToRoutes = new HashMap<>();
 		for (FPLANRoute route : routes) {
-			tripNumberToRoute.put(route.getFahrtNummer(), route);
+			tripAdminToRoutes.computeIfAbsent(createTripAdminKey(route.getFahrtNummer(), route.getOperatorCode()), key -> new ArrayList<>()).add(route);
 		}
 
-		// Apply durchbindungen
 		int appliedCount = 0;
-		for (Map.Entry<String, String> durchbindung : durchbindungen.entrySet()) {
-			String fromTrip = durchbindung.getKey();
-			String toTrip = durchbindung.getValue();
-
-			FPLANRoute fromRoute = tripNumberToRoute.get(fromTrip);
-			if (fromRoute != null) {
-				fromRoute.setDurchbindungTo(toTrip);
-				appliedCount++;
-				log.debug("Applied durchbindung: trip " + fromTrip + " continues as trip " + toTrip);
-			} else {
-				log.debug("Trip " + fromTrip + " not found in routes, durchbindung to " + toTrip + " not applied");
+		for (Durchbindung durchbindung : durchbindungen) {
+			List<FPLANRoute> candidates = tripAdminToRoutes.get(createTripAdminKey(durchbindung.firstTripNumber(), durchbindung.firstAdministration()));
+			if (candidates == null || candidates.isEmpty()) {
+				log.debug("Source trip {} / {} not found for durchbindung to {} / {}", durchbindung.firstTripNumber(), durchbindung.firstAdministration(),
+					durchbindung.secondTripNumber(), durchbindung.secondAdministration());
+				continue;
 			}
+
+			FPLANRoute sourceRoute = selectBestMatchingSourceRoute(candidates, durchbindung);
+			if (sourceRoute == null) {
+				log.debug("No suitable source route found for durchbindung {} -> {} with bitfeld {}", durchbindung.firstTripNumber(),
+					durchbindung.secondTripNumber(), durchbindung.operationDayBitfeldNumber());
+				continue;
+			}
+
+			sourceRoute.addDurchbindung(durchbindung);
+			appliedCount++;
 		}
 
 		log.info("Applied " + appliedCount + " durchbindungen to routes");
+	}
+
+	private record CreatedTransitRoute(FPLANRoute fplanRoute, Id<TransitLine> lineId, Id<TransitRoute> routeId, List<Departure> departures) {
 	}
 
 	private static void createTransitRoutesFromFPLAN(List<FPLANRoute> routes, TransitSchedule schedule, Vehicles vehicles, Set<Integer> bitfeldNummern) {
 		TransitScheduleFactory scheduleFactory = schedule.getFactory();
 		VehiclesFactory vehicleFactory = vehicles.getFactory();
 		Map<Id<TransitLine>, Integer> routeNrs = new HashMap<>();
+		Map<FPLANRoute, CreatedTransitRoute> createdRoutesByFplanRoute = new HashMap<>();
+		Map<String, List<CreatedTransitRoute>> createdRoutesByTripAdmin = new HashMap<>();
 
 		Counter lineCounter = new Counter(" TransitLine # ");
 
@@ -253,7 +264,8 @@ public final class HafasConverter {
 
 				// create actual TransitRoute
 				TransitRoute transitRoute = scheduleFactory.createTransitRoute(routeId, null, fplanRoute.getTransitRouteStops(bitfeldNummern), fplanRoute.getMode());
-				for(Departure departure : fplanRoute.getDepartures()) {
+				List<Departure> departures = fplanRoute.getDepartures();
+				for(Departure departure : departures) {
 					transitRoute.addDeparture(departure);
 					try {
 						vehicles.addVehicle(vehicleFactory.createVehicle(departure.getVehicleId(), vehicleType));
@@ -265,15 +277,100 @@ public final class HafasConverter {
 
 				transitRoute.setTransportMode(transportMode);
 
-				// Apply durchbindung information if available
-				if (fplanRoute.getDurchbindungTo() != null) {
-					transitRoute.getAttributes().putAttribute("durchbindungTo", fplanRoute.getDurchbindungTo());
-					log.debug("Set durchbindung attribute on route " + routeId + " to continue as trip " + fplanRoute.getDurchbindungTo());
-				}
-
 				transitLine.addRoute(transitRoute);
+
+				CreatedTransitRoute createdTransitRoute = new CreatedTransitRoute(fplanRoute, lineId, routeId, departures);
+				createdRoutesByFplanRoute.put(fplanRoute, createdTransitRoute);
+				createdRoutesByTripAdmin.computeIfAbsent(createTripAdminKey(fplanRoute.getFahrtNummer(), fplanRoute.getOperatorCode()), key -> new ArrayList<>()).add(createdTransitRoute);
 			}
 		}
+
+		applyChainedDepartures(routes, createdRoutesByFplanRoute, createdRoutesByTripAdmin);
+	}
+
+	private static void applyChainedDepartures(List<FPLANRoute> routes, Map<FPLANRoute, CreatedTransitRoute> createdRoutesByFplanRoute,
+			Map<String, List<CreatedTransitRoute>> createdRoutesByTripAdmin) {
+		int chainCount = 0;
+		for (FPLANRoute sourceRoute : routes) {
+			if (sourceRoute.getDurchbindungen().isEmpty()) {
+				continue;
+			}
+
+			CreatedTransitRoute createdSource = createdRoutesByFplanRoute.get(sourceRoute);
+			if (createdSource == null) {
+				continue;
+			}
+
+			Map<Id<Departure>, List<ChainedDeparture>> chainedByDepartureId = new HashMap<>();
+			for (Durchbindung durchbindung : sourceRoute.getDurchbindungen()) {
+				List<CreatedTransitRoute> targetCandidates = createdRoutesByTripAdmin.get(createTripAdminKey(durchbindung.secondTripNumber(), durchbindung.secondAdministration()));
+				if (targetCandidates == null || targetCandidates.isEmpty()) {
+					log.debug("No target route found for durchbindung {} / {} -> {} / {}", durchbindung.firstTripNumber(), durchbindung.firstAdministration(),
+						durchbindung.secondTripNumber(), durchbindung.secondAdministration());
+					continue;
+				}
+
+				CreatedTransitRoute targetRoute = selectBestMatchingTargetRoute(targetCandidates, durchbindung.operationDayBitfeldNumber());
+				if (targetRoute == null) {
+					continue;
+				}
+
+				int pairCount = Math.min(createdSource.departures().size(), targetRoute.departures().size());
+				for (int i = 0; i < pairCount; i++) {
+					Departure sourceDeparture = createdSource.departures().get(i);
+					Departure targetDeparture = targetRoute.departures().get(i);
+					chainedByDepartureId.computeIfAbsent(sourceDeparture.getId(), key -> new ArrayList<>())
+						.add(new ChainedDepartureImpl(targetRoute.lineId(), targetRoute.routeId(), targetDeparture.getId()));
+					chainCount++;
+				}
+			}
+
+			for (Departure departure : createdSource.departures()) {
+				List<ChainedDeparture> chainedDepartures = chainedByDepartureId.get(departure.getId());
+				if (chainedDepartures != null && !chainedDepartures.isEmpty()) {
+					departure.setChainedDepartures(chainedDepartures);
+				}
+			}
+		}
+		log.info("Created " + chainCount + " chained departures from DURCHBI relations");
+	}
+
+	private static String createTripAdminKey(String tripNumber, String administration) {
+		return (tripNumber == null ? "" : tripNumber.trim()) + "|" + (administration == null ? "" : administration.trim());
+	}
+
+	private static FPLANRoute selectBestMatchingSourceRoute(List<FPLANRoute> candidates, Durchbindung durchbindung) {
+		for (FPLANRoute candidate : candidates) {
+			boolean lastStopMatches = durchbindung.lastStopOfFirstTrip() == null || durchbindung.lastStopOfFirstTrip().isEmpty()
+				|| durchbindung.lastStopOfFirstTrip().equals(candidate.getLastStopId().trim());
+			if (lastStopMatches && routeContainsBitfeld(candidate, durchbindung.operationDayBitfeldNumber())) {
+				return candidate;
+			}
+		}
+
+		for (FPLANRoute candidate : candidates) {
+			if (routeContainsBitfeld(candidate, durchbindung.operationDayBitfeldNumber())) {
+				return candidate;
+			}
+		}
+
+		return candidates.get(0);
+	}
+
+	private static CreatedTransitRoute selectBestMatchingTargetRoute(List<CreatedTransitRoute> candidates, int bitfeldNumber) {
+		for (CreatedTransitRoute candidate : candidates) {
+			if (routeContainsBitfeld(candidate.fplanRoute(), bitfeldNumber)) {
+				return candidate;
+			}
+		}
+		return candidates.get(0);
+	}
+
+	private static boolean routeContainsBitfeld(FPLANRoute route, int bitfeldNumber) {
+		if (bitfeldNumber <= 0) {
+			return true;
+		}
+		return route.getLocalBitfeldNumbers().contains(bitfeldNumber);
 	}
 
 	private static Id<TransitLine> createLineId(FPLANRoute route) {
