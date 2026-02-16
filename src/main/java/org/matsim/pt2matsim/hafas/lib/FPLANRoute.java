@@ -72,6 +72,7 @@ public class FPLANRoute {
 	private Id<VehicleType> vehicleTypeId;
 	private boolean isRailReplacementBus;
 	private final Map<Integer, Tuple<String, String>> localBitfeldNummern = new TreeMap<>();
+	private String durchbindungTo; // Trip number that this trip continues as (durchbindung/through-service)
 
 	public record HafasRouteStop(String stopFacilityId, int arrivalTime, int departureTime, boolean isBoardingAllowed, boolean isAlightingAllowed) {}
 
@@ -334,6 +335,14 @@ public class FPLANRoute {
 
 	public boolean isRailReplacementBus() {
 		return isRailReplacementBus;
+	}
+
+	public void setDurchbindungTo(String continuationTripNumber) {
+		this.durchbindungTo = continuationTripNumber;
+	}
+
+	public String getDurchbindungTo() {
+		return durchbindungTo;
 	}
 
 	public void addLocalBitfeldNr(int localBitfeldnr, String startStopId, String endStopId) {

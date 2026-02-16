@@ -46,6 +46,7 @@ import org.matsim.pt2matsim.hafas.filter.BoundingBoxStopFilter;
 import org.matsim.pt2matsim.hafas.filter.HafasFilter;
 import org.matsim.pt2matsim.hafas.filter.OperationDayFilter;
 import org.matsim.pt2matsim.hafas.filter.StopsFilter;
+import org.matsim.pt2matsim.hafas.lib.DurchbiReader;
 import org.matsim.pt2matsim.hafas.lib.FPLANReader;
 import org.matsim.pt2matsim.hafas.lib.FPLANRoute;
 import org.matsim.pt2matsim.hafas.lib.MinimalTransferTimesReader;
@@ -108,7 +109,11 @@ public final class HafasConverter {
 		List<FPLANRoute> routes = FPLANReader.parseFPLAN(operators, hafasFolder + "FPLAN", filters, encodingCharset);
 		log.info("  Read transit lines... done.");
 
-		// TODO another important HAFAS-file is DURCHBI. This feature is not supported by MATSim yet (but in Switzerland, for example, locally very important.
+		// 5. Read durchbindungen (through-services) from DURCHBI file
+		log.info("  Read durchbindungen...");
+		Map<String, String> durchbindungen = DurchbiReader.readDurchbindungen(hafasFolder + "DURCHBI", encodingCharset);
+		applyDurchbindungen(routes, durchbindungen);
+		log.info("  Read durchbindungen... done.");
 
 		log.info("  Creating transit routes...");
 		OperationDayFilter operationDayFilter = (OperationDayFilter) filters.stream().filter(f -> f instanceof OperationDayFilter).findAny().orElse(null);
@@ -116,7 +121,7 @@ public final class HafasConverter {
 		createTransitRoutesFromFPLAN(routes, schedule, vehicles, bitfeldNummern);
 		log.info("  Creating transit routes... done.");
 
-		// 5. Clean schedule
+		// 6. Clean schedule
 		Set<Id<TransitStopFacility>> stopsToKeep = new HashSet<>();
 		if (keepStopsInFilter) {
 			stopsToKeep = getStopsFromFilters(schedule, filters);
@@ -146,6 +151,43 @@ public final class HafasConverter {
 			}
 		}
 		return stopsToKeep;
+	}
+
+	/**
+	 * Applies durchbindungen (through-services) to FPLANRoutes.
+	 * Sets the durchbindung reference on routes that continue as other routes.
+	 *
+	 * @param routes List of FPLANRoute objects
+	 * @param durchbindungen Map of trip numbers to their continuation trip numbers
+	 */
+	private static void applyDurchbindungen(List<FPLANRoute> routes, Map<String, String> durchbindungen) {
+		if (durchbindungen.isEmpty()) {
+			return;
+		}
+
+		// Create a map of trip numbers to routes for quick lookup
+		Map<String, FPLANRoute> tripNumberToRoute = new HashMap<>();
+		for (FPLANRoute route : routes) {
+			tripNumberToRoute.put(route.getFahrtNummer(), route);
+		}
+
+		// Apply durchbindungen
+		int appliedCount = 0;
+		for (Map.Entry<String, String> durchbindung : durchbindungen.entrySet()) {
+			String fromTrip = durchbindung.getKey();
+			String toTrip = durchbindung.getValue();
+
+			FPLANRoute fromRoute = tripNumberToRoute.get(fromTrip);
+			if (fromRoute != null) {
+				fromRoute.setDurchbindungTo(toTrip);
+				appliedCount++;
+				log.debug("Applied durchbindung: trip " + fromTrip + " continues as trip " + toTrip);
+			} else {
+				log.debug("Trip " + fromTrip + " not found in routes, durchbindung to " + toTrip + " not applied");
+			}
+		}
+
+		log.info("Applied " + appliedCount + " durchbindungen to routes");
 	}
 
 	private static void createTransitRoutesFromFPLAN(List<FPLANRoute> routes, TransitSchedule schedule, Vehicles vehicles, Set<Integer> bitfeldNummern) {
@@ -222,6 +264,12 @@ public final class HafasConverter {
 				}
 
 				transitRoute.setTransportMode(transportMode);
+
+				// Apply durchbindung information if available
+				if (fplanRoute.getDurchbindungTo() != null) {
+					transitRoute.getAttributes().putAttribute("durchbindungTo", fplanRoute.getDurchbindungTo());
+					log.debug("Set durchbindung attribute on route " + routeId + " to continue as trip " + fplanRoute.getDurchbindungTo());
+				}
 
 				transitLine.addRoute(transitRoute);
 			}
