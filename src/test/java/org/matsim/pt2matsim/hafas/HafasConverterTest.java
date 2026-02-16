@@ -75,4 +75,23 @@ class HafasConverterTest {
 		Assertions.assertEquals(3, schedule.getFacilities().size());
 	}
 
+	@Test
+	void durchbindungen() {
+		// Test that durchbindungen are properly loaded and applied
+		// Based on test/BrienzRothornBahn-HAFAS/DURCHBI which links trip 000001 to 000002
+		TransitLine transitLine = schedule.getTransitLines().get(Id.create("BRB", TransitLine.class));
+		Assertions.assertNotNull(transitLine, "Transit line BRB should exist");
+		
+		// Check if durchbindung attribute is set on the first route
+		boolean foundDurchbindung = false;
+		for (TransitRoute route : transitLine.getRoutes().values()) {
+			Object durchbindungAttr = route.getAttributes().getAttribute("durchbindungTo");
+			if (durchbindungAttr != null) {
+				foundDurchbindung = true;
+				Assertions.assertEquals("000002", durchbindungAttr, "Durchbindung should link to trip 000002");
+			}
+		}
+		Assertions.assertTrue(foundDurchbindung, "At least one route should have durchbindung attribute set");
+	}
+
 }
