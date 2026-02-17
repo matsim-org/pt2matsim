@@ -3,6 +3,7 @@ package org.matsim.pt2matsim.hafas.lib;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.matsim.pt2matsim.hafas.lib.DurchbiReader.Durchbindung;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -35,10 +36,10 @@ class DurchbiReaderTest {
 		// Verify results
 		Assertions.assertEquals(3, durchbindungen.size(), "Should read 3 durchbindungen");
 		Assertions.assertEquals("000001", durchbindungen.get(0).firstTripNumber());
-		Assertions.assertEquals("000104", durchbindungen.get(0).firstAdministration());
+		Assertions.assertEquals("000104", durchbindungen.get(0).firstOperator());
 		Assertions.assertEquals("8508352", durchbindungen.get(0).lastStopOfFirstTrip());
 		Assertions.assertEquals("000002", durchbindungen.get(0).secondTripNumber());
-		Assertions.assertEquals("000104", durchbindungen.get(0).secondAdministration());
+		Assertions.assertEquals("000104", durchbindungen.get(0).secondOperator());
 		Assertions.assertEquals(3499, durchbindungen.get(0).operationDayBitfeldNumber());
 
 		Assertions.assertEquals("000003", durchbindungen.get(1).firstTripNumber());

@@ -50,6 +50,26 @@ public class DurchbiReader {
 	private static final Logger log = LogManager.getLogger(DurchbiReader.class);
 
 	/**
+	 * A through-service relation from HAFAS DURCHBI.
+	 *
+	 * @param firstTripNumber Fahrtnummer 1
+	 * @param firstOperator Verwaltung für Fahrt 1
+	 * @param lastStopOfFirstTrip letzter Halt der Fahrt 1
+	 * @param secondTripNumber Fahrtnummer 2
+	 * @param secondOperator Verwaltung für Fahrt 2
+	 * @param operationDayBitfeldNumber Verkehrstagebitfeldnummer
+	 */
+	public record Durchbindung(
+		String firstTripNumber,
+		String firstOperator,
+		String lastStopOfFirstTrip,
+		String secondTripNumber,
+		String secondOperator,
+		int operationDayBitfeldNumber
+	) {
+	}
+
+	/**
 	 * Reads the DURCHBI file and returns through-service relations.
 	 *
 	 * @param durchbiFile Path to the DURCHBI file
@@ -83,10 +103,10 @@ public class DurchbiReader {
 					}
 
 					String firstTrip = line.substring(0, 6).trim();
-					String firstAdministration = line.substring(7, 13).trim();
+					String firstOperator = line.substring(7, 13).trim();
 					String lastStopOfFirstTrip = line.substring(14, 21).trim();
 					String secondTrip = line.substring(22, 28).trim();
-					String secondAdministration = line.substring(29, 35).trim();
+					String secondOperator = line.substring(29, 35).trim();
 					String bitfeldText = line.substring(36, 42).trim();
 
 					if (firstTrip.isEmpty() || secondTrip.isEmpty()) {
@@ -104,10 +124,10 @@ public class DurchbiReader {
 
 					durchbindungen.add(new Durchbindung(
 						firstTrip,
-						firstAdministration,
+						firstOperator,
 						lastStopOfFirstTrip,
 						secondTrip,
-						secondAdministration,
+						secondOperator,
 						bitfeldNumber
 					));
 				} catch (Exception e) {

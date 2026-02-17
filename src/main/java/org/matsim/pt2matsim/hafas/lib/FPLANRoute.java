@@ -72,7 +72,7 @@ public class FPLANRoute {
 	private Id<VehicleType> vehicleTypeId;
 	private boolean isRailReplacementBus;
 	private final Map<Integer, Tuple<String, String>> localBitfeldNummern = new TreeMap<>();
-	private final List<Durchbindung> durchbindungen = new ArrayList<>();
+	private final List<DurchbiReader.Durchbindung> durchbindungen = new ArrayList<>();
 
 	public record HafasRouteStop(String stopFacilityId, int arrivalTime, int departureTime, boolean isBoardingAllowed, boolean isAlightingAllowed) {}
 
@@ -337,11 +337,11 @@ public class FPLANRoute {
 		return isRailReplacementBus;
 	}
 
-	public void addDurchbindung(Durchbindung durchbindung) {
+	public void addDurchbindung(DurchbiReader.Durchbindung durchbindung) {
 		this.durchbindungen.add(durchbindung);
 	}
 
-	public List<Durchbindung> getDurchbindungen() {
+	public List<DurchbiReader.Durchbindung> getDurchbindungen() {
 		return durchbindungen;
 	}
 
