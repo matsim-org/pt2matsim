@@ -22,8 +22,6 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.SortedSet;
 
-import org.matsim.core.utils.collections.Tuple;
-
 /**
  * @author polettif
  */

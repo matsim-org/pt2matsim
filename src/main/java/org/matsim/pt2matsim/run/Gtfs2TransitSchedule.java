@@ -159,7 +159,7 @@ public final class Gtfs2TransitSchedule {
 	 * @return true if <tt>check</tt> is a valid sample day parameter value.
 	 */
 	private static boolean isValidSampleDayParam(String check) {
-		if(!check.equals(ALL_SERVICE_IDS) && !check.equals(DAY_WITH_MOST_TRIPS) && !check.equals(DAY_WITH_MOST_SERVICES)) {
+		if(!check.equals(ALL_SERVICE_IDS) && !check.equals(DAY_WITH_MOST_TRIPS) && !check.equals(DAY_WITH_MOST_SERVICES) && !check.equals(WEEK_WITH_MOST_SERVICES) && !check.equals(WEEK_WITH_MOST_TRIPS)) {
 			if (check.contains("-")) {
 				String[] parts = check.split("-");
 				return checkDate(parts[0]) && checkDate(parts[1]);

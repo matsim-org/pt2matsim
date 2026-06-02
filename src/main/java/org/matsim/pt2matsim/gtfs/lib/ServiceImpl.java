@@ -23,8 +23,6 @@ package org.matsim.pt2matsim.gtfs.lib;
 import java.time.LocalDate;
 import java.util.*;
 
-import org.matsim.core.utils.collections.Tuple;
-
 public class ServiceImpl implements Service {
 
 	private final String id;
@@ -144,6 +142,9 @@ public class ServiceImpl implements Service {
 
 	@Override
 	public boolean runsOnDate(LocalDate checkDate) {
+		if(checkDate == null) {
+			return true;
+		}
 		// check if checkDate is an addition
 		if(this.getAdditions().contains(checkDate)) {
 			return true;
