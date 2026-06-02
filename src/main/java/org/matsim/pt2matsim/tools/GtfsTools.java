@@ -355,10 +355,16 @@ public final class GtfsTools {
 	 * Returns a set of dates that are covered by the service within the given date range
 	 */
 	static public Set<LocalDate> getMatchingServiceDates(Tuple<LocalDate, LocalDate> dateRange, Service service) {
+		if (dateRange == null) {
+			// return a dummy date, all services are put on that date
+			return Set.of(LocalDate.of(2042, 7, 12));
+		}
+
 		LocalDate startDate = dateRange.getFirst();
-		LocalDate endDateExclusive = dateRange.getSecond();
+		LocalDate endDateExclusive = dateRange.getSecond().plusDays(1);
 
 		Set<LocalDate> selectedDates = startDate.datesUntil(endDateExclusive).collect(Collectors.toSet());
+		System.out.println("here");
 		selectedDates.removeIf(d -> !service.runsOnDate(d));
 
 		return selectedDates;

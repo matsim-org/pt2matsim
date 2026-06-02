@@ -209,7 +209,8 @@ public class GtfsConverter {
 					// check if the trip actually runs on the extract date
 					Set<LocalDate> serviceDates = GtfsTools.getMatchingServiceDates(dateRange, trip.getService());
 					if (serviceDates.size() > 0) {
-						TransitRoute transitRoute = createTransitRoute(trip, schedule.getFacilities(), dateRange.getFirst(), serviceDates);
+						LocalDate referenceDate = dateRange != null ? dateRange.getFirst() : serviceDates.iterator().next();
+						TransitRoute transitRoute = createTransitRoute(trip, schedule.getFacilities(), referenceDate, serviceDates);
 						if(transitRoute != null) {
 							newTransitLine.addRoute(transitRoute);
 						}
