@@ -86,11 +86,11 @@ public final class Gtfs2TransitSchedule {
 	 */
 	public static void main(final String[] args) {
 		if(args.length == 6) {
-			run(args[0], args[1], args[2], args[3], args[4], args[5], false);
+			run(args[0], args[1], args[2], args[3], args[4], args[5], false, false);
 		} else if(args.length == 5) {
-			run(args[0], args[1], args[2], args[3], args[4], null, false);
+			run(args[0], args[1], args[2], args[3], args[4], null, false, false);
 		} else if(args.length == 4) {
-			run(args[0], args[1], args[2], args[3], null, null, false);
+			run(args[0], args[1], args[2], args[3], null, null, false, false);
 		} else {
 			throw new IllegalArgumentException("Wrong number of input arguments.");
 		}
@@ -120,12 +120,12 @@ public final class Gtfs2TransitSchedule {
 	 *     				             	<li>output file path (.csv) -> will be written as specified csv file</li>
 	 *     				             	</ul>
 	 */
-	public static void run(String gtfsFolder, String sampleDayParam, String outputCoordinateSystem, String scheduleFile, String vehicleFile, String additionalLineInfoFile, boolean writeCrs) {
+	public static void run(String gtfsFolder, String sampleDayParam, String outputCoordinateSystem, String scheduleFile, String vehicleFile, String additionalLineInfoFile, boolean writeCrs, boolean writeWeekdayForDepartures) {
 		Configurator.setLevel(LogManager.getLogger(MGC.class).getName(), Level.ERROR);
 
 		// check sample day parameter
 		if(!isValidSampleDayParam(sampleDayParam)) {
-			throw new IllegalArgumentException("Sample day parameter not recognized! Allowed: date in format \"yyyymmdd\", " + DAY_WITH_MOST_SERVICES + ", " + DAY_WITH_MOST_TRIPS + ", " + ALL_SERVICE_IDS);
+			throw new IllegalArgumentException("Sample day parameter not recognized! Allowed: date in format \"yyyymmdd\", or range in format \"yyyymmdd-yyyymmdd\", " + DAY_WITH_MOST_SERVICES + ", " + DAY_WITH_MOST_TRIPS + ", " + WEEK_WITH_MOST_SERVICES + ", " + WEEK_WITH_MOST_TRIPS + ", " + ALL_SERVICE_IDS);
 		}
 		String param = sampleDayParam == null ? DAY_WITH_MOST_TRIPS : sampleDayParam;
 
@@ -134,6 +134,7 @@ public final class Gtfs2TransitSchedule {
 
 		// convert to transit schedule
 		GtfsConverter converter = new GtfsConverter(gtfsFeed);
+		converter.setWriteWeedayForDepartures(writeWeekdayForDepartures);
 		converter.convert(param, outputCoordinateSystem);
 
 		if (additionalLineInfoFile != null && additionalLineInfoFile.equals(INFO_OUTPUT_OPTION_SCHEDULE)) {
@@ -159,12 +160,23 @@ public final class Gtfs2TransitSchedule {
 	 */
 	private static boolean isValidSampleDayParam(String check) {
 		if(!check.equals(ALL_SERVICE_IDS) && !check.equals(DAY_WITH_MOST_TRIPS) && !check.equals(DAY_WITH_MOST_SERVICES)) {
-			try {
-				LocalDate.of(Integer.parseInt(check.substring(0, 4)), Integer.parseInt(check.substring(4, 6)), Integer.parseInt(check.substring(6, 8)));
-			} catch (NumberFormatException e) {
-				return false;
+			if (check.contains("-")) {
+				String[] parts = check.split("-");
+				return checkDate(parts[0]) && checkDate(parts[1]);
+			} else {
+				return checkDate(check);
 			}
 		}
+		return true;
+	}
+
+	private static boolean checkDate(String check) {
+		try {
+			LocalDate.of(Integer.parseInt(check.substring(0, 4)), Integer.parseInt(check.substring(4, 6)), Integer.parseInt(check.substring(6, 8)));
+		} catch (NumberFormatException e) {
+			return false;
+		}
+
 		return true;
 	}
 	

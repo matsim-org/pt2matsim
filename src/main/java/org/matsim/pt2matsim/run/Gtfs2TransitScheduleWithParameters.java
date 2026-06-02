@@ -13,7 +13,7 @@ public final class Gtfs2TransitScheduleWithParameters {
 	public static void main(String[] args) throws ConfigurationException {
 		CommandLine cmd = new CommandLine.Builder(args)
 				.requireOptions("input-path", "day", "crs", "output-schedule-path")
-				.allowOptions("output-vehicles-path", "output-additional-line-info-path", "write-crs")
+				.allowOptions("output-vehicles-path", "output-additional-line-info-path", "write-crs", "write-weekday-for-departures")
 				.build();
 
 		Gtfs2TransitSchedule.run(
@@ -23,6 +23,7 @@ public final class Gtfs2TransitScheduleWithParameters {
 				cmd.getOptionStrict("output-schedule-path"),
 				cmd.getOption("output-vehicles-path").orElse(null),
 				cmd.getOption("output-additional-line-info-path").orElse(null),
-				cmd.getOption("write-crs").map(Boolean::parseBoolean).orElse(false));
+				cmd.getOption("write-crs").map(Boolean::parseBoolean).orElse(false),
+				cmd.getOption("write-weekday-for-departures").map(Boolean::parseBoolean).orElse(false));
 	}
 }
