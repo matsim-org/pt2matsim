@@ -23,6 +23,7 @@ import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.core.utils.collections.MapUtils;
+import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
@@ -102,6 +103,64 @@ public final class GtfsTools {
 			}
 		}
 		return busiestDate;
+	}
+
+	/**
+	 * @return the week of the feed during which the most trips occur (first day is monday, last is sunday)
+	 */
+	public static Tuple<LocalDate, LocalDate> getWeekWithMostTrips(GtfsFeed feed) {
+		// count trips for each week (referenced by monday)
+		Map<LocalDate, Integer> tripsDuringWeek = new TreeMap<>();
+		for(Service service : feed.getServices().values()) {
+			for(LocalDate day : service.getCoveredDays()) {
+				tripsDuringWeek.compute(getMonday(day), (d, v) -> v == null ? service.getTrips().size() : v + service.getTrips().size());
+			}
+		}
+
+		// find the week with the most (daily) services
+		int maximumServices = 0;
+		LocalDate busiestWeekMonday = null;
+
+		for (var entry : tripsDuringWeek.entrySet()) {
+			if (entry.getValue() > maximumServices) {
+				maximumServices = entry.getValue();
+				busiestWeekMonday = entry.getKey();
+			}
+		}
+
+		LocalDate busiestWeekSunday = busiestWeekMonday.plusDays(7);
+		return Tuple.of(busiestWeekMonday, busiestWeekSunday);
+	}
+
+	/**
+	 * @return the week of the feed during which the most services occur (first day is monday, last is sunday)
+	 */
+	public static Tuple<LocalDate, LocalDate> getWeekWithMostServices(GtfsFeed feed) {
+		// count services for each week (referenced by monday)
+		Map<LocalDate, Integer> servicesDuringWeek = new TreeMap<>();
+		for(Service service : feed.getServices().values()) {
+			for(LocalDate day : service.getCoveredDays()) {
+				servicesDuringWeek.compute(getMonday(day), (d, v) -> v == null ? 1 : v + 1);
+			}
+		}
+
+		// find the week with the most (daily) services
+		int maximumServices = 0;
+		LocalDate busiestWeekMonday = null;
+
+		for (var entry : servicesDuringWeek.entrySet()) {
+			if (entry.getValue() > maximumServices) {
+				maximumServices = entry.getValue();
+				busiestWeekMonday = entry.getKey();
+			}
+		}
+
+		LocalDate busiestWeekSunday = busiestWeekMonday.plusDays(7);
+		return Tuple.of(busiestWeekMonday, busiestWeekSunday);
+	}
+
+	private static LocalDate getMonday(LocalDate date) {
+		return date.minusDays(date.getDayOfWeek().getValue() - 1);
 	}
 
 	/**

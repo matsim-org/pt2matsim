@@ -21,6 +21,7 @@ package org.matsim.pt2matsim.gtfs;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
+import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.gtfs.lib.*;
@@ -29,6 +30,8 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 import org.matsim.pt2matsim.tools.lib.RouteShape;
 import org.matsim.vehicles.*;
+
+import com.google.common.base.Verify;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -50,6 +53,8 @@ public class GtfsConverter {
 	public static final String ALL_SERVICE_IDS = "all";
 	public static final String DAY_WITH_MOST_TRIPS = "dayWithMostTrips";
 	public static final String DAY_WITH_MOST_SERVICES = "dayWithMostServices";
+	public static final String WEEK_WITH_MOST_TRIPS = "weekWithMostTrips";
+	public static final String WEEK_WITH_MOST_SERVICES = "weekWithMostServices";
 
 	protected static Logger log = LogManager.getLogger(GtfsConverter.class);
 	protected final GtfsFeed feed;
@@ -106,7 +111,7 @@ public class GtfsConverter {
 		this.feed.transform(transformation);
 
 		// get sample date
-		LocalDate extractDate = getExtractDate(serviceIdsParam);
+		LocalDate extractDate = getExtractDateRange(serviceIdsParam);
 		if(extractDate != null) log.info("    Extracting schedule from date " + extractDate);
 
 		// generate TransitStopFacilities from gtfsStops and add them to the schedule
@@ -373,7 +378,7 @@ public class GtfsConverter {
 	/**
 	 * @return The date from which services and thus trips should be extracted
 	 */
-	protected LocalDate getExtractDate(String param) {
+	protected Tuple<LocalDate, LocalDate> getExtractDateRange(String param) {
 		switch(param) {
 			case ALL_SERVICE_IDS: {
 				log.warn("    Using all trips is not recommended");
@@ -383,23 +388,49 @@ public class GtfsConverter {
 
 			case DAY_WITH_MOST_SERVICES: {
 				log.info("    Using service IDs of the day with the most services (" + DAY_WITH_MOST_SERVICES + ").");
-				return GtfsTools.getDayWithMostServices(feed);
+				LocalDate date = GtfsTools.getDayWithMostServices(feed);
+				return Tuple.of(date, date);
 			}
 
 			case DAY_WITH_MOST_TRIPS: {
 				log.info("    Using service IDs of the day with the most trips (" + DAY_WITH_MOST_TRIPS + ").");
-				return GtfsTools.getDayWithMostTrips(feed);
+				LocalDate date = GtfsTools.getDayWithMostTrips(feed);
+				return Tuple.of(date, date);
+			}
+
+			case WEEK_WITH_MOST_SERVICES: {
+				log.info("    Using service IDs of the week with the most services (" + WEEK_WITH_MOST_SERVICES + ").");
+				return GtfsTools.getWeekWithMostServices(feed);
+			}
+
+			case WEEK_WITH_MOST_TRIPS: {
+				log.info("    Using service IDs of the week with the most trips (" + WEEK_WITH_MOST_TRIPS + ").");
+				return GtfsTools.getWeekWithMostTrips(feed);
 			}
 
 			default: {
-				LocalDate date;
-				try {
-					date = LocalDate.of(Integer.parseInt(param.substring(0, 4)), Integer.parseInt(param.substring(4, 6)), Integer.parseInt(param.substring(6, 8)));
-				} catch (NumberFormatException e) {
-					throw new IllegalArgumentException("Extract param not recognized");
+				LocalDate startDate;
+				LocalDate endDate;
+
+				if (!param.contains("-")) {
+					startDate = endDate = parseDate(param);
+				} else {
+					String[] parts = param.split("-");
+					Verify.verify(parts.length == 2, "Invalid date range format YYYYMMDD-YYYMMDD: " + param);
+					startDate = parseDate(parts[0]);
+					endDate = parseDate(parts[1]);
 				}
-				return date;
+
+				return Tuple.of(startDate, endDate);
 			}
+		}
+	}
+
+	private LocalDate parseDate(String date) {
+		try {
+			return LocalDate.of(Integer.parseInt(date.substring(0, 4)), Integer.parseInt(date.substring(4, 6)), Integer.parseInt(date.substring(6, 8)));
+		} catch (NumberFormatException e) {
+			throw new IllegalArgumentException("Invalid date format YYYYMMDD: " + date);
 		}
 	}
 }
