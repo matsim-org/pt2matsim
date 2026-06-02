@@ -55,5 +55,5 @@ public interface Service {
 	/**
 	 * @return <code>true</code> if the given date is used by the service.
 	 */
-	boolean runsOnDates(Tuple<LocalDate, LocalDate> extractDate);
+	boolean runsOnDate(LocalDate extractDate);
 }

@@ -39,6 +39,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -305,10 +306,10 @@ public final class GtfsTools {
 	/**
 	 * @return a map that stores all trips for each stop on the given date
 	 */
-	public Map<Stop, Set<Trip>> getTripsForStops(GtfsFeed feed, Tuple<LocalDate, LocalDate> dateRange) {
+	public Map<Stop, Set<Trip>> getTripsForStops(GtfsFeed feed, LocalDate extractDate) {
 		Map<Stop, Set<Trip>> tripsForStop = new HashMap<>();
 		for(Trip trip : feed.getTrips().values()) {
-			if(trip.getService().runsOnDates(dateRange)) {
+			if(trip.getService().runsOnDate(extractDate)) {
 				for(StopTime stop : trip.getStopTimes()) {
 					MapUtils.getSet(stop.getStop(), tripsForStop).add(trip);
 				}
@@ -348,5 +349,18 @@ public final class GtfsTools {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * Returns a set of dates that are covered by the service within the given date range
+	 */
+	static public Set<LocalDate> getMatchingServiceDates(Tuple<LocalDate, LocalDate> dateRange, Service service) {
+		LocalDate startDate = dateRange.getFirst();
+		LocalDate endDateExclusive = dateRange.getSecond();
+
+		Set<LocalDate> selectedDates = startDate.datesUntil(endDateExclusive).collect(Collectors.toSet());
+		selectedDates.removeIf(d -> !service.runsOnDate(d));
+
+		return selectedDates;
 	}
 }

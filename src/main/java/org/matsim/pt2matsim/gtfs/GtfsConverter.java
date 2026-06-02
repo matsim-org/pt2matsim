@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -66,6 +67,8 @@ public class GtfsConverter {
 
 	protected int noStopTimeTrips;
 	protected int stopPairsWithoutOffset;
+
+	private boolean writeWeekdayForDepartures = false;
 
 	public GtfsConverter(GtfsFeed gtfsFeed) {
 		this.feed = gtfsFeed;
@@ -204,8 +207,9 @@ public class GtfsConverter {
 				// create TransitRoute for each trip
 				for(Trip trip : gtfsRoute.getTrips().values()) {
 					// check if the trip actually runs on the extract date
-					if(trip.getService().runsOnDates(dateRange)) {
-						TransitRoute transitRoute = createTransitRoute(trip, schedule.getFacilities());
+					Set<LocalDate> serviceDates = GtfsTools.getMatchingServiceDates(dateRange, trip.getService());
+					if (serviceDates.size() > 0) {
+						TransitRoute transitRoute = createTransitRoute(trip, schedule.getFacilities(), dateRange.getFirst(), serviceDates);
 						if(transitRoute != null) {
 							newTransitLine.addRoute(transitRoute);
 						}
@@ -237,7 +241,7 @@ public class GtfsConverter {
 	/**
 	 * @return null if route should not be converted
 	 */
-	protected TransitRoute createTransitRoute(Trip trip, Map<Id<TransitStopFacility>, TransitStopFacility> stopFacilities) {
+	protected TransitRoute createTransitRoute(Trip trip, Map<Id<TransitStopFacility>, TransitStopFacility> stopFacilities, LocalDate referenceDate, Set<LocalDate> serviceDates) {
 		Id<RouteShape> shapeId = trip.getShape() != null ? trip.getShape().getId() : null;
 
 		if(trip.getStopTimes().size() <= 1) {
@@ -269,8 +273,11 @@ public class GtfsConverter {
 
 			for(Frequency frequency : trip.getFrequencies()) {
 				for(int t = frequency.getStartTime(); t < frequency.getEndTime(); t += frequency.getHeadWaySecs()) {
-					Departure newDeparture = this.scheduleFactory.createDeparture(createDepartureId(transitRoute, t), t);
-					transitRoute.addDeparture(newDeparture);
+					for (LocalDate serviceDate : serviceDates) {
+						int serviceDateOffset = getServiceDateOffset(serviceDate, referenceDate);
+						Departure newDeparture = this.scheduleFactory.createDeparture(createDepartureId(transitRoute, t, serviceDate), t + serviceDateOffset);
+						transitRoute.addDeparture(newDeparture);
+					}
 				}
 			}
 		} else {
@@ -278,11 +285,19 @@ public class GtfsConverter {
 			int routeStartTime = trip.getStopTimes().first().getDepartureTime();
 
 			transitRoute = this.scheduleFactory.createTransitRoute(createTransitRouteId(trip), null, transitRouteStops, trip.getRoute().getRouteType().name);
-			Departure newDeparture = this.scheduleFactory.createDeparture(createDepartureId(transitRoute, routeStartTime), routeStartTime);
-			transitRoute.addDeparture(newDeparture);
+			
+			for (LocalDate serviceDate : serviceDates) {
+				int serviceDateOffset = getServiceDateOffset(serviceDate, referenceDate);
+				Departure newDeparture = this.scheduleFactory.createDeparture(createDepartureId(transitRoute, routeStartTime, serviceDate), routeStartTime + serviceDateOffset);
+				transitRoute.addDeparture(newDeparture);
+			}
 		}
 		if(shapeId != null) ScheduleTools.setShapeId(transitRoute, trip.getShape().getId());
 		return transitRoute;
+	}
+
+	private int getServiceDateOffset(LocalDate serviceDate, LocalDate referenceDate) {
+		return (int) serviceDate.datesUntil(referenceDate).count() * 24 * 3600;
 	}
 
 	protected TransitRouteStop createTransitRouteStop(StopTime stopTime, Trip trip, Map<Id<TransitStopFacility>, TransitStopFacility> stopFacilities) {
@@ -340,9 +355,17 @@ public class GtfsConverter {
 		return Id.create(stop.getId(), TransitStopFacility.class);
 	}
 
-	protected Id<Departure> createDepartureId(TransitRoute route, int time) {
-		String str = route.getId().toString() + "_" + Time.writeTime(time, "HH:mm:ss");
+	protected Id<Departure> createDepartureId(TransitRoute route, int time, LocalDate date) {
+		String str = route.getId().toString() + "_" + writeDate(date) + "_" + Time.writeTime(time, "HH:mm:ss");
 		return Id.create(str, Departure.class);
+	}
+
+	private String writeDate(LocalDate date) {
+		if (writeWeekdayForDepartures) {
+			return String.format("%s-%04d+-%02d-%02d", date.getDayOfWeek().name(), date.getYear(), date.getMonthValue(), date.getDayOfMonth());
+		} else {
+			return String.format("%04d+-%02d-%02d", date.getYear(), date.getMonthValue(), date.getDayOfMonth());
+		}
 	}
 
 	protected void createVehicles(TransitSchedule schedule, Vehicles vehicles) {
@@ -432,5 +455,9 @@ public class GtfsConverter {
 		} catch (NumberFormatException e) {
 			throw new IllegalArgumentException("Invalid date format YYYYMMDD: " + date);
 		}
+	}
+
+	public void setWriteWeedayForDepartures(boolean writeWeekdayForDepartures) {
+		this.writeWeekdayForDepartures = writeWeekdayForDepartures;
 	}
 }
