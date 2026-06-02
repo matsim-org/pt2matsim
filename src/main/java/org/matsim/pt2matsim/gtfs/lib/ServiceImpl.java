@@ -23,6 +23,8 @@ package org.matsim.pt2matsim.gtfs.lib;
 import java.time.LocalDate;
 import java.util.*;
 
+import org.matsim.core.utils.collections.Tuple;
+
 public class ServiceImpl implements Service {
 
 	private final String id;
@@ -141,10 +143,18 @@ public class ServiceImpl implements Service {
 	}
 
 	@Override
-	public boolean runsOnDate(LocalDate checkDate) {
-		if(checkDate == null) {
+	public boolean runsOnDates(Tuple<LocalDate, LocalDate> dateRange) {
+		if (dateRange == null) {
 			return true;
 		}
+
+		LocalDate startDate = dateRange.getFirst();
+		LocalDate endDateExclusive = dateRange.getSecond().plusDays(1);
+
+		return startDate.datesUntil(endDateExclusive).anyMatch(this::runsOnDate);
+	}
+
+	private boolean runsOnDate(LocalDate checkDate) {
 		// check if checkDate is an addition
 		if(this.getAdditions().contains(checkDate)) {
 			return true;

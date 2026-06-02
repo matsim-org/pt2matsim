@@ -111,8 +111,8 @@ public class GtfsConverter {
 		this.feed.transform(transformation);
 
 		// get sample date
-		LocalDate extractDate = getExtractDateRange(serviceIdsParam);
-		if(extractDate != null) log.info("    Extracting schedule from date " + extractDate);
+		Tuple<LocalDate, LocalDate> dateRange = getExtractDateRange(serviceIdsParam);
+		if(dateRange != null) log.info("    Extracting schedule from date " + dateRange.getFirst() + " to " + dateRange.getSecond());
 
 		// generate TransitStopFacilities from gtfsStops and add them to the schedule
 		createStopFacilities(schedule);
@@ -121,7 +121,7 @@ public class GtfsConverter {
 		createTransfers(schedule);
 
 		// Creating TransitLines from routes and TransitRoutes from trips
-		createTransitLines(schedule, extractDate);
+		createTransitLines(schedule, dateRange);
 
 		// combine TransitRoutes with identical stop/time sequences, add departures
 		combineTransitRoutes(schedule);
@@ -143,7 +143,7 @@ public class GtfsConverter {
 			counterRoutes += transitLine.getRoutes().size();
 		}
 		log.info("    Created " + counterRoutes + " routes on " + counterLines + " lines.");
-		if(extractDate != null) log.info("    Day " + extractDate);
+		if(dateRange != null) log.info("    Dates " + dateRange.getFirst() + " to " + dateRange.getSecond());
 		log.info("... GTFS converted to an unmapped MATSIM Transit Schedule");
 		log.info("#########################################################");
 
@@ -191,7 +191,7 @@ public class GtfsConverter {
 		return stopFacility;
 	}
 
-	protected void createTransitLines(TransitSchedule schedule, LocalDate extractDate) {
+	protected void createTransitLines(TransitSchedule schedule, Tuple<LocalDate, LocalDate> dateRange) {
 		// info
 		log.info("    Creating TransitLines from routes and TransitRoutes from trips...");
 
@@ -204,7 +204,7 @@ public class GtfsConverter {
 				// create TransitRoute for each trip
 				for(Trip trip : gtfsRoute.getTrips().values()) {
 					// check if the trip actually runs on the extract date
-					if(trip.getService().runsOnDate(extractDate)) {
+					if(trip.getService().runsOnDates(dateRange)) {
 						TransitRoute transitRoute = createTransitRoute(trip, schedule.getFacilities());
 						if(transitRoute != null) {
 							newTransitLine.addRoute(transitRoute);

@@ -22,6 +22,8 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.SortedSet;
 
+import org.matsim.core.utils.collections.Tuple;
+
 /**
  * @author polettif
  */
@@ -53,5 +55,5 @@ public interface Service {
 	/**
 	 * @return <code>true</code> if the given date is used by the service.
 	 */
-	boolean runsOnDate(LocalDate extractDate);
+	boolean runsOnDates(Tuple<LocalDate, LocalDate> extractDate);
 }

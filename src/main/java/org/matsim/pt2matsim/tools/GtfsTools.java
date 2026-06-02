@@ -305,10 +305,10 @@ public final class GtfsTools {
 	/**
 	 * @return a map that stores all trips for each stop on the given date
 	 */
-	public Map<Stop, Set<Trip>> getTripsForStops(GtfsFeed feed, LocalDate extractDate) {
+	public Map<Stop, Set<Trip>> getTripsForStops(GtfsFeed feed, Tuple<LocalDate, LocalDate> dateRange) {
 		Map<Stop, Set<Trip>> tripsForStop = new HashMap<>();
 		for(Trip trip : feed.getTrips().values()) {
-			if(trip.getService().runsOnDate(extractDate)) {
+			if(trip.getService().runsOnDates(dateRange)) {
 				for(StopTime stop : trip.getStopTimes()) {
 					MapUtils.getSet(stop.getStop(), tripsForStop).add(trip);
 				}
