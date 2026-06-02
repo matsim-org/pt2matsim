@@ -364,7 +364,6 @@ public final class GtfsTools {
 		LocalDate endDateExclusive = dateRange.getSecond().plusDays(1);
 
 		Set<LocalDate> selectedDates = startDate.datesUntil(endDateExclusive).collect(Collectors.toSet());
-		System.out.println("here");
 		selectedDates.removeIf(d -> !service.runsOnDate(d));
 
 		return selectedDates;

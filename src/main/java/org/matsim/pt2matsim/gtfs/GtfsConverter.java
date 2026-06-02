@@ -363,9 +363,9 @@ public class GtfsConverter {
 
 	private String writeDate(LocalDate date) {
 		if (writeWeekdayForDepartures) {
-			return String.format("%s-%04d+-%02d-%02d", date.getDayOfWeek().name(), date.getYear(), date.getMonthValue(), date.getDayOfMonth());
+			return String.format("%s-%04d-%02d-%02d", date.getDayOfWeek().name(), date.getYear(), date.getMonthValue(), date.getDayOfMonth());
 		} else {
-			return String.format("%04d+-%02d-%02d", date.getYear(), date.getMonthValue(), date.getDayOfMonth());
+			return String.format("%04d-%02d-%02d", date.getYear(), date.getMonthValue(), date.getDayOfMonth());
 		}
 	}
 
