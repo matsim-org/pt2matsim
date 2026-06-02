@@ -21,6 +21,7 @@ package org.matsim.pt2matsim.gtfs;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
+import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.gtfs.lib.*;
@@ -30,11 +31,14 @@ import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 import org.matsim.pt2matsim.tools.lib.RouteShape;
 import org.matsim.vehicles.*;
 
+import com.google.common.base.Verify;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -50,6 +54,8 @@ public class GtfsConverter {
 	public static final String ALL_SERVICE_IDS = "all";
 	public static final String DAY_WITH_MOST_TRIPS = "dayWithMostTrips";
 	public static final String DAY_WITH_MOST_SERVICES = "dayWithMostServices";
+	public static final String WEEK_WITH_MOST_TRIPS = "weekWithMostTrips";
+	public static final String WEEK_WITH_MOST_SERVICES = "weekWithMostServices";
 
 	protected static Logger log = LogManager.getLogger(GtfsConverter.class);
 	protected final GtfsFeed feed;
@@ -61,6 +67,8 @@ public class GtfsConverter {
 
 	protected int noStopTimeTrips;
 	protected int stopPairsWithoutOffset;
+
+	private boolean writeWeekdayForDepartures = false;
 
 	public GtfsConverter(GtfsFeed gtfsFeed) {
 		this.feed = gtfsFeed;
@@ -106,8 +114,8 @@ public class GtfsConverter {
 		this.feed.transform(transformation);
 
 		// get sample date
-		LocalDate extractDate = getExtractDate(serviceIdsParam);
-		if(extractDate != null) log.info("    Extracting schedule from date " + extractDate);
+		Tuple<LocalDate, LocalDate> dateRange = getExtractDateRange(serviceIdsParam);
+		if(dateRange != null) log.info("    Extracting schedule from date " + dateRange.getFirst() + " to " + dateRange.getSecond());
 
 		// generate TransitStopFacilities from gtfsStops and add them to the schedule
 		createStopFacilities(schedule);
@@ -116,7 +124,7 @@ public class GtfsConverter {
 		createTransfers(schedule);
 
 		// Creating TransitLines from routes and TransitRoutes from trips
-		createTransitLines(schedule, extractDate);
+		createTransitLines(schedule, dateRange);
 
 		// combine TransitRoutes with identical stop/time sequences, add departures
 		combineTransitRoutes(schedule);
@@ -138,7 +146,7 @@ public class GtfsConverter {
 			counterRoutes += transitLine.getRoutes().size();
 		}
 		log.info("    Created " + counterRoutes + " routes on " + counterLines + " lines.");
-		if(extractDate != null) log.info("    Day " + extractDate);
+		if(dateRange != null) log.info("    Dates " + dateRange.getFirst() + " to " + dateRange.getSecond());
 		log.info("... GTFS converted to an unmapped MATSIM Transit Schedule");
 		log.info("#########################################################");
 
@@ -186,7 +194,7 @@ public class GtfsConverter {
 		return stopFacility;
 	}
 
-	protected void createTransitLines(TransitSchedule schedule, LocalDate extractDate) {
+	protected void createTransitLines(TransitSchedule schedule, Tuple<LocalDate, LocalDate> dateRange) {
 		// info
 		log.info("    Creating TransitLines from routes and TransitRoutes from trips...");
 
@@ -199,8 +207,10 @@ public class GtfsConverter {
 				// create TransitRoute for each trip
 				for(Trip trip : gtfsRoute.getTrips().values()) {
 					// check if the trip actually runs on the extract date
-					if(trip.getService().runsOnDate(extractDate)) {
-						TransitRoute transitRoute = createTransitRoute(trip, schedule.getFacilities());
+					Set<LocalDate> serviceDates = GtfsTools.getMatchingServiceDates(dateRange, trip.getService());
+					if (serviceDates.size() > 0) {
+						LocalDate referenceDate = dateRange != null ? dateRange.getFirst() : serviceDates.iterator().next();
+						TransitRoute transitRoute = createTransitRoute(trip, schedule.getFacilities(), referenceDate, serviceDates);
 						if(transitRoute != null) {
 							newTransitLine.addRoute(transitRoute);
 						}
@@ -232,7 +242,7 @@ public class GtfsConverter {
 	/**
 	 * @return null if route should not be converted
 	 */
-	protected TransitRoute createTransitRoute(Trip trip, Map<Id<TransitStopFacility>, TransitStopFacility> stopFacilities) {
+	protected TransitRoute createTransitRoute(Trip trip, Map<Id<TransitStopFacility>, TransitStopFacility> stopFacilities, LocalDate referenceDate, Set<LocalDate> serviceDates) {
 		Id<RouteShape> shapeId = trip.getShape() != null ? trip.getShape().getId() : null;
 
 		if(trip.getStopTimes().size() <= 1) {
@@ -264,8 +274,11 @@ public class GtfsConverter {
 
 			for(Frequency frequency : trip.getFrequencies()) {
 				for(int t = frequency.getStartTime(); t < frequency.getEndTime(); t += frequency.getHeadWaySecs()) {
-					Departure newDeparture = this.scheduleFactory.createDeparture(createDepartureId(transitRoute, t), t);
-					transitRoute.addDeparture(newDeparture);
+					for (LocalDate serviceDate : serviceDates) {
+						int serviceDateOffset = getServiceDateOffset(serviceDate, referenceDate);
+						Departure newDeparture = this.scheduleFactory.createDeparture(createDepartureId(transitRoute, t, serviceDate), t + serviceDateOffset);
+						transitRoute.addDeparture(newDeparture);
+					}
 				}
 			}
 		} else {
@@ -273,11 +286,19 @@ public class GtfsConverter {
 			int routeStartTime = trip.getStopTimes().first().getDepartureTime();
 
 			transitRoute = this.scheduleFactory.createTransitRoute(createTransitRouteId(trip), null, transitRouteStops, trip.getRoute().getRouteType().name);
-			Departure newDeparture = this.scheduleFactory.createDeparture(createDepartureId(transitRoute, routeStartTime), routeStartTime);
-			transitRoute.addDeparture(newDeparture);
+			
+			for (LocalDate serviceDate : serviceDates) {
+				int serviceDateOffset = getServiceDateOffset(serviceDate, referenceDate);
+				Departure newDeparture = this.scheduleFactory.createDeparture(createDepartureId(transitRoute, routeStartTime, serviceDate), routeStartTime + serviceDateOffset);
+				transitRoute.addDeparture(newDeparture);
+			}
 		}
 		if(shapeId != null) ScheduleTools.setShapeId(transitRoute, trip.getShape().getId());
 		return transitRoute;
+	}
+
+	private int getServiceDateOffset(LocalDate serviceDate, LocalDate referenceDate) {
+		return (int) serviceDate.datesUntil(referenceDate).count() * 24 * 3600;
 	}
 
 	protected TransitRouteStop createTransitRouteStop(StopTime stopTime, Trip trip, Map<Id<TransitStopFacility>, TransitStopFacility> stopFacilities) {
@@ -335,9 +356,17 @@ public class GtfsConverter {
 		return Id.create(stop.getId(), TransitStopFacility.class);
 	}
 
-	protected Id<Departure> createDepartureId(TransitRoute route, int time) {
-		String str = route.getId().toString() + "_" + Time.writeTime(time, "HH:mm:ss");
+	protected Id<Departure> createDepartureId(TransitRoute route, int time, LocalDate date) {
+		String str = route.getId().toString() + "_" + writeDate(date) + "_" + Time.writeTime(time, "HH:mm:ss");
 		return Id.create(str, Departure.class);
+	}
+
+	private String writeDate(LocalDate date) {
+		if (writeWeekdayForDepartures) {
+			return String.format("%s-%04d-%02d-%02d", date.getDayOfWeek().name(), date.getYear(), date.getMonthValue(), date.getDayOfMonth());
+		} else {
+			return String.format("%04d-%02d-%02d", date.getYear(), date.getMonthValue(), date.getDayOfMonth());
+		}
 	}
 
 	protected void createVehicles(TransitSchedule schedule, Vehicles vehicles) {
@@ -373,7 +402,7 @@ public class GtfsConverter {
 	/**
 	 * @return The date from which services and thus trips should be extracted
 	 */
-	protected LocalDate getExtractDate(String param) {
+	protected Tuple<LocalDate, LocalDate> getExtractDateRange(String param) {
 		switch(param) {
 			case ALL_SERVICE_IDS: {
 				log.warn("    Using all trips is not recommended");
@@ -383,23 +412,53 @@ public class GtfsConverter {
 
 			case DAY_WITH_MOST_SERVICES: {
 				log.info("    Using service IDs of the day with the most services (" + DAY_WITH_MOST_SERVICES + ").");
-				return GtfsTools.getDayWithMostServices(feed);
+				LocalDate date = GtfsTools.getDayWithMostServices(feed);
+				return Tuple.of(date, date);
 			}
 
 			case DAY_WITH_MOST_TRIPS: {
 				log.info("    Using service IDs of the day with the most trips (" + DAY_WITH_MOST_TRIPS + ").");
-				return GtfsTools.getDayWithMostTrips(feed);
+				LocalDate date = GtfsTools.getDayWithMostTrips(feed);
+				return Tuple.of(date, date);
+			}
+
+			case WEEK_WITH_MOST_SERVICES: {
+				log.info("    Using service IDs of the week with the most services (" + WEEK_WITH_MOST_SERVICES + ").");
+				return GtfsTools.getWeekWithMostServices(feed);
+			}
+
+			case WEEK_WITH_MOST_TRIPS: {
+				log.info("    Using service IDs of the week with the most trips (" + WEEK_WITH_MOST_TRIPS + ").");
+				return GtfsTools.getWeekWithMostTrips(feed);
 			}
 
 			default: {
-				LocalDate date;
-				try {
-					date = LocalDate.of(Integer.parseInt(param.substring(0, 4)), Integer.parseInt(param.substring(4, 6)), Integer.parseInt(param.substring(6, 8)));
-				} catch (NumberFormatException e) {
-					throw new IllegalArgumentException("Extract param not recognized");
+				LocalDate startDate;
+				LocalDate endDate;
+
+				if (!param.contains("-")) {
+					startDate = endDate = parseDate(param);
+				} else {
+					String[] parts = param.split("-");
+					Verify.verify(parts.length == 2, "Invalid date range format YYYYMMDD-YYYMMDD: " + param);
+					startDate = parseDate(parts[0]);
+					endDate = parseDate(parts[1]);
 				}
-				return date;
+
+				return Tuple.of(startDate, endDate);
 			}
 		}
+	}
+
+	private LocalDate parseDate(String date) {
+		try {
+			return LocalDate.of(Integer.parseInt(date.substring(0, 4)), Integer.parseInt(date.substring(4, 6)), Integer.parseInt(date.substring(6, 8)));
+		} catch (NumberFormatException e) {
+			throw new IllegalArgumentException("Invalid date format YYYYMMDD: " + date);
+		}
+	}
+
+	public void setWriteWeedayForDepartures(boolean writeWeekdayForDepartures) {
+		this.writeWeekdayForDepartures = writeWeekdayForDepartures;
 	}
 }

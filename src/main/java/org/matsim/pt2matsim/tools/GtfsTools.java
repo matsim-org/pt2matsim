@@ -23,6 +23,7 @@ import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.core.utils.collections.MapUtils;
+import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.misc.Time;
@@ -38,6 +39,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -102,6 +104,64 @@ public final class GtfsTools {
 			}
 		}
 		return busiestDate;
+	}
+
+	/**
+	 * @return the week of the feed during which the most trips occur (first day is monday, last is sunday)
+	 */
+	public static Tuple<LocalDate, LocalDate> getWeekWithMostTrips(GtfsFeed feed) {
+		// count trips for each week (referenced by monday)
+		Map<LocalDate, Integer> tripsDuringWeek = new TreeMap<>();
+		for(Service service : feed.getServices().values()) {
+			for(LocalDate day : service.getCoveredDays()) {
+				tripsDuringWeek.compute(getMonday(day), (d, v) -> v == null ? service.getTrips().size() : v + service.getTrips().size());
+			}
+		}
+
+		// find the week with the most (daily) services
+		int maximumServices = 0;
+		LocalDate busiestWeekMonday = null;
+
+		for (var entry : tripsDuringWeek.entrySet()) {
+			if (entry.getValue() > maximumServices) {
+				maximumServices = entry.getValue();
+				busiestWeekMonday = entry.getKey();
+			}
+		}
+
+		LocalDate busiestWeekSunday = busiestWeekMonday.plusDays(7);
+		return Tuple.of(busiestWeekMonday, busiestWeekSunday);
+	}
+
+	/**
+	 * @return the week of the feed during which the most services occur (first day is monday, last is sunday)
+	 */
+	public static Tuple<LocalDate, LocalDate> getWeekWithMostServices(GtfsFeed feed) {
+		// count services for each week (referenced by monday)
+		Map<LocalDate, Integer> servicesDuringWeek = new TreeMap<>();
+		for(Service service : feed.getServices().values()) {
+			for(LocalDate day : service.getCoveredDays()) {
+				servicesDuringWeek.compute(getMonday(day), (d, v) -> v == null ? 1 : v + 1);
+			}
+		}
+
+		// find the week with the most (daily) services
+		int maximumServices = 0;
+		LocalDate busiestWeekMonday = null;
+
+		for (var entry : servicesDuringWeek.entrySet()) {
+			if (entry.getValue() > maximumServices) {
+				maximumServices = entry.getValue();
+				busiestWeekMonday = entry.getKey();
+			}
+		}
+
+		LocalDate busiestWeekSunday = busiestWeekMonday.plusDays(7);
+		return Tuple.of(busiestWeekMonday, busiestWeekSunday);
+	}
+
+	private static LocalDate getMonday(LocalDate date) {
+		return date.minusDays(date.getDayOfWeek().getValue() - 1);
 	}
 
 	/**
@@ -289,5 +349,23 @@ public final class GtfsTools {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * Returns a set of dates that are covered by the service within the given date range
+	 */
+	static public Set<LocalDate> getMatchingServiceDates(Tuple<LocalDate, LocalDate> dateRange, Service service) {
+		if (dateRange == null) {
+			// return a dummy date, all services are put on that date
+			return Set.of(LocalDate.of(2042, 7, 12));
+		}
+
+		LocalDate startDate = dateRange.getFirst();
+		LocalDate endDateExclusive = dateRange.getSecond().plusDays(1);
+
+		Set<LocalDate> selectedDates = startDate.datesUntil(endDateExclusive).collect(Collectors.toSet());
+		selectedDates.removeIf(d -> !service.runsOnDate(d));
+
+		return selectedDates;
 	}
 }

@@ -36,9 +36,9 @@
 				<stop refId="stop1" arrivalOffset="00:01:20" departureOffset="00:00:00" awaitDeparture="true"/>
 			</routeProfile>
 			<departures>
-				<departure id="routeA2_09:00:00" departureTime="09:00:00" vehicleRefId="veh_0_bus"/>
-				<departure id="routeA2_12:00:00" departureTime="12:00:00" vehicleRefId="veh_1_bus"/>
-				<departure id="routeA2_15:00:00" departureTime="15:00:00" vehicleRefId="veh_2_bus"/>
+				<departure id="routeA2_2018-10-05_09:00:00" departureTime="09:00:00" vehicleRefId="veh_0_bus"/>
+				<departure id="routeA2_2018-10-05_12:00:00" departureTime="12:00:00" vehicleRefId="veh_1_bus"/>
+				<departure id="routeA2_2018-10-05_15:00:00" departureTime="15:00:00" vehicleRefId="veh_2_bus"/>
 			</departures>
 		</transitRoute>
 		<transitRoute id="routeA1">
@@ -50,9 +50,9 @@
 				<stop refId="stop4" arrivalOffset="00:01:20" departureOffset="00:00:00" awaitDeparture="true"/>
 			</routeProfile>
 			<departures>
-				<departure id="routeA1_08:00:00" departureTime="08:00:00" vehicleRefId="veh_3_bus"/>
-				<departure id="routeA1_11:00:00" departureTime="11:00:00" vehicleRefId="veh_4_bus"/>
-				<departure id="routeA1_14:00:00" departureTime="14:00:00" vehicleRefId="veh_5_bus"/>
+				<departure id="routeA1_2018-10-05_08:00:00" departureTime="08:00:00" vehicleRefId="veh_3_bus"/>
+				<departure id="routeA1_2018-10-05_11:00:00" departureTime="11:00:00" vehicleRefId="veh_4_bus"/>
+				<departure id="routeA1_2018-10-05_14:00:00" departureTime="14:00:00" vehicleRefId="veh_5_bus"/>
 			</departures>
 		</transitRoute>
 	</transitLine>
@@ -76,10 +76,10 @@
 				<stop refId="stop4" arrivalOffset="00:02:40" departureOffset="00:00:00" awaitDeparture="true"/>
 			</routeProfile>
 			<departures>
-				<departure id="routeB_07:00:00" departureTime="07:00:00" vehicleRefId="veh_6_tram"/>
-				<departure id="routeB_10:00:00" departureTime="10:00:00" vehicleRefId="veh_7_tram"/>
-				<departure id="routeB_13:00:00" departureTime="13:00:00" vehicleRefId="veh_8_tram"/>
-				<departure id="routeB_16:00:00" departureTime="16:00:00" vehicleRefId="veh_9_tram"/>
+				<departure id="routeB_2018-10-05_07:00:00" departureTime="07:00:00" vehicleRefId="veh_6_tram"/>
+				<departure id="routeB_2018-10-05_10:00:00" departureTime="10:00:00" vehicleRefId="veh_7_tram"/>
+				<departure id="routeB_2018-10-05_13:00:00" departureTime="13:00:00" vehicleRefId="veh_8_tram"/>
+				<departure id="routeB_2018-10-05_16:00:00" departureTime="16:00:00" vehicleRefId="veh_9_tram"/>
 			</departures>
 		</transitRoute>
 	</transitLine>

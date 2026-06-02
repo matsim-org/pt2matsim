@@ -32,7 +32,7 @@ class Gtfs2TransitScheduleIT {
 
 	@Test
 	void testNoAdditionalInfo() {
-		Gtfs2TransitSchedule.run("test/gtfs-feed/", "20181005", TransformationFactory.CH1903_LV03_Plus, OUTPUTDIR + "schedule.xml", OUTPUTDIR + "vehicles.xml", null, false);
+		Gtfs2TransitSchedule.run("test/gtfs-feed/", "20181005", TransformationFactory.CH1903_LV03_Plus, OUTPUTDIR + "schedule.xml", OUTPUTDIR + "vehicles.xml", null, false, false);
 		Assertions.assertEquals(CRCChecksum.getCRCFromFile("test/Gtfs2TransitScheduleIT/testNoAdditionalInfo/schedule.xml"), CRCChecksum.getCRCFromFile(OUTPUTDIR + "schedule.xml"));
 		Assertions.assertEquals(CRCChecksum.getCRCFromFile("test/Gtfs2TransitScheduleIT/testNoAdditionalInfo/vehicles.xml"), CRCChecksum.getCRCFromFile(OUTPUTDIR + "vehicles.xml"));
 		Assertions.assertFalse(new File(OUTPUTDIR + "info.csv").exists());
@@ -40,7 +40,7 @@ class Gtfs2TransitScheduleIT {
 	
 	@Test
 	void testInfoInSchedule() {
-		Gtfs2TransitSchedule.run("test/gtfs-feed/", "20181005", TransformationFactory.CH1903_LV03_Plus, OUTPUTDIR + "schedule.xml", OUTPUTDIR + "vehicles.xml", "schedule", false);
+		Gtfs2TransitSchedule.run("test/gtfs-feed/", "20181005", TransformationFactory.CH1903_LV03_Plus, OUTPUTDIR + "schedule.xml", OUTPUTDIR + "vehicles.xml", "schedule", false, false);
 		Assertions.assertEquals(CRCChecksum.getCRCFromFile("test/Gtfs2TransitScheduleIT/testInfoInSchedule/schedule.xml"), CRCChecksum.getCRCFromFile(OUTPUTDIR + "schedule.xml"));
 		Assertions.assertEquals(CRCChecksum.getCRCFromFile("test/Gtfs2TransitScheduleIT/testNoAdditionalInfo/vehicles.xml"), CRCChecksum.getCRCFromFile(OUTPUTDIR + "vehicles.xml"));
 		Assertions.assertFalse(new File(OUTPUTDIR + "info.csv").exists());
@@ -48,7 +48,7 @@ class Gtfs2TransitScheduleIT {
 	
 	@Test
 	void testInfoInSeparateFile() {
-		Gtfs2TransitSchedule.run("test/gtfs-feed/", "20181005", TransformationFactory.CH1903_LV03_Plus, OUTPUTDIR + "schedule.xml", OUTPUTDIR + "vehicles.xml", OUTPUTDIR + "info.csv", false);
+		Gtfs2TransitSchedule.run("test/gtfs-feed/", "20181005", TransformationFactory.CH1903_LV03_Plus, OUTPUTDIR + "schedule.xml", OUTPUTDIR + "vehicles.xml", OUTPUTDIR + "info.csv", false, false);
 		Assertions.assertEquals(CRCChecksum.getCRCFromFile("test/Gtfs2TransitScheduleIT/testNoAdditionalInfo/schedule.xml"), CRCChecksum.getCRCFromFile(OUTPUTDIR + "schedule.xml"));
 		Assertions.assertEquals(CRCChecksum.getCRCFromFile("test/Gtfs2TransitScheduleIT/testNoAdditionalInfo/vehicles.xml"), CRCChecksum.getCRCFromFile(OUTPUTDIR + "vehicles.xml"));
 		Assertions.assertEquals(CRCChecksum.getCRCFromFile("test/Gtfs2TransitScheduleIT/testInfoInSeparateFile/info.csv"), CRCChecksum.getCRCFromFile(OUTPUTDIR + "info.csv"));
@@ -56,7 +56,7 @@ class Gtfs2TransitScheduleIT {
 	
 	@Test
 	void testNoVehicles() {
-		Gtfs2TransitSchedule.run("test/gtfs-feed/", "20181005", TransformationFactory.CH1903_LV03_Plus, OUTPUTDIR + "schedule.xml", null, null, false);
+		Gtfs2TransitSchedule.run("test/gtfs-feed/", "20181005", TransformationFactory.CH1903_LV03_Plus, OUTPUTDIR + "schedule.xml", null, null, false, false);
 		Assertions.assertEquals(CRCChecksum.getCRCFromFile("test/Gtfs2TransitScheduleIT/testNoAdditionalInfo/schedule.xml"), CRCChecksum.getCRCFromFile(OUTPUTDIR + "schedule.xml"));
 		Assertions.assertFalse(new File(OUTPUTDIR + "vehicles.xml").exists());
 		Assertions.assertFalse(new File(OUTPUTDIR + "info.csv").exists());
@@ -64,7 +64,7 @@ class Gtfs2TransitScheduleIT {
 
 	@Test
 	void testCrsInSchedule() {
-		Gtfs2TransitSchedule.run("test/gtfs-feed/", "20181005", TransformationFactory.CH1903_LV03_Plus, OUTPUTDIR + "schedule.xml", null, null, true);
+		Gtfs2TransitSchedule.run("test/gtfs-feed/", "20181005", TransformationFactory.CH1903_LV03_Plus, OUTPUTDIR + "schedule.xml", null, null, true, false);
 		
 		Config config = ConfigUtils.createConfig();
 		config.global().setCoordinateSystem(TransformationFactory.CH1903_LV03_Plus);
