@@ -456,7 +456,9 @@ public final class GtfsDefinitions {
 		RECOMMENDED_TRANSFER_POINT(0, "Recommended transfer point"), // This is a recommended transfer point between routes.
 		TIMED_TRANSFER_POINT(1, "Timed transfer point"), // This is a timed transfer point between two routes. The departing vehicle is expected to wait for the arriving one, with sufficient time for a passenger to transfer between routes.
 		REQUIRES_MIN_TRANSFER_TIME(2, "Requires minimal transfer time"), // This transfer requires a minimum amount of time between arrival and departure to ensure a connection. The time required to transfer is specified by min_transfer_time.
-		TRANSFER_NOT_POSSIBLE(3, "Transfer not possible");
+		TRANSFER_NOT_POSSIBLE(3, "Transfer not possible"),
+		LINKED_TRIP_TRANSFER_IN_SEAT(4, "Linked trip with in-seat transfer"), // Passengers can transfer from one trip to another by staying onboard the same vehicle (an "in-seat transfer").
+		LINKED_TRIP_TRANSFER_REBOARD(5, "Linked trip with reboard transfer"); // In-seat transfers are not allowed between sequential trips. Passengers must alight and re-board the vehicle.
 
 		public int index;
 		public String name;
