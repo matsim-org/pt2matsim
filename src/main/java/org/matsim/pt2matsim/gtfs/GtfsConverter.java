@@ -62,8 +62,20 @@ public class GtfsConverter {
 	protected int noStopTimeTrips;
 	protected int stopPairsWithoutOffset;
 
+	private boolean useStandingRoom = false;
+
 	public GtfsConverter(GtfsFeed gtfsFeed) {
 		this.feed = gtfsFeed;
+	}
+
+	/**
+	 * Sets whether standing room capacity from {@link org.matsim.pt2matsim.tools.VehicleTypeDefaults}
+	 * should be included in the created vehicle types.
+	 * Default is {@code false} for backward compatibility (all standing room set to 0).
+	 * Set to {@code true} to use realistic standing room values.
+	 */
+	public void setUseStandingRoom(boolean useStandingRoom) {
+		this.useStandingRoom = useStandingRoom;
 	}
 
 	/**
@@ -366,6 +378,12 @@ public class GtfsConverter {
 					vehicles.addVehicle(veh);
 					departure.setVehicleId(veh.getId());
 				}
+			}
+		}
+
+		if(!useStandingRoom) {
+			for(VehicleType vehicleType : vehicles.getVehicleTypes().values()) {
+				vehicleType.getCapacity().setStandingRoom(0);
 			}
 		}
 	}
