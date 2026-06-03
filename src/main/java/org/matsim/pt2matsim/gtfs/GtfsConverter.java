@@ -26,6 +26,7 @@ import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt2matsim.gtfs.lib.*;
 import org.matsim.pt2matsim.tools.GtfsTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
+import org.matsim.pt2matsim.tools.VehicleTypeDefaults;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 import org.matsim.pt2matsim.tools.lib.RouteShape;
 import org.matsim.vehicles.*;
@@ -354,22 +355,21 @@ public class GtfsConverter {
 
 	protected void createVehicles(TransitSchedule schedule, Vehicles vehicles) {
 		VehiclesFactory vf = vehicles.getFactory();
-		Map<GtfsDefinitions.ExtendedRouteType, VehicleType> vehicleTypes = new HashMap<>();
+		Map<VehicleTypeDefaults.Type, VehicleType> vehicleTypes = new HashMap<>();
 
 		long vehId = 0;
 		for(TransitLine line : schedule.getTransitLines().values()) {
-			// get extended route type
 			Route gtfsRoute = feed.getRoutes().get(line.getId().toString());
-			GtfsDefinitions.ExtendedRouteType extType = gtfsRoute.getExtendedRouteType();
+			VehicleTypeDefaults.Type resolvedType = resolveVehicleType(gtfsRoute);
 
-			// create vehicle type for each extended route type
-			if(!vehicleTypes.containsKey(extType)) {
-				VehicleType defaultVehicleType = ScheduleTools.createDefaultVehicleType(extType.name, extType.routeType.name);
+			// create vehicle type for each resolved type
+			if(!vehicleTypes.containsKey(resolvedType)) {
+				VehicleType defaultVehicleType = ScheduleTools.createDefaultVehicleType(resolvedType.name, resolvedType);
 				vehicles.addVehicleType(defaultVehicleType);
-				vehicleTypes.put(extType, defaultVehicleType);
+				vehicleTypes.put(resolvedType, defaultVehicleType);
 			}
 
-			VehicleType vehicleType = vehicleTypes.get(extType);
+			VehicleType vehicleType = vehicleTypes.get(resolvedType);
 			for(TransitRoute route : line.getRoutes().values()) {
 				// create a vehicle for each departure
 				for(Departure departure : route.getDepartures().values()) {
@@ -386,6 +386,61 @@ public class GtfsConverter {
 				vehicleType.getCapacity().setStandingRoom(0);
 			}
 		}
+	}
+
+	/**
+	 * Resolves the {@link VehicleTypeDefaults.Type} for a GTFS route.
+	 * Tries to match the alphabetic prefix of {@code route_short_name} against
+	 * the {@link VehicleTypeDefaults.Type} enum, guarded by route type compatibility.
+	 * Falls back to the base route type (e.g. RAIL, BUS, TRAM).
+	 *
+	 * <p>Note: The current prefix-matching logic and vehicle type defaults are heavily
+	 * based on German/DACH transit naming conventions (e.g. ICE, RE, RB, S-Bahn).
+	 * A more generic, country-agnostic approach is desirable - issues and/or PRs to
+	 * improve support for other countries' conventions are very welcome.</p>
+	 *
+	 * <p>Can be overridden to implement custom vehicle type resolution logic.</p>
+	 */
+	protected VehicleTypeDefaults.Type resolveVehicleType(Route gtfsRoute) {
+		String shortName = gtfsRoute.getShortName();
+		GtfsDefinitions.RouteType baseType = gtfsRoute.getRouteType();
+
+		if(shortName != null && !shortName.isEmpty()) {
+			// Extract alphabetic prefix: "ICE 28" -> "ICE", "S1" -> "S", "RE5" -> "RE"
+			String prefix = shortName.replaceAll("[^A-Za-z].*", "").toUpperCase();
+			if(!prefix.isEmpty()) {
+				try {
+					VehicleTypeDefaults.Type candidate = VehicleTypeDefaults.Type.valueOf(prefix);
+					if(isCompatible(candidate.transportMode, baseType)) {
+						return candidate;
+					}
+				} catch(IllegalArgumentException ignored) {
+					// No matching entry in VehicleTypeDefaults
+				}
+			}
+		}
+
+		// Fall back to base route type
+		String defVehType = gtfsRoute.getExtendedRouteType().routeType.name
+				.toUpperCase().replace(" ", "_");
+		try {
+			return VehicleTypeDefaults.Type.valueOf(defVehType);
+		} catch(IllegalArgumentException e) {
+			return VehicleTypeDefaults.Type.OTHER;
+		}
+	}
+
+	private static boolean isCompatible(GtfsDefinitions.RouteType vehicleMode,
+			GtfsDefinitions.RouteType routeType) {
+		if(vehicleMode == routeType) {
+			return true;
+		}
+		// U-Bahn (SUBWAY) often coded as RAIL in German GTFS
+		if(vehicleMode == GtfsDefinitions.RouteType.SUBWAY
+				&& routeType == GtfsDefinitions.RouteType.RAIL) {
+			return true;
+		}
+		return false;
 	}
 
 	/**

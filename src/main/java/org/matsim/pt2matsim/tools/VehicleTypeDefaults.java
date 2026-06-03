@@ -44,7 +44,6 @@ public final class VehicleTypeDefaults {
 		BAV	("BAV",	RouteType.FERRY,	true,	50,		6,		0.5,	0.5,	VehicleType.DoorOperationMode.serial,	250,	50,		7.1,	false,	"Steam ship"),
 		BEX ("BEX",	RouteType.RAIL,		true,	150,	2.8,	0.5,	0.5,	VehicleType.DoorOperationMode.serial,	240,	50,		20.4,	false,	"Bernina Express"),
 		B	("BUS",	RouteType.BUS,		true,	18,		2.5,	0.5,	0.5,	VehicleType.DoorOperationMode.serial,	70,		50,		2.8,	true,	"Bus"),
-		BUS	("BUS",	RouteType.BUS,		true,	18,		2.5,	0.5,	0.5,	VehicleType.DoorOperationMode.serial,	70,		50,		2.8,	true,	"Bus"),
 		C	("C",	RouteType.RAIL,		true,	150,	2.8,	0.25,	0.25,	VehicleType.DoorOperationMode.serial,	400,	400,	20.4,	false,	"Citybahn"),
 		CD	("CD",	RouteType.RAIL,		true,	150,	2.8,	0.25,	0.25,	VehicleType.DoorOperationMode.serial,	400,	400,	20.4,	false,	"Ceske Drahy"),
 		CNL ("CNL",	RouteType.RAIL,		true,	200,	2.8,	0.5,	0.5,	VehicleType.DoorOperationMode.serial,	400,	0,		27.1,	false,	"CityNightLine"),
@@ -107,15 +106,15 @@ public final class VehicleTypeDefaults {
 		//								            add		DEFAULT VALUES
 		//								            to		length	width	accT	egrT	doorOp									capSeat	capSt	pcuEq	usesRN	description
 		//								            sched.	[m]		[m]		s/pers	s/pers
-		TRAM ("TRAM",       RouteType.TRAM,			true,	36,		2.4,	0.25,	0.25,	VehicleType.DoorOperationMode.serial, 	180,	100,	5.2	,	true,	"tram"),
-		SUBWAY ("SUBWAY",   RouteType.SUBWAY,		true,	30,		2.45,	0.1,	0.1,	VehicleType.DoorOperationMode.serial,	300,	300,	4.4,	false,	"subway"),
-		RAIL ("RAIL",       RouteType.RAIL,			true,	200,	2.8,	0.25,	0.25,	VehicleType.DoorOperationMode.serial,	400,	200,	27.1,	false,	"rail"),
-		// BUS exists for HAFAS
-		FERRY	("FERRY",	RouteType.FERRY,		true,	50,		6,		0.5,	0.5,	VehicleType.DoorOperationMode.serial,	250,	50,		7.1,	false,	"ferry"),
-		CABLE_CAR ("CABLE_CAR",RouteType.CABLE_CAR,	true,	12,		3,		0.5,	0.5,	VehicleType.DoorOperationMode.serial,	60,		20,		5.2,	false,	"cable car"),
-		GONDOLA	("GONDOLA",	RouteType.GONDOLA,		true,	6,		3.5,	0.5,	0.5,	VehicleType.DoorOperationMode.serial,	80,		20,		1.2,	false,	"gondola"),
+		TRAM ("Tram",       RouteType.TRAM,			true,	36,		2.4,	0.25,	0.25,	VehicleType.DoorOperationMode.serial, 	180,	100,	5.2	,	true,	"tram"),
+		SUBWAY ("Subway",   RouteType.SUBWAY,		true,	30,		2.45,	0.1,	0.1,	VehicleType.DoorOperationMode.serial,	300,	300,	4.4,	false,	"subway"),
+		RAIL ("Rail",       RouteType.RAIL,			true,	200,	2.8,	0.25,	0.25,	VehicleType.DoorOperationMode.serial,	400,	200,	27.1,	false,	"rail"),
+		BUS	("Bus",	RouteType.BUS,		true,	18,		2.5,	0.5,	0.5,	VehicleType.DoorOperationMode.serial,	70,		50,		2.8,	true,	"Bus"),
+		FERRY	("Ferry",	RouteType.FERRY,		true,	50,		6,		0.5,	0.5,	VehicleType.DoorOperationMode.serial,	250,	50,		7.1,	false,	"ferry"),
+		CABLE_CAR ("CableCar",RouteType.CABLE_CAR,	true,	12,		3,		0.5,	0.5,	VehicleType.DoorOperationMode.serial,	60,		20,		5.2,	false,	"cable car"),
+		GONDOLA	("Gondola",	RouteType.GONDOLA,		true,	6,		3.5,	0.5,	0.5,	VehicleType.DoorOperationMode.serial,	80,		20,		1.2,	false,	"gondola"),
 		FUNICULAR	("FUN",	RouteType.FUNICULAR,	true,	10,		2.5,	0.5	,	0.5, 	VehicleType.DoorOperationMode.serial,	100,	50,		1.7,	false,	"funicular"),
-		OTHER	("OTHER",	RouteType.OTHER,		true,	10,		2.5,	0.5	,	0.5, 	VehicleType.DoorOperationMode.serial,	50,	    20,		2.0,    false,	"other");
+		OTHER	("Other",	RouteType.OTHER,		true,	10,		2.5,	0.5	,	0.5, 	VehicleType.DoorOperationMode.serial,	50,	    20,		2.0,    false,	"other");
 
 		public double length, width, accessTime, egressTime, pcuEquivalents;
 		public int capacitySeats, capacityStanding;
