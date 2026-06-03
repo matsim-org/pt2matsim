@@ -181,10 +181,10 @@ public class GtfsFeedImpl implements GtfsFeed {
 	 * GTFS allows a BOM to precede the file content, which needs to be skipped
 	 * in case it is present
 	 *
-	 * @throws FileNotFoundException
+	 * @throws IOException
 	 */
-	protected CSVReader createCSVReader(String path) throws FileNotFoundException {
-		InputStream stream = new BOMInputStream(new FileInputStream(path));
+	protected CSVReader createCSVReader(String path) throws IOException {
+		InputStream stream = BOMInputStream.builder().setInputStream(new FileInputStream(path)).get();
 		return new CSVReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
 	}
 	
