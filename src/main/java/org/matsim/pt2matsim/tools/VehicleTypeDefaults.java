@@ -113,7 +113,7 @@ public final class VehicleTypeDefaults {
 		FERRY	("Ferry",	RouteType.FERRY,		true,	50,		6,		0.5,	0.5,	VehicleType.DoorOperationMode.serial,	250,	50,		7.1,	false,	"ferry"),
 		CABLE_CAR ("CableCar",RouteType.CABLE_CAR,	true,	12,		3,		0.5,	0.5,	VehicleType.DoorOperationMode.serial,	60,		20,		5.2,	false,	"cable car"),
 		GONDOLA	("Gondola",	RouteType.GONDOLA,		true,	6,		3.5,	0.5,	0.5,	VehicleType.DoorOperationMode.serial,	80,		20,		1.2,	false,	"gondola"),
-		FUNICULAR	("FUN",	RouteType.FUNICULAR,	true,	10,		2.5,	0.5	,	0.5, 	VehicleType.DoorOperationMode.serial,	100,	50,		1.7,	false,	"funicular"),
+		FUNICULAR	("Funicular",	RouteType.FUNICULAR,	true,	10,		2.5,	0.5	,	0.5, 	VehicleType.DoorOperationMode.serial,	100,	50,		1.7,	false,	"funicular"),
 		OTHER	("Other",	RouteType.OTHER,		true,	10,		2.5,	0.5	,	0.5, 	VehicleType.DoorOperationMode.serial,	50,	    20,		2.0,    false,	"other");
 
 		public double length, width, accessTime, egressTime, pcuEquivalents;
