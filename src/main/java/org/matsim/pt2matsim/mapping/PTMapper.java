@@ -47,6 +47,7 @@ import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -171,22 +172,29 @@ public class PTMapper {
 		log.info("Calculating pseudoTransitRoutes... (" + nTransitRoutes + " transit routes in " + schedule.getTransitLines().size() + " transit lines)");
 
 		Progress progress = new Progress(nTransitRoutes, "Calculating pseudoTransitRoutes ...");
-		
-		// initiate pseudoRouting
+
+		// Shared route-level work queue. All workers poll from the same queue,
+		// so an idle worker will pick up routes still pending on a busy worker
+		// (dynamic load balancing). This eliminates the line-level pre-assignment
+		// long-tail problem ("stuck at 99 %").
+		ConcurrentLinkedQueue<PseudoRoutingImpl.QueuedRoute> sharedQueue = new ConcurrentLinkedQueue<>();
+		for(TransitLine transitLine : schedule.getTransitLines().values()) {
+			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
+				sharedQueue.add(new PseudoRoutingImpl.QueuedRoute(transitLine, transitRoute));
+			}
+		}
+
+		// initiate pseudoRouting workers (each owns its own ScheduleRouters instance)
 		PseudoRouting[] pseudoRoutingRunnables = new PseudoRouting[numThreads];
 		for(int i = 0; i < numThreads; i++) {
-			pseudoRoutingRunnables[i] = new PseudoRoutingImpl(scheduleRoutersFactory, linkCandidates, maxTravelCostFactor, progress);
-		}
-		// spread transit lines on runnables
-		int thr = 0;
-		for(TransitLine transitLine : schedule.getTransitLines().values()) {
-			pseudoRoutingRunnables[thr++ % numThreads].addTransitLineToQueue(transitLine);
+			pseudoRoutingRunnables[i] = new PseudoRoutingImpl(scheduleRoutersFactory, linkCandidates,
+					maxTravelCostFactor, progress, sharedQueue);
 		}
 
 		Thread[] threads = new Thread[numThreads];
 		// start pseudoRouting
 		for(int i = 0; i < numThreads; i++) {
-			threads[i] = new Thread(pseudoRoutingRunnables[i]);
+			threads[i] = new Thread(pseudoRoutingRunnables[i], "pseudoRouting-" + i);
 			threads[i].start();
 		}
 		for(Thread thread : threads) {
