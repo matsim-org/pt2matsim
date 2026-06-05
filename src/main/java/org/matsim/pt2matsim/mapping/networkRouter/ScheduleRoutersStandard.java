@@ -10,6 +10,7 @@ import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.config.groups.ControllerConfigGroup.RoutingAlgorithmType;
 import org.matsim.core.config.groups.RoutingConfigGroup;
 import org.matsim.core.router.AStarLandmarksFactory;
+import org.matsim.core.router.speedy.CHRouterFactory;
 import org.matsim.core.router.speedy.SpeedyALTFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
@@ -99,6 +100,8 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 		    factory = new SpeedyALTFactory();
 		} else if (this.networkRouter.equals(RoutingAlgorithmType.AStarLandmarks)) {
 			factory = new AStarLandmarksFactory(nThreads, networkRoutingLandmarks);
+		} else if (this.networkRouter.equals(RoutingAlgorithmType.CHRouter)) {
+			factory = new CHRouterFactory();
 		}
 		else
 			new RuntimeException("You are trying to use the routing algorithm that is not supported.");

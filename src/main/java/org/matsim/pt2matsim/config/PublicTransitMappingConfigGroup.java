@@ -189,7 +189,11 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 				"The maximal distance [meter] a link candidate is allowed to have from the stop facility.\n" +
 				"\t\tNo link candidates beyond this distance are added.");
 		map.put(NETWORK_ROUTER,
-				"The router that should be used. Possible options are: [SpeedyALT, AStarLandmarks]");
+				"The router that should be used. Possible options are: [SpeedyALT, AStarLandmarks, CHRouter].\n" +
+				"\t\tCHRouter (Contraction Hierarchies) is typically ~2-3x faster per query than SpeedyALT on\n" +
+				"\t\tlarger networks, at the cost of a one-time preprocessing step per mode-filtered network\n" +
+				"\t\t(seconds to minutes). Recommended for medium/large scenarios where the routing phase\n" +
+				"\t\tdominates total mapping time. Requires MATSim >= 2027.");
 		map.put(USE_MODE_SPECIFIC_RULES, "Instead of using general number of links and maximum search distance rule, use the schedule mode specific rules "
 				+ "to be defined within the parameter sets. For those that no information is provided the general values will be used. Options: [false, true]. Default: false.");
 		map.put(THREAD_CHUNK_SIZE, "The size of the chunk that is sent to the pt mapper thread at the time to build"
