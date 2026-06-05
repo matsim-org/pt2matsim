@@ -2,6 +2,14 @@
 <!DOCTYPE config SYSTEM "http://www.matsim.org/files/dtd/config_v2.dtd">
 <config>
 	<module name="PublicTransitMapping" >
+		<!-- If true (default), each Dijkstra/ALT call between two link candidates is bounded by
+		[maxTravelCostFactor] * [minTravelCost]. Pairs whose shortest path exceeds
+		that bound return null quickly instead of exhausting the reachable mode subgraph,
+		dramatically reducing pseudoRouting wall-clock on disconnected networks. Output is
+		equivalent to the unbounded variant because any path with cost >= maxAllowedTravelCost
+		is already discarded downstream and replaced by an artificial link. Requires MATSim >=
+		2027 to take effect. -->
+		<param name="boundedSearch" value="true" />
 		<!-- After nLinkThreshold link candidates have been found, additional link 
 		candidates within [candidateDistanceMultiplier] * [distance to the Nth link] are added to the set.
 		Must be >= 1. -->
