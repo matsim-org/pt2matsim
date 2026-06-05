@@ -24,8 +24,11 @@ import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersFactory;
 import org.matsim.pt2matsim.mapping.pseudoRouter.*;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -52,7 +55,18 @@ public class PseudoRoutingImpl implements PseudoRouting {
 	public record QueuedRoute(TransitLine line, TransitRoute route) {
 	}
 
+	/** Per-route timing snapshot used for the slowest-routes summary log. */
+	public record RouteTiming(String lineId, String routeId, String mode, int nStops, long candidatePairs,
+			long elapsedNanos) {
+	}
+
+	/** Log routes that took longer than this in wall-clock as INFO while they happen. */
+	private static final long SLOW_ROUTE_LOG_NS = 30L * 1_000_000_000L; // 30 s
+	/** How many slowest routes to keep per worker. */
+	private static final int KEEP_TOP_N_SLOW = 5;
+
 	private final Queue<QueuedRoute> queue;
+	private final String workerName;
 
 	private final LinkCandidateCreator linkCandidates;
 	private final ScheduleRouters scheduleRouters;
@@ -63,6 +77,12 @@ public class PseudoRoutingImpl implements PseudoRouting {
 	private final double maxTravelCostFactor;
 	private final boolean boundedSearch;
 
+	// per-worker timing stats
+	private long routesProcessed = 0L;
+	private long totalRouteNanos = 0L;
+	private final PriorityQueue<RouteTiming> slowest = new PriorityQueue<>(
+			Comparator.comparingLong(RouteTiming::elapsedNanos));
+
 	/**
 	 * Backward-compatible constructor: the runnable owns a private queue and bounded search is disabled. Prefer the
 	 * shared-queue overload below so multiple workers can balance load dynamically.
@@ -70,7 +90,7 @@ public class PseudoRoutingImpl implements PseudoRouting {
 	public PseudoRoutingImpl(ScheduleRoutersFactory scheduleRoutersFactory, LinkCandidateCreator linkCandidates,
 			double maxTravelCostFactor, Progress progress) {
 		this(scheduleRoutersFactory, linkCandidates, maxTravelCostFactor, progress,
-				new ConcurrentLinkedQueue<>(), false);
+				new ConcurrentLinkedQueue<>(), "pseudoRouting", false);
 	}
 
 	/**
@@ -83,12 +103,14 @@ public class PseudoRoutingImpl implements PseudoRouting {
 	 *                      discarded by the caller.
 	 */
 	public PseudoRoutingImpl(ScheduleRoutersFactory scheduleRoutersFactory, LinkCandidateCreator linkCandidates,
-			double maxTravelCostFactor, Progress progress, Queue<QueuedRoute> sharedQueue, boolean boundedSearch) {
+			double maxTravelCostFactor, Progress progress, Queue<QueuedRoute> sharedQueue, String workerName,
+			boolean boundedSearch) {
 		this.maxTravelCostFactor = maxTravelCostFactor;
 		this.scheduleRouters = scheduleRoutersFactory.createInstance();
 		this.linkCandidates = linkCandidates;
 		this.progress = progress;
 		this.queue = sharedQueue;
+		this.workerName = workerName;
 		this.boundedSearch = boundedSearch;
 	}
 
@@ -97,12 +119,68 @@ public class PseudoRoutingImpl implements PseudoRouting {
 		queue.add(new QueuedRoute(line, route));
 	}
 
+	/** Snapshot of this worker's slowest routes, sorted descending by elapsed time. */
+	public List<RouteTiming> getSlowestRoutes() {
+		List<RouteTiming> out = new ArrayList<>(slowest);
+		out.sort((a, b) -> Long.compare(b.elapsedNanos(), a.elapsedNanos()));
+		return out;
+	}
+
+	public long getRoutesProcessed() {
+		return routesProcessed;
+	}
+
+	public long getTotalRouteNanos() {
+		return totalRouteNanos;
+	}
+
 	@Override
 	public void run() {
+		long workerStart = System.nanoTime();
 		QueuedRoute qr;
 		while ((qr = queue.poll()) != null) {
-			processRoute(qr.line(), qr.route());
+			long t0 = System.nanoTime();
+			long pairs = processRoute(qr.line(), qr.route());
+			long elapsed = System.nanoTime() - t0;
+
+			routesProcessed++;
+			totalRouteNanos += elapsed;
+			recordTiming(qr.line(), qr.route(), pairs, elapsed);
+
+			if (elapsed > SLOW_ROUTE_LOG_NS) {
+				log.info(String.format(
+						"[%s] slow route: line=%s route=%s mode=%s stops=%d candidatePairs=%d elapsed=%.1fs",
+						workerName, qr.line().getId(), qr.route().getId(), qr.route().getTransportMode(),
+						qr.route().getStops().size(), pairs, elapsed / 1e9));
+			}
+
 			progress.update();
+		}
+		long workerElapsed = System.nanoTime() - workerStart;
+		double avgMs = routesProcessed == 0 ? 0.0 : (totalRouteNanos / 1e6 / (double) routesProcessed);
+		log.info(String.format(
+				"[%s] finished: routes=%d wall=%.1fs sumPerRoute=%.1fs avgPerRoute=%.0fms",
+				workerName, routesProcessed, workerElapsed / 1e9, totalRouteNanos / 1e9, avgMs));
+		List<RouteTiming> top = getSlowestRoutes();
+		if (!top.isEmpty()) {
+			log.info(String.format("[%s] slowest %d routes on this worker:", workerName, top.size()));
+			for (RouteTiming rt : top) {
+				log.info(String.format(
+						"    line=%s route=%s mode=%s stops=%d pairs=%d elapsed=%.2fs",
+						rt.lineId(), rt.routeId(), rt.mode(), rt.nStops(), rt.candidatePairs(),
+						rt.elapsedNanos() / 1e9));
+			}
+		}
+	}
+
+	private void recordTiming(TransitLine line, TransitRoute route, long pairs, long elapsed) {
+		RouteTiming rt = new RouteTiming(line.getId().toString(), route.getId().toString(),
+				route.getTransportMode(), route.getStops().size(), pairs, elapsed);
+		if (slowest.size() < KEEP_TOP_N_SLOW) {
+			slowest.add(rt);
+		} else if (slowest.peek().elapsedNanos() < elapsed) {
+			slowest.poll();
+			slowest.add(rt);
 		}
 	}
 
@@ -112,8 +190,12 @@ public class PseudoRoutingImpl implements PseudoRouting {
 	 * The body below is intentionally identical to the previous in-line implementation; only the surrounding
 	 * {@code for (TransitRoute ...)} loop has moved out.
 	 * </p>
+	 *
+	 * @return the number of (currentCandidate, nextCandidate) pairs evaluated for this route, used by the
+	 *         slowest-routes log to indicate the search work performed.
 	 */
-	private void processRoute(TransitLine transitLine, TransitRoute transitRoute) {
+	private long processRoute(TransitLine transitLine, TransitRoute transitRoute) {
+		long pairsEvaluated = 0L;
 		/*
 		 * [1] Initiate pseudoGraph and Dijkstra algorithm for the current transitRoute. In the pseudoGraph, all link
 		 * candidates are represented as nodes and the network paths between link candidates are reduced to a
@@ -147,6 +229,7 @@ public class PseudoRoutingImpl implements PseudoRouting {
 			 */
 			for (LinkCandidate linkCandidateCurrent : linkCandidatesCurrent) {
 				for (LinkCandidate linkCandidateNext : linkCandidatesNext) {
+					pairsEvaluated++;
 
 					boolean useExistingNetworkLinks = false;
 					double pathCost = 2 * maxAllowedTravelCost;
@@ -236,6 +319,7 @@ public class PseudoRoutingImpl implements PseudoRouting {
 			necessaryArtificialLinks.addAll(pseudoGraph.getArtificialNetworkLinks());
 			threadPseudoSchedule.addPseudoRoute(transitLine, transitRoute, pseudoPath, pseudoGraph.getNetworkLinkIds());
 		}
+		return pairsEvaluated;
 	}
 
 	/**
