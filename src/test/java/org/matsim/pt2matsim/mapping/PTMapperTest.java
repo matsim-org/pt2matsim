@@ -170,4 +170,45 @@ public class PTMapperTest {
 		CreateDefaultPTMapperConfig.main(new String[]{"doc/defaultPTMapperConfig.xml"});
 	}
 
+	/**
+	 * Equivalence test: mapping the same scenario with {@code boundedSearch=true} and
+	 * {@code boundedSearch=false} must produce identical link sequences for every transit
+	 * route. This locks in the central correctness claim of the bounded-search wire-through:
+	 * for routes that are mapped, the bounded variant returns exactly the same routed path
+	 * as the unbounded one (cutoff fires only on candidate pairs that would have been
+	 * discarded downstream as exceeding {@code maxAllowedTravelCost} anyway).
+	 * <p>
+	 * Uses the same scenario as the {@link BeforeEach}-prepared instance (which already runs
+	 * with the default {@code boundedSearch=true}), and reruns with the flag flipped to
+	 * {@code false}.
+	 */
+	@Test
+	void boundedSearchEquivalence() throws InterruptedException, ExecutionException {
+		// schedule + network from @BeforeEach were mapped with boundedSearch=true (default).
+		PublicTransitMappingConfigGroup ptmConfigUnbounded = initPTMConfig();
+		ptmConfigUnbounded.setBoundedSearch(false);
+
+		TransitSchedule scheduleUnbounded = ScheduleToolsTest.initUnmappedSchedule();
+		Network networkUnbounded = NetworkToolsTest.initNetwork();
+		new PTMapper(scheduleUnbounded, networkUnbounded).run(ptmConfigUnbounded);
+
+		Assertions.assertEquals(schedule.getTransitLines().keySet(), scheduleUnbounded.getTransitLines().keySet(),
+				"bounded and unbounded mappings must produce the same set of transit lines");
+
+		for (TransitLine boundedLine : schedule.getTransitLines().values()) {
+			TransitLine unboundedLine = scheduleUnbounded.getTransitLines().get(boundedLine.getId());
+			Assertions.assertNotNull(unboundedLine, "missing line in unbounded schedule: " + boundedLine.getId());
+			Assertions.assertEquals(boundedLine.getRoutes().keySet(), unboundedLine.getRoutes().keySet(),
+					"route ids differ for line " + boundedLine.getId());
+
+			for (TransitRoute boundedRoute : boundedLine.getRoutes().values()) {
+				TransitRoute unboundedRoute = unboundedLine.getRoutes().get(boundedRoute.getId());
+				List<Id<Link>> boundedLinkIds = ScheduleTools.getTransitRouteLinkIds(boundedRoute);
+				List<Id<Link>> unboundedLinkIds = ScheduleTools.getTransitRouteLinkIds(unboundedRoute);
+				Assertions.assertEquals(unboundedLinkIds, boundedLinkIds,
+						"link sequence differs for line=" + boundedLine.getId() + " route=" + boundedRoute.getId());
+			}
+		}
+	}
+
 }

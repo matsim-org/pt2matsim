@@ -76,6 +76,8 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	
 	private static final String THREAD_CHUNK_SIZE = "threadChunkSize";
 
+	private static final String BOUNDED_SEARCH = "boundedSearch";
+
 	// default values
 	private Map<String, Set<String>> transportModeAssignment = new HashMap<>();
 	private Map<String, TransportModeParameterSet> parameterSetsForMode = new HashMap<>();
@@ -85,6 +87,27 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private int numOfThreads = 2;
 	private int chunkSize = 100;
 	private boolean removeNotUsedStopFacilities = true;
+
+	/**
+	 * If true, each {@code calcLeastCostPath} call between two link candidates passes
+	 * {@code maxTravelCostFactor * minTravelCost} as a cost cutoff to the underlying
+	 * {@link org.matsim.core.router.util.LeastCostPathCalculator} (Speedy Dijkstra / ALT).
+	 * Pairs whose true shortest path exceeds that bound return {@code null} in milliseconds
+	 * instead of seconds-to-minutes after exhausting the reachable mode subgraph.
+	 * <p>
+	 * Output equivalence: the caller in {@code PseudoRoutingImpl#processRoute} already discards
+	 * any returned path with {@code cost >= maxAllowedTravelCost} and replaces it with an
+	 * artificial link. Since both Speedy routers use admissible cost lower bounds (Dijkstra: the
+	 * proven shortest-path cost {@code g}; ALT: {@code g + h} with landmark heuristic {@code h}),
+	 * the cutoff only returns {@code null} when no path with cost {@code <= cutoff} exists. So
+	 * any path the bounded search drops would have been discarded by the caller anyway: the
+	 * pseudoSchedule, artificial-link set, and final routed network are unchanged. Wins are
+	 * concentrated on disconnected mode subgraphs (the long-tail case).
+	 * <p>
+	 * Requires MATSim &gt;= 2027 to take effect (older versions ignore the {@code maxCost}
+	 * argument via the {@link org.matsim.core.router.util.LeastCostPathCalculator} default).
+	 */
+	private boolean boundedSearch = true;
 
 	private String inputNetworkFile = null;
 	private String inputScheduleFile = null;
@@ -198,6 +221,14 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 				+ "to be defined within the parameter sets. For those that no information is provided the general values will be used. Options: [false, true]. Default: false.");
 		map.put(THREAD_CHUNK_SIZE, "The size of the chunk that is sent to the pt mapper thread at the time to build"
 				+ "facilities and links. Default: 100.");
+		map.put(BOUNDED_SEARCH,
+				"If true (default), each Dijkstra/ALT call between two link candidates is bounded by\n" +
+				"\t\t[" + MAX_TRAVEL_COST_FACTOR + "] * [minTravelCost]. Pairs whose shortest path exceeds\n" +
+				"\t\tthat bound return null quickly instead of exhausting the reachable mode subgraph,\n" +
+				"\t\tdramatically reducing pseudoRouting wall-clock on disconnected networks. Output is\n" +
+				"\t\tequivalent to the unbounded variant because any path with cost >= maxAllowedTravelCost\n" +
+				"\t\tis already discarded downstream and replaced by an artificial link. Requires MATSim >=\n" +
+				"\t\t2027 to take effect.");
 		return map;
 	}
 
@@ -298,6 +329,19 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	@StringSetter(REMOVE_NOT_USED_STOP_FACILITIES)
 	public void setRemoveNotUsedStopFacilities(boolean v) {
 		this.removeNotUsedStopFacilities = v;
+	}
+
+	/**
+	 * Bounded search cutoff (see field doc).
+	 */
+	@StringGetter(BOUNDED_SEARCH)
+	public boolean getBoundedSearch() {
+		return boundedSearch;
+	}
+
+	@StringSetter(BOUNDED_SEARCH)
+	public void setBoundedSearch(boolean v) {
+		this.boundedSearch = v;
 	}
 
 	/**
