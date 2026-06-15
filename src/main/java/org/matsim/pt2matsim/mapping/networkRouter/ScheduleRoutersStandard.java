@@ -8,7 +8,9 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.config.groups.ControllerConfigGroup.RoutingAlgorithmType;
+import org.matsim.core.config.groups.RoutingConfigGroup;
 import org.matsim.core.router.AStarLandmarksFactory;
+import org.matsim.core.router.speedy.CHRouterFactory;
 import org.matsim.core.router.speedy.SpeedyALTFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
@@ -51,7 +53,8 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 	private final Map<String, Network> networksByMode = new HashMap<>();
 	private final boolean considerCandidateDist;
 	private final int nThreads;
-	private RoutingAlgorithmType networkRouter;
+	private final int networkRoutingLandmarks;
+	private final RoutingAlgorithmType networkRouter;
 
 	private ScheduleRoutersStandard(TransitSchedule schedule, Network network, Map<String, Set<String>> transportModeAssignment, PublicTransitMappingConfigGroup.TravelCostType costType, boolean routingWithCandidateDistance,
 			RoutingAlgorithmType networkRouter) {
@@ -61,12 +64,15 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 		this.travelCostType = costType;
 		this.considerCandidateDist = routingWithCandidateDistance;
 		this.nThreads = 8;
+		this.networkRoutingLandmarks = new RoutingConfigGroup().getNetworkRoutingLandmarks(); // use default for now
 		this.networkRouter = networkRouter;
 
 		load();
 	}
 
-	private ScheduleRoutersStandard(TransitSchedule schedule, Network network, Map<String, Set<String>> transportModeAssignment, PublicTransitMappingConfigGroup.TravelCostType costType, boolean routingWithCandidateDistance, int nThreads,
+	private ScheduleRoutersStandard(TransitSchedule schedule, Network network,
+			Map<String, Set<String>> transportModeAssignment, PublicTransitMappingConfigGroup.TravelCostType costType,
+			boolean routingWithCandidateDistance, int nThreads, int networkRoutingLandmarks,
 			RoutingAlgorithmType networkRouter) {
 		this.schedule = schedule;
 		this.network = network;
@@ -74,6 +80,7 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 		this.travelCostType = costType;
 		this.considerCandidateDist = routingWithCandidateDistance;
 		this.nThreads = nThreads;
+		this.networkRoutingLandmarks = networkRoutingLandmarks;
 		this.networkRouter = networkRouter;
 		load();
 	}
@@ -92,7 +99,9 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 		if (this.networkRouter.equals(RoutingAlgorithmType.SpeedyALT)) {
 		    factory = new SpeedyALTFactory();
 		} else if (this.networkRouter.equals(RoutingAlgorithmType.AStarLandmarks)) {
-		    factory = new AStarLandmarksFactory(nThreads);
+			factory = new AStarLandmarksFactory(nThreads, networkRoutingLandmarks);
+		} else if (this.networkRouter.equals(RoutingAlgorithmType.CHRouter)) {
+			factory = new CHRouterFactory();
 		}
 		else
 			new RuntimeException("You are trying to use the routing algorithm that is not supported.");
@@ -126,6 +135,20 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 	@Override
 	public LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, TransitLine transitLine, TransitRoute transitRoute) {
 		return this.calcLeastCostPath(fromLinkCandidate.getLink().getId(), toLinkCandidate.getLink().getId(), transitLine, transitRoute);
+	}
+
+	@Override
+	public LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, TransitLine transitLine, TransitRoute transitRoute, double maxCost) {
+		Network n = networksByMode.get(transitRoute.getTransportMode());
+		if (n == null) {
+			return null;
+		}
+		Link fromLink = n.getLinks().get(fromLinkCandidate.getLink().getId());
+		Link toLink = n.getLinks().get(toLinkCandidate.getLink().getId());
+		if (fromLink == null || toLink == null) {
+			return null;
+		}
+		return pathCalculatorsByMode.get(transitRoute.getTransportMode()).calcPath(fromLink, toLink, maxCost);
 	}
 
 	@Override

@@ -134,6 +134,8 @@ public class PseudoScheduleImpl implements PseudoSchedule {
 	                TransitRoute newRoute = factory.createTransitRoute(
 	                    oldRoute.getId(), null, newStops, oldRoute.getTransportMode());
 	                oldRoute.getDepartures().values().forEach(newRoute::addDeparture);
+	                oldRoute.getAttributes().getAsMap().forEach(
+	                    (key, value) -> newRoute.getAttributes().putAttribute(key, value));
 
 	                List<Id<Link>> links = ptr.getNetworkLinkIdList();
 	                newRoute.setRoute(new LinkSequence(
