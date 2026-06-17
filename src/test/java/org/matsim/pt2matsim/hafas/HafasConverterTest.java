@@ -3,15 +3,22 @@ package org.matsim.pt2matsim.hafas;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.pt2matsim.hafas.filter.HafasFilter;
+import org.matsim.pt2matsim.hafas.filter.OperationDayFilter;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -116,6 +123,106 @@ class HafasConverterTest {
 			Assertions.assertEquals(targetRoute.getId(), chainedDeparture.getChainedRouteId(), "Chained route id should point to trip 000002 route");
 			Assertions.assertEquals(targetDeparture.getId(), chainedDeparture.getChainedDepartureId(),
 				"Chained departure id should point to corresponding target departure");
+		}
+	}
+
+	@Test
+	void durchbindungenPointToRoutesRemainingAfterCleanup(@TempDir Path tempDir) throws IOException {
+		Path hafasFixture = tempDir.resolve("hafas");
+		copyDirectory(Path.of("test/BrienzRothornBahn-HAFAS"), hafasFixture);
+
+		Files.writeString(hafasFixture.resolve("DURCHBI"), "*DURCHBI\n000001 000104 8508352 000003 000104 003499\n", StandardCharsets.ISO_8859_1);
+		Files.writeString(hafasFixture.resolve("FPLAN"), Files.readString(hafasFixture.resolve("FPLAN"), StandardCharsets.ISO_8859_1) + """
+			*Z 000003 000104   001                                    % 00003 000104   001 (001)
+			*G R   8508352 8508350  00840  00940                      % 00003 000104   001 (002)
+			*A VE 8508352 8508350 003499  00840  00940                % 00003 000104   001 (003)
+			*A 2  8508352 8508350         00840  00940                % 00003 000104   001 (004)
+			*A DZ 8508352 8508350         00840  00940                % 00003 000104   001 (005)
+			*R                                                        % 00003 000104   001 (006)
+			8508352 Brienzer Rothorn             00840                % 00003 000104   001 (007)
+			8508351 Planalp               00912  00912                % 00003 000104   001 (008)
+			8508350 Brienz BRB            00940                       % 00003 000104   001 (009)
+			""", StandardCharsets.ISO_8859_1);
+
+		TransitLine transitLine = convertFixture(hafasFixture, List.of()).getTransitLines().get(Id.create("BRB", TransitLine.class));
+		TransitRoute sourceRoute = routeStartingWith(transitLine, "000001_");
+		Departure sourceDeparture = sourceRoute.getDepartures().get(Id.create("000001", Departure.class));
+		ChainedDeparture chainedDeparture = sourceDeparture.getChainedDepartures().getFirst();
+
+		TransitRoute chainedRoute = transitLine.getRoutes().get(chainedDeparture.getChainedRouteId());
+		Assertions.assertNotNull(chainedRoute, "Chained route should still exist after route cleanup");
+		Assertions.assertTrue(chainedRoute.getDepartures().containsKey(chainedDeparture.getChainedDepartureId()),
+			"Chained departure should still exist on the chained route after cleanup");
+	}
+
+	@Test
+	void durchbindungenRespectOperationDayBitfeld(@TempDir Path tempDir) throws IOException {
+		Path hafasFixture = tempDir.resolve("hafas");
+		copyDirectory(Path.of("test/BrienzRothornBahn-HAFAS"), hafasFixture);
+		Files.writeString(hafasFixture.resolve("DURCHBI"), "*DURCHBI\n000001 000104 8508352 000002 000104 000001\n", StandardCharsets.ISO_8859_1);
+
+		OperationDayFilter operationDayFilter = new OperationDayFilter(hafasFixture.toString(), StandardCharsets.ISO_8859_1);
+		TransitLine transitLine = convertFixture(hafasFixture, List.of(operationDayFilter)).getTransitLines().get(Id.create("BRB", TransitLine.class));
+		TransitRoute sourceRoute = routeStartingWith(transitLine, "000001_");
+		Departure sourceDeparture = sourceRoute.getDepartures().get(Id.create("000001", Departure.class));
+
+		Assertions.assertTrue(sourceDeparture.getChainedDepartures() == null || sourceDeparture.getChainedDepartures().isEmpty(),
+			"DURCHBI relation with an unselected bitfeld should not create chained departures");
+	}
+
+	@Test
+	void durchbindungenSelectTargetRouteStartingAtConnectionStop(@TempDir Path tempDir) throws IOException {
+		Path hafasFixture = tempDir.resolve("hafas");
+		copyDirectory(Path.of("test/BrienzRothornBahn-HAFAS"), hafasFixture);
+
+		String fplan = Files.readString(hafasFixture.resolve("FPLAN"), StandardCharsets.ISO_8859_1);
+		String wrongTarget = """
+			*Z 000002 000104   001                                    % wrong target
+			*G R   8508351 8508350  00831  00931                      % wrong target
+			*A VE 8508351 8508350 003499  00831  00931                % wrong target
+			*A 2  8508351 8508350         00831  00931                % wrong target
+			*A DZ 8508351 8508350         00831  00931                % wrong target
+			*R                                                        % wrong target
+			8508351 Planalp                      00831                % wrong target
+			8508350 Brienz BRB            00931                       % wrong target
+			""";
+		Files.writeString(hafasFixture.resolve("FPLAN"), fplan.replace("*Z 000002", wrongTarget + "*Z 000002"), StandardCharsets.ISO_8859_1);
+
+		TransitLine transitLine = convertFixture(hafasFixture, List.of()).getTransitLines().get(Id.create("BRB", TransitLine.class));
+		TransitRoute sourceRoute = routeStartingWith(transitLine, "000001_");
+		Departure sourceDeparture = sourceRoute.getDepartures().get(Id.create("000001", Departure.class));
+		ChainedDeparture chainedDeparture = sourceDeparture.getChainedDepartures().getFirst();
+		TransitRoute chainedRoute = transitLine.getRoutes().get(chainedDeparture.getChainedRouteId());
+
+		Assertions.assertEquals("8508352", chainedRoute.getStops().getFirst().getStopFacility().getId().toString(),
+			"Target route should be the 000002 route starting at the DURCHBI connection stop");
+	}
+
+	private static TransitSchedule convertFixture(Path hafasFixture, List<HafasFilter> filters) throws IOException {
+		TransitSchedule convertedSchedule = ScheduleTools.createSchedule();
+		Vehicles convertedVehicles = VehicleUtils.createVehiclesContainer();
+		CoordinateTransformation ct = TransformationFactory.getCoordinateTransformation("WGS84", "EPSG:2056");
+		HafasConverter.run(hafasFixture.toString(), convertedSchedule, ct, convertedVehicles, filters, StandardCharsets.ISO_8859_1, false);
+		return convertedSchedule;
+	}
+
+	private static TransitRoute routeStartingWith(TransitLine transitLine, String routeIdPrefix) {
+		return transitLine.getRoutes().values().stream()
+			.filter(route -> route.getId().toString().startsWith(routeIdPrefix))
+			.findFirst()
+			.orElseThrow(() -> new AssertionError("Route starting with " + routeIdPrefix + " not found"));
+	}
+
+	private static void copyDirectory(Path source, Path target) throws IOException {
+		try (var paths = Files.walk(source)) {
+			for (Path path : paths.toList()) {
+				Path destination = target.resolve(source.relativize(path));
+				if (Files.isDirectory(path)) {
+					Files.createDirectories(destination);
+				} else {
+					Files.copy(path, destination, StandardCopyOption.REPLACE_EXISTING);
+				}
+			}
 		}
 	}
 
