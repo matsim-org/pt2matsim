@@ -79,7 +79,9 @@ public final class Hafas2TransitSchedule {
 				TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem) : new IdentityTransformation();
 
 		Charset encodingCharset = StandardCharsets.UTF_8;
-		OperationDayFilter operationDayFilter = new OperationDayFilter(chosenDateString, hafasFolder, encodingCharset);
+		OperationDayFilter operationDayFilter = chosenDateString != null 
+				? new OperationDayFilter(chosenDateString, hafasFolder, encodingCharset)
+				: new OperationDayFilter(hafasFolder, encodingCharset);
 		HafasConverter.run(hafasFolder, schedule, transformation, vehicles, List.of(operationDayFilter), encodingCharset, false);
 
 		ScheduleTools.writeTransitSchedule(schedule, outputScheduleFile);

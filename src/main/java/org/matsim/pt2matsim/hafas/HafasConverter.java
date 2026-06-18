@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +37,8 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.misc.Counter;
+import org.matsim.pt.transitSchedule.ChainedDepartureImpl;
+import org.matsim.pt.transitSchedule.api.ChainedDeparture;
 import org.matsim.pt.transitSchedule.api.Departure;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
@@ -46,6 +49,8 @@ import org.matsim.pt2matsim.hafas.filter.BoundingBoxStopFilter;
 import org.matsim.pt2matsim.hafas.filter.HafasFilter;
 import org.matsim.pt2matsim.hafas.filter.OperationDayFilter;
 import org.matsim.pt2matsim.hafas.filter.StopsFilter;
+import org.matsim.pt2matsim.hafas.lib.DurchbiReader;
+import org.matsim.pt2matsim.hafas.lib.DurchbiReader.Durchbindung;
 import org.matsim.pt2matsim.hafas.lib.FPLANReader;
 import org.matsim.pt2matsim.hafas.lib.FPLANRoute;
 import org.matsim.pt2matsim.hafas.lib.MinimalTransferTimesReader;
@@ -108,7 +113,10 @@ public final class HafasConverter {
 		List<FPLANRoute> routes = FPLANReader.parseFPLAN(operators, hafasFolder + "FPLAN", filters, encodingCharset);
 		log.info("  Read transit lines... done.");
 
-		// TODO another important HAFAS-file is DURCHBI. This feature is not supported by MATSim yet (but in Switzerland, for example, locally very important.
+		// 5. Read durchbindungen (through-services) from DURCHBI file
+		log.info("  Read durchbindungen...");
+		List<Durchbindung> durchbindungen = DurchbiReader.readDurchbindungen(hafasFolder + "DURCHBI", encodingCharset);
+		log.info("  Read {} durchbindungen.", durchbindungen.size());
 
 		log.info("  Creating transit routes...");
 		OperationDayFilter operationDayFilter = (OperationDayFilter) filters.stream().filter(f -> f instanceof OperationDayFilter).findAny().orElse(null);
@@ -116,7 +124,7 @@ public final class HafasConverter {
 		createTransitRoutesFromFPLAN(routes, schedule, vehicles, bitfeldNummern);
 		log.info("  Creating transit routes... done.");
 
-		// 5. Clean schedule
+		// 6. Clean schedule
 		Set<Id<TransitStopFacility>> stopsToKeep = new HashSet<>();
 		if (keepStopsInFilter) {
 			stopsToKeep = getStopsFromFilters(schedule, filters);
@@ -125,6 +133,7 @@ public final class HafasConverter {
 		ScheduleCleaner.removeNotUsedMinimalTransferTimes(schedule);
 		ScheduleCleaner.combineIdenticalTransitRoutes(schedule);
 		ScheduleCleaner.cleanDepartures(schedule);
+		createChainedDepartures(schedule, durchbindungen, bitfeldNummern);
 		ScheduleCleaner.cleanVehicles(schedule, vehicles);
 
 		log.info("Creating the schedule based on HAFAS... done.");
@@ -146,6 +155,15 @@ public final class HafasConverter {
 			}
 		}
 		return stopsToKeep;
+	}
+
+	/**
+	 * Key for mapping trip number and operator to routes.
+	 */
+	private record TripOperatorKey(String tripNumber, String operator) {
+	}
+
+	private record DepartureLocation(TransitLine line, TransitRoute route, Departure departure) {
 	}
 
 	private static void createTransitRoutesFromFPLAN(List<FPLANRoute> routes, TransitSchedule schedule, Vehicles vehicles, Set<Integer> bitfeldNummern) {
@@ -211,7 +229,8 @@ public final class HafasConverter {
 
 				// create actual TransitRoute
 				TransitRoute transitRoute = scheduleFactory.createTransitRoute(routeId, null, fplanRoute.getTransitRouteStops(bitfeldNummern), fplanRoute.getMode());
-				for(Departure departure : fplanRoute.getDepartures()) {
+				List<Departure> departures = fplanRoute.getDepartures();
+				for(Departure departure : departures) {
 					transitRoute.addDeparture(departure);
 					try {
 						vehicles.addVehicle(vehicleFactory.createVehicle(departure.getVehicleId(), vehicleType));
@@ -226,6 +245,96 @@ public final class HafasConverter {
 				transitLine.addRoute(transitRoute);
 			}
 		}
+	}
+
+	private static void createChainedDepartures(TransitSchedule schedule, List<Durchbindung> durchbindungen, Set<Integer> bitfeldNummern) {
+		if (durchbindungen.isEmpty()) {
+			return;
+		}
+
+		// Build index: (tripNumber, operatorCode) -> DepartureLocations by scanning the cleaned-up schedule once
+		Map<TripOperatorKey, List<DepartureLocation>> index = new HashMap<>();
+		for (TransitLine line : schedule.getTransitLines().values()) {
+			String operatorCode = (String) line.getAttributes().getAttribute("operatorCode");
+			for (TransitRoute route : line.getRoutes().values()) {
+				for (Departure dep : route.getDepartures().values()) {
+					String tripNumber = extractTripNumber(dep.getId().toString());
+					index.computeIfAbsent(new TripOperatorKey(tripNumber, operatorCode), k -> new ArrayList<>())
+						.add(new DepartureLocation(line, route, dep));
+				}
+			}
+		}
+
+		int chainCount = 0;
+		Map<Departure, List<ChainedDeparture>> chainedByDeparture = new HashMap<>();
+
+		for (Durchbindung db : durchbindungen) {
+			if (!bitfeldNummern.isEmpty() && !bitfeldNummern.contains(db.operationDayBitfeldNumber())) {
+				log.debug("Skipping durchbindung {} / {} -> {} / {} because bitfeld {} is not selected",
+					db.firstTripNumber(), db.firstOperator(), db.secondTripNumber(), db.secondOperator(), db.operationDayBitfeldNumber());
+				continue;
+			}
+
+			List<DepartureLocation> sources = new ArrayList<>(
+				index.getOrDefault(new TripOperatorKey(db.firstTripNumber(), db.firstOperator()), List.of()));
+			List<DepartureLocation> targets = new ArrayList<>(
+				index.getOrDefault(new TripOperatorKey(db.secondTripNumber(), db.secondOperator()), List.of()));
+			if (sources.isEmpty() || targets.isEmpty()) {
+				log.debug("No routes found for durchbindung {} / {} -> {} / {}", db.firstTripNumber(), db.firstOperator(),
+					db.secondTripNumber(), db.secondOperator());
+				continue;
+			}
+
+			// Filter by connection stop if specified
+			String connectionStop = db.lastStopOfFirstTrip();
+			if (connectionStop != null && !connectionStop.isEmpty()) {
+				sources.removeIf(s -> !connectionStop.equals(lastStopId(s.route())));
+				targets.removeIf(t -> !connectionStop.equals(firstStopId(t.route())));
+				if (sources.isEmpty() || targets.isEmpty()) {
+					log.debug("No routes matching connection stop {} for durchbindung {} -> {}",
+						connectionStop, db.firstTripNumber(), db.secondTripNumber());
+					continue;
+				}
+			}
+
+			// Sort by departure time, pair 1:1
+			sources.sort(Comparator.comparingDouble(s -> s.departure().getDepartureTime()));
+			targets.sort(Comparator.comparingDouble(t -> t.departure().getDepartureTime()));
+
+			if (sources.size() != targets.size()) {
+				log.warn("Durchbindung {} / {} -> {} / {} has different departure counts ({} source, {} target).",
+					db.firstTripNumber(), db.firstOperator(), db.secondTripNumber(), db.secondOperator(),
+					sources.size(), targets.size());
+			}
+
+			int pairCount = Math.min(sources.size(), targets.size());
+			for (int i = 0; i < pairCount; i++) {
+				DepartureLocation src = sources.get(i);
+				DepartureLocation tgt = targets.get(i);
+				chainedByDeparture.computeIfAbsent(src.departure(), k -> new ArrayList<>())
+					.add(new ChainedDepartureImpl(tgt.line().getId(), tgt.route().getId(), tgt.departure().getId()));
+				chainCount++;
+			}
+		}
+
+		for (Map.Entry<Departure, List<ChainedDeparture>> entry : chainedByDeparture.entrySet()) {
+			entry.getKey().setChainedDepartures(entry.getValue());
+		}
+
+		log.info("Created " + chainCount + " chained departures from DURCHBI relations");
+	}
+
+	private static String extractTripNumber(String departureId) {
+		int underscore = departureId.indexOf('_');
+		return underscore > 0 ? departureId.substring(0, underscore) : departureId;
+	}
+
+	private static String lastStopId(TransitRoute route) {
+		return route.getStops().getLast().getStopFacility().getId().toString();
+	}
+
+	private static String firstStopId(TransitRoute route) {
+		return route.getStops().getFirst().getStopFacility().getId().toString();
 	}
 
 	private static Id<TransitLine> createLineId(FPLANRoute route) {

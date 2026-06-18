@@ -10,7 +10,7 @@ There are multiple public transit schedule data formats, widely used formats are
 publicly available (see [mobilitydatabase.org](https://mobilitydatabase.org) or [transit.land](http://www.transit.land)), otherwise 
 these files have to be obtained from the public transit agency.[^1] 
 
-[^1]: The Swiss public transit schedule is available in GTFS and HAFAS format via [opentransportdata.swiss](https://opentransportdata.swiss).
+[^1]: The Swiss public transit schedule is available in GTFS and HAFAS format via [opentransportdata.swiss](https://opentransportdata.swiss). Note: only HAFAS currently supports chained trips (Durchbindungen).
 
 Public transit data feeds can be converted to unmapped transit schedules using the classes [`Gtfs2Transitschedule`](https://github.com/matsim-org/pt2matsim/wiki/Creating-an-unmapped-MATSim-transit-schedule#from-gtfs)
 or [`Hafas2TransitSchedule`](https://github.com/matsim-org/pt2matsim/wiki/Creating-an-unmapped-MATSim-transit-schedule#from-hafas).[^2] 
