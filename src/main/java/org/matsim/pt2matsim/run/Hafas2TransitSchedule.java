@@ -24,6 +24,9 @@ package org.matsim.pt2matsim.run;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import org.matsim.api.core.v01.network.Network;
+import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.network.io.NetworkWriter;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
@@ -57,14 +60,21 @@ public final class Hafas2TransitSchedule {
 	 *             [2] outputScheduleFile<br/>
 	 *             [3] outputVehicleFile<br/>
 	 *             [4] (optional) chosenDate for which to build schedule, formatted as dd.MM.yyyy<br/>
+	 *             [5] (optional) outputNetworkFile<br/>
 	 */
 	public static void main(String[] args) throws IOException {
 		if(args.length == 4) {
-			run(args[0], args[1], args[2], args[3], null);
+			run(args[0], args[1], args[2], args[3], null, null);
 		} else if (args.length == 5) {
-			run(args[0], args[1], args[2], args[3], args[4]);
+			if (args[4].endsWith(".xml") || args[4].endsWith(".xml.gz")) {
+				run(args[0], args[1], args[2], args[3], null, args[4]);
+			} else {
+				run(args[0], args[1], args[2], args[3], args[4], null);
+			}
+		} else if (args.length == 6) {
+			run(args[0], args[1], args[2], args[3], args[4], args[5]);
 		} else {
-			throw new IllegalArgumentException(args.length + " instead of 5 arguments given");
+			throw new IllegalArgumentException(args.length + " instead of 4, 5 or 6 arguments given");
 		}
 	}
 
@@ -72,19 +82,25 @@ public final class Hafas2TransitSchedule {
 	 * Converts all files in <tt>hafasFolder</tt> and writes the output schedule and vehicles to the respective
 	 * files. Stop Facility coordinates are transformed from WGS84 to <tt>outputCoordinateSystem</tt>.
 	 */
-	public static void run(String hafasFolder, String outputCoordinateSystem, String outputScheduleFile, String outputVehicleFile, String chosenDateString) throws IOException {
+	public static void run(String hafasFolder, String outputCoordinateSystem, String outputScheduleFile, String outputVehicleFile, String chosenDateString, String outputNetworkFile) throws IOException {
 		TransitSchedule schedule = ScheduleTools.createSchedule();
 		Vehicles vehicles = VehicleUtils.createVehiclesContainer();
+		Network network = outputNetworkFile != null ? NetworkUtils.createNetwork() : null;
+
 		CoordinateTransformation transformation = !outputCoordinateSystem.equals("null") ?
 				TransformationFactory.getCoordinateTransformation("WGS84", outputCoordinateSystem) : new IdentityTransformation();
 
 		Charset encodingCharset = StandardCharsets.UTF_8;
-		OperationDayFilter operationDayFilter = chosenDateString != null 
+		OperationDayFilter operationDayFilter = chosenDateString != null
 				? new OperationDayFilter(chosenDateString, hafasFolder, encodingCharset)
 				: new OperationDayFilter(hafasFolder, encodingCharset);
-		HafasConverter.run(hafasFolder, schedule, transformation, vehicles, List.of(operationDayFilter), encodingCharset, false);
+		HafasConverter.run(hafasFolder, schedule, network, transformation, vehicles, List.of(operationDayFilter), encodingCharset, false, 0.0);
 
 		ScheduleTools.writeTransitSchedule(schedule, outputScheduleFile);
 		ScheduleTools.writeVehicles(vehicles, outputVehicleFile);
+
+		if (network != null && outputNetworkFile != null) {
+			new NetworkWriter(network).write(outputNetworkFile);
+		}
 	}
 }

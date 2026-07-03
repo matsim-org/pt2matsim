@@ -19,6 +19,8 @@ PT2MATSim also provides tools to create a multimodal network from OSM with [`Osm
 [^2]: It is possible to convert public transit information from OpenStreetMap files (_Osm2TransitSchedule_). 
 However, OSM currently does not contain any temporal information, the accuracy of the schedule data varies and is usually not sufficient to be used for simulations.
 
+The HAFAS converter can optionally convert the MATSim network directly from HRDF *Realgraph* files if they are provided in the source directory (`STRECKENPT` and `KANTEN`).
+
 Unmapped transit schedules lack information on the links used by vehicles and only contain the stop sequence
 for transit routes. Generating these links (i.e. the path a vehicle takes on a network) is called "mapping", a process
 done by the [`PublicTransitMapper`](https://github.com/matsim-org/pt2matsim/wiki/Mapping-a-MATSim-schedule-to-a-MATSim-network-(Public-Transit-Mapper)). 
