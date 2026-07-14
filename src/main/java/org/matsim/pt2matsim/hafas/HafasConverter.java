@@ -63,6 +63,16 @@ import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 import org.matsim.vehicles.VehiclesFactory;
+import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.NetworkFactory;
+import org.matsim.api.core.v01.network.Node;
+import org.matsim.pt2matsim.hafas.lib.StreckenptReader;
+import org.matsim.pt2matsim.hafas.lib.KantenReader;
+import org.matsim.pt2matsim.tools.NetworkTools;
+import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.network.Link;
+import org.matsim.core.utils.geometry.CoordUtils;
+import java.io.File;
 
 /**
  * Converts hafas files to a matsim transit schedule.
@@ -77,15 +87,20 @@ public final class HafasConverter {
     }
 
     public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles) throws IOException {
-		run(hafasFolder, schedule, transformation, vehicles, new ArrayList<>(), StandardCharsets.UTF_8, false);
+		run(hafasFolder, schedule, null, transformation, vehicles, new ArrayList<>(), StandardCharsets.UTF_8, false, 0.0);
 	}
 
 	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, List<HafasFilter> filters, Charset encodingCharset,
 		boolean keepStopsInFilter) throws IOException {
-		run(hafasFolder, schedule, transformation, vehicles, filters, encodingCharset, keepStopsInFilter, 0.0);
+		run(hafasFolder, schedule, null, transformation, vehicles, filters, encodingCharset, keepStopsInFilter, 0.0);
 	}
 
 	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, List<HafasFilter> filters, Charset encodingCharset,
+		boolean keepStopsInFilter, double defaultMinTransferTime) throws IOException {
+		run(hafasFolder, schedule, null, transformation, vehicles, filters, encodingCharset, keepStopsInFilter, defaultMinTransferTime);
+	}
+
+	public static void run(String hafasFolder, TransitSchedule schedule, Network network, CoordinateTransformation transformation, Vehicles vehicles, List<HafasFilter> filters, Charset encodingCharset,
 		boolean keepStopsInFilter, double defaultMinTransferTime) throws IOException {
 		if(!hafasFolder.endsWith("/")) hafasFolder += "/";
 
@@ -96,24 +111,88 @@ public final class HafasConverter {
 		StopReader.run(schedule, transformation, hafasFolder + "BFKOORD_WGS", encodingCharset);
 		log.info("  Read transit stops... done.");
 
-		// 1.a Read minimal transfer times
+		// 2. Read minimal transfer times
 		log.info("  Read minimal transfer times...");
 		MinimalTransferTimesReader.run(schedule, hafasFolder, "UMSTEIGB","METABHF", encodingCharset, defaultMinTransferTime);
 		log.info("  Read minimal transfer times... done.");
 
-		// 2. Read all operators from BETRIEB_DE
+		// 3. Generate MATSim Network from STRECKENPT and KANTEN
+		if (network != null) {
+			log.info("  Generating MATSim Network from HAFAS STRECKENPT and KANTEN...");
+			NetworkFactory netFactory = network.getFactory();
+			for (TransitStopFacility stop : schedule.getFacilities().values()) {
+				Id<Node> nodeId = Id.createNodeId(stop.getId());
+				if (!network.getNodes().containsKey(nodeId)) {
+					network.addNode(netFactory.createNode(nodeId, stop.getCoord()));
+				}
+			}
+
+			String streckenptFile = hafasFolder + "STRECKENPT";
+			Map<String, Coord> streckenpunkte = StreckenptReader.readStreckenpt(streckenptFile, transformation, encodingCharset);
+
+			String kantenFile = hafasFolder + "KANTEN";
+			KantenReader.readKanten(kantenFile, streckenpunkte, network, encodingCharset);
+
+			log.info("  Connecting isolated station nodes with pseudo links and removing isolated geometry nodes...");
+			int pseudoLinkCount = 0;
+			int removedNodeCount = 0;
+			List<Node> isolatedNodes = new ArrayList<>();
+			for (Node node : network.getNodes().values()) {
+				if (node.getInLinks().isEmpty() && node.getOutLinks().isEmpty()) {
+					isolatedNodes.add(node);
+				}
+			}
+			for (Node node : isolatedNodes) {
+				Id<TransitStopFacility> stopId = Id.create(node.getId().toString(), TransitStopFacility.class);
+				if (schedule.getFacilities().containsKey(stopId)) {
+					Link nearestLink = NetworkTools.getNearestLink(network, node.getCoord(), 10000.0);
+					if (nearestLink != null) {
+						Node targetNode = nearestLink.getFromNode();
+						double distance = CoordUtils.calcEuclideanDistance(node.getCoord(), targetNode.getCoord());
+
+						// Create outgoing pseudo link
+						Id<Link> outId = Id.createLinkId("pseudo_" + node.getId() + "_" + targetNode.getId());
+						Link outLink = netFactory.createLink(outId, node, targetNode);
+						outLink.setAllowedModes(nearestLink.getAllowedModes());
+						outLink.setLength(distance);
+						outLink.setFreespeed(10.0);
+						outLink.setCapacity(9999);
+						network.addLink(outLink);
+
+						// Create incoming pseudo link
+						Id<Link> inId = Id.createLinkId("pseudo_" + targetNode.getId() + "_" + node.getId());
+						Link inLink = netFactory.createLink(inId, targetNode, node);
+						inLink.setAllowedModes(nearestLink.getAllowedModes());
+						inLink.setLength(distance);
+						inLink.setFreespeed(10.0);
+						inLink.setCapacity(9999);
+						network.addLink(inLink);
+
+						pseudoLinkCount++;
+					}
+				} else {
+					network.removeNode(node.getId());
+					removedNodeCount++;
+				}
+			}
+			log.info("  Connected " + pseudoLinkCount + " isolated station nodes with pseudo links.");
+			log.info("  Removed " + removedNodeCount + " isolated geometry nodes.");
+			log.info("  Generating MATSim Network from HAFAS STRECKENPT and KANTEN... done.");
+		}
+
+		// 4. Read all operators from BETRIEB_DE
 		log.info("  Read operators...");
 		Map<String, String> operators = OperatorReader.readOperators(hafasFolder + "BETRIEB_DE", encodingCharset);
 		log.info("  Read operators... done.");
 
-		// 4. Create all lines from HAFAS-Schedule
+		// 5. Read all lines from HAFAS-Schedule
 		log.info("  Read transit lines...");
 		// set schedule so fplanRoutes have stopfacilities available
 		FPLANRoute.setSchedule(schedule);
 		List<FPLANRoute> routes = FPLANReader.parseFPLAN(operators, hafasFolder + "FPLAN", filters, encodingCharset);
 		log.info("  Read transit lines... done.");
 
-		// 5. Read durchbindungen (through-services) from DURCHBI file
+		// 6. Read durchbindungen (through-services) from DURCHBI file
 		log.info("  Read durchbindungen...");
 		List<Durchbindung> durchbindungen = DurchbiReader.readDurchbindungen(hafasFolder + "DURCHBI", encodingCharset);
 		log.info("  Read {} durchbindungen.", durchbindungen.size());
@@ -124,7 +203,7 @@ public final class HafasConverter {
 		createTransitRoutesFromFPLAN(routes, schedule, vehicles, bitfeldNummern);
 		log.info("  Creating transit routes... done.");
 
-		// 6. Clean schedule
+		// 7. Clean schedule
 		Set<Id<TransitStopFacility>> stopsToKeep = new HashSet<>();
 		if (keepStopsInFilter) {
 			stopsToKeep = getStopsFromFilters(schedule, filters);

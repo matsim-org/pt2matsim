@@ -30,10 +30,10 @@
 
     <properties>
         <geotools.version>35.0</geotools.version>
-        <jackson.version>2.22.0</jackson.version>
+        <jackson.version>2.22.1</jackson.version>
         <jts.version>1.20.0</jts.version>
         <log4j.version>2.26.1</log4j.version>
-        <junit.version>6.1.0</junit.version>
+        <junit.version>6.1.1</junit.version>
         <commons.codec.version>1.22.0</commons.codec.version>
     </properties>
 
@@ -78,7 +78,7 @@
         <dependency>
             <groupId>org.checkerframework</groupId>
             <artifactId>checker-qual</artifactId>
-            <version>4.2.0</version>
+            <version>4.2.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>

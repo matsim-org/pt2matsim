@@ -13,6 +13,8 @@ import org.matsim.pt2matsim.hafas.filter.OperationDayFilter;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
+import org.matsim.api.core.v01.network.Network;
+import org.matsim.core.network.NetworkUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -196,6 +198,37 @@ class HafasConverterTest {
 
 		Assertions.assertEquals("8508352", chainedRoute.getStops().getFirst().getStopFacility().getId().toString(),
 			"Target route should be the 000002 route starting at the DURCHBI connection stop");
+	}
+
+	@Test
+	void networkGeneration(@TempDir Path tempDir) throws IOException {
+		Path hafasFixture = tempDir.resolve("hafas");
+		copyDirectory(Path.of("test/BrienzRothornBahn-HAFAS"), hafasFixture);
+
+		Files.writeString(hafasFixture.resolve("STRECKENPT"), """
+			*Z 
+			8508350 8.032644 46.756209
+			V123456 8.032645 46.756210
+			8508351 8.032646 46.756211
+			""", StandardCharsets.ISO_8859_1);
+		
+		Files.writeString(hafasFixture.resolve("KANTEN"), """
+			*F 43 1
+			8508350 8508351 B
+			*G V123456
+			""", StandardCharsets.ISO_8859_1);
+
+		TransitSchedule convertedSchedule = ScheduleTools.createSchedule();
+		Vehicles convertedVehicles = VehicleUtils.createVehiclesContainer();
+		Network convertedNetwork = NetworkUtils.createNetwork();
+		CoordinateTransformation ct = TransformationFactory.getCoordinateTransformation("WGS84", "EPSG:2056");
+		
+		HafasConverter.run(hafasFixture.toString(), convertedSchedule, convertedNetwork, ct, convertedVehicles, List.of(), StandardCharsets.ISO_8859_1, false, 0.0);
+		
+		Assertions.assertEquals(4, convertedNetwork.getNodes().size(), "Network should contain 4 nodes (3 stops + 1 geometry node)");
+		Assertions.assertEquals(6, convertedNetwork.getLinks().size(), "Network should contain 6 links (4 bidirectional for 8508350-V123456-8508351 + 2 pseudo links for isolated stop 8508352)");
+		Assertions.assertTrue(convertedNetwork.getNodes().containsKey(Id.createNodeId("8508350")), "Station node should be present");
+		Assertions.assertTrue(convertedNetwork.getNodes().containsKey(Id.createNodeId("V123456")), "Geometry node should be present");
 	}
 
 	private static TransitSchedule convertFixture(Path hafasFixture, List<HafasFilter> filters) throws IOException {
