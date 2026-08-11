@@ -701,24 +701,28 @@ public class OsmMultimodalNetworkConverter {
 		// in case a specific lane count per direction is available this overrules the standard lanes
 		String direction = forward ? Osm.Key.FORWARD : Osm.Key.BACKWARD;
 		Optional<Double> directedLaneCount = parseLanesValue(way, Osm.Key.combinedKey(Osm.Key.LANES, direction));
+		boolean directionalReservedLaneCountFound = false;
 		if(directedLaneCount.isPresent()) {
 			lanestoremove = 0;
 			for(String blockingMot : blockingMots) {
 				lanestoremove = parseReservedLanesValue(way, Osm.Key.combinedKey(Osm.Key.LANES, blockingMot, direction)).orElse(0d);
 				if (lanestoremove != 0) {
 					mode = blockingMot;
+					directionalReservedLaneCountFound = true;
 					break;
 				}
 				lanestoremove = parseReservedLanesValue(way, Osm.Key.combinedKey(blockingMot, Osm.Key.LANES, direction)).orElse(0d);
 				if (lanestoremove != 0) {
 					mode = blockingMot;
+					directionalReservedLaneCountFound = true;
 					break;
 				}
 			}
 			
 		}
 		
-		if(!isOneway)
+		// only halve when the reserved-lane count came from a non-directional tag and applies to both directions
+		if(!isOneway && !directionalReservedLaneCountFound)
 			lanestoremove /= 2;
 		
 		return new Result(lanestoremove, mode);
