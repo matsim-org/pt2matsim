@@ -47,11 +47,23 @@ public class OperatorReader {
 				String abbrevationOperator = newLine.split("\"")[1].replace(" ","");
 
 				String[] operatorIds;
-				if (newLine.split(":").length == 1) { // handle format variants
+				if (newLine.split(":").length == 1) { // handle format variants (new 3-line or old 2-line format)
+					// Read next line (could be N line in new format)
 					newLine = readsLines.readLine();
 					if (newLine == null) break;
-					operatorIds = newLine.substring(8).trim().split("\\s+");
+
+					// Check if this line is the N line (new 3-line format) or the operator ID line (old 2-line format)
+					if (newLine.contains(" N ")) {
+						// New format: skip the N line and read the operator ID line
+						newLine = readsLines.readLine();
+						if (newLine == null) break;
+						operatorIds = newLine.substring(8).trim().split("\\s+");
+					} else {
+						// Old format: this line already contains the operator IDs
+						operatorIds = newLine.substring(8).trim().split("\\s+");
+					}
 				} else {
+					// Old format: operator IDs are on the same line after the colon
 					operatorIds = newLine.split(":")[1].trim().split("\\s+");
 				}
 				for (String operatorId : operatorIds) {
