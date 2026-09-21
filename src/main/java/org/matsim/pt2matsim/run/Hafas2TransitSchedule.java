@@ -30,6 +30,7 @@ import org.matsim.core.network.io.NetworkWriter;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
+import org.matsim.pt2matsim.hafas.HafasFileConfig;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt2matsim.hafas.HafasConverter;
 import org.matsim.pt2matsim.hafas.filter.OperationDayFilter;
@@ -83,6 +84,15 @@ public final class Hafas2TransitSchedule {
 	 * files. Stop Facility coordinates are transformed from WGS84 to <tt>outputCoordinateSystem</tt>.
 	 */
 	public static void run(String hafasFolder, String outputCoordinateSystem, String outputScheduleFile, String outputVehicleFile, String chosenDateString, String outputNetworkFile) throws IOException {
+		run(hafasFolder, outputCoordinateSystem, outputScheduleFile, outputVehicleFile, chosenDateString, outputNetworkFile, new HafasFileConfig());
+	}
+
+	/**
+	 * Converts all files in <tt>hafasFolder</tt> and writes the output schedule and vehicles to the respective
+	 * files. Stop Facility coordinates are transformed from WGS84 to <tt>outputCoordinateSystem</tt>.
+	 */
+	public static void run(String hafasFolder, String outputCoordinateSystem, String outputScheduleFile, String outputVehicleFile, String chosenDateString, String outputNetworkFile, HafasFileConfig fileConfig) throws IOException {
+		fileConfig = fileConfig != null ? fileConfig : new HafasFileConfig();
 		TransitSchedule schedule = ScheduleTools.createSchedule();
 		Vehicles vehicles = VehicleUtils.createVehiclesContainer();
 		Network network = outputNetworkFile != null ? NetworkUtils.createNetwork() : null;
@@ -92,14 +102,14 @@ public final class Hafas2TransitSchedule {
 
 		Charset encodingCharset = StandardCharsets.UTF_8;
 		OperationDayFilter operationDayFilter = chosenDateString != null
-				? new OperationDayFilter(chosenDateString, hafasFolder, encodingCharset)
-				: new OperationDayFilter(hafasFolder, encodingCharset);
-		HafasConverter.run(hafasFolder, schedule, network, transformation, vehicles, List.of(operationDayFilter), encodingCharset, false, 0.0);
+				? new OperationDayFilter(chosenDateString, hafasFolder, encodingCharset, fileConfig)
+				: new OperationDayFilter(hafasFolder, encodingCharset, fileConfig);
+		HafasConverter.run(hafasFolder, schedule, network, transformation, vehicles, List.of(operationDayFilter), encodingCharset, false, 0.0, fileConfig);
 
 		ScheduleTools.writeTransitSchedule(schedule, outputScheduleFile);
 		ScheduleTools.writeVehicles(vehicles, outputVehicleFile);
 
-		if (network != null && outputNetworkFile != null) {
+		if (network != null) {
 			new NetworkWriter(network).write(outputNetworkFile);
 		}
 	}
