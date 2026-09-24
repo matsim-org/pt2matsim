@@ -26,6 +26,10 @@
 		<param name="outputNetworkFile" value="null" />
 		<!-- If true: OSM turn restrictions are parsed and written as disallowedNextLinks attribute to the first link. -->
 		<param name="parseTurnRestrictions" value="true" />
+		<!-- If true: Remove roads (highway ways) tagged access=private unless they have PT access or PT routes; retained roads allow only PT and explicitly permitted taxis. Default: false. -->
+		<param name="removePrivateRoads" value="false" />
+		<!-- Respect unconditional vehicle access restrictions on roads (no, private, permit, agricultural, forestry, delivery), with mode-specific overrides, including :forward and :backward. Takes precedence over removePrivateRoads. Destination, customers and conditional restrictions are unchanged. Default: false. -->
+		<param name="respectVehicleAccess" value="false" />
 		<!-- In case the speed limit allowed does not represent the speed a vehicle can actually realize, 
 		e.g. by constrains of traffic lights not explicitly modeled, a kind of "average simulated speed" can be used.
 		Defaults to false. Set true to scale the speed limit down by the value specified by the wayDefaultParams) -->

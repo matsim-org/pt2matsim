@@ -150,6 +150,8 @@ public final class Osm {
 		public static final String MANDATORY_RESTRICTION_PREFIX = "only_";
 		public static final String EXCEPT = "except";
 		public static final String MOTORCAR = "motorcar";
+		public static final String MOTOR_VEHICLE = "motor_vehicle";
+		public static final String HGV = "hgv";
 		public static final String BICYCLE = "bicycle";
 
 		// rarely used
@@ -164,7 +166,7 @@ public final class Osm {
 		public static final String CROSSING = "crossing";
 
 		public static final List<String> DEFAULT_KEYS = Arrays.asList(
-				NAME, ROUTE, ROUTE_MASTER, PUBLIC_TRANSPORT, RAILWAY, HIGHWAY, SERVICE, LANES, JUNCTION, ONEWAY, ACCESS, PSV,
+				NAME, ROUTE, ROUTE_MASTER, PUBLIC_TRANSPORT, RAILWAY, HIGHWAY, SERVICE, LANES, JUNCTION, ONEWAY, ACCESS, MOTOR_VEHICLE, MOTORCAR, HGV, BUS, TAXI, PSV,
 				TYPE, NETWORK, VEHICLE, TUNNEL, TRAFFIC_CALMING, PASSING_PLACES, MOTORCYCLE, FOOTWAY, CROSSING);
 		public static final List<String> DIRECTIONS = Arrays.asList(FORWARD, BACKWARD);
 		
@@ -220,6 +222,12 @@ public final class Osm {
 		// values for psv=*
 		public static final String YES = "yes";
 		public static final String DESIGNATED = "designated";
+		public static final String PRIVATE = "private";
+		public static final String NO = "no";
+		public static final String PERMIT = "permit";
+		public static final String AGRICULTURAL = "agricultural";
+		public static final String FORESTRY = "forestry";
+		public static final String DELIVERY = "delivery";
 		
 		// values for maxspeed=*
 		public static final String WALK = "walk";
