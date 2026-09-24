@@ -72,79 +72,65 @@ public class OsmMultimodalNetworkConverterTest {
 	}
 	
 	@Test
-	void testRemovePrivateRoads() {
-		Assertions.assertFalse(OsmConverterConfigGroup.createDefaultConfig().getRemovePrivateRoads());
-		for (boolean removePrivateRoads : new boolean[] {false, true}) {
-			for (String access : new String[] {Osm.Value.PRIVATE, "yes", "no"}) {
-				OsmData osm = new OsmDataImpl();
-				new OsmFileReader(osm).readFile("test/osm/GerasdorfArtificialLanesAndMaxspeed.osm");
-				Map<String, String> tags = osm.getWays().get(Id.create(7994889L, Osm.Way.class)).getTags();
-				tags.put(Osm.Key.ACCESS, access);
-				OsmConverterConfigGroup config = OsmConverterConfigGroup.createDefaultConfig();
-				config.addParam("removePrivateRoads", Boolean.toString(removePrivateRoads));
-				Assertions.assertEquals(removePrivateRoads, config.getRemovePrivateRoads());
-				Assertions.assertEquals(Boolean.toString(removePrivateRoads), config.getParams().get("removePrivateRoads"));
-				config.setOutputCoordinateSystem("EPSG:31256");
-				config.setMaxLinkLength(1000);
-				OsmMultimodalNetworkConverter converter = new OsmMultimodalNetworkConverter(osm);
-				converter.convert(config);
-				Map<Long, Set<Link>> links = collectLinkMap(converter.getNetwork());
-				Assertions.assertEquals(!(removePrivateRoads && access.equals(Osm.Value.PRIVATE)), links.containsKey(7994889L));
-				Assertions.assertTrue(links.containsKey(7994890L), "Roads without an access tag remain");
-			}
+	void testAllowPtRoutesOnPrivateRoads() {
+		Assertions.assertFalse(OsmConverterConfigGroup.createDefaultConfig().getAllowPtRoutesOnPrivateRoads());
+		Map<String, String> tags = Map.of(Osm.Key.ACCESS, Osm.Value.PRIVATE,
+				"lanes:psv:forward", "1", "lanes:psv:backward", "1");
+		Assertions.assertNull(convertVehicleAccess(tags, true, false, true, false));
+		Assertions.assertNull(convertVehicleAccess(tags, true, true, false, false), "Bus defaults alone are not PT evidence");
+		Set<Link> links = convertVehicleAccess(tags, true, true, true, false);
+		Assertions.assertEquals(2, links.size());
+		for (Link link : links) {
+			Assertions.assertEquals(Set.of("bus", "pt"), link.getAllowedModes());
+			Assertions.assertEquals(1, link.getNumberOfLanes(), DELTA);
+			Assertions.assertEquals(1500, link.getCapacity(), DELTA);
+		}
+		// The switch has no effect without vehicle access filtering.
+		links = convertVehicleAccess(Map.of(Osm.Key.ACCESS, Osm.Value.PRIVATE), false, true, false, false);
+		for (Link link : links) {
+			Assertions.assertEquals(Set.of("car", "car_passenger", "truck", "bus", "taxi"), link.getAllowedModes());
 		}
 	}
 
 	@Test
-	void testPrivatePublicTransportRoads() {
-		for (boolean enabled : new boolean[] {false, true}) {
-			for (String evidence : new String[] {"none", "bus", "psv", "route", "route_master", "taxi"}) {
-				OsmData osm = new OsmDataImpl();
-				new OsmFileReader(osm).readFile("test/osm/GerasdorfArtificialLanesAndMaxspeed.osm");
-				Osm.Way way = osm.getWays().get(Id.create(7994889L, Osm.Way.class));
-				way.getTags().put(Osm.Key.ACCESS, Osm.Value.PRIVATE);
-				way.getTags().put(Osm.Key.LANES, "2");
-				if (evidence.equals("route") || evidence.equals("route_master")) {
-					Osm.Relation relation = new OsmElement.Relation(123456789L, Map.of(evidence, Osm.Value.TROLLEYBUS));
-					way.getRelations().put(relation.getId(), relation);
-				} else if (!evidence.equals("none")) {
-					if (evidence.equals("taxi")) {
-						way.getTags().put(Osm.Key.BUS, Osm.Value.YES);
-					}
-					way.getTags().put(evidence, evidence.equals("psv") ? Osm.Value.DESIGNATED : Osm.Value.YES);
-				}
-				OsmConverterConfigGroup config = OsmConverterConfigGroup.createDefaultConfig();
-				config.setRemovePrivateRoads(enabled);
-				if (enabled) {
-					way.getTags().put("lanes:psv:forward", "1");
-					way.getTags().put("lanes:psv:backward", "1");
-				}
-				config.setOutputCoordinateSystem("EPSG:31256");
-				config.setMaxLinkLength(1000);
-				// Default bus permission alone is not evidence of PT use on a private road.
-				for (var params : config.getParameterSets(OsmConverterConfigGroup.OsmWayParams.SET_NAME)) {
-					((OsmConverterConfigGroup.OsmWayParams) params).setAllowedTransportModes(Set.of("car", "bus", "taxi"));
-				}
-				config.addParameterSet(new OsmConverterConfigGroup.RoutableSubnetworkParams("truck", Set.of("car")));
-				config.addParameterSet(new OsmConverterConfigGroup.RoutableSubnetworkParams("car_passenger", Set.of("car")));
-				OsmMultimodalNetworkConverter converter = new OsmMultimodalNetworkConverter(osm);
-				converter.convert(config);
-				Set<Link> links = collectLinkMap(converter.getNetwork()).get(7994889L);
-				if (enabled && evidence.equals("none")) {
-					Assertions.assertNull(links);
-					continue;
-				}
-				Assertions.assertEquals(2, links.size(), evidence);
-				for (Link link : links) {
-					Assertions.assertEquals(1, link.getNumberOfLanes(), DELTA);
-					Assertions.assertEquals(1500, link.getCapacity(), DELTA);
-					if (enabled) {
-						Assertions.assertEquals(evidence.equals("taxi") ? Set.of("pt", "bus", "taxi") : Set.of("pt", "bus"), link.getAllowedModes(), evidence);
-					} else {
-						Assertions.assertTrue(link.getAllowedModes().containsAll(Set.of("car", "taxi", "truck", "car_passenger")));
-					}
-				}
+	void testPrivatePtExceptionUsesRouteModes() {
+		for (String relationKey : new String[] {Osm.Key.ROUTE, Osm.Key.ROUTE_MASTER}) {
+			for (String route : new String[] {Osm.Value.BUS, Osm.Value.TROLLEYBUS, Osm.Value.TRAM}) {
+				Set<Link> links = convertVehicleAccess(Map.of(Osm.Key.ACCESS, Osm.Value.PRIVATE),
+						true, true, true, false, relationKey, route);
+				Assertions.assertEquals(2, links.size());
+				String mode = route.equals(Osm.Value.TROLLEYBUS) ? Osm.Value.BUS : route;
+				for (Link link : links) Assertions.assertEquals(Set.of("pt", mode), link.getAllowedModes());
 			}
+		}
+		Assertions.assertNull(convertVehicleAccess(Map.of(Osm.Key.ACCESS, Osm.Value.PRIVATE),
+				true, true, true, false, Osm.Key.ROUTE, "bicycle"));
+	}
+
+	@Test
+	void testPrivatePtExceptionRespectsMoreSpecificRestrictions() {
+		for (String key : new String[] {Osm.Key.ACCESS, Osm.Key.VEHICLE, Osm.Key.MOTOR_VEHICLE, Osm.Key.PSV, Osm.Key.BUS}) {
+			for (String value : new String[] {Osm.Value.NO, Osm.Value.PERMIT, Osm.Value.DELIVERY}) {
+				Map<String, String> tags = new HashMap<>();
+				tags.put(Osm.Key.ACCESS, Osm.Value.PRIVATE);
+				tags.put(key, value);
+				Assertions.assertNull(convertVehicleAccess(tags, true, true, true, false), tags.toString());
+			}
+			if (!key.equals(Osm.Key.ACCESS)) {
+				Assertions.assertNull(convertVehicleAccess(Map.of(Osm.Key.ACCESS, Osm.Value.PRIVATE, key, Osm.Value.PRIVATE),
+						true, true, true, false), "A mode-specific private restriction must not be overridden");
+			}
+		}
+		for (String direction : new String[] {Osm.Key.FORWARD, Osm.Key.BACKWARD}) {
+			boolean forward = direction.equals(Osm.Key.FORWARD);
+			Set<Link> links = convertVehicleAccess(Map.of(Osm.Key.ACCESS, Osm.Value.PRIVATE,
+					"bus:" + direction, Osm.Value.NO), true, true, true, false);
+			assertDirectionalModes(links, forward, Set.of());
+			assertDirectionalModes(links, !forward, Set.of("bus", "pt"));
+			links = convertVehicleAccess(Map.of(Osm.Key.ACCESS, Osm.Value.NO,
+					"access:" + direction, Osm.Value.PRIVATE), true, true, true, false);
+			assertDirectionalModes(links, forward, Set.of("bus", "pt"));
+			assertDirectionalModes(links, !forward, Set.of());
 		}
 	}
 
@@ -175,12 +161,12 @@ public class OsmMultimodalNetworkConverterTest {
 	}
 
 	@Test
-	void testVehicleAccessWithPrivateRoadOptionAndPtRelation() {
+	void testVehicleAccessWithPrivatePtExceptionAndCarOverride() {
 		Set<Link> links = convertVehicleAccess(Map.of(Osm.Key.ACCESS, Osm.Value.PRIVATE,
 				Osm.Key.MOTORCAR, Osm.Value.YES), true, true, true, false);
 		Assertions.assertNotNull(links);
 		for (Link link : links) {
-			Assertions.assertEquals(Set.of("car", "car_passenger", "taxi"), link.getAllowedModes());
+			Assertions.assertEquals(Set.of("car", "car_passenger", "taxi", "bus", "pt"), link.getAllowedModes());
 		}
 		Assertions.assertNull(convertVehicleAccess(Map.of(Osm.Key.MOTOR_VEHICLE, Osm.Value.NO), true, false, true, false),
 				"PT route membership must not override an explicit vehicle prohibition");
@@ -308,22 +294,29 @@ public class OsmMultimodalNetworkConverterTest {
 		}
 	}
 
-	private Set<Link> convertVehicleAccess(Map<String, String> tags, boolean enabled, boolean removePrivate,
+	private Set<Link> convertVehicleAccess(Map<String, String> tags, boolean enabled, boolean allowPrivatePt,
 			boolean ptRelation, boolean carOnlyDefaults) {
+		return convertVehicleAccess(tags, enabled, allowPrivatePt, ptRelation, carOnlyDefaults, Osm.Key.ROUTE, Osm.Value.BUS);
+	}
+
+	private Set<Link> convertVehicleAccess(Map<String, String> tags, boolean enabled, boolean allowPrivatePt,
+			boolean ptRelation, boolean carOnlyDefaults, String relationKey, String relationMode) {
 		OsmData osm = new OsmDataImpl();
 		new OsmFileReader(osm).readFile("test/osm/GerasdorfArtificialLanesAndMaxspeed.osm");
 		Osm.Way way = osm.getWays().get(Id.create(7994889L, Osm.Way.class));
 		way.getTags().put(Osm.Key.LANES, "2");
 		way.getTags().putAll(tags);
 		if (ptRelation) {
-			Osm.Relation relation = new OsmElement.Relation(123456789L, Map.of(Osm.Key.ROUTE, Osm.Value.BUS));
+			Osm.Relation relation = new OsmElement.Relation(123456789L, Map.of(relationKey, relationMode));
 			way.getRelations().put(relation.getId(), relation);
 		}
 		OsmConverterConfigGroup config = OsmConverterConfigGroup.createDefaultConfig();
 		config.addParam("respectVehicleAccess", Boolean.toString(enabled));
 		Assertions.assertEquals(enabled, config.getRespectVehicleAccess());
 		Assertions.assertEquals(Boolean.toString(enabled), config.getParams().get("respectVehicleAccess"));
-		config.setRemovePrivateRoads(removePrivate);
+		config.addParam("allowPtRoutesOnPrivateRoads", Boolean.toString(allowPrivatePt));
+		Assertions.assertEquals(allowPrivatePt, config.getAllowPtRoutesOnPrivateRoads());
+		Assertions.assertEquals(Boolean.toString(allowPrivatePt), config.getParams().get("allowPtRoutesOnPrivateRoads"));
 		config.setOutputCoordinateSystem("EPSG:31256");
 		config.setMaxLinkLength(1000);
 		if (!carOnlyDefaults) {

@@ -68,19 +68,19 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	private boolean keepWaysWithPublicTransit = true;
 
 	@Parameter
-	@Comment("If true: Remove roads (highway ways) tagged access=private unless they have PT access or PT routes; retained roads allow only PT and explicitly permitted taxis. Default: false.")
-	private boolean removePrivateRoads = false;
+	@Comment("When respectVehicleAccess is true, preserve route-supported PT access where the resolved restriction is access=private. More specific vehicle restrictions still apply; cars and taxis receive no exception. Default: false.")
+	private boolean allowPtRoutesOnPrivateRoads = false;
 
-	public boolean getRemovePrivateRoads() {
-		return removePrivateRoads;
+	public boolean getAllowPtRoutesOnPrivateRoads() {
+		return allowPtRoutesOnPrivateRoads;
 	}
 
-	public void setRemovePrivateRoads(boolean removePrivateRoads) {
-		this.removePrivateRoads = removePrivateRoads;
+	public void setAllowPtRoutesOnPrivateRoads(boolean allowPtRoutesOnPrivateRoads) {
+		this.allowPtRoutesOnPrivateRoads = allowPtRoutesOnPrivateRoads;
 	}
 
 	@Parameter
-	@Comment("Respect unconditional vehicle access restrictions on roads (no, private, permit, agricultural, forestry, delivery), with mode-specific overrides, including :forward and :backward. Takes precedence over removePrivateRoads. Destination, customers and conditional restrictions are unchanged. Default: false.")
+	@Comment("Respect unconditional vehicle access restrictions on roads (no, private, permit, agricultural, forestry, delivery), with mode-specific overrides, including :forward and :backward. Destination, customers and conditional restrictions are unchanged. Default: false.")
 	private boolean respectVehicleAccess = false;
 
 	public boolean getRespectVehicleAccess() {

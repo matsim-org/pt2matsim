@@ -234,10 +234,10 @@ public class OsmMultimodalNetworkConverter {
 			node.setCoord(transformation.transform(node.getCoord()));
 		}
 
-		// Remove unusable ways and optionally private roads before building links.
+		// Remove ways without conversion defaults before building links.
 		log.info("remove unusable ways...");
 		for(Osm.Way way : new HashSet<>(ways.values())) {
-			if(getWayDefaultParams(way) == null || (restrictPrivateRoad(way) && !wayHasPublicTransit(way))) {
+			if(getWayDefaultParams(way) == null) {
 				osmData.removeWay(way.getId());
 			}
 		}
@@ -452,7 +452,7 @@ public class OsmMultimodalNetworkConverter {
 		Set<String> ptModes = new HashSet<>();
 		for(Osm.Relation rel : way.getRelations().values()) {
 			String osmMode = rel.getTags().get(Osm.Key.ROUTE);
-			if (osmMode == null && restrictPrivateRoad(way)) {
+			if (osmMode == null && config.getRespectVehicleAccess() && config.getAllowPtRoutesOnPrivateRoads()) {
 				osmMode = rel.getTags().get(Osm.Key.ROUTE_MASTER);
 			}
 			if (ptFilter.matches(rel) && osmMode != null) {
@@ -462,20 +462,6 @@ public class OsmMultimodalNetworkConverter {
 				modes.add(osmMode);
 				modes.add(TransportMode.pt);
 				ptModes.add(osmMode); // remember, that this is a pt mode
-			}
-		}
-
-		if (restrictPrivateRoad(way)) {
-			// Road defaults must not grant general traffic access to a private PT road.
-			modes = new HashSet<>(ptModes);
-			modes.add(TransportMode.pt);
-			if (ptFilter.matches(way)) {
-				modes.add(Osm.Value.BUS);
-				ptModes.add(Osm.Value.BUS);
-			}
-			String taxiAccess = tags.get(Osm.Key.TAXI);
-			if (Osm.Value.YES.equals(taxiAccess) || Osm.Value.DESIGNATED.equals(taxiAccess)) {
-				modes.add(Osm.Key.TAXI);
 			}
 		}
 
@@ -917,15 +903,29 @@ public class OsmMultimodalNetworkConverter {
 			return true;
 		}
 		String access = vehicleAccess(way, mode, forward);
+		if (Osm.Value.PRIVATE.equals(access) && allowPrivatePtRoute(way, mode, forward)) return true;
 		// Mode specificity takes precedence; within each key, the directional tag overrides the undirected tag.
 		return access == null || !Set.of(Osm.Value.NO, Osm.Value.PRIVATE, Osm.Value.PERMIT,
 				Osm.Value.AGRICULTURAL, Osm.Value.FORESTRY, Osm.Value.DELIVERY).contains(access);
 	}
 
-	private boolean restrictPrivateRoad(Osm.Way way) {
-		return config.getRemovePrivateRoads() && !config.getRespectVehicleAccess()
-				&& way.getTags().containsKey(Osm.Key.HIGHWAY)
-				&& Osm.Value.PRIVATE.equals(way.getTags().get(Osm.Key.ACCESS));
+	private boolean allowPrivatePtRoute(Osm.Way way, String mode, boolean forward) {
+		if (!config.getRespectVehicleAccess() || !config.getAllowPtRoutesOnPrivateRoads()
+				|| !(mode.equals(Osm.Value.BUS) || mode.equals(TransportMode.pt))) {
+			return false;
+		}
+		// Only the general access=private restriction gets an exception, never a more specific restriction.
+		if (!Osm.Value.PRIVATE.equals(directedAccessTag(way, Osm.Key.ACCESS, forward))) return false;
+		for (String key : List.of(Osm.Key.BUS, Osm.Key.PSV, Osm.Key.MOTOR_VEHICLE, Osm.Key.VEHICLE)) {
+			if (directedAccessTag(way, key, forward) != null) return false;
+		}
+		for (Osm.Relation relation : way.getRelations().values()) {
+			if (ptFilter.matches(relation)) {
+				String route = relation.getTags().getOrDefault(Osm.Key.ROUTE, relation.getTags().get(Osm.Key.ROUTE_MASTER));
+				if (mode.equals(TransportMode.pt) || mode.equals(route) || Osm.Value.TROLLEYBUS.equals(route)) return true;
+			}
+		}
+		return false;
 	}
 
 	protected boolean wayHasPublicTransit(Osm.Way way) {
