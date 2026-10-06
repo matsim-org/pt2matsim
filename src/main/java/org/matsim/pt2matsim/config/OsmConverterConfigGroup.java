@@ -68,6 +68,30 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	private boolean keepWaysWithPublicTransit = true;
 
 	@Parameter
+	@Comment("When respectVehicleAccess is true, preserve route-supported PT access where the resolved restriction is access=private. More specific vehicle restrictions still apply; cars and taxis receive no exception. Default: false.")
+	private boolean allowPtRoutesOnPrivateRoads = false;
+
+	public boolean getAllowPtRoutesOnPrivateRoads() {
+		return allowPtRoutesOnPrivateRoads;
+	}
+
+	public void setAllowPtRoutesOnPrivateRoads(boolean allowPtRoutesOnPrivateRoads) {
+		this.allowPtRoutesOnPrivateRoads = allowPtRoutesOnPrivateRoads;
+	}
+
+	@Parameter
+	@Comment("Respect unconditional vehicle access restrictions on roads (no, private, permit, agricultural, forestry, delivery), with mode-specific overrides, including :forward and :backward. Destination, customers and conditional restrictions are unchanged. Default: false.")
+	private boolean respectVehicleAccess = false;
+
+	public boolean getRespectVehicleAccess() {
+		return respectVehicleAccess;
+	}
+
+	public void setRespectVehicleAccess(boolean respectVehicleAccess) {
+		this.respectVehicleAccess = respectVehicleAccess;
+	}
+
+	@Parameter
 	@Comment("If true: OSM turn restrictions are parsed and written as disallowedNextLinks attribute to the first link.")
 	public boolean parseTurnRestrictions = true;
 

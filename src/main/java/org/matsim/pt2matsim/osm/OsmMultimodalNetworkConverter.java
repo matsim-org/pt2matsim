@@ -134,6 +134,7 @@ public class OsmMultimodalNetworkConverter {
 	 * connects osm way ids and link ids of the generated network
 	 **/
 	protected final Map<Id<Link>, Id<Osm.Way>> osmIds = new HashMap<>();
+	private final Map<Id<Link>, Boolean> linkForward = new HashMap<>();
 	/**
 	 * From one OSM way, multiple MATSim links can be created:
 	 * 1) forward & reverse links
@@ -168,6 +169,17 @@ public class OsmMultimodalNetworkConverter {
 		convertToNetwork(transformation);
 		if (config.parseTurnRestrictions) {
 			addDisallowedNextLinksAttributes();
+		}
+		if (config.getRespectVehicleAccess()) {
+			// Dedicated links must not reintroduce modes excluded by the way's access tags.
+			for (Link link : network.getLinks().values()) {
+				Osm.Way way = osmData.getWays().get(osmIds.get(link.getId()));
+				Set<String> allowed = new HashSet<>(link.getAllowedModes());
+				allowed.removeIf(mode -> !vehicleModeAllowed(way, mode, linkForward.get(link.getId())));
+				link.setAllowedModes(allowed);
+			}
+			NetworkUtils.removeLinksWithoutModes(network);
+			NetworkUtils.removeNodesWithoutLinks(network);
 		}
 		cleanNetwork();
 		if(config.getKeepTagsAsAttributes()) addAttributes();
@@ -222,7 +234,7 @@ public class OsmMultimodalNetworkConverter {
 			node.setCoord(transformation.transform(node.getCoord()));
 		}
 
-		// remove ways without default params
+		// Remove ways without conversion defaults before building links.
 		log.info("remove unusable ways...");
 		for(Osm.Way way : new HashSet<>(ways.values())) {
 			if(getWayDefaultParams(way) == null) {
@@ -440,6 +452,9 @@ public class OsmMultimodalNetworkConverter {
 		Set<String> ptModes = new HashSet<>();
 		for(Osm.Relation rel : way.getRelations().values()) {
 			String osmMode = rel.getTags().get(Osm.Key.ROUTE);
+			if (osmMode == null && config.getRespectVehicleAccess() && config.getAllowPtRoutesOnPrivateRoads()) {
+				osmMode = rel.getTags().get(Osm.Key.ROUTE_MASTER);
+			}
 			if (ptFilter.matches(rel) && osmMode != null) {
 				if (osmMode.equals(Osm.Value.TROLLEYBUS)) {
 					osmMode = Osm.Value.BUS;
@@ -450,9 +465,18 @@ public class OsmMultimodalNetworkConverter {
 			}
 		}
 
+		Set<String> modesForward = directionalVehicleModes(way, modes, true);
+		Set<String> modesBackward = directionalVehicleModes(way, modes, false);
+		modes = new HashSet<>(modesForward);
+		modes.addAll(modesBackward);
+		ptModes.retainAll(modes);
+		if (modes.contains(TransportMode.pt) && modes.contains(Osm.Value.BUS)) {
+			ptModes.add(Osm.Value.BUS);
+		}
+
 		// Subtract reserved lanes only when they become a separate link; PT-only links retain them.
-		boolean splitForwardReservedLanes = psvLanesForward.count > 0 && modes.contains("car");
-		boolean splitBackwardReservedLanes = psvLanesBackward.count > 0 && modes.contains("car");
+		boolean splitForwardReservedLanes = psvLanesForward.count > 0 && modesForward.contains("car");
+		boolean splitBackwardReservedLanes = psvLanesBackward.count > 0 && modesBackward.contains("car");
 		if (splitForwardReservedLanes) {
 			laneCountForward -= psvLanesForward.count;
 		}
@@ -475,14 +499,14 @@ public class OsmMultimodalNetworkConverter {
 		Id<Node> toId = Id.create(toNode.getId(), Node.class);
 		if(network.getNodes().get(fromId) != null && network.getNodes().get(toId) != null) {
 			// forward link (in OSM digitization direction)
-			if(!onewayReverse) {
+			if(!onewayReverse && !modesForward.isEmpty()) {
 				Id<Link> linkId = Id.create(this.id, Link.class);
 				Link l = network.getFactory().createLink(linkId, network.getNodes().get(fromId), network.getNodes().get(toId));
 				l.setLength(length);
 				l.setFreespeed(freeSpeedForward);
 				l.setCapacity(laneCountForward * laneCapacity);
 				l.setNumberOfLanes(laneCountForward);
-				l.setAllowedModes(modes);
+				l.setAllowedModes(modesForward);
 				if (config.parseTurnRestrictions && !osmTurnRestrictions.isEmpty()) {
 					// filter turn restrictions to those for which this link could be the from link
 					List<OsmTurnRestriction> thisOsmTurnRestrictions = osmTurnRestrictions.stream()
@@ -495,6 +519,7 @@ public class OsmMultimodalNetworkConverter {
 
 				network.addLink(l);
 				osmIds.put(l.getId(), way.getId());
+				linkForward.put(l.getId(), true);
 				geometryExporter.addLinkDefinition(linkId, new LinkDefinition(fromNode, toNode, way));
 				
 				// we might have dedicated lanes
@@ -513,7 +538,7 @@ public class OsmMultimodalNetworkConverter {
 					// while this is in practice not true, it makes it better
 					// for routing buses as otherwise they might end up on the 
 					// other lane
-					Set<String> cmodes = new HashSet<>(modes);
+					Set<String> cmodes = new HashSet<>(modesForward);
 					if (psvLanesForward.mode.equals(Osm.Key.BUS)) {
 						lBus.setAllowedModes(Set.of(Osm.Key.BUS, "pt"));
 						cmodes.remove(Osm.Key.BUS);
@@ -542,6 +567,7 @@ public class OsmMultimodalNetworkConverter {
 
 					network.addLink(lBus);
 					osmIds.put(lBus.getId(), way.getId());
+					linkForward.put(lBus.getId(), true);
 					geometryExporter.addLinkDefinition(linkIdBus, new LinkDefinition(fromNode, toNode, way));
 				}
 				
@@ -549,14 +575,14 @@ public class OsmMultimodalNetworkConverter {
 				this.id++;
 			}
 			// backward link
-			if(!oneway) {
+			if(!oneway && !modesBackward.isEmpty()) {
 				Id<Link> linkId = Id.create(this.id, Link.class);
 				Link l = network.getFactory().createLink(linkId, network.getNodes().get(toId), network.getNodes().get(fromId));
 				l.setLength(length);
 				l.setFreespeed(freeSpeedBackward);
 				l.setCapacity(laneCountBackward * laneCapacity);
 				l.setNumberOfLanes(laneCountBackward);
-				l.setAllowedModes(modes);
+				l.setAllowedModes(modesBackward);
 				if (config.parseTurnRestrictions && !osmTurnRestrictions.isEmpty()) {
 					// filter turn restrictions to those for which this link could be the from link
 					List<OsmTurnRestriction> thisOsmTurnRestrictions = osmTurnRestrictions.stream()
@@ -569,6 +595,7 @@ public class OsmMultimodalNetworkConverter {
 
 				network.addLink(l);
 				osmIds.put(l.getId(), way.getId());
+				linkForward.put(l.getId(), false);
 				geometryExporter.addLinkDefinition(linkId, new LinkDefinition(toNode, fromNode, way));
 				
 				if (splitBackwardReservedLanes) {
@@ -580,7 +607,7 @@ public class OsmMultimodalNetworkConverter {
 					lBus.setCapacity(psvLanesBackward.count * laneCapacity);
 					lBus.setNumberOfLanes(psvLanesBackward.count);
 					
-					Set<String> cmodes = new HashSet<>(modes);
+					Set<String> cmodes = new HashSet<>(modesBackward);
 					if (psvLanesBackward.mode.equals(Osm.Key.BUS)) {
 						lBus.setAllowedModes(Set.of(Osm.Key.BUS, "pt"));
 						cmodes.remove(Osm.Key.BUS);
@@ -607,6 +634,7 @@ public class OsmMultimodalNetworkConverter {
 
 					network.addLink(lBus);
 					osmIds.put(lBus.getId(), way.getId());
+					linkForward.put(lBus.getId(), false);
 					geometryExporter.addLinkDefinition(linkIdBus, new LinkDefinition(fromNode, toNode, way));
 				}
 				this.id++;
@@ -811,7 +839,7 @@ public class OsmMultimodalNetworkConverter {
 		ptFilter.add(Osm.ElementType.RELATION, Osm.Key.ROUTE, Osm.Value.SUBWAY);
 		ptFilter.add(Osm.ElementType.WAY, Osm.Key.PSV, Osm.Value.YES);
 		ptFilter.add(Osm.ElementType.WAY, Osm.Key.PSV, Osm.Value.DESIGNATED);
-		ptFilter.add(Osm.ElementType.WAY, Osm.Key.BUS, Osm.Value.DESIGNATED);
+		ptFilter.add(Osm.ElementType.WAY, Osm.Key.BUS, Osm.Value.YES);
 		ptFilter.add(Osm.ElementType.WAY, Osm.Key.BUS, Osm.Value.DESIGNATED);
 
 		ptDefaultParams = new OsmConverterConfigGroup.OsmWayParams("NULL", "NULL",
@@ -819,7 +847,97 @@ public class OsmMultimodalNetworkConverter {
 				false, Collections.singleton(TransportMode.pt));
 	}
 
+	private Set<String> directionalVehicleModes(Osm.Way way, Set<String> baseModes, boolean forward) {
+		Set<String> modes = new HashSet<>(baseModes);
+		Map<String, String> tags = way.getTags();
+		if (config.getRespectVehicleAccess() && tags.containsKey(Osm.Key.HIGHWAY)) {
+			// Explicit directional permissions must not leak into the opposite direction.
+			String busAccess = vehicleAccess(way, Osm.Value.BUS, forward);
+			if ((hasAccessTag(way, Osm.Key.BUS, forward) || hasAccessTag(way, Osm.Key.PSV, forward))
+					&& (Osm.Value.YES.equals(busAccess) || Osm.Value.DESIGNATED.equals(busAccess))) {
+				modes.add(Osm.Value.BUS);
+				modes.add(TransportMode.pt);
+			}
+			String taxiAccess = vehicleAccess(way, Osm.Key.TAXI, forward);
+			if ((hasAccessTag(way, Osm.Key.TAXI, forward) || hasAccessTag(way, Osm.Key.PSV, forward))
+					&& (Osm.Value.YES.equals(taxiAccess) || Osm.Value.DESIGNATED.equals(taxiAccess))) {
+				modes.add(Osm.Key.TAXI);
+			}
+			modes.removeIf(mode -> !vehicleModeAllowed(way, mode, forward));
+		}
+		return modes;
+	}
+
+	private boolean hasAccessTag(Osm.Way way, String key, boolean forward) {
+		return way.getTags().containsKey(key) || way.getTags().containsKey(
+				Osm.Key.combinedKey(key, forward ? Osm.Key.FORWARD : Osm.Key.BACKWARD));
+	}
+
+	private String directedAccessTag(Osm.Way way, String key, boolean forward) {
+		return way.getTags().getOrDefault(Osm.Key.combinedKey(key, forward ? Osm.Key.FORWARD : Osm.Key.BACKWARD),
+				way.getTags().get(key));
+	}
+
+	private String vehicleAccess(Osm.Way way, String mode, boolean forward) {
+		List<String> keys = switch (mode) {
+			case "car", "car_passenger" -> List.of(Osm.Key.MOTORCAR);
+			case "bus", "pt" -> List.of(Osm.Key.BUS, Osm.Key.PSV);
+			case "taxi" -> List.of(Osm.Key.TAXI, Osm.Key.PSV, Osm.Key.MOTORCAR);
+			case "truck" -> List.of(Osm.Key.HGV);
+			default -> List.of();
+		};
+		for (String key : keys) {
+			String value = directedAccessTag(way, key, forward);
+			if (value != null) return value;
+		}
+		for (String key : List.of(Osm.Key.MOTOR_VEHICLE, Osm.Key.VEHICLE, Osm.Key.ACCESS)) {
+			String value = directedAccessTag(way, key, forward);
+			if (value != null) return value;
+		}
+		return null;
+	}
+
+	private boolean vehicleModeAllowed(Osm.Way way, String mode, boolean forward) {
+		if (!way.getTags().containsKey(Osm.Key.HIGHWAY)
+				|| !Set.of("car", "car_passenger", "bus", "pt", "taxi", "truck").contains(mode)) {
+			return true;
+		}
+		String access = vehicleAccess(way, mode, forward);
+		if (Osm.Value.PRIVATE.equals(access) && allowPrivatePtRoute(way, mode, forward)) return true;
+		// Mode specificity takes precedence; within each key, the directional tag overrides the undirected tag.
+		return access == null || !Set.of(Osm.Value.NO, Osm.Value.PRIVATE, Osm.Value.PERMIT,
+				Osm.Value.AGRICULTURAL, Osm.Value.FORESTRY, Osm.Value.DELIVERY).contains(access);
+	}
+
+	private boolean allowPrivatePtRoute(Osm.Way way, String mode, boolean forward) {
+		if (!config.getRespectVehicleAccess() || !config.getAllowPtRoutesOnPrivateRoads()
+				|| !(mode.equals(Osm.Value.BUS) || mode.equals(TransportMode.pt))) {
+			return false;
+		}
+		// Only the general access=private restriction gets an exception, never a more specific restriction.
+		if (!Osm.Value.PRIVATE.equals(directedAccessTag(way, Osm.Key.ACCESS, forward))) return false;
+		for (String key : List.of(Osm.Key.BUS, Osm.Key.PSV, Osm.Key.MOTOR_VEHICLE, Osm.Key.VEHICLE)) {
+			if (directedAccessTag(way, key, forward) != null) return false;
+		}
+		for (Osm.Relation relation : way.getRelations().values()) {
+			if (ptFilter.matches(relation)) {
+				String route = relation.getTags().getOrDefault(Osm.Key.ROUTE, relation.getTags().get(Osm.Key.ROUTE_MASTER));
+				if (mode.equals(TransportMode.pt) || mode.equals(route) || Osm.Value.TROLLEYBUS.equals(route)) return true;
+			}
+		}
+		return false;
+	}
+
 	protected boolean wayHasPublicTransit(Osm.Way way) {
+		if (config.getRespectVehicleAccess()) {
+			for (boolean forward : new boolean[] {true, false}) {
+				String access = vehicleAccess(way, Osm.Value.BUS, forward);
+				if ((hasAccessTag(way, Osm.Key.BUS, forward) || hasAccessTag(way, Osm.Key.PSV, forward))
+						&& (Osm.Value.YES.equals(access) || Osm.Value.DESIGNATED.equals(access))) {
+					return true;
+				}
+			}
+		}
 		if(ptFilter.matches(way)) {
 			return true;
 		}
@@ -937,6 +1055,13 @@ public class OsmMultimodalNetworkConverter {
 	        log.info(String.format("Creating clean subnetwork for '%s' considering links of: %s", subnetworkMode, allowedTransportModes.toString()));
 	        
 	        Network subnetwork = NetworkTools.createFilteredNetworkByLinkMode(network, allowedTransportModes);
+
+			if (config.getRespectVehicleAccess()) {
+				// A derived mode (e.g. truck from car) must obey its own access restriction.
+				subnetwork.getLinks().values().stream()
+						.filter(link -> !vehicleModeAllowed(osmData.getWays().get(osmIds.get(link.getId())), subnetworkMode, linkForward.get(link.getId())))
+						.map(Link::getId).toList().forEach(subnetwork::removeLink);
+			}
 
 			joinDisallowedNextLinks(subnetwork, allowedTransportModes); // if there are > 1 allowedTransportModes
 
