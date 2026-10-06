@@ -9,9 +9,11 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
+import org.matsim.pt2matsim.osm.lib.Osm;
 import org.matsim.pt2matsim.osm.lib.OsmData;
 import org.matsim.pt2matsim.osm.lib.OsmDataImpl;
 import org.matsim.pt2matsim.osm.lib.OsmFileReader;
@@ -90,6 +92,66 @@ public class OsmMultimodalNetworkConverterTest {
 		Assertions.assertEquals(2, links.size(), "bidirectional");
 		assertLanes(links, 3);
 		assertMaxspeed(links, 70);
+	}
+
+	@Test
+	void testDirectionalReservedLanesWithTotalLaneCount() {
+		for (String direction : Set.of("forward", "backward")) {
+			for (Map<String, String> reservedTags : Set.of(
+					Map.of("lanes:psv:" + direction, "1"),
+					Map.of("psv:lanes:" + direction, "yes|designated"),
+					Map.of("lanes:psv:" + direction, "1", "psv:lanes:" + direction, "yes|designated"))) {
+				OsmData osm = new OsmDataImpl();
+				new OsmFileReader(osm).readFile("test/osm/GerasdorfArtificialLanesAndMaxspeed.osm");
+				Map<String, String> tags = osm.getWays().get(Id.create(7994889L, Osm.Way.class)).getTags();
+				tags.put("lanes", "4");
+				tags.putAll(reservedTags);
+				OsmConverterConfigGroup config = OsmConverterConfigGroup.createDefaultConfig();
+				config.setOutputCoordinateSystem("EPSG:31256");
+				config.setMaxLinkLength(1000);
+				OsmMultimodalNetworkConverter converter = new OsmMultimodalNetworkConverter(osm);
+				converter.convert(config);
+				Set<Link> links = collectLinkMap(converter.getNetwork()).get(7994889L);
+				Assertions.assertEquals(3, links.size(), reservedTags.toString());
+				boolean forward = direction.equals("forward");
+				Set<Link> reservedDirection = getLinksTowardsNode(links, forward ? 59836737L : 59836736L);
+				Set<Link> otherDirection = getLinksTowardsNode(links, forward ? 59836736L : 59836737L);
+				Assertions.assertEquals(2, reservedDirection.size());
+				Assertions.assertEquals(1, otherDirection.size());
+				assertLanes(reservedDirection, 1);
+				assertLanes(otherDirection, 2);
+				Link reserved = reservedDirection.stream().filter(l -> !l.getAllowedModes().contains("car")).findFirst().orElseThrow();
+				Assertions.assertEquals(Set.of("bus", "pt", "taxi"), reserved.getAllowedModes());
+				Link general = reservedDirection.stream().filter(l -> l.getAllowedModes().contains("car")).findFirst().orElseThrow();
+				Assertions.assertEquals(general.getCapacity(), reserved.getCapacity(), DELTA);
+				Assertions.assertEquals(2 * reserved.getCapacity(), otherDirection.iterator().next().getCapacity(), DELTA);
+			}
+		}
+	}
+
+	@Test
+	void testPtOnlyReservedLanesRetainLanesAndCapacity() {
+		OsmData osm = new OsmDataImpl();
+		new OsmFileReader(osm).readFile("test/osm/GerasdorfArtificialLanesAndMaxspeed.osm");
+		Map<String, String> tags = osm.getWays().get(Id.create(7994889L, Osm.Way.class)).getTags();
+		tags.put("highway", "service");
+		tags.put("psv", "designated");
+		tags.put("lanes", "2");
+		tags.put("lanes:psv:forward", "1");
+		tags.put("psv:lanes:backward", "designated");
+		OsmConverterConfigGroup config = OsmConverterConfigGroup.createDefaultConfig();
+		config.setOutputCoordinateSystem("EPSG:31256");
+		config.setMaxLinkLength(1000);
+		OsmMultimodalNetworkConverter converter = new OsmMultimodalNetworkConverter(osm);
+		converter.convert(config);
+		Set<Link> links = collectLinkMap(converter.getNetwork()).get(7994889L);
+		Assertions.assertEquals(2, links.size());
+		assertLanes(links, 1);
+		for (Link link : links) {
+			Assertions.assertEquals(Set.of("pt"), link.getAllowedModes());
+			Assertions.assertEquals(9999, link.getCapacity(), DELTA);
+			Assertions.assertFalse(link.getId().toString().endsWith("_spec"));
+		}
 	}
 
 	@Test
