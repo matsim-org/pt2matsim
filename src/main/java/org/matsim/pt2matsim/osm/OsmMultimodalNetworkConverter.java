@@ -134,7 +134,7 @@ public class OsmMultimodalNetworkConverter {
 	 * connects osm way ids and link ids of the generated network
 	 **/
 	protected final Map<Id<Link>, Id<Osm.Way>> osmIds = new HashMap<>();
-	private final Map<Id<Link>, Boolean> linkForward = new HashMap<>();
+	protected final Map<Id<Link>, Boolean> linkForward = new HashMap<>();
 	/**
 	 * From one OSM way, multiple MATSim links can be created:
 	 * 1) forward & reverse links
@@ -314,6 +314,7 @@ public class OsmMultimodalNetworkConverter {
 			}
 		}
 
+		nodesToIgnore.removeIf(this::preserveNode);
 		// create the required nodes and add them to the network
 		log.info("Creating nodes...");
 		for(Osm.Node node : nodes.values()) {
@@ -380,6 +381,11 @@ public class OsmMultimodalNetworkConverter {
 			}
 		}
 		log.info("= end of conversion statistics ====================");
+	}
+
+	/** Hook for converters that need relation nodes retained during simplification. */
+	protected boolean preserveNode(Osm.Node node) {
+		return false;
 	}
 
 	/**
@@ -1223,7 +1229,7 @@ public class OsmMultimodalNetworkConverter {
 		return osmTurnRestrictions;
 	}
 
-	private void attachTurnRestrictionsAsDisallowedNextLinks() {
+	protected void attachTurnRestrictionsAsDisallowedNextLinks() {
 
 		if (!config.parseTurnRestrictions) {
 			return;
@@ -1517,4 +1523,3 @@ public class OsmMultimodalNetworkConverter {
 	}
 
 }
-
