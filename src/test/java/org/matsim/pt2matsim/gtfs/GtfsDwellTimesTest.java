@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class GtfsDwellTimesTest {
     @TempDir Path feed;
 
-    @Test void preservesDwellAndAnchorsOffsetsToFirstDeparture() throws Exception {
+    @Test void preservesDwellAndDepartureOriginWithZeroTerminalDeparture() throws Exception {
         Files.writeString(feed.resolve("agency.txt"), "agency_id,agency_name,agency_url,agency_timezone\n"
                 + "A,Test,https://example.org,Europe/Zurich\n");
         Files.writeString(feed.resolve("stops.txt"), "stop_id,stop_name,stop_lat,stop_lon\n"
@@ -23,7 +23,7 @@ class GtfsDwellTimesTest {
         Files.writeString(feed.resolve("calendar.txt"), "service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date\n"
                 + "D,1,1,1,1,1,1,1,20240101,20241231\n");
         Files.writeString(feed.resolve("stop_times.txt"), "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n"
-                + "T,07:55:00,08:00:00,a,1\nT,08:10:00,08:12:00,b,2\nT,08:20:00,08:20:00,c,3\n");
+                + "T,07:55:00,08:00:00,a,1\nT,08:10:00,08:12:00,b,2\nT,08:20:00,08:25:00,c,3\n");
         var converter = new GtfsConverter(new GtfsFeedImpl(feed.toString()));
         var schedule = converter.convert("20240223", "EPSG:2056");
         var route = schedule.getTransitLines().get(Id.create("L", TransitLine.class)).getRoutes().values().iterator().next();
@@ -33,7 +33,7 @@ class GtfsDwellTimesTest {
         assertEquals(600, route.getStops().get(1).getArrivalOffset().seconds());
         assertEquals(720, route.getStops().get(1).getDepartureOffset().seconds());
         assertEquals(1200, route.getStops().get(2).getArrivalOffset().seconds());
-        assertEquals(1200, route.getStops().get(2).getDepartureOffset().seconds());
+        assertEquals(0, route.getStops().get(2).getDepartureOffset().seconds());
         assertTrue(TransitScheduleValidator.validateOffsets(schedule).isValid());
     }
 }
