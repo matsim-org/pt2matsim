@@ -296,7 +296,9 @@ public class GtfsConverter {
 	protected TransitRouteStop createTransitRouteStop(StopTime stopTime, Trip trip, Map<Id<TransitStopFacility>, TransitStopFacility> stopFacilities) {
 		double arrivalOffset = 0, departureOffset = 0;
 
-		int routeStartTime = trip.getStopTimes().first().getArrivalTime();
+		// Departures are anchored to the first stop's departure time, including
+		// frequency-based trips. Use the same origin for every route-stop offset.
+		int routeStartTime = trip.getStopTimes().first().getDepartureTime();
 		int firstSequencePos = trip.getStopTimes().first().getSequencePosition();
 		int lastSequencePos = trip.getStopTimes().last().getSequencePosition();
 
@@ -305,9 +307,10 @@ public class GtfsConverter {
 			arrivalOffset = stopTime.getArrivalTime() - routeStartTime;
 		}
 
-		// add departure time if current stopTime is not on the last stop of the route
-		if(!stopTime.getSequencePosition().equals(lastSequencePos)) {
-			departureOffset = stopTime.getArrivalTime() - routeStartTime;
+		// Preserve GTFS dwell time at stops where the vehicle departs. Keep the
+		// terminal departure offset at zero for downstream simulation compatibility.
+		if (!stopTime.getSequencePosition().equals(lastSequencePos)) {
+			departureOffset = stopTime.getDepartureTime() - routeStartTime;
 		}
 
 		TransitStopFacility stopFacility = stopFacilities.get(createStopFacilityId(stopTime.getStop()));
