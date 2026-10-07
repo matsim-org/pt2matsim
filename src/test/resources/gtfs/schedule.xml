@@ -24,7 +24,7 @@
 				<stop refId="stop4" arrivalOffset="00:00:00" departureOffset="00:00:00" awaitDeparture="true"/>
 				<stop refId="stop3" arrivalOffset="00:00:40" departureOffset="00:00:40" awaitDeparture="true"/>
 				<stop refId="stop2" arrivalOffset="00:01:00" departureOffset="00:01:00" awaitDeparture="true"/>
-				<stop refId="stop1" arrivalOffset="00:01:20" departureOffset="00:01:20" awaitDeparture="true"/>
+				<stop refId="stop1" arrivalOffset="00:01:20" departureOffset="00:00:00" awaitDeparture="true"/>
 			</routeProfile>
 			<departures>
 				<departure id="routeA2_09:00:00" departureTime="09:00:00" vehicleRefId="veh_0_bus"/>
@@ -38,7 +38,7 @@
 				<stop refId="stop1" arrivalOffset="00:00:00" departureOffset="00:00:00" awaitDeparture="true"/>
 				<stop refId="stop2" arrivalOffset="00:00:20" departureOffset="00:00:20" awaitDeparture="true"/>
 				<stop refId="stop3" arrivalOffset="00:00:40" departureOffset="00:00:40" awaitDeparture="true"/>
-				<stop refId="stop4" arrivalOffset="00:01:20" departureOffset="00:01:20" awaitDeparture="true"/>
+				<stop refId="stop4" arrivalOffset="00:01:20" departureOffset="00:00:00" awaitDeparture="true"/>
 			</routeProfile>
 			<departures>
 				<departure id="routeA1_08:00:00" departureTime="08:00:00" vehicleRefId="veh_3_bus"/>
@@ -55,7 +55,7 @@
 				<stop refId="stop3" arrivalOffset="00:01:20" departureOffset="00:01:20" awaitDeparture="true"/>
 				<stop refId="stop5" arrivalOffset="00:01:40" departureOffset="00:01:40" awaitDeparture="true"/>
 				<stop refId="stop6" arrivalOffset="00:02:20" departureOffset="00:02:20" awaitDeparture="true"/>
-				<stop refId="stop4" arrivalOffset="00:02:40" departureOffset="00:02:40" awaitDeparture="true"/>
+				<stop refId="stop4" arrivalOffset="00:02:40" departureOffset="00:00:00" awaitDeparture="true"/>
 			</routeProfile>
 			<departures>
 				<departure id="routeB_07:00:00" departureTime="07:00:00" vehicleRefId="veh_6_tram"/>
