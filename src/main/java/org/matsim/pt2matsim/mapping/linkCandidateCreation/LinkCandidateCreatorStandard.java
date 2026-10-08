@@ -33,6 +33,7 @@ import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.config.TransportModeParameterSet;
 import org.matsim.pt2matsim.mapping.Progress;
+import org.matsim.pt2matsim.mapping.stopMatching.LinkGeometryIndex;
 import org.matsim.pt2matsim.tools.MiscUtils;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.PTMapperTools;
@@ -51,6 +52,7 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 	private final TransitSchedule schedule;
 	private final Network network;
+	private final LinkGeometryIndex geometry;
 
 	private final Map<Id<PublicTransitStop>, SortedSet<LinkCandidate>> linkCandidates = new HashMap<>();
 	private final Map<Id<PublicTransitStop>, PublicTransitStop> stops = new HashMap<>();
@@ -66,6 +68,10 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 
 	public LinkCandidateCreatorStandard(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config) {
+		this(schedule, network, config, null);
+	}
+
+	public LinkCandidateCreatorStandard(TransitSchedule schedule, Network network, PublicTransitMappingConfigGroup config, LinkGeometryIndex geometry) {
 		this.schedule = schedule;
 		this.network = network;
 		this.nLinks = config.getNLinkThreshold();
@@ -73,6 +79,7 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 		this.maxDistance = config.getMaxLinkCandidateDistance();
 		this.transportModeAssignments = config.getTransportModeAssignment();
 		this.mapperConfig = config;
+		this.geometry = geometry;
 		
 		load();
 	}
@@ -117,7 +124,7 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 				Set<Link> tmpCloseLinks = MapUtils.getSet(getCloseLinksKey(transitRoute, previousRouteStop), closeLinksMap);
 				if(tmpCloseLinks.size() == 0) {
-					tmpCloseLinks.addAll(findClosestLinks(previousRouteStop.getStopFacility().getCoord(), networkModes, scheduleTransportMode));
+					tmpCloseLinks.addAll(findClosestLinks(previousRouteStop.getStopFacility(), networkModes, scheduleTransportMode));
 				}
 
 				Set<Link> previousLinks = new HashSet<>(tmpCloseLinks);
@@ -147,7 +154,7 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 
 						// look for closes links in network
 						if(closeLinks.size() == 0) {
-							closeLinks.addAll(findClosestLinks(currentRouteStop.getStopFacility().getCoord(), networkModes, scheduleTransportMode));
+							closeLinks.addAll(findClosestLinks(currentRouteStop.getStopFacility(), networkModes, scheduleTransportMode));
 						}
 
 						currentLinks.addAll(closeLinks);
@@ -193,7 +200,9 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 			double maxDist = 0.0;
 
 			for(Link link : links) {
-				LinkCandidate linkCandidate = new LinkCandidateImpl(link, stop);
+				LinkCandidate linkCandidate = geometry == null ? new LinkCandidateImpl(link, stop)
+						: new LinkCandidateImpl(link, stop, geometry.distance(link, stop.getStopFacility().getCoord()),
+						geometry.rightSide(link, stop.getStopFacility().getCoord()));
 				MiscUtils.getSortedSet(stop.getId(), linkCandidates).add(linkCandidate);
 
 				if(linkCandidate.getStopFacilityDistance() > maxDist) maxDist = linkCandidate.getStopFacilityDistance();
@@ -263,7 +272,10 @@ public class LinkCandidateCreatorStandard implements LinkCandidateCreator {
 	 *
 	 * @return list of the closest links from coordinate <tt>coord</tt>.
 	 */
-	private List<Link> findClosestLinks(Coord coord, Set<String> networkModes, String scheduleMode) {
+	private List<Link> findClosestLinks(TransitStopFacility stop, Set<String> networkModes, String scheduleMode) {
+		if (geometry != null) return geometry.closest(stop, networkModes, scheduleMode, mapperConfig).values()
+				.stream().flatMap(Collection::stream).toList();
+		Coord coord = stop.getCoord();
 		
 		// searching
 		int maximumLinks = this.nLinks;

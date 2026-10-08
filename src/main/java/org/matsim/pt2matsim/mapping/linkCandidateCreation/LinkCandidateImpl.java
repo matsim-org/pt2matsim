@@ -37,16 +37,26 @@ public class LinkCandidateImpl implements LinkCandidate {
 	private final Coord toNodeCoord;
 	private final boolean isLoopLink;
 	private double priority;
+	private boolean geometryAware;
+	private boolean rightSide;
 
 	public LinkCandidateImpl(Link link, PublicTransitStop publicTransitStop) {
+		this(link, publicTransitStop, CoordUtils.distancePointLinesegment(link.getFromNode().getCoord(),
+				link.getToNode().getCoord(), publicTransitStop.getStopFacility().getCoord()), false);
+		this.geometryAware = false;
+	}
+
+	public LinkCandidateImpl(Link link, PublicTransitStop publicTransitStop, double distance, boolean rightSide) {
 		this.link = link;
 		this.stop = publicTransitStop;
 
 		this.fromNodeCoord = link.getFromNode().getCoord();
 		this.toNodeCoord = link.getToNode().getCoord();
-		this.stopFacilityDistance = CoordUtils.distancePointLinesegment(fromNodeCoord, toNodeCoord, publicTransitStop.getStopFacility().getCoord());
+		this.stopFacilityDistance = distance;
 		this.isLoopLink = link.getFromNode().getId().toString().equals(link.getToNode().getId().toString());
 		this.priority = 1;
+		this.geometryAware = true;
+		this.rightSide = rightSide;
 	}
 
 	@Override
@@ -100,6 +110,10 @@ public class LinkCandidateImpl implements LinkCandidate {
 			return 0;
 		} else {
 			if(priority == other.getPriority()) {
+				if (geometryAware && other instanceof LinkCandidateImpl candidate && candidate.geometryAware) {
+					int side = Boolean.compare(candidate.rightSide, rightSide);
+					return side != 0 ? side : link.getId().toString().compareTo(candidate.link.getId().toString());
+				}
 				return CoordTools.coordIsOnRightSideOfLine(stop.getStopFacility().getCoord(), fromNodeCoord, toNodeCoord) ? -1 : 1;
 			} else {
 				return priority > other.getPriority() ? -1 : 1;
