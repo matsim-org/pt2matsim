@@ -27,6 +27,8 @@ fragment. New IDs are `stopMatch:<original-id>:<number>`. Internal nodes are
 private to the directed original link: they add no junction turns, U-turns or
 crossovers between parallel general/reserved roads. Lengths sum to the original
 length; speeds, capacity and lane count are copied without multiplying capacity.
+Co-located general/reserved and opposite-direction OSM copies receive matching
+physical cuts, while retaining separate internal nodes and their original access.
 Single-turn and via-way restrictions are expanded to the fragment sequence.
 
 Artificial fallback remains for genuine unavailable roads or legal routing gaps.

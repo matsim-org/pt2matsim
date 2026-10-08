@@ -59,6 +59,35 @@ public final class StopLinkPreparation {
                 }
             }
         }
+        // Split co-located general/reserved and opposite-direction copies at
+        // the same physical positions, even when only the reserved copy allows
+        // buses. Their internal nodes remain separate, so access is unchanged.
+        Map<String, List<Link>> physicalRoads = new HashMap<>();
+        for (Link link : network.getLinks().values()) {
+            Object way = link.getAttributes().getAttribute("osm:way:id");
+            if (way == null) continue;
+            String a = link.getFromNode().getId().toString(), b = link.getToNode().getId().toString();
+            String key = way + ":" + (a.compareTo(b) < 0 ? a + ":" + b : b + ":" + a);
+            physicalRoads.computeIfAbsent(key, ignored -> new ArrayList<>()).add(link);
+        }
+        Map<Id<Link>, TreeMap<Double, Set<Id<TransitStopFacility>>>> seeded = new HashMap<>(projections);
+        for (var road : physicalRoads.values()) for (Link seed : road) {
+            var cuts = seeded.get(seed.getId());
+            if (cuts == null) continue;
+            LengthIndexedLine source = new LengthIndexedLine(geometry.shape(seed));
+            for (Link sibling : road) {
+                if (sibling.getId().equals(seed.getId())) continue;
+                LengthIndexedLine target = new LengthIndexedLine(geometry.shape(sibling));
+                for (var cut : cuts.entrySet()) {
+                    Coordinate point = source.extractPoint(cut.getKey());
+                    double position = target.project(point);
+                    if (target.extractPoint(position).distance(point) > .1 || position <= EPSILON
+                            || position >= geometry.shape(sibling).getLength() - EPSILON) continue;
+                    projections.computeIfAbsent(sibling.getId(), ignored -> new TreeMap<>())
+                            .computeIfAbsent(position, ignored -> new TreeSet<>(Comparator.comparing(Id::toString))).addAll(cut.getValue());
+                }
+            }
+        }
         // Capture restrictions before replacing links; source IDs stay on the
         // final piece, where the original junction decisions still occur.
         Map<Id<Link>, DisallowedNextLinks> restrictions = new HashMap<>();

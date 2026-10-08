@@ -95,8 +95,13 @@ class StopMatchingTest {
         link("forward", "a", 0, 0, "b", 200, 0, "bus", "car");
         link("backward", "b", 200, 0, "a", 0, 0, "bus", "car");
         link("reserved", "a", 0, 0, "b", 200, 0, "bus");
+        link("carOnlyParallel", "a", 0, 0, "b", 200, 0, "car");
+        for (Link road : network.getLinks().values()) road.getAttributes().putAttribute("osm:way:id", "42");
         route(new double[][] {{50, 1}, {150, 1}});
         StopLinkPreparation.prepare(network, schedule, config());
+        assertEquals(3, network.getLinks().values().stream().filter(l -> "carOnlyParallel".equals(
+                l.getAttributes().getAttribute(StopLinkPreparation.ORIGINAL_LINK))).count());
+        assertFalse(network.getLinks().get(Id.createLinkId("carOnlyParallel")).getAllowedModes().contains("bus"));
         for (Node node : network.getNodes().values()) if (node.getId().toString().startsWith("stopMatch:")) {
             assertEquals(1, node.getInLinks().size()); assertEquals(1, node.getOutLinks().size());
             assertEquals(node.getInLinks().values().iterator().next().getAttributes().getAttribute(StopLinkPreparation.ORIGINAL_LINK),
