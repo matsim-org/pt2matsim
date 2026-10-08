@@ -265,6 +265,15 @@ def build(args):
     for link in links:
         key = physical_key(link)
         groups.setdefault(key, []).append(link)
+    known_positions = {link['originalLink']: min(lane['index'] for lane in link['lanes'])
+                       for link in links if link['lanes']}
+    for group in groups.values():
+        group.sort(key=lambda road: (known_positions.get(road['originalLink'],
+                                                        100 if road['originalLink'].endswith('_spec') else 0), road['id']))
+        offset = 0
+        for road in group:
+            road['aggregateCenter'] = offset + road['lanesCount'] / 2
+            offset += road['lanesCount']
     for link in links:
         key = physical_key(link)
         group = groups[key]
