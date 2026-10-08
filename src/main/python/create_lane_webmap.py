@@ -149,6 +149,7 @@ def build(args):
             attrs = current.pop('attrs')
             current.update(way=attrs.get('osm:way:id', ''), name=attrs.get('osm:way:name', ''), highway=attrs.get('osm:way:highway', ''),
                            rules=json.loads(attrs.get('disallowedNextLinks', '{}')), lanes=[],
+                           originalLink=attrs.get('pt2matsim:stopMatchingOriginalLink', current['id']),
                            artificial='artificial' in current['modes'])
             candidates[current['id']] = current
             current = None
@@ -165,14 +166,16 @@ def build(args):
     parse_xml(args.network, network_start, network_end, network_text)
     print('Nearby network links:', len(candidates), flush=True)
     geometries = {}
-    with open(args.geometry) as stream:
-        for row in csv.DictReader(stream):
-            if row['LinkId'] in candidates:
-                try:
-                    geometries[row['LinkId']] = wkt.loads(row['Geometry'])
-                except GEOSException:
-                    # Loop links can have a single-point WKT from the exporter.
-                    candidates[row['LinkId']]['geometryFallback'] = True
+    reference_geometry = getattr(args, 'reference_geometry', None)
+    for geometry_path in filter(None, (reference_geometry, args.geometry)):
+        with open(geometry_path) as stream:
+            for row in csv.DictReader(stream):
+                if row['LinkId'] in candidates:
+                    try:
+                        geometries[row['LinkId']] = wkt.loads(row['Geometry'])
+                    except GEOSException:
+                        # Loop links can have a single-point WKT from the exporter.
+                        candidates[row['LinkId']]['geometryFallback'] = True
     selected = set()
     for id, link in candidates.items():
         geometry = geometries.get(id, LineString([nodes[link['from']], nodes[link['to']]]))
@@ -243,9 +246,9 @@ def build(args):
                 for item in link['lanes']:
                     if match and int(match[1]) != item.get('osmIndex'): continue
                     if exact_lane and exact_lane[1] != item['id']: continue
-                    if category in ('inferredLaneMovements', 'inferredReservedLanePositions', 'laneTagCountMismatches', 'ambiguousTurnMatches', 'inferredUTurnMovementsExcluded', 'uTurnOnlyExitLaneConnectionsRestored', 'inferredConnectorLaneConnections'):
+                    if category in ('inferredLaneMovements', 'inferredReservedLanePositions', 'laneTagCountMismatches', 'ambiguousTurnMatches', 'inferredUTurnMovementsExcluded', 'uTurnOnlyExitLaneConnectionsRestored', 'inferredConnectorLaneConnections', 'stopMatchingLaneLengthsAdjusted'):
                         item['inferred'] = True
-                    if category in ('inferredLaneMovements', 'inferredReservedLanePositions', 'laneTagCountMismatches', 'ambiguousTurnMatches', 'conflictingTurnIndications', 'motorLaneLayoutsResolved', 'nonMotorLaneSlotsExcluded', 'reservedLanePositionsFromAccess', 'reservedLanePositionsFromCounts', 'laneAccessTagCountMismatches', 'inferredUTurnMovementsExcluded', 'uTurnExplicitArrowExceptions', 'uTurnModeExemptionExceptions', 'uTurnTurningFacilityExceptions', 'uTurnOnlyLegalExitExceptions', 'uTurnOnlyExitLaneConnectionsRestored', 'inferredConnectorLaneConnections'):
+                    if category in ('inferredLaneMovements', 'inferredReservedLanePositions', 'laneTagCountMismatches', 'ambiguousTurnMatches', 'conflictingTurnIndications', 'motorLaneLayoutsResolved', 'nonMotorLaneSlotsExcluded', 'reservedLanePositionsFromAccess', 'reservedLanePositionsFromCounts', 'laneAccessTagCountMismatches', 'inferredUTurnMovementsExcluded', 'uTurnExplicitArrowExceptions', 'uTurnModeExemptionExceptions', 'uTurnTurningFacilityExceptions', 'uTurnOnlyLegalExitExceptions', 'uTurnOnlyExitLaneConnectionsRestored', 'inferredConnectorLaneConnections', 'stopMatchingLaneLengthsAdjusted', 'stopMatchingLaneAssignmentsAdapted'):
                         note = category + ': ' + row['detail']
                         if note not in item['notes']: item['notes'].append(note)
     needed = selected | {target for id in selected for lane in candidates[id]['lanes'] for target in lane['to']}
@@ -253,13 +256,20 @@ def build(args):
     assert not missing, f'Missing road context for lane destinations: {sorted(missing)[:20]}'
     links = [candidates[id] for id in sorted(needed)]
     groups = {}
+    def physical_key(link):
+        # Stop split nodes are private to each directed road copy. For display
+        # only, group parallel/opposite copies by co-located shape endpoints.
+        return (link['way'] or link['originalLink'],
+                tuple(round(value, 3) for value in link['xy'][0][:2]),
+                tuple(round(value, 3) for value in link['xy'][-1][:2]))
     for link in links:
-        key = (link['way'] or link['id'], link['from'], link['to'])
+        key = physical_key(link)
         groups.setdefault(key, []).append(link)
     for link in links:
-        group = groups[link['way'] or link['id'], link['from'], link['to']]
+        key = physical_key(link)
+        group = groups[key]
         link['groupTotal'] = max([lane.get('index', 1) for road in group for lane in road['lanes']] + [round(sum(road['lanesCount'] for road in group))])
-        link['opposite'] = (link['way'] or link['id'], link['to'], link['from']) in groups
+        link['opposite'] = (key[0], key[2], key[1]) in groups
         xs, ys = zip(*link.pop('xy'))
         lon, lat = projection.transform(xs, ys)
         link['geometry'] = [[round(a, 7), round(b, 7)] for a, b in zip(lat, lon)]
@@ -286,6 +296,7 @@ def build(args):
                       'geometryFallbackLinks': sum(candidates[id]['geometrySource'] != 'detailed' for id in selected),
                       'lanes': sum(len(candidates[id]['lanes']) for id in selected), 'contextLinks': len(links)-len(selected),
                       'roadLinks': sum(bool(candidates[id]['highway']) for id in selected),
+                      'originalRoadLinks': len({candidates[id]['originalLink'] for id in selected if candidates[id]['highway']}),
                       'mappedLinks': sum(candidates[id]['mapped'] for id in selected),
                       'referenceOnlyLinks': sum(not candidates[id]['mapped'] for id in selected),
                       'artificialLinks': sum(candidates[id]['artificial'] for id in selected),
@@ -296,6 +307,7 @@ def build(args):
             'source': {'network': str(args.network), 'lanes': str(args.lanes), 'boundary': args.boundary_source,
                        'referenceNetwork': str(reference_network) if reference_network else None,
                        'referenceLanes': str(reference_lanes) if reference_lanes else None,
+                       'geometry': str(args.geometry), 'referenceGeometry': str(reference_geometry) if reference_geometry else None,
                        'mappingReport': str(mapping_report) if mapping_report else None,
                        'schedule': str(args.schedule) if getattr(args, 'schedule', None) else None}}
     template = Path(args.template).read_text()
@@ -321,6 +333,7 @@ if __name__ == '__main__':
     parser.add_argument('--schedule', help='Mapped transit schedule for bus usage and representative line previews')
     parser.add_argument('--reference-network', help='Original network; retain cleaned-away links as labelled display references')
     parser.add_argument('--reference-lanes', help='Original lanes for reference-only links absent from the mapped network')
+    parser.add_argument('--reference-geometry', help='Full prepared geometry for reference-only road fragments')
     parser.add_argument('--mapping-report', help='Lane reconciliation audit, including inferred artificial-connector exits')
     parser.add_argument('--boundary-source', default='Kanton Zürich, Gemeindegrenzen WFS, BFS 261')
     build(parser.parse_args())

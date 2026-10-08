@@ -16,6 +16,7 @@ import org.matsim.pt2matsim.lanes.MappedLanesReconciler;
 import org.matsim.pt2matsim.lanes.MappedTransitRouteRepair;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.osm.LaneConversionReport;
+import org.matsim.pt2matsim.mapping.stopMatching.LinkGeometryIndex;
 import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt2matsim.tools.NetworkTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
@@ -25,6 +26,10 @@ public final class ReconcileMappedLanes {
     private ReconcileMappedLanes() { }
 
     public static void main(String[] args) throws IOException {
+        run(args, new LaneConversionReport());
+    }
+
+    public static void run(String[] args, LaneConversionReport report) throws IOException {
         if (args.length != 6 && args.length != 7) throw new IllegalArgumentException(
                 "Expected original-network mapped-network original-lanes mapped-schedule output-lanes report.csv [mapper-config for route repair]");
         var original = NetworkTools.readNetwork(args[0]);
@@ -33,7 +38,6 @@ public final class ReconcileMappedLanes {
         var scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         new LanesReader(scenario).readFile(args[2]);
         var schedule = ScheduleTools.readTransitSchedule(args[3]);
-        var report = new LaneConversionReport();
         if (args.length == 7) {
             NetworkTools.integrateNetwork(original, network, false);
             MappedTransitRouteRepair.repair(original, network, schedule,
@@ -62,6 +66,9 @@ public final class ReconcileMappedLanes {
             NetworkTools.writeNetwork(network, args[1]);
             ScheduleTools.writeTransitSchedule(schedule, args[3]);
             var config = PublicTransitMappingConfigGroup.loadConfig(args[6]);
+            if (config.getSplitLinksAtStops() && config.getOutputNetworkGeometryFile() != null)
+                new LinkGeometryIndex(network, config.getOutputPreparedNetworkFile() + ".geometry.csv")
+                        .write(config.getOutputNetworkGeometryFile());
             if (config.getOutputStreetNetworkFile() != null)
                 NetworkTools.writeNetwork(NetworkTools.createFilteredNetworkByLinkMode(network, Set.of("car")), config.getOutputStreetNetworkFile());
         }

@@ -111,6 +111,23 @@ class CompleteCoverageTest(unittest.TestCase):
             self.assertTrue(links['connector']['mapped'])
             self.assertEqual(data['stats']['referenceOnlyLinks'], 1)
             self.assertEqual(data['stats']['mappedLinks'], 1)
+            # Directed stop fragments can share physical coordinates while
+            # retaining private node IDs. Display offsets must still recognize
+            # the opposite road copy without changing routing connectivity.
+            nodes = tree.getroot().find('nodes')
+            ET.SubElement(nodes, 'node', {'id': 'private5', 'x': '8', 'y': '5'})
+            ET.SubElement(nodes, 'node', {'id': 'private6', 'x': '2', 'y': '5'})
+            reverse = ET.SubElement(tree.getroot().find('links'), 'link', {
+                'id': 'reversePrivate', 'from': 'private5', 'to': 'private6', 'length': '6',
+                'capacity': '1000', 'freespeed': '10', 'permlanes': '1', 'modes': 'car,bus'})
+            attributes = ET.SubElement(reverse, 'attributes')
+            ET.SubElement(attributes, 'attribute', {'name': 'osm:way:id'}).text = '1'
+            ET.SubElement(attributes, 'attribute', {'name': 'osm:way:highway'}).text = 'residential'
+            tree.write(p / 'mapped.xml')
+            build(args)
+            links = {link['id']: link for link in json.loads((p / 'out' / 'data.json').read_text())['links']}
+            self.assertTrue(links['road']['opposite'])
+            self.assertTrue(links['reversePrivate']['opposite'])
 
 
 if __name__ == '__main__':
