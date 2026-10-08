@@ -26,7 +26,13 @@ public final class LaneConversionReport {
                 "ignoredNonNetworkRelations", "conflictingTurnIndications", "unusableNetworkLinksRemoved",
                 "restrictionModeApplications", "restrictionModesSkippedUnsupported", "restrictionRelationsPartiallyApplied",
                 "conditionalTagsNotSimulated", "unsupportedRestrictionTags", "normalizedRestrictionTags",
-                "inferredRestrictionCardinalities")) counts.put(key, 0L);
+                "inferredRestrictionCardinalities", "nonMotorLaneSlotsExcluded", "motorLaneLayoutsResolved",
+                "laneAccessTagCountMismatches", "inferredUTurnMovementsExcluded", "inferredUTurnModeBans",
+                "linksWithInferredUTurnExclusions", "uTurnExplicitArrowExceptions", "uTurnTurningFacilityExceptions",
+                "uTurnOnlyLegalExitExceptions", "uTurnNonMotorExceptions", "uTurnOnlyExitLaneConnectionsRestored",
+                "uTurnModeExemptionExceptions", "directionalLaneCountsDerived",
+                "directionalLaneCountInferenceRejected", "reservedLanePositionsFromAccess",
+                "reservedLanePositionsFromCounts")) counts.put(key, 0L);
     }
 
     void count(String category) { counts.merge(category, 1L, Long::sum); }

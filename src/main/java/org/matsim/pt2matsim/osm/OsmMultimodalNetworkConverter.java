@@ -641,7 +641,7 @@ public class OsmMultimodalNetworkConverter {
 					network.addLink(lBus);
 					osmIds.put(lBus.getId(), way.getId());
 					linkForward.put(lBus.getId(), false);
-					geometryExporter.addLinkDefinition(linkIdBus, new LinkDefinition(fromNode, toNode, way));
+					geometryExporter.addLinkDefinition(linkIdBus, new LinkDefinition(toNode, fromNode, way));
 				}
 				this.id++;
 			}
@@ -701,25 +701,34 @@ public class OsmMultimodalNetworkConverter {
 	}
 	
 	private double calculateLaneCount(final Osm.Way way, boolean forward, boolean isOneway, double defaultLaneCount) {
-		double laneCount = parseLanesValue(way, Osm.Key.LANES).orElse(defaultLaneCount);
-		
-		if(!isOneway)
-			laneCount /= 2;
-		
-		// in case a specific lane count per direction is available this overrules the standard lanes
+		Optional<Double> totalLaneCount = parseLanesValue(way, Osm.Key.LANES);
+		double laneCount = totalLaneCount.orElse(defaultLaneCount);
+		if (!isOneway) laneCount /= 2;
 		String direction = forward ? Osm.Key.FORWARD : Osm.Key.BACKWARD;
-		Optional<Double> directedLaneCount = parseLanesValue(way, Osm.Key.combinedKey(Osm.Key.LANES, direction));
-		if(directedLaneCount.isPresent()) {
-			laneCount = directedLaneCount.get();
+		Optional<Double> directed = parseLanesValue(way, Osm.Key.combinedKey(Osm.Key.LANES, direction));
+		if (directed.isPresent()) {
+			laneCount = directed.get();
+		} else if (!isOneway && totalLaneCount.isPresent()) {
+			String opposite = forward ? Osm.Key.BACKWARD : Osm.Key.FORWARD;
+			Optional<Double> other = parseLanesValue(way, Osm.Key.combinedKey(Osm.Key.LANES, opposite));
+			if (other.isPresent()) {
+				double shared = parseLanesValue(way, "lanes:both_ways").orElse(0d);
+				double inferred = totalLaneCount.get() - other.get() - shared;
+				boolean valid = Double.isFinite(inferred) && inferred >= 1
+						&& Double.isFinite(other.get()) && other.get() >= 0 && Double.isFinite(shared) && shared >= 0;
+				onDirectionalLaneCountInference(way, forward, totalLaneCount.get(), other.get(), shared, inferred, valid);
+				if (valid) laneCount = inferred;
+				else log.warn("Cannot infer {} lanes on way {} from total {}, opposite {} and shared {}; retain fallback {}",
+						direction, way.getId(), totalLaneCount.get(), other.get(), shared, laneCount);
+			}
 		}
-
-		// sanitize
-		if(laneCount < 1)
-			laneCount = 1;
-		
-		return laneCount;
+		return laneCount < 1 ? 1 : laneCount;
 	}
-	
+
+	/** Allows the lane converter to audit deductions and inconsistent counts. */
+	protected void onDirectionalLaneCountInference(Osm.Way way, boolean forward, double total,
+			double opposite, double shared, double inferred, boolean valid) { }
+
 	public record Result(double count, String mode) { }
 	
 	private Result calcualteBlockingCount(final Osm.Way way, boolean forward, boolean isOneway, double defaultLaneCount) {

@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Geometry/tags from switzerland-260922.osm.gz; OpenStreetMap contributors, ODbL. -->
+<osm version="0.6">
+  <node id="30064412" lon="8.5248132" lat="47.4119043" />
+  <node id="108219475" lon="8.5226192" lat="47.4128125" />
+  <node id="252487478" lon="8.5240752" lat="47.4122067" />
+  <node id="457061634" lon="8.5242055" lat="47.4121525" />
+  <node id="935831692" lon="8.5249936" lat="47.4118673" />
+  <node id="935831697" lon="8.5238916" lat="47.4122859" />
+  <node id="1846710135" lon="8.5236144" lat="47.412401" />
+  <node id="1847508160" lon="8.5227786" lat="47.4127462" />
+  <node id="4141732017" lon="8.5250053" lat="47.4118023" />
+  <node id="5370500684" lon="8.5246967" lat="47.4119493" />
+  <node id="13147158927" lon="8.522838" lat="47.4127217" />
+  <way id="89614475">
+    <nd ref="457061634" />
+    <nd ref="252487478" />
+    <nd ref="935831697" />
+    <nd ref="1846710135" />
+    <nd ref="13147158927" />
+    <nd ref="1847508160" />
+    <nd ref="108219475" />
+    <tag k="cycleway:both" v="no" />
+    <tag k="fixme" v="Fahrspuren müssen angepasst werden." />
+    <tag k="foot" v="use_sidepath" />
+    <tag k="highway" v="primary" />
+    <tag k="lanes" v="4" />
+    <tag k="lanes:backward" v="2" />
+    <tag k="lanes:forward" v="2" />
+    <tag k="lit" v="yes" />
+    <tag k="maxspeed" v="50" />
+    <tag k="name" v="Wehntalerstrasse" />
+    <tag k="name:etymology:wikidata" v="Q2554493" />
+    <tag k="oneway" v="no" />
+    <tag k="ref" v="17" />
+    <tag k="sidewalk" v="separate" />
+    <tag k="surface" v="asphalt" />
+    <tag k="trolley_wire" v="yes" />
+    <tag k="turn:lanes:forward" v="left;through|through" />
+    <tag k="wikidata" v="Q27331783" />
+  </way>
+  <way id="412844316">
+    <nd ref="935831692" />
+    <nd ref="30064412" />
+    <tag k="cycleway:both" v="no" />
+    <tag k="foot" v="no" />
+    <tag k="highway" v="tertiary" />
+    <tag k="lanes" v="3" />
+    <tag k="lanes:backward" v="1" />
+    <tag k="lanes:forward" v="2" />
+    <tag k="lit" v="yes" />
+    <tag k="maxspeed" v="50" />
+    <tag k="name" v="Regensbergstrasse" />
+    <tag k="oneway" v="no" />
+    <tag k="placement:forward" v="left_of:1" />
+    <tag k="sidewalk:left" v="no" />
+    <tag k="sidewalk:right" v="separate" />
+    <tag k="surface" v="asphalt" />
+    <tag k="turn:lanes:forward" v="through|through" />
+    <tag k="wikidata" v="Q27321732" />
+  </way>
+  <way id="412844317">
+    <nd ref="30064412" />
+    <nd ref="4141732017" />
+    <tag k="cycleway:both" v="no" />
+    <tag k="foot" v="use_sidepath" />
+    <tag k="highway" v="primary" />
+    <tag k="lanes" v="2" />
+    <tag k="lanes:backward" v="1" />
+    <tag k="lanes:forward" v="1" />
+    <tag k="lit" v="yes" />
+    <tag k="maxspeed" v="50" />
+    <tag k="name" v="Wehntalerstrasse" />
+    <tag k="name:etymology:wikidata" v="Q2554493" />
+    <tag k="oneway" v="no" />
+    <tag k="ref" v="17" />
+    <tag k="sidewalk" v="right" />
+    <tag k="surface" v="asphalt" />
+    <tag k="trolley_wire" v="yes" />
+    <tag k="wikidata" v="Q27331783" />
+  </way>
+  <way id="556777357">
+    <nd ref="30064412" />
+    <nd ref="5370500684" />
+    <nd ref="457061634" />
+    <tag k="cycleway:both" v="no" />
+    <tag k="foot" v="use_sidepath" />
+    <tag k="highway" v="primary" />
+    <tag k="lanes" v="4" />
+    <tag k="lanes:backward" v="2" />
+    <tag k="lanes:forward" v="2" />
+    <tag k="lit" v="yes" />
+    <tag k="maxspeed" v="50" />
+    <tag k="name" v="Wehntalerstrasse" />
+    <tag k="name:etymology:wikidata" v="Q2554493" />
+    <tag k="oneway" v="no" />
+    <tag k="ref" v="17" />
+    <tag k="sidewalk" v="separate" />
+    <tag k="smoothness" v="good" />
+    <tag k="surface" v="asphalt" />
+    <tag k="trolley_wire" v="yes" />
+    <tag k="turn:lanes:backward" v="left|through" />
+    <tag k="wikidata" v="Q27331783" />
+  </way>
+</osm>
