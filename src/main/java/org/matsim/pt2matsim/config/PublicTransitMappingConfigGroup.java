@@ -51,6 +51,12 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	public enum TravelCostType { linkLength, travelTime }
 
 	private static final String INPUT_NETWORK_FILE = "inputNetworkFile";
+	private String inputNetworkGeometryFile;
+	private String outputNetworkGeometryFile;
+	private String outputPreparedNetworkFile;
+	private String stopMatchingReportFile;
+	private boolean splitLinksAtStops;
+	private Set<String> stopLinkSplittingModes = Set.of("bus");
 	private static final String INPUT_SCHEDULE_FILE = "inputScheduleFile";
 	private static final String OUTPUT_NETWORK_FILE = "outputNetworkFile";
 	private static final String OUTPUT_SCHEDULE_FILE = "outputScheduleFile";
@@ -168,6 +174,12 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	@Override
 	public final Map<String, String> getComments() {
 		Map<String, String> map = super.getComments();
+		map.put("inputNetworkGeometryFile", "Optional LinkId/Geometry WKT CSV in the network CRS. Enables exact road-shape distance and geometry-index candidate searches. Defaults to endpoint matching when absent.");
+		map.put("splitLinksAtStops", "Optional stop projection and directed link splitting before mapping. Prevents consecutive stops on one road from losing their candidates. Default false.");
+		map.put("stopLinkSplittingModes", "Schedule modes whose eligible road links are split at stop projections. Default bus. Access rules and mode-specific candidate distances still apply.");
+		map.put("outputPreparedNetworkFile", "Optional full network after stop splitting, before mapper cleanup. Use this for lane reconciliation and original-to-fragment correspondence.");
+		map.put("outputNetworkGeometryFile", "Optional matching detailed geometry CSV for the final mapped network, including fragments and artificial links.");
+		map.put("stopMatchingReportFile", "Optional CSV with projection/splitting counts and missing-candidate reasons. Artificial fallback remains when no eligible road exists.");
 		map.put(MODES_TO_KEEP_ON_CLEAN_UP,
 				"All links that do not have a transit route on them are removed, except the ones \n" +
 				"\t\tlisted in this set (typically only car). Separated by comma.");
@@ -571,5 +583,32 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	public void setChunkSize(int chunkSize) {
 		this.chunkSize = chunkSize;
 	}
+
+	@StringGetter("inputNetworkGeometryFile")
+	public String getInputNetworkGeometryFile() { return inputNetworkGeometryFile; }
+	@StringSetter("inputNetworkGeometryFile")
+	public void setInputNetworkGeometryFile(String value) { inputNetworkGeometryFile = optionalPath(value); }
+	@StringGetter("outputNetworkGeometryFile")
+	public String getOutputNetworkGeometryFile() { return outputNetworkGeometryFile; }
+	@StringSetter("outputNetworkGeometryFile")
+	public void setOutputNetworkGeometryFile(String value) { outputNetworkGeometryFile = optionalPath(value); }
+	@StringGetter("outputPreparedNetworkFile")
+	public String getOutputPreparedNetworkFile() { return outputPreparedNetworkFile; }
+	@StringSetter("outputPreparedNetworkFile")
+	public void setOutputPreparedNetworkFile(String value) { outputPreparedNetworkFile = optionalPath(value); }
+	@StringGetter("stopMatchingReportFile")
+	public String getStopMatchingReportFile() { return stopMatchingReportFile; }
+	@StringSetter("stopMatchingReportFile")
+	public void setStopMatchingReportFile(String value) { stopMatchingReportFile = optionalPath(value); }
+	@StringGetter("splitLinksAtStops")
+	public boolean getSplitLinksAtStops() { return splitLinksAtStops; }
+	@StringSetter("splitLinksAtStops")
+	public void setSplitLinksAtStops(boolean value) { splitLinksAtStops = value; }
+	@StringGetter("stopLinkSplittingModes")
+	public String getStopLinkSplittingModesString() { return String.join(",", new java.util.TreeSet<>(stopLinkSplittingModes)); }
+	@StringSetter("stopLinkSplittingModes")
+	public void setStopLinkSplittingModesString(String value) { stopLinkSplittingModes = CollectionUtils.stringToSet(value); }
+	public Set<String> getStopLinkSplittingModes() { return stopLinkSplittingModes; }
+	private static String optionalPath(String value) { return value == null || value.isBlank() ? null : value; }
 	
 }

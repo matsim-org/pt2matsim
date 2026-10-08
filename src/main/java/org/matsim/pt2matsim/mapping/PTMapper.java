@@ -23,6 +23,8 @@ import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorStandard;
+import org.matsim.pt2matsim.mapping.stopMatching.LinkGeometryIndex;
+import org.matsim.pt2matsim.mapping.stopMatching.StopLinkPreparation;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersFactory;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersStandard;
@@ -100,10 +102,16 @@ public class PTMapper {
 	 */
 	public void run(PublicTransitMappingConfigGroup config, LinkCandidateCreator linkCandidateCreator,
 			ScheduleRoutersFactory scheduleRoutersFactory) throws InterruptedException, ExecutionException {
+		LinkGeometryIndex geometry = null;
+		if (config.getSplitLinksAtStops() || config.getInputNetworkGeometryFile() != null) {
+			if (linkCandidateCreator != null || scheduleRoutersFactory != null)
+				throw new IllegalArgumentException("Geometry-aware stop preparation cannot use prebuilt candidates/routers for the unsplit network");
+			geometry = StopLinkPreparation.prepare(network, schedule, config);
+		}
 		// use defaults
 		if (linkCandidateCreator == null) {
 			linkCandidateCreator = new LinkCandidateCreatorStandard(schedule, network,
-					config);
+					config, geometry);
 		}
 
 		if (scheduleRoutersFactory == null) {
@@ -116,6 +124,7 @@ public class PTMapper {
 				config.getScheduleFreespeedModes(), config.getModesToKeepOnCleanUp(),
 				config.getRemoveNotUsedStopFacilities(), config.getChunkSize(),
 				config.getBoundedSearch());
+		if (geometry != null) geometry.write(config.getOutputNetworkGeometryFile());
 	}
 
 	/**
