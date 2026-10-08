@@ -39,6 +39,8 @@ with `splitLinksAtStops=true` and no geometry CSV use straight endpoint geometry
 Use the final `mapped_geometry.csv` with the final mapped network, not the
 original geometry CSV. `prepared_network.xml.gz` records the full correspondence
 before mapper cleanup and is needed by lane-aware reconciliation. Splitting does
+write a paired `<outputPreparedNetworkFile>.geometry.csv` for physical fragments
+that route repair may restore after cleanup. Splitting does
 not itself convert a separate lane file; use the lane-aware mapper integration
 when running with lane definitions. Timetable offsets and departures are unchanged.
 
