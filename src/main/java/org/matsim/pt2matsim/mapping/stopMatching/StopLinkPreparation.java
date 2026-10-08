@@ -178,7 +178,10 @@ public final class StopLinkPreparation {
         geometry.rebuild();
         counts.put("endpointGeometryFallbacks", geometry.getFallbackShapes());
         LogManager.getLogger(StopLinkPreparation.class).info("Stop matching preparation: {}", counts);
-        if (config.getOutputPreparedNetworkFile() != null) NetworkTools.writeNetwork(network, config.getOutputPreparedNetworkFile());
+        if (config.getOutputPreparedNetworkFile() != null) {
+            NetworkTools.writeNetwork(network, config.getOutputPreparedNetworkFile());
+            geometry.write(config.getOutputPreparedNetworkFile() + ".geometry.csv");
+        }
         if (config.getStopMatchingReportFile() != null) {
             try (CSVWriter writer = new CSVWriter(Files.newBufferedWriter(Path.of(config.getStopMatchingReportFile()), StandardCharsets.UTF_8))) {
                 writer.writeNext(new String[] {"category", "linkId", "stopId", "detail"});

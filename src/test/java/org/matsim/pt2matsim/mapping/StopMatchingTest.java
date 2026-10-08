@@ -60,7 +60,9 @@ class StopMatchingTest {
         Link road = link("road", "a", 0, 0, "b", 200, 0, "bus", "car");
         route(new double[][] {{50, 101}, {150, 102}});
         var config = config("road,\"LINESTRING (0 0, 0 100, 200 100, 200 0)\"");
+        config.setOutputPreparedNetworkFile(temporary.resolve("prepared.xml.gz").toString());
         new PTMapper(schedule, network).run(config);
+        assertTrue(Files.exists(temporary.resolve("prepared.xml.gz.geometry.csv")));
         assertTrue(TransitScheduleValidator.validateAll(schedule, network).isValid());
         assertTrue(network.getLinks().values().stream().noneMatch(l -> l.getAllowedModes().contains("artificial")));
         var route = schedule.getTransitLines().values().iterator().next().getRoutes().values().iterator().next();
