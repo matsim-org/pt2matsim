@@ -582,6 +582,7 @@ public final class ScheduleTools {
 	 */
 	public static void setFreeSpeedBasedOnSchedule(Network network, TransitSchedule schedule, Set<String> networkModes) {
 		Map<Id<Link>, Double> necessaryMinSpeeds = new HashMap<>();
+		long nonPositiveTravelTimes = 0;
 
 		for(TransitLine transitLine : schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : transitLine.getRoutes().values()) {
@@ -609,7 +610,14 @@ public final class ScheduleTools {
 	
 						if(stop.getStopFacility().getLinkId().equals(link.getId())) {
 							double ttSchedule = stop.getArrivalOffset().seconds() - departTime;
-							double theoreticalMinSpeed = (lengthUpToCurrentStop / ttSchedule) * 1.02;
+							// Minute-resolution timetables can give zero travel time between
+							// different stops. They cannot justify an infinite link free speed.
+							double theoreticalMinSpeed = 0;
+							if (Double.isFinite(ttSchedule) && ttSchedule > 0) {
+								theoreticalMinSpeed = (lengthUpToCurrentStop / ttSchedule) * 1.02;
+							} else {
+								nonPositiveTravelTimes++;
+							}
 	
 							for(Id<Link> linkId : linkIdsUpToCurrentStop) {
 								double setMinSpeed = MapUtils.getDouble(linkId, necessaryMinSpeeds, 0);
@@ -631,6 +639,7 @@ public final class ScheduleTools {
 			}
 		}
 
+		if (nonPositiveTravelTimes > 0) log.warn("Skipped {} stop-to-stop free-speed estimates with non-positive or non-finite scheduled travel time", nonPositiveTravelTimes);
 		for(Link link : network.getLinks().values()) {
 			if(MiscUtils.collectionsShareMinOneStringEntry(link.getAllowedModes(), networkModes)) {
 				if(necessaryMinSpeeds.containsKey(link.getId())) {

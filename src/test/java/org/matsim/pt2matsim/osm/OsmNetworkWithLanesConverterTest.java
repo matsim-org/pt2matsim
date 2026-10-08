@@ -63,6 +63,7 @@ class OsmNetworkWithLanesConverterTest {
         new OsmFileReader(data).readFile(file.toString());
         OsmConverterConfigGroup config = new OsmConverterConfigGroup();
         config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams("highway", "primary", 1, 10, 1, 1500, true, modes));
+        config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams("highway", "tertiary", 1, 10, 1, 1500, true, modes));
         config.setOutputCoordinateSystem("EPSG:3857");
         config.setKeepPaths(true);
         config.setRespectVehicleAccess(true);
@@ -111,6 +112,216 @@ class OsmNetworkWithLanesConverterTest {
         assertEquals(List.of(List.of(left.getId())), dnl.getDisallowedLinkSequences("car"));
         assertTrue(dnl.getDisallowedLinkSequences("bus").isEmpty());
         assertTrue(lane(c, from, 1).getToLinkIds().contains(left.getId()), "Shared lanes retain the exempt bus movement");
+    }
+
+    @Test void wehntalerLeftArrowSelectsShallowBranchInsteadOfUTurn() {
+        // Geometry and turn tags extracted from the supplied Swiss OSM file.
+        var c = convertFile(Path.of("src/test/resources/osm/wehntaler-junction.osm"), Set.of("car", "bus"));
+        Link incoming = c.getNetwork().getLinks().values().stream()
+                .filter(l -> c.osmIds.get(l.getId()).toString().equals("556777357"))
+                .filter(l -> l.getToNode().getId().toString().equals("30064412")).findFirst().orElseThrow();
+        Link left = c.getNetwork().getLinks().values().stream()
+                .filter(l -> c.osmIds.get(l.getId()).toString().equals("412844316"))
+                .filter(l -> l.getFromNode().equals(incoming.getToNode())).findFirst().orElseThrow();
+        Link through = c.getNetwork().getLinks().values().stream()
+                .filter(l -> c.osmIds.get(l.getId()).toString().equals("412844317"))
+                .filter(l -> l.getFromNode().equals(incoming.getToNode())).findFirst().orElseThrow();
+        Link reverse = c.getNetwork().getLinks().values().stream()
+                .filter(l -> c.osmIds.get(l.getId()).toString().equals("556777357"))
+                .filter(l -> l.getFromNode().equals(incoming.getToNode())).findFirst().orElseThrow();
+        assertEquals(List.of(left.getId()), lane(c, incoming, 1).getToLinkIds());
+        assertEquals(List.of(through.getId()), lane(c, incoming, 2).getToLinkIds());
+        var dnl = NetworkUtils.getDisallowedNextLinks(incoming);
+        assertFalse(dnl.getDisallowedLinkSequences("car").contains(List.of(left.getId())));
+        assertTrue(dnl.getDisallowedLinkSequences("car").contains(List.of(reverse.getId())));
+        assertTrue(c.getReport().getEntries().stream().noneMatch(e -> e.category().equals("inferredLaneMovements")
+                && e.linkId().equals(incoming.getId().toString())), "Both backward arrows resolve without fallback");
+    }
+
+    @Test void sideArrowsCannotMatchAReverseLink() throws Exception {
+        for (String arrow : List.of("left", "slight_left", "sharp_left", "right", "slight_right", "sharp_right")) {
+            Path file = temp.resolve(arrow + ".osm");
+            Files.writeString(file, "<osm version=\"0.6\">" + NODES
+                    + way(10, "1,2", tag("lanes", "4") + tag("lanes:forward", "2") + tag("lanes:backward", "2")
+                            + tag("turn:lanes:forward", arrow + "|through") + tag("oneway", "no"))
+                    + way(30, "2,4", "") + "</osm>");
+            var c = convertFile(file, Set.of("car", "bus"));
+            Link incoming = c.getNetwork().getLinks().values().stream().filter(l -> l.getToNode().getId().toString().equals("2"))
+                    .filter(l -> c.osmIds.get(l.getId()).toString().equals("10")).findFirst().orElseThrow();
+            Link reverse = c.getNetwork().getLinks().values().stream().filter(l -> l.getFromNode().getId().toString().equals("2"))
+                    .filter(l -> c.osmIds.get(l.getId()).toString().equals("10")).findFirst().orElseThrow();
+            assertFalse(lane(c, incoming, 1).getToLinkIds().contains(reverse.getId()), arrow);
+            assertEquals(1, lane(c, incoming, 1).getToLinkIds().size(), arrow);
+            assertTrue(c.getReport().getEntries().stream().anyMatch(e -> e.category().equals("inferredLaneMovements")
+                    && e.linkId().equals(incoming.getId().toString())), "Unresolved " + arrow + " is audited");
+        }
+    }
+
+    private static Link opposite(OsmNetworkWithLanesConverter c, Link incoming) {
+        return c.getNetwork().getLinks().values().stream()
+                .filter(l -> c.osmIds.get(l.getId()).equals(c.osmIds.get(incoming.getId())))
+                .filter(l -> l.getFromNode().equals(incoming.getToNode()) && l.getToNode().equals(incoming.getFromNode()))
+                .findFirst().orElseThrow();
+    }
+
+    @Test void missingArrowsExcludeImmediateUTurnFromLanesAndRouting() throws Exception {
+        var c = convert(tag("oneway", "no"), "");
+        Link incoming = link(c, 10, false), reverse = opposite(c, incoming);
+        assertFalse(lane(c, incoming, 1).getToLinkIds().contains(reverse.getId()));
+        for (String mode : List.of("car", "bus"))
+            assertTrue(NetworkUtils.getDisallowedNextLinks(incoming).getDisallowedLinkSequences(mode).contains(List.of(reverse.getId())));
+        assertTrue(c.getReport().getEntries().stream().anyMatch(e -> e.category().equals("inferredUTurnMovementsExcluded")
+                && e.linkId().equals(incoming.getId().toString()) && e.detail().contains(reverse.getId().toString())));
+    }
+
+    @Test void untaggedLaneDoesNotInheritAnotherLanesExplicitReverseArrow() throws Exception {
+        var c = convert(tag("oneway", "no") + tag("lanes", "4") + tag("lanes:forward", "2") + tag("lanes:backward", "2")
+                + tag("turn:lanes:forward", "reverse|"), "");
+        Link incoming = link(c, 10, false), reverse = opposite(c, incoming);
+        assertEquals(List.of(reverse.getId()), lane(c, incoming, 1).getToLinkIds());
+        assertFalse(lane(c, incoming, 2).getToLinkIds().contains(reverse.getId()));
+        assertTrue(c.getReport().getCounts().get("uTurnExplicitArrowExceptions") > 0);
+    }
+
+    @Test void deadEndUTurnRemainsAvailableAndAudited() throws Exception {
+        Path file = temp.resolve("dead-end-turn.osm");
+        Files.writeString(file, "<osm version=\"0.6\">" + NODES + way(10, "1,2", tag("oneway", "no")) + "</osm>");
+        var c = convertFile(file, Set.of("car", "bus"));
+        Link incoming = link(c, 10, false), reverse = opposite(c, incoming);
+        assertEquals(List.of(reverse.getId()), lane(c, incoming, 1).getToLinkIds());
+        assertEquals(2L, c.getReport().getCounts().get("uTurnOnlyLegalExitExceptions"));
+        assertEquals(0L, c.getReport().getCounts().get("inferredUTurnMovementsExcluded"));
+    }
+
+    @Test void mappedTurningFacilitiesPreserveAnUnmarkedUTurn() throws Exception {
+        for (String facility : List.of("turning_circle", "turning_loop", "mini_roundabout")) {
+            Path file = temp.resolve(facility + ".osm");
+            Files.writeString(file, "<osm version=\"0.6\">" + NODES.replace("<node id=\"2\" lon=\"0\" lat=\"0\"/>",
+                    "<node id=\"2\" lon=\"0\" lat=\"0\">" + tag("highway", facility) + "</node>")
+                    + way(10, "1,2", tag("oneway", "no")) + way(30, "2,4", "") + "</osm>");
+            var c = convertFile(file, Set.of("car", "bus"));
+            Link incoming = link(c, 10, false);
+            assertTrue(lane(c, incoming, 1).getToLinkIds().contains(opposite(c, incoming).getId()), facility);
+            assertEquals(1L, c.getReport().getCounts().get("uTurnTurningFacilityExceptions"), facility);
+        }
+    }
+
+    @Test void onlyUTurnRuleIsPreservedForCarWhenBusCanContinue() throws Exception {
+        String rule = restriction("only_u_turn", tag("except", "bus"), false).replace("ref=\"20\" role=\"to\"", "ref=\"10\" role=\"to\"");
+        var c = convert(tag("oneway", "no"), rule);
+        Link incoming = link(c, 10, false), reverse = opposite(c, incoming);
+        assertTrue(lane(c, incoming, 1).getToLinkIds().contains(reverse.getId()));
+        var dnl = NetworkUtils.getDisallowedNextLinks(incoming);
+        assertFalse(dnl.getDisallowedLinkSequences("car").contains(List.of(reverse.getId())));
+        assertTrue(dnl.getDisallowedLinkSequences("bus").contains(List.of(reverse.getId())));
+    }
+
+    @Test void requiredUTurnSurvivesConflictingArrowOnSharedCarBusLane() throws Exception {
+        String rule = restriction("only_u_turn", tag("except", "bus"), false).replace("ref=\"20\" role=\"to\"", "ref=\"10\" role=\"to\"");
+        var c = convert(tag("oneway", "no") + tag("turn:lanes:forward", "through"), rule);
+        Link incoming = link(c, 10, false), reverse = opposite(c, incoming);
+        assertTrue(lane(c, incoming, 1).getToLinkIds().contains(reverse.getId()));
+        assertTrue(lane(c, incoming, 1).getToLinkIds().contains(link(c, 30, false).getId()));
+        assertFalse(NetworkUtils.getDisallowedNextLinks(incoming).getDisallowedLinkSequences("car").contains(List.of(reverse.getId())));
+        assertTrue(c.getReport().getCounts().get("uTurnOnlyExitLaneConnectionsRestored") > 0);
+    }
+
+    @Test void explicitBusUTurnExemptionIsNotOverriddenByInference() throws Exception {
+        String rule = restriction("no_u_turn", tag("except", "psv"), false).replace("ref=\"20\" role=\"to\"", "ref=\"10\" role=\"to\"");
+        var c = convert(tag("oneway", "no"), rule);
+        Link incoming = link(c, 10, false), reverse = opposite(c, incoming);
+        assertTrue(lane(c, incoming, 1).getToLinkIds().contains(reverse.getId()));
+        var dnl = NetworkUtils.getDisallowedNextLinks(incoming);
+        assertTrue(dnl.getDisallowedLinkSequences("car").contains(List.of(reverse.getId())));
+        assertFalse(dnl.getDisallowedLinkSequences("bus").contains(List.of(reverse.getId())));
+        assertEquals(1L, c.getReport().getCounts().get("uTurnModeExemptionExceptions"));
+    }
+
+    @Test void busUTurnExemptionAppliesOnlyAtItsMappedJunction() throws Exception {
+        Path file = temp.resolve("local-bus-exemption.osm");
+        String rule = restriction("no_u_turn", tag("except", "bus"), false).replace("ref=\"20\" role=\"to\"", "ref=\"10\" role=\"to\"");
+        Files.writeString(file, "<osm version=\"0.6\">" + NODES
+                + "<node id=\"8\" lon=\"0.001\" lat=\"-0.001\"/>"
+                + way(10, "1,2", tag("oneway", "no")) + way(20, "2,3", "") + way(50, "1,8", "") + rule + "</osm>");
+        var c = convertFile(file, Set.of("car", "bus"));
+        Link incoming = c.getNetwork().getLinks().values().stream().filter(l -> c.osmIds.get(l.getId()).toString().equals("10"))
+                .filter(l -> l.getToNode().getId().toString().equals("1")).findFirst().orElseThrow();
+        Link reverse = opposite(c, incoming);
+        assertFalse(lane(c, incoming, 1).getToLinkIds().contains(reverse.getId()));
+        assertTrue(NetworkUtils.getDisallowedNextLinks(incoming).getDisallowedLinkSequences("bus").contains(List.of(reverse.getId())));
+    }
+
+    @Test void inferredUTurnPolicyDoesNotApplyToBicycles() throws Exception {
+        var c = convert(tag("oneway", "no"), "", false, Set.of("car", "bike"));
+        Link incoming = link(c, 10, false), reverse = opposite(c, incoming);
+        assertTrue(lane(c, incoming, 1).getToLinkIds().contains(reverse.getId()));
+        var dnl = NetworkUtils.getDisallowedNextLinks(incoming);
+        assertTrue(dnl.getDisallowedLinkSequences("car").contains(List.of(reverse.getId())));
+        assertFalse(dnl.getDisallowedLinkSequences("bike").contains(List.of(reverse.getId())));
+    }
+
+    @Test void explicitReverseArrowDoesNotOverrideAnOsmUTurnBan() throws Exception {
+        String rule = restriction("no_u_turn", "", false).replace("ref=\"20\" role=\"to\"", "ref=\"10\" role=\"to\"");
+        var c = convert(tag("oneway", "no") + tag("turn:lanes:forward", "reverse"), rule);
+        Link incoming = link(c, 10, false), reverse = opposite(c, incoming);
+        assertFalse(lane(c, incoming, 1).getToLinkIds().contains(reverse.getId()));
+        for (String mode : List.of("car", "bus"))
+            assertTrue(NetworkUtils.getDisallowedNextLinks(incoming).getDisallowedLinkSequences(mode).contains(List.of(reverse.getId())));
+    }
+
+    @Test void inferredUTurnBanIncludesOpposingDedicatedBusLinks() throws Exception {
+        var c = convert(tag("oneway", "no") + tag("lanes", "3") + tag("lanes:forward", "1")
+                + tag("lanes:backward", "2") + tag("lanes:psv:backward", "1"), "");
+        Link incoming = c.getNetwork().getLinks().values().stream().filter(l -> c.osmIds.get(l.getId()).toString().equals("10"))
+                .filter(l -> l.getFromNode().getId().toString().equals("1")).findFirst().orElseThrow();
+        var returns = c.getNetwork().getLinks().values().stream().filter(l -> c.osmIds.get(l.getId()).toString().equals("10"))
+                .filter(l -> l.getToNode().equals(incoming.getFromNode())).toList();
+        assertEquals(2, returns.size());
+        for (Link out : returns) {
+            assertFalse(lane(c, incoming, 1).getToLinkIds().contains(out.getId()));
+            for (String mode : incoming.getAllowedModes()) if (out.getAllowedModes().contains(mode))
+                assertTrue(NetworkUtils.getDisallowedNextLinks(incoming).getDisallowedLinkSequences(mode).contains(List.of(out.getId())));
+        }
+    }
+
+    @Test void sharpTurnToAnotherRoadIsNotAnImmediateUTurn() throws Exception {
+        Path file = temp.resolve("sharp-other-road.osm");
+        Files.writeString(file, "<osm version=\"0.6\">" + NODES + "<node id=\"8\" lon=\"0.0001\" lat=\"-0.001\"/>"
+                + way(10, "1,2", tag("oneway", "no")) + way(20, "2,8", "") + "</osm>");
+        var c = convertFile(file, Set.of("car", "bus"));
+        Link incoming = link(c, 10, false);
+        assertEquals(List.of(link(c, 20, false).getId()), lane(c, incoming, 1).getToLinkIds());
+    }
+
+    @Test void explicitReverseArrowStillSelectsUTurn() throws Exception {
+        Path file = temp.resolve("uturn.osm");
+        Files.writeString(file, "<osm version=\"0.6\">" + NODES
+                + way(10, "1,2", tag("lanes", "4") + tag("lanes:forward", "2") + tag("lanes:backward", "2")
+                        + tag("turn:lanes:forward", "reverse|through") + tag("oneway", "no"))
+                + way(30, "2,4", "") + "</osm>");
+        var c = convertFile(file, Set.of("car", "bus"));
+        Link incoming = c.getNetwork().getLinks().values().stream().filter(l -> l.getToNode().getId().toString().equals("2"))
+                .filter(l -> c.osmIds.get(l.getId()).toString().equals("10")).findFirst().orElseThrow();
+        Link reverse = c.getNetwork().getLinks().values().stream().filter(l -> l.getFromNode().getId().toString().equals("2"))
+                .filter(l -> c.osmIds.get(l.getId()).toString().equals("10")).findFirst().orElseThrow();
+        assertEquals(List.of(reverse.getId()), lane(c, incoming, 1).getToLinkIds());
+        assertEquals(List.of(link(c, 30, false).getId()), lane(c, incoming, 2).getToLinkIds());
+    }
+
+    @Test void shallowForksMatchBothLeftAndRightArrows() throws Exception {
+        Path file = temp.resolve("shallow-fork.osm");
+        Files.writeString(file, "<osm version=\"0.6\">" + NODES
+                + "<node id=\"31\" lon=\"-0.0001\" lat=\"0.001\"/><node id=\"51\" lon=\"0.0001\" lat=\"0.001\"/>"
+                + way(10, "1,2", tag("lanes", "3") + tag("turn:lanes", "left|through|right"))
+                + way(20, "2,31", "") + way(30, "2,4", "") + way(40, "2,51", "")
+                + way(50, "2,1", "") + "</osm>");
+        var c = convertFile(file, Set.of("car", "bus"));
+        Link incoming = link(c, 10, false);
+        assertEquals(List.of(link(c, 20, false).getId()), lane(c, incoming, 1).getToLinkIds());
+        assertEquals(List.of(link(c, 30, false).getId()), lane(c, incoming, 2).getToLinkIds());
+        assertEquals(List.of(link(c, 40, false).getId()), lane(c, incoming, 3).getToLinkIds());
+        assertTrue(NetworkUtils.getDisallowedNextLinks(incoming).getDisallowedLinkSequences("car")
+                .contains(List.of(link(c, 50, false).getId())));
     }
 
     @Test void modeSpecificOverride() throws Exception {
@@ -190,6 +401,219 @@ class OsmNetworkWithLanesConverterTest {
         assertEquals(2, c.getLanes().getLanesToLinkAssignments().get(main.getId()).getLanes().size() - 1);
         assertEquals(List.of(link(c, 40, false).getId()), lane(c, bus, 1).getToLinkIds());
         assertEquals(3, lane(c, bus, 1).getAttributes().getAttribute("osmLaneIndex"));
+    }
+
+    @Test void avenueDuTheatreAndBenjaminConstantHaveThreeMotorLanes() throws Exception {
+        for (String access : List.of("", tag("psv:lanes:backward", "yes|designated"))) {
+            var c = convert(tag("oneway", "no") + tag("lanes", "3") + tag("lanes:backward", "2")
+                    + tag("lanes:psv:backward", "1") + access, "");
+            Link forward = link(c, 10, false), backward = opposite(c, forward);
+            Link bus = c.getNetwork().getLinks().values().stream().filter(l -> c.osmIds.get(l.getId()).toString().equals("10"))
+                    .filter(l -> l.getId().toString().endsWith("_spec")).findFirst().orElseThrow();
+            assertEquals(1, forward.getNumberOfLanes());
+            assertEquals(1, backward.getNumberOfLanes());
+            assertEquals(1, bus.getNumberOfLanes());
+            assertEquals(1500, forward.getCapacity());
+            assertEquals(1500, backward.getCapacity());
+            assertEquals(1500, bus.getCapacity());
+            assertEquals(backward.getFromNode(), bus.getFromNode());
+            assertEquals(backward.getToNode(), bus.getToNode());
+            assertEquals(1, lane(c, forward, 1).getNumberOfRepresentedLanes());
+            assertEquals(1, lane(c, backward, 1).getAttributes().getAttribute("osmLaneIndex"));
+            assertEquals(2, lane(c, bus, 1).getAttributes().getAttribute("osmLaneIndex"));
+            assertEquals(1L, c.getReport().getCounts().get("directionalLaneCountsDerived"));
+            if (access.isEmpty()) assertTrue(c.getReport().getCounts().get("inferredReservedLanePositions") > 0);
+        }
+    }
+
+    @Test void exclusiveAccessTagsKeepALeftHandBusLaneInItsMappedPosition() throws Exception {
+        var c = convert(tag("lanes", "2") + tag("lanes:psv:forward", "1")
+                + tag("vehicle:lanes", "no|yes") + tag("psv:lanes", "yes|no"), "");
+        Link main = link(c, 10, false), bus = link(c, 10, true);
+        assertEquals(2, lane(c, main, 1).getAttributes().getAttribute("osmLaneIndex"));
+        assertEquals(1, lane(c, bus, 1).getAttributes().getAttribute("osmLaneIndex"));
+        assertEquals(2L, c.getReport().getCounts().get("reservedLanePositionsFromAccess"));
+        assertEquals(0L, c.getReport().getCounts().get("inferredReservedLanePositions"));
+    }
+
+    @Test void derivedAllBusDirectionDoesNotCreateAPhantomCarLane() throws Exception {
+        var c = convert(tag("oneway", "no") + tag("lanes", "3") + tag("lanes:backward", "2")
+                + tag("lanes:psv:forward", "1"), "");
+        var forward = c.getNetwork().getLinks().values().stream().filter(l -> c.osmIds.get(l.getId()).toString().equals("10"))
+                .filter(l -> l.getFromNode().getId().toString().equals("1")).toList();
+        assertEquals(1, forward.size());
+        Link bus = forward.get(0);
+        assertTrue(bus.getId().toString().endsWith("_spec"));
+        assertFalse(bus.getAllowedModes().contains("car"));
+        assertEquals(1, bus.getNumberOfLanes());
+        assertEquals(1, lane(c, bus, 1).getAttributes().getAttribute("osmLaneIndex"));
+        assertEquals(1L, c.getReport().getCounts().get("reservedLanePositionsFromCounts"));
+    }
+
+    @Test void missingBackwardCountIsDerivedBeforeSplittingForwardBusLane() throws Exception {
+        var c = convert(tag("oneway", "no") + tag("lanes", "3") + tag("lanes:forward", "2")
+                + tag("lanes:psv:forward", "1"), "");
+        var links = c.getNetwork().getLinks().values().stream().filter(l -> c.osmIds.get(l.getId()).toString().equals("10")).toList();
+        assertEquals(3, links.size());
+        assertTrue(links.stream().allMatch(l -> l.getNumberOfLanes() == 1 && l.getCapacity() == 1500));
+        assertEquals(1L, c.getReport().getCounts().get("directionalLaneCountsDerived"));
+    }
+
+    @Test void explicitDirectionalCountsTakePrecedenceOverTotal() throws Exception {
+        var c = convert(tag("oneway", "no") + tag("lanes", "4") + tag("lanes:forward", "1") + tag("lanes:backward", "2"), "");
+        Link forward = link(c, 10, false);
+        assertEquals(1, forward.getNumberOfLanes());
+        assertEquals(2, opposite(c, forward).getNumberOfLanes());
+        assertEquals(0L, c.getReport().getCounts().get("directionalLaneCountsDerived"));
+    }
+
+    @Test void missingTotalDoesNotTurnDefaultsIntoDirectionalEvidence() throws Exception {
+        var c = convert(tag("oneway", "no") + tag("lanes:backward", "2"), "");
+        Link forward = link(c, 10, false);
+        assertEquals(1, forward.getNumberOfLanes());
+        assertEquals(2, opposite(c, forward).getNumberOfLanes());
+        assertEquals(0L, c.getReport().getCounts().get("directionalLaneCountsDerived"));
+    }
+
+    @Test void onewayDoesNotSubtractOppositeDirectionTags() throws Exception {
+        var c = convert(tag("lanes", "3") + tag("lanes:backward", "2"), "");
+        assertEquals(3, link(c, 10, false).getNumberOfLanes());
+        assertEquals(0L, c.getReport().getCounts().get("directionalLaneCountsDerived"));
+    }
+
+    @Test void sharedCenterLaneIsExcludedFromDerivedDirectionalCount() throws Exception {
+        var c = convert(tag("oneway", "no") + tag("lanes", "5") + tag("lanes:backward", "2") + tag("lanes:both_ways", "1"), "");
+        Link forward = link(c, 10, false);
+        assertEquals(2, forward.getNumberOfLanes());
+        assertEquals(2, opposite(c, forward).getNumberOfLanes());
+        assertTrue(c.getReport().getEntries().stream().anyMatch(e -> e.category().equals("directionalLaneCountsDerived")
+                && e.detail().contains("shared=1.0")));
+    }
+
+    @Test void inconsistentDirectionalTagsAreAuditedWithoutInventingANegativeCount() throws Exception {
+        var c = convert(tag("oneway", "no") + tag("lanes", "3") + tag("lanes:backward", "4"), "");
+        Link forward = link(c, 10, false);
+        assertEquals(1.5, forward.getNumberOfLanes());
+        assertEquals(4, opposite(c, forward).getNumberOfLanes());
+        assertEquals(1L, c.getReport().getCounts().get("directionalLaneCountInferenceRejected"));
+    }
+
+    @Test void backwardReservedGeometryMatchesItsNetworkEndpoints() throws Exception {
+        Path file = temp.resolve("reserved-geometry.osm"), geometry = temp.resolve("geometry.csv");
+        Files.writeString(file, "<osm version=\"0.6\">" + NODES
+                + "<node id=\"8\" lon=\"0.0001\" lat=\"-0.0004\"/>"
+                + way(10, "1,8,2", tag("oneway", "no") + tag("lanes", "3") + tag("lanes:backward", "2") + tag("lanes:psv:backward", "1"))
+                + way(30, "2,4", "") + "</osm>");
+        OsmData data = new OsmLaneData();new OsmFileReader(data).readFile(file.toString());
+        var config = new OsmConverterConfigGroup();
+        config.addParameterSet(new OsmConverterConfigGroup.OsmWayParams("highway", "primary", 1, 10, 1, 1500, false, Set.of("car", "bus")));
+        config.setOutputCoordinateSystem("EPSG:3857");config.setKeepPaths(false);config.setRespectVehicleAccess(true);
+        config.setOutputDetailedLinkGeometryFile(geometry.toString());
+        var c = new OsmNetworkWithLanesConverter(data);c.convert(config);
+        Link bus = link(c, 10, true);
+        String row = Files.readAllLines(geometry).stream().filter(line -> line.startsWith(bus.getId() + ",")).findFirst().orElseThrow();
+        String[] points = row.substring(row.indexOf('(') + 1, row.lastIndexOf(')')).split(",");
+        assertEquals(3, points.length, "Intermediate road geometry is retained");
+        String[] first = points[0].trim().split(" +"), last = points[points.length - 1].trim().split(" +");
+        assertEquals(bus.getFromNode().getCoord().getX(), Double.parseDouble(first[0]), 1e-4);
+        assertEquals(bus.getFromNode().getCoord().getY(), Double.parseDouble(first[1]), 1e-4);
+        assertEquals(bus.getToNode().getCoord().getX(), Double.parseDouble(last[0]), 1e-4);
+        assertEquals(bus.getToNode().getCoord().getY(), Double.parseDouble(last[1]), 1e-4);
+    }
+
+    @Test void motorLanesSkipTheMiddleBicycleSlotFromWay27992887() throws Exception {
+        // Exact lane tags from Wehntalerstrasse, OSM way 27992887.
+        var c = convert(tag("lanes", "2") + tag("turn:lanes", "left;through|left;through|right")
+                + tag("vehicle:lanes", "yes|no|yes") + tag("bicycle:lanes", "no|designated|yes")
+                + tag("cycleway:lanes", "|lane|shared_lane"), "");
+        Link incoming = link(c, 10, false);
+        assertEquals(Set.of(link(c, 20, false).getId(), link(c, 30, false).getId()), Set.copyOf(lane(c, incoming, 1).getToLinkIds()));
+        assertEquals(List.of(link(c, 40, false).getId()), lane(c, incoming, 2).getToLinkIds());
+        assertEquals(3, lane(c, incoming, 2).getAttributes().getAttribute("osmLaneIndex"));
+        assertEquals(2, lane(c, incoming, 2).getAttributes().getAttribute("osmMotorLaneIndex"));
+        assertEquals(2, c.getLanes().getLanesToLinkAssignments().get(incoming.getId()).getLanes().size() - 1);
+        assertEquals(1L, c.getReport().getCounts().get("nonMotorLaneSlotsExcluded"));
+        assertEquals(1L, c.getReport().getCounts().get("motorLaneLayoutsResolved"));
+        assertEquals(0L, c.getReport().getCounts().get("laneTagCountMismatches"));
+        assertEquals(0L, c.getReport().getCounts().get("inferredLaneMovements"));
+        assertEquals(incoming.getCapacity(), lane(c, incoming, 1).getCapacityVehiclesPerHour()
+                + lane(c, incoming, 2).getCapacityVehiclesPerHour());
+    }
+
+    @Test void sharedTurnLaneMatchesCarAndBusExitsSeparately() throws Exception {
+        Path file = temp.resolve("parallel-bus-exit.osm");
+        Files.writeString(file, "<osm version=\"0.6\">" + NODES
+                + "<node id=\"8\" lon=\"0.001\" lat=\"0.0008\"/>"
+                + way(10, "1,2", tag("lanes", "1") + tag("turn:lanes", "right"))
+                + way(40, "2,5", tag("motor_vehicle", "no") + tag("bus", "yes"))
+                + way(50, "2,8", "") + "</osm>");
+        var c = convertFile(file, Set.of("car", "bus"));
+        Link incoming = link(c, 10, false), carExit = link(c, 50, false), busExit = link(c, 40, false);
+        assertFalse(busExit.getAllowedModes().contains("car"));
+        assertEquals(Set.of(carExit.getId(), busExit.getId()), Set.copyOf(lane(c, incoming, 1).getToLinkIds()));
+        var restrictions = NetworkUtils.getDisallowedNextLinks(incoming);
+        assertTrue(restrictions == null || !restrictions.getDisallowedLinkSequences("car").contains(List.of(carExit.getId())));
+    }
+
+    @Test void bicycleDesignationAloneDoesNotExcludeMotorVehicles() throws Exception {
+        var c = convert(tag("lanes", "3") + tag("turn:lanes", "left|through|right")
+                + tag("bicycle:lanes", "yes|designated|yes"), "");
+        assertEquals(List.of(link(c, 30, false).getId()), lane(c, link(c, 10, false), 2).getToLinkIds());
+        assertEquals(0L, c.getReport().getCounts().get("nonMotorLaneSlotsExcluded"));
+    }
+
+    @Test void ambiguousBicycleLayoutStillUsesReportedFallback() throws Exception {
+        var c = convert(tag("lanes", "2") + tag("turn:lanes", "left|through|right")
+                + tag("bicycle:lanes", "yes|designated|yes"), "");
+        assertEquals(0L, c.getReport().getCounts().get("nonMotorLaneSlotsExcluded"));
+        assertEquals(1L, c.getReport().getCounts().get("laneTagCountMismatches"));
+        assertEquals(2L, c.getReport().getCounts().get("inferredLaneMovements"));
+    }
+
+    @Test void busReservationKeepsItsPositionAfterRemovingBicycleSlot() throws Exception {
+        var c = convert(tag("lanes", "3") + tag("turn:lanes", "left|through|through|right")
+                + tag("vehicle:lanes", "yes|no|yes|no") + tag("bicycle:lanes", "yes|designated|yes|no")
+                + tag("bus:lanes", "yes|no|yes|designated"), "");
+        Link main = link(c, 10, false), bus = link(c, 10, true);
+        assertEquals(List.of(link(c, 20, false).getId()), lane(c, main, 1).getToLinkIds());
+        assertEquals(List.of(link(c, 30, false).getId()), lane(c, main, 2).getToLinkIds());
+        assertEquals(List.of(link(c, 40, false).getId()), lane(c, bus, 1).getToLinkIds());
+        assertEquals(4, lane(c, bus, 1).getAttributes().getAttribute("osmLaneIndex"));
+        assertEquals(3, lane(c, bus, 1).getAttributes().getAttribute("osmMotorLaneIndex"));
+    }
+
+    @Test void specificMotorPermissionOverridesGenericVehicleBan() throws Exception {
+        var c = convert(tag("lanes", "3") + tag("turn:lanes", "left|through|right")
+                + tag("vehicle:lanes", "yes|no|yes") + tag("motor_vehicle:lanes", "yes|yes|yes"), "");
+        assertEquals(List.of(link(c, 30, false).getId()), lane(c, link(c, 10, false), 2).getToLinkIds());
+        assertEquals(0L, c.getReport().getCounts().get("nonMotorLaneSlotsExcluded"));
+    }
+
+    @Test void bicycleSlotsWithoutTurnTagsKeepMotorCountAndAuditInference() throws Exception {
+        var c = convert(tag("lanes", "2") + tag("vehicle:lanes", "yes|no|yes")
+                + tag("bicycle:lanes", "yes|designated|yes"), "");
+        Link incoming = link(c, 10, false);
+        assertEquals(3, lane(c, incoming, 2).getAttributes().getAttribute("osmLaneIndex"));
+        assertEquals(2, lane(c, incoming, 2).getAttributes().getAttribute("osmMotorLaneIndex"));
+        assertEquals(1L, c.getReport().getCounts().get("nonMotorLaneSlotsExcluded"));
+        assertEquals(2L, c.getReport().getCounts().get("inferredLaneMovements"));
+    }
+
+    @Test void directionalBicycleAccessUsesBackwardArrowSlots() throws Exception {
+        Path file = temp.resolve("backward-bike.osm");
+        Files.writeString(file, "<osm version=\"0.6\">" + NODES
+                + "<node id=\"8\" lon=\"0\" lat=\"-0.002\"/><node id=\"9\" lon=\"0.001\" lat=\"-0.001\"/>"
+                + "<node id=\"11\" lon=\"-0.001\" lat=\"-0.001\"/>"
+                + way(10, "1,2", tag("oneway", "no") + tag("lanes", "4") + tag("lanes:forward", "2") + tag("lanes:backward", "2")
+                        + tag("turn:lanes:backward", "left;through|left;through|right") + tag("vehicle:lanes:backward", "yes|no|yes")
+                        + tag("bicycle:lanes:backward", "no|designated|yes"))
+                + way(20, "1,9", "") + way(30, "1,8", "") + way(40, "1,11", "") + way(50, "2,4", "") + "</osm>");
+        var c = convertFile(file, Set.of("car", "bus"));
+        Link incoming = c.getNetwork().getLinks().values().stream().filter(l -> c.osmIds.get(l.getId()).toString().equals("10"))
+                .filter(l -> l.getToNode().getId().toString().equals("1")).findFirst().orElseThrow();
+        assertEquals(Set.of(link(c, 20, false).getId(), link(c, 30, false).getId()), Set.copyOf(lane(c, incoming, 1).getToLinkIds()));
+        assertEquals(List.of(link(c, 40, false).getId()), lane(c, incoming, 2).getToLinkIds());
+        assertEquals(2, lane(c, incoming, 2).getAttributes().getAttribute("osmMotorLaneIndex"));
     }
 
     @Test void missingTagsAreCounted() throws Exception {
