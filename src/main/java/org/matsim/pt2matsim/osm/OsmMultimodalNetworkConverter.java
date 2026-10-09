@@ -758,9 +758,9 @@ public class OsmMultimodalNetworkConverter {
 		}
 		// Directional reserved lanes also apply when OSM only provides the total lanes count.
 		for(String blockingMot : blockingMots) {
-			Optional<Double> reservedLaneCount = parseReservedLanesValue(way, Osm.Key.combinedKey(Osm.Key.LANES, blockingMot, direction));
+			Optional<Double> reservedLaneCount = directionalReservedLanesValue(way, Osm.Key.combinedKey(Osm.Key.LANES, blockingMot, direction), direction);
 			if(reservedLaneCount.isEmpty()) {
-				reservedLaneCount = parseReservedLanesValue(way, Osm.Key.combinedKey(blockingMot, Osm.Key.LANES, direction));
+				reservedLaneCount = directionalReservedLanesValue(way, Osm.Key.combinedKey(blockingMot, Osm.Key.LANES, direction), direction);
 			}
 			if(reservedLaneCount.isPresent()) {
 				lanestoremove = reservedLaneCount.get();
@@ -777,6 +777,44 @@ public class OsmMultimodalNetworkConverter {
 		return new Result(lanestoremove, mode);
 	}
 	
+    private Optional<Double> directionalReservedLanesValue(Osm.Way way, String key, String direction) {
+        String value = way.getTags().get(key);
+        Optional<Double> declared = parseLanesValue(way, "lanes:" + direction);
+        if (value != null && value.contains("|") && declared.isPresent()) {
+            String[] slots = value.split("\\|", -1);
+            int motorSlots = slots.length;
+            // Lane arrays can contain explicitly non-motor slots omitted from lanes=*.
+            for (int i = 0; i < slots.length; i++) {
+                boolean banned = false, explicitlyAllowed = false;
+                for (String mode : List.of("vehicle", "motor_vehicle")) {
+                    String access = laneSlotValue(way, mode, direction, slots.length, i);
+                    if ("no".equals(access)) banned = true;
+                }
+                for (String mode : List.of("motorcar", "hgv", "bus", "psv", "taxi")) {
+                    String access = laneSlotValue(way, mode, direction, slots.length, i);
+                    if (Set.of("yes", "designated", "only", "exclusive").contains(access)) explicitlyAllowed = true;
+                }
+                if (banned && !explicitlyAllowed) motorSlots--;
+            }
+            if (motorSlots != declared.get()) {
+                onInconsistentReservedLaneArray(way, key, value, motorSlots, declared.get());
+                return Optional.empty();
+            }
+        }
+        return parseReservedLanesValue(way, key);
+    }
+
+    private String laneSlotValue(Osm.Way way, String mode, String direction, int slots, int index) {
+        String value = way.getTags().getOrDefault(mode + ":lanes:" + direction, way.getTags().get(mode + ":lanes"));
+        if (value == null) return "";
+        String[] parts = value.split("\\|", -1);
+        return parts.length == slots ? parts[index].trim() : "";
+    }
+
+    protected void onInconsistentReservedLaneArray(Osm.Way way, String key, String value, int motorSlots, double declared) {
+        log.warn("Ignore inconsistent {}={} on way {}: {} motor slots, declared lanes {}", key, value, way.getId(), motorSlots, declared);
+    }
+
 	private Optional<Double> parseLanesValue(final Osm.Way way, String key) {
 		String value = way.getTags().get(key);
 		if(value == null)
