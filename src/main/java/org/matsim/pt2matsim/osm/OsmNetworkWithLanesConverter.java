@@ -42,6 +42,7 @@ public class OsmNetworkWithLanesConverter extends OsmMultimodalNetworkConverter 
     private final Set<String> auditedDirectionalCounts = new HashSet<>();
     private final Map<String, Double> derivedDirectionalCounts = new HashMap<>();
     private final Set<Id<Link>> inferredReservedPositionLinks = new HashSet<>();
+    private final Set<String> ignoredReservedLaneArrays = new HashSet<>();
     private long pathExpansions;
     private static final Set<String> RESTRICTION_VALUES = Set.of("no_left_turn", "no_right_turn", "no_straight_on", "no_u_turn",
             "only_left_turn", "only_right_turn", "only_straight_on", "only_u_turn", "no_entry", "no_exit");
@@ -66,6 +67,14 @@ public class OsmNetworkWithLanesConverter extends OsmMultimodalNetworkConverter 
             report.add(valid ? "directionalLaneCountsDerived" : "directionalLaneCountInferenceRejected", way.getId(), "",
                     direction + ": total=" + total + " - opposite=" + opposite + " - shared=" + shared
                             + " = " + inferred + (valid ? "; reserved lanes included in directional total" : "; retain legacy fallback"));
+    }
+
+    @Override
+    protected void onInconsistentReservedLaneArray(Osm.Way way, String key, String value, int motorSlots, double declared) {
+        if (ignoredReservedLaneArrays.add(way.getId() + ":" + key))
+            report.add("inconsistentReservedLaneArraysIgnored", way.getId(), "",
+                    key + "=" + value + "; motor slots=" + motorSlots + "; declared directional lanes=" + declared
+                            + "; ignore this inconsistent array; retain valid count tags and opposite-direction car access");
     }
 
     @Override
@@ -759,8 +768,10 @@ public class OsmNetworkWithLanesConverter extends OsmMultimodalNetworkConverter 
         return tags;
     }
 
-    private static String directionalTag(Osm.Way way, String key, boolean forward) {
-        String directional = way.getTags().get(key + (forward ? ":forward" : ":backward"));
+    private String directionalTag(Osm.Way way, String key, boolean forward) {
+        String directionalKey = key + (forward ? ":forward" : ":backward");
+        if (ignoredReservedLaneArrays.contains(way.getId() + ":" + directionalKey)) return null;
+        String directional = way.getTags().get(directionalKey);
         if (directional != null) return directional;
         String oneway = way.getTags().get("oneway");
         boolean isOneway = Set.of("yes", "1", "true", "-1").contains(oneway == null ? "" : oneway) || "roundabout".equals(way.getTags().get("junction"));
