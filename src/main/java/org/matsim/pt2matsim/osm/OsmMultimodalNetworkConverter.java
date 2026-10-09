@@ -728,7 +728,7 @@ public class OsmMultimodalNetworkConverter {
                 }
             }
         }
-        
+
 		// only halve when the reserved-lane count came from a non-directional tag and applies to both directions
 		if(!isOneway && !directionalReservedLaneCountFound)
 			lanestoremove /= 2;
