@@ -403,6 +403,34 @@ class OsmNetworkWithLanesConverterTest {
         assertEquals(3, lane(c, bus, 1).getAttributes().getAttribute("osmLaneIndex"));
     }
 
+    @Test void ferdinandHodlerRejectsTwoReservedSlotsInSingleBackwardLane() throws Exception {
+        var c = convert(tag("oneway", "no") + tag("lanes", "3") + tag("lanes:forward", "2")
+                + tag("lanes:backward", "1") + tag("lanes:psv:forward", "1")
+                + tag("psv:lanes:backward", "yes|designated") + tag("busway:right", "lane"), "");
+        Link forward = link(c, 10, false), backward = opposite(c, forward), reserved = link(c, 10, true);
+        assertEquals(1, forward.getNumberOfLanes());
+        assertEquals(1, backward.getNumberOfLanes());
+        assertTrue(backward.getAllowedModes().contains("car"));
+        assertEquals(1, reserved.getNumberOfLanes());
+        assertEquals(forward.getFromNode(), reserved.getFromNode());
+        assertEquals(1, c.getNetwork().getLinks().values().stream().filter(l -> c.osmIds.get(l.getId()).toString().equals("10")
+                && l.getId().toString().endsWith("_spec")).count());
+        assertEquals(1L, c.getReport().getCounts().get("inconsistentReservedLaneArraysIgnored"));
+        assertEquals(1, lane(c, backward, 1).getNumberOfRepresentedLanes());
+    }
+
+    @Test void directionalReservedArrayCanIncludeExplicitCyclingSlot() throws Exception {
+        var c = convert(tag("lanes", "2") + tag("lanes:forward", "2")
+                + tag("psv:lanes:forward", "yes|no|designated")
+                + tag("motor_vehicle:lanes:forward", "yes|no|yes")
+                + tag("bicycle:lanes:forward", "no|designated|no"), "");
+        Link main = link(c, 10, false), bus = link(c, 10, true);
+        assertEquals(1, main.getNumberOfLanes());
+        assertEquals(1, bus.getNumberOfLanes());
+        assertEquals(3, lane(c, bus, 1).getAttributes().getAttribute("osmLaneIndex"));
+        assertEquals(0L, c.getReport().getCounts().get("inconsistentReservedLaneArraysIgnored"));
+    }
+
     @Test void avenueDuTheatreAndBenjaminConstantHaveThreeMotorLanes() throws Exception {
         for (String access : List.of("", tag("psv:lanes:backward", "yes|designated"))) {
             var c = convert(tag("oneway", "no") + tag("lanes", "3") + tag("lanes:backward", "2")
