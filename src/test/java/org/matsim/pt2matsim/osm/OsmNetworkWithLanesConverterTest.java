@@ -403,6 +403,17 @@ class OsmNetworkWithLanesConverterTest {
         assertEquals(3, lane(c, bus, 1).getAttributes().getAttribute("osmLaneIndex"));
     }
 
+    @Test void rueDuStandInfersTwoLanesBeforeAllocatingReservedLane() throws Exception {
+        var c = convert(tag("psv:lanes", "yes|designated"), "");
+        Link shared = link(c, 10, false), reserved = link(c, 10, true);
+        assertTrue(shared.getAllowedModes().contains("car"));
+        assertEquals(1, shared.getNumberOfLanes());
+        assertEquals(1, reserved.getNumberOfLanes());
+        assertEquals(1, lane(c, shared, 1).getAttributes().getAttribute("osmLaneIndex"));
+        assertEquals(2, lane(c, reserved, 1).getAttributes().getAttribute("osmLaneIndex"));
+        assertEquals(1L, c.getReport().getCounts().get("laneCountsInferredFromArrays"));
+    }
+
     @Test void ferdinandHodlerRejectsTwoReservedSlotsInSingleBackwardLane() throws Exception {
         var c = convert(tag("oneway", "no") + tag("lanes", "3") + tag("lanes:forward", "2")
                 + tag("lanes:backward", "1") + tag("lanes:psv:forward", "1")

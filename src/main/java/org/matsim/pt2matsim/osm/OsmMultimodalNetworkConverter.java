@@ -722,12 +722,24 @@ public class OsmMultimodalNetworkConverter {
 						direction, way.getId(), totalLaneCount.get(), other.get(), shared, laneCount);
 			}
 		}
+        if (!way.getTags().containsKey("lanes") && !way.getTags().containsKey("lanes:" + direction)) {
+            var inferred = OsmLaneCountInference.infer(way.getTags(), forward, isOneway);
+            if (inferred != null) {
+                onLaneCountFromTags(way, forward, inferred.count(), inferred.evidence());
+                if (inferred.count() > 0) laneCount = inferred.count();
+            }
+        }
 		return laneCount < 1 ? 1 : laneCount;
 	}
 
 	/** Allows the lane converter to audit deductions and inconsistent counts. */
 	protected void onDirectionalLaneCountInference(Osm.Way way, boolean forward, double total,
 			double opposite, double shared, double inferred, boolean valid) { }
+
+    protected void onLaneCountFromTags(Osm.Way way, boolean forward, int count, String evidence) {
+        if (count > 0) log.info("Infer {} motor lanes on way {} direction {} from {}", count, way.getId(), forward ? "forward" : "backward", evidence);
+        else log.warn("Conflicting or non-motor-only lane arrays on way {}; retain defaults: {}", way.getId(), evidence);
+    }
 
 	public record Result(double count, String mode) { }
 	

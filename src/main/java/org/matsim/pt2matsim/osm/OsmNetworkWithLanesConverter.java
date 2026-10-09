@@ -42,6 +42,7 @@ public class OsmNetworkWithLanesConverter extends OsmMultimodalNetworkConverter 
     private final Set<String> auditedDirectionalCounts = new HashSet<>();
     private final Map<String, Double> derivedDirectionalCounts = new HashMap<>();
     private final Set<Id<Link>> inferredReservedPositionLinks = new HashSet<>();
+    private final Set<String> auditedLaneCountArrays = new HashSet<>();
     private final Set<String> ignoredReservedLaneArrays = new HashSet<>();
     private long pathExpansions;
     private static final Set<String> RESTRICTION_VALUES = Set.of("no_left_turn", "no_right_turn", "no_straight_on", "no_u_turn",
@@ -67,6 +68,15 @@ public class OsmNetworkWithLanesConverter extends OsmMultimodalNetworkConverter 
             report.add(valid ? "directionalLaneCountsDerived" : "directionalLaneCountInferenceRejected", way.getId(), "",
                     direction + ": total=" + total + " - opposite=" + opposite + " - shared=" + shared
                             + " = " + inferred + (valid ? "; reserved lanes included in directional total" : "; retain legacy fallback"));
+    }
+
+    @Override
+    protected void onLaneCountFromTags(Osm.Way way, boolean forward, int count, String evidence) {
+        String direction = forward ? "forward" : "backward";
+        if (count > 0) derivedDirectionalCounts.put(way.getId() + ":" + direction, (double) count);
+        if (auditedLaneCountArrays.add(way.getId() + ":" + direction))
+            report.add(count > 0 ? "laneCountsInferredFromArrays" : "laneCountArrayInferenceRejected", way.getId(), "",
+                    direction + ": " + evidence + (count > 0 ? "; motor lanes=" + count : "; retain configured fallback"));
     }
 
     @Override
