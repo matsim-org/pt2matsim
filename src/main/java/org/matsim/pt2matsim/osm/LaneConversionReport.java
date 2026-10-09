@@ -32,7 +32,7 @@ public final class LaneConversionReport {
                 "uTurnOnlyLegalExitExceptions", "uTurnNonMotorExceptions", "uTurnOnlyExitLaneConnectionsRestored",
                 "uTurnModeExemptionExceptions", "directionalLaneCountsDerived",
                 "directionalLaneCountInferenceRejected", "reservedLanePositionsFromAccess",
-                "reservedLanePositionsFromCounts", "inconsistentReservedLaneArraysIgnored")) counts.put(key, 0L);
+                "reservedLanePositionsFromCounts", "inconsistentReservedLaneArraysIgnored", "laneCountsInferredFromArrays", "laneCountArrayInferenceRejected")) counts.put(key, 0L);
     }
 
     void count(String category) { counts.merge(category, 1L, Long::sum); }
