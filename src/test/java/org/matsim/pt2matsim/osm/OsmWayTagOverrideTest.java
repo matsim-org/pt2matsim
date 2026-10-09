@@ -50,6 +50,9 @@ class OsmWayTagOverrideTest {
         var correction = correction("1354965562", "lanes:psv", null, "1");
         correction.remove = true;
         config.addParameterSet(correction);
+        Path file = temporary.resolve("remove-config.xml");
+        config.writeToFile(file.toString());
+        config = OsmConverterConfigGroup.loadConfig(file.toString());
         var converter = new OsmMultimodalNetworkConverter(data);
         converter.convert(config);
         var links = converter.getNetwork().getLinks().values().stream().filter(l -> way(l) == 1354965562L).toList();
