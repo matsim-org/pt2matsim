@@ -671,6 +671,14 @@ public class OsmMultimodalNetworkConverter {
 			laneCount = directedLaneCount.get();
 		}
 
+        if (!way.getTags().containsKey("lanes") && !way.getTags().containsKey("lanes:" + direction)) {
+            var inferred = OsmLaneCountInference.infer(way.getTags(), forward, isOneway);
+            if (inferred != null) {
+                onLaneCountFromTags(way, forward, inferred.count(), inferred.evidence());
+                if (inferred.count() > 0) laneCount = inferred.count();
+            }
+        }
+
 		// sanitize
 		if(laneCount < 1)
 			laneCount = 1;
@@ -678,6 +686,11 @@ public class OsmMultimodalNetworkConverter {
 		return laneCount;
 	}
 	
+    protected void onLaneCountFromTags(Osm.Way way, boolean forward, int count, String evidence) {
+        if (count > 0) log.info("Infer {} motor lanes on way {} direction {} from {}", count, way.getId(), forward ? "forward" : "backward", evidence);
+        else log.warn("Conflicting or non-motor-only lane arrays on way {}; retain defaults: {}", way.getId(), evidence);
+    }
+
 	public record Result(double count, String mode) { }
 	
 	private Result calcualteBlockingCount(final Osm.Way way, boolean forward, boolean isOneway, double defaultLaneCount) {
@@ -702,25 +715,20 @@ public class OsmMultimodalNetworkConverter {
 		String direction = forward ? Osm.Key.FORWARD : Osm.Key.BACKWARD;
 		Optional<Double> directedLaneCount = parseLanesValue(way, Osm.Key.combinedKey(Osm.Key.LANES, direction));
 		boolean directionalReservedLaneCountFound = false;
-		if(directedLaneCount.isPresent()) {
-			lanestoremove = 0;
-			for(String blockingMot : blockingMots) {
-				lanestoremove = parseReservedLanesValue(way, Osm.Key.combinedKey(Osm.Key.LANES, blockingMot, direction)).orElse(0d);
-				if (lanestoremove != 0) {
-					mode = blockingMot;
-					directionalReservedLaneCountFound = true;
-					break;
-				}
-				lanestoremove = parseReservedLanesValue(way, Osm.Key.combinedKey(blockingMot, Osm.Key.LANES, direction)).orElse(0d);
-				if (lanestoremove != 0) {
-					mode = blockingMot;
-					directionalReservedLaneCountFound = true;
-					break;
-				}
-			}
-			
-		}
-		
+        var inferred = !way.getTags().containsKey("lanes") && !way.getTags().containsKey("lanes:" + direction)
+                ? OsmLaneCountInference.infer(way.getTags(), forward, isOneway) : null;
+        if (directedLaneCount.isPresent()) lanestoremove = 0;
+        if (directedLaneCount.isPresent() || (inferred != null && inferred.count() > 0)) {
+            for (String blockingMot : blockingMots) {
+                Optional<Double> reserved = parseReservedLanesValue(way, Osm.Key.combinedKey(Osm.Key.LANES, blockingMot, direction));
+                if (reserved.isEmpty()) reserved = parseReservedLanesValue(way, Osm.Key.combinedKey(blockingMot, Osm.Key.LANES, direction));
+                if (reserved.isPresent()) {
+                    lanestoremove = reserved.get(); mode = blockingMot;
+                    directionalReservedLaneCountFound = true; break;
+                }
+            }
+        }
+        
 		// only halve when the reserved-lane count came from a non-directional tag and applies to both directions
 		if(!isOneway && !directionalReservedLaneCountFound)
 			lanestoremove /= 2;
