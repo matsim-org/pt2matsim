@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -159,6 +160,7 @@ public class OsmMultimodalNetworkConverter {
 	 */
 	public void convert(OsmConverterConfigGroup config) {
 		this.config = config;
+		applyWayTagOverrides();
 		this.geometryExporter = new LinkGeometryExporter();
 		CoordinateTransformation transformation = (config.getOutputCoordinateSystem() == null ?
 				new IdentityTransformation() :
@@ -197,6 +199,52 @@ public class OsmMultimodalNetworkConverter {
 		if (config.getOutputCoordinateSystem() != null && config.getWriteCRS()) {
 			ProjectionUtils.putCRS(this.network, config.getOutputCoordinateSystem());
 		}
+	}
+
+	/** Validate all corrections before applying any, then audit each change. */
+	private void applyWayTagOverrides() {
+		Collection<? extends ConfigGroup> overrides = config.getParameterSets(OsmConverterConfigGroup.WayTagOverrideParams.SET_NAME);
+		if (overrides.isEmpty()) return;
+		Set<String> keys = new HashSet<>();
+		for (ConfigGroup group : overrides) {
+			var correction = (OsmConverterConfigGroup.WayTagOverrideParams) group;
+			if (correction.wayId == null || !correction.wayId.matches("[1-9][0-9]*")
+					|| correction.key == null || correction.key.isBlank()
+					|| !correction.remove && (correction.value == null || correction.value.isBlank())
+					|| correction.remove && correction.value != null) {
+				throw new IllegalArgumentException("Invalid wayTagOverride: wayId=" + correction.wayId + ", key=" + correction.key);
+			}
+			if (!keys.add(correction.wayId + ":" + correction.key)) {
+				throw new IllegalArgumentException("Duplicate wayTagOverride: " + correction.wayId + ":" + correction.key);
+			}
+			Osm.Way way = osmData.getWays().get(Id.create(correction.wayId, Osm.Way.class));
+			if (way != null && correction.expectedValue != null
+					&& !correction.expectedValue.equals(way.getTags().get(correction.key))) {
+				throw new IllegalArgumentException("Stale wayTagOverride for way " + correction.wayId + ", tag " + correction.key
+						+ ": expected " + correction.expectedValue + ", found " + way.getTags().get(correction.key));
+			}
+		}
+		int applied = 0, unchanged = 0, missing = 0;
+		for (ConfigGroup group : overrides) {
+			var correction = (OsmConverterConfigGroup.WayTagOverrideParams) group;
+			Osm.Way way = osmData.getWays().get(Id.create(correction.wayId, Osm.Way.class));
+			if (way == null) {
+				missing++;
+				log.warn("OSM way tag override not applied: way={}, key={}, reason={}; way absent from parsed data",
+						correction.wayId, correction.key, correction.reason);
+				continue;
+			}
+			String before = way.getTags().get(correction.key);
+			String after = correction.remove ? null : correction.value;
+			if (Objects.equals(before, after)) unchanged++;
+			else if (correction.remove) way.getTags().remove(correction.key);
+			else way.getTags().put(correction.key, after);
+			applied++;
+			log.info("OSM way tag override: way={}, key={}, old={}, new={}, reason={}",
+					correction.wayId, correction.key, before, after, correction.reason);
+		}
+		log.info("OSM way tag overrides: configured={}, applied={}, unchanged={}, missing={}",
+				overrides.size(), applied, unchanged, missing);
 	}
 
 	/**

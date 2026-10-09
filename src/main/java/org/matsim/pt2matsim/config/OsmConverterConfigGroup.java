@@ -281,10 +281,34 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 		switch(type) {
 			case OsmWayParams.SET_NAME :
 				return new OsmWayParams();
+			case WayTagOverrideParams.SET_NAME:
+				return new WayTagOverrideParams();
 			case RoutableSubnetworkParams.SET_NAME:
 			    return new RoutableSubnetworkParams();
 			default:
 				throw new IllegalArgumentException("Unknown parameterset name!");
+		}
+	}
+
+	/** Explicit local corrections; the source OSM file is never modified. */
+	public static class WayTagOverrideParams extends ReflectiveConfigGroup implements MatsimParameters {
+		public static final String SET_NAME = "wayTagOverride";
+
+		@Parameter @Comment("OSM way ID to correct before network conversion and cleaning.")
+		public String wayId;
+		@Parameter @Comment("OSM tag key to replace or remove.")
+		public String key;
+		@Parameter @Comment("Replacement tag value; required unless remove=true.")
+		public String value;
+		@Parameter @Comment("If set, abort when the source value differs. Guards against stale corrections.")
+		public String expectedValue;
+		@Parameter @Comment("Remove the tag instead of replacing it. Default: false.")
+		public boolean remove = false;
+		@Parameter @Comment("Explanation included in the conversion log.")
+		public String reason = "";
+
+		public WayTagOverrideParams() {
+			super(SET_NAME);
 		}
 	}
 
