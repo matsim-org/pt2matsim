@@ -92,6 +92,19 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	}
 
 	@Parameter
+	@Comment("Apply the lanes converter's turn:lanes matching, missing-arrow inference and U-turn exceptions to link-to-link restrictions, without creating lane assignments. Default: false. Requires parseTurnRestrictions=true.")
+	private boolean useOsmTurnArrows = false;
+
+	@Parameter
+	@Comment("Optional CSV audit of additional turn decisions and counts when useOsmTurnArrows=true.")
+	private String outputTurnRestrictionsReportFile;
+
+	public boolean getUseOsmTurnArrows() { return useOsmTurnArrows; }
+	public void setUseOsmTurnArrows(boolean value) { useOsmTurnArrows = value; }
+	public String getOutputTurnRestrictionsReportFile() { return outputTurnRestrictionsReportFile; }
+	public void setOutputTurnRestrictionsReportFile(String value) { outputTurnRestrictionsReportFile = value; }
+
+	@Parameter
 	@Comment("If true: OSM turn restrictions are parsed and written as disallowedNextLinks attribute to the first link.")
 	public boolean parseTurnRestrictions = true;
 
