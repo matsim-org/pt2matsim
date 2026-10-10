@@ -138,6 +138,8 @@ public class OsmMultimodalNetworkConverter {
 	protected final Map<Id<Link>, Id<Osm.Way>> osmIds = new HashMap<>();
 	protected final Map<Id<Link>, Boolean> linkForward = new HashMap<>();
 	private final Map<Id<Osm.Way>, List<Id<Osm.Node>>> turnGeometry = new HashMap<>();
+    private final Map<String, Double> additionalTurnDirectionalCounts = new HashMap<>();
+    private final Set<String> additionalTurnIgnoredArrays = new HashSet<>();
 	private Map<String, Long> additionalTurnRestrictionCounts = Map.of();
 	/**
 	 * From one OSM way, multiple MATSim links can be created:
@@ -259,7 +261,7 @@ public class OsmMultimodalNetworkConverter {
 	protected void addAdditionalTurnRestrictions() {
 		if (!config.getUseOsmTurnArrows()) return;
 		LaneConversionReport report = new LaneConversionReport();
-		var logic = new OsmTurnMovementLogic(this, turnGeometry, report, Map.of(), Set.of());
+		var logic = new OsmTurnMovementLogic(this, turnGeometry, report, additionalTurnDirectionalCounts, additionalTurnIgnoredArrays);
 		logic.indexUTurnModeExemptions(additionalUTurnRules(), config);
 		for (Link link : network.getLinks().values().stream().sorted(Comparator.comparing(l -> l.getId().toString())).toList()) {
 			Osm.Way way = osmData.getWays().get(osmIds.get(link.getId()));
@@ -837,9 +839,12 @@ public class OsmMultimodalNetworkConverter {
 
 	/** Allows the lane converter to audit deductions and inconsistent counts. */
 	protected void onDirectionalLaneCountInference(Osm.Way way, boolean forward, double total,
-			double opposite, double shared, double inferred, boolean valid) { }
+			double opposite, double shared, double inferred, boolean valid) {
+        if (valid) additionalTurnDirectionalCounts.put(way.getId() + ":" + (forward ? "forward" : "backward"), inferred);
+    }
 
     protected void onLaneCountFromTags(Osm.Way way, boolean forward, int count, String evidence) {
+        if (count > 0) additionalTurnDirectionalCounts.put(way.getId() + ":" + (forward ? "forward" : "backward"), (double) count);
         if (count > 0) log.info("Infer {} motor lanes on way {} direction {} from {}", count, way.getId(), forward ? "forward" : "backward", evidence);
         else log.warn("Conflicting or non-motor-only lane arrays on way {}; retain defaults: {}", way.getId(), evidence);
     }
@@ -927,6 +932,7 @@ public class OsmMultimodalNetworkConverter {
     }
 
     protected void onInconsistentReservedLaneArray(Osm.Way way, String key, String value, int motorSlots, double declared) {
+        additionalTurnIgnoredArrays.add(way.getId() + ":" + key);
         log.warn("Ignore inconsistent {}={} on way {}: {} motor slots, declared lanes {}", key, value, way.getId(), motorSlots, declared);
     }
 
