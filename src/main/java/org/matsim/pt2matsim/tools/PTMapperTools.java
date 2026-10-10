@@ -96,7 +96,8 @@ public final class PTMapperTools {
 	/**
 	 * Checks for each child stop facility if the link before or after is closer to the facility
 	 * than its referenced link. If so, the child stop facility is replaced with the one closer
-	 * to the facility coordinates. Transit routes with loop route profiles (i.e. a stop is accessed
+	 * to the facility coordinates. Only replacements preserving stop order along the network route are accepted.
+	 * Transit routes with loop route profiles (i.e. a stop is accessed
 	 * twice in a stop sequence) are ignored.
 	 *
 	 * @return the number of child stop facilities pulled
@@ -126,7 +127,7 @@ public final class PTMapperTools {
 							inlinksWithSameMode.remove(l);
 						}
 					}
-					Id<Link> closerLinkBefore = useCloserRefLinkForChildStopFacility(schedule, network, transitRoute, currentStop.getStopFacility(), inlinksWithSameMode);
+					Id<Link> closerLinkBefore = useCloserRefLinkForChildStopFacility(schedule, network, transitRoute, currentStop.getStopFacility(), inlinksWithSameMode, linkIdList);
 					if(closerLinkBefore != null) {
 						linkIdList.add(0, closerLinkBefore);
 						nPulled++;
@@ -141,7 +142,7 @@ public final class PTMapperTools {
 							if(!(linkList.get(i - 1) instanceof ArtificialLinkImpl)) testSet.add(linkList.get(i - 1));
 							if(!(linkList.get(i + 1) instanceof ArtificialLinkImpl)) testSet.add(linkList.get(i + 1));
 
-							Id<Link> check = useCloserRefLinkForChildStopFacility(schedule, network, transitRoute, currentStop.getStopFacility(), testSet);
+							Id<Link> check = useCloserRefLinkForChildStopFacility(schedule, network, transitRoute, currentStop.getStopFacility(), testSet, linkIdList);
 
 							if(check != null) nPulled++;
 
@@ -154,7 +155,7 @@ public final class PTMapperTools {
 					// look for a closer link after the route's end
 					currentStop = routeStops.get(routeStops.size() - 1);
 					Set<Link> outlinksWithSameMode = NetworkTools.filterLinkSetExactlyByModes(linkList.get(linkList.size() - 1).getToNode().getOutLinks().values(), linkList.get(linkList.size() - 1).getAllowedModes());
-					Id<Link> closerLinkAfter = useCloserRefLinkForChildStopFacility(schedule, network, transitRoute, currentStop.getStopFacility(), outlinksWithSameMode);
+					Id<Link> closerLinkAfter = useCloserRefLinkForChildStopFacility(schedule, network, transitRoute, currentStop.getStopFacility(), outlinksWithSameMode, linkIdList);
 					if(closerLinkAfter != null) {
 						linkIdList.add(closerLinkAfter);
 						nPulled++;
@@ -176,14 +177,14 @@ public final class PTMapperTools {
 	 * @return The id of the new closest link or <tt>null</tt> if the existing ref link
 	 * was used.
 	 */
-	private static Id<Link> useCloserRefLinkForChildStopFacility(TransitSchedule schedule, Network network, TransitRoute transitRoute, TransitStopFacility stopFacility, Collection<? extends Link> comparingLinks) {
+	private static Id<Link> useCloserRefLinkForChildStopFacility(TransitSchedule schedule, Network network, TransitRoute transitRoute, TransitStopFacility stopFacility, Collection<? extends Link> comparingLinks, List<Id<Link>> routeLinks) {
 		// check if previous link is closer to stop facility
 		double minDist = CoordTools.distanceStopFacilityToLink(stopFacility, network.getLinks().get(stopFacility.getLinkId()));
 		Link minLink = null;
 
 		for(Link comparingLink : comparingLinks) {
 			double distCompare = CoordTools.distanceStopFacilityToLink(stopFacility, comparingLink);
-			if(distCompare < minDist) {
+			if(distCompare < minDist && preservesStopOrder(transitRoute, routeLinks, stopFacility, comparingLink.getId())) {
 				minDist = distCompare;
 				minLink = comparingLink;
 			}
@@ -207,6 +208,23 @@ public final class PTMapperTools {
 		} else {
 			return null;
 		}
+	}
+
+	/** A closer stop reference must remain reachable in the timetable's stop order. */
+	private static boolean preservesStopOrder(TransitRoute route, List<Id<Link>> routeLinks,
+			TransitStopFacility facility, Id<Link> replacement) {
+		TransitRouteStop replacedStop = route.getStop(facility);
+		List<Id<Link>> proposed = new ArrayList<>(routeLinks);
+		// Endpoint moves extend the route; interior moves keep the existing path.
+		if (replacedStop == route.getStops().getFirst()) proposed.addFirst(replacement);
+		else if (replacedStop == route.getStops().getLast()) proposed.add(replacement);
+		int cursor = 0;
+		for (TransitRouteStop stop : route.getStops()) {
+			Id<Link> link = stop == replacedStop ? replacement : stop.getStopFacility().getLinkId();
+			while (cursor < proposed.size() && !proposed.get(cursor).equals(link)) cursor++;
+			if (cursor == proposed.size()) return false;
+		}
+		return true;
 	}
 
 	public static void setLogLevels() {
