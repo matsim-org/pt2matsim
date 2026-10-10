@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -134,6 +135,9 @@ public class OsmMultimodalNetworkConverter {
 	 * connects osm way ids and link ids of the generated network
 	 **/
 	protected final Map<Id<Link>, Id<Osm.Way>> osmIds = new HashMap<>();
+	protected final Map<Id<Link>, Boolean> linkForward = new HashMap<>();
+	private final Map<Id<Osm.Way>, List<Id<Osm.Node>>> turnGeometry = new HashMap<>();
+	private Map<String, Long> additionalTurnRestrictionCounts = Map.of();
 	/**
 	 * From one OSM way, multiple MATSim links can be created:
 	 * 1) forward & reverse links
@@ -158,6 +162,10 @@ public class OsmMultimodalNetworkConverter {
 	 */
 	public void convert(OsmConverterConfigGroup config) {
 		this.config = config;
+		if (config.getUseOsmTurnArrows() && !config.parseTurnRestrictions)
+			throw new IllegalArgumentException("Additional turn information requires parseTurnRestrictions=true");
+		if (config.getUseOsmTurnArrows()) osmData.getWays().values().forEach(way ->
+				turnGeometry.put(way.getId(), way.getNodes().stream().map(Osm.Node::getId).toList()));
 		this.geometryExporter = new LinkGeometryExporter();
 		CoordinateTransformation transformation = (config.getOutputCoordinateSystem() == null ?
 				new IdentityTransformation() :
@@ -170,6 +178,7 @@ public class OsmMultimodalNetworkConverter {
 			addDisallowedNextLinksAttributes();
 		}
 		cleanNetwork();
+		addAdditionalTurnRestrictions();
 		if(config.getKeepTagsAsAttributes()) addAttributes();
 
 		if (this.config.getOutputDetailedLinkGeometryFile() != null) {
@@ -186,6 +195,53 @@ public class OsmMultimodalNetworkConverter {
 			ProjectionUtils.putCRS(this.network, config.getOutputCoordinateSystem());
 		}
 	}
+
+	/** Add optional constraints after cleaning has assigned the final network modes. */
+	protected void addAdditionalTurnRestrictions() {
+		if (!config.getUseOsmTurnArrows()) return;
+		LaneConversionReport report = new LaneConversionReport();
+		var logic = new OsmTurnMovementLogic(this, turnGeometry, report, Map.of(), Set.of());
+		logic.indexUTurnModeExemptions(additionalUTurnRules(), config);
+		for (Link link : network.getLinks().values().stream().sorted(Comparator.comparing(l -> l.getId().toString())).toList()) {
+			Osm.Way way = osmData.getWays().get(osmIds.get(link.getId()));
+			if (way == null || !way.getTags().containsKey("highway")) continue;
+			if (!Double.isFinite(link.getNumberOfLanes()) || link.getNumberOfLanes() <= 0 || link.getNumberOfLanes() > 256
+					|| !Double.isFinite(link.getLength()) || link.getLength() <= 0
+					|| !Double.isFinite(link.getCapacity()) || link.getCapacity() <= 0) {
+				report.add("additionalTurnsSkippedUnusableLinks", way.getId(), link.getId(), "Invalid lane count, length or capacity; keep existing restrictions");
+				continue;
+			}
+			logic.resolve(link, way);
+		}
+		if (!org.matsim.core.network.turnRestrictions.DisallowedNextLinksUtils.isValid(network))
+			throw new IllegalStateException("Invalid restriction sequences after additional turn inference");
+		additionalTurnRestrictionCounts = Map.copyOf(report.getCounts());
+		log.info("Additional OSM turn restrictions: {}", additionalTurnRestrictionCounts);
+		if (config.getOutputTurnRestrictionsReportFile() != null) try {
+			report.write(Paths.get(config.getOutputTurnRestrictionsReportFile()));
+		} catch (IOException e) {
+			throw new java.io.UncheckedIOException("Cannot write additional turn restriction report", e);
+		}
+	}
+
+	private List<OsmTurnMovementLogic.UTurnRule> additionalUTurnRules() {
+		List<OsmTurnMovementLogic.UTurnRule> rules = new ArrayList<>();
+		for (Osm.Relation relation : osmData.getRelations().values()) {
+			if (!"no_u_turn".equals(relation.getTags().get("restriction"))) continue;
+			var via = relation.getMembers().stream().filter(e -> relation.getMemberRoles(e).contains("via")).toList();
+			if (via.size() != 1 || !(via.get(0) instanceof Osm.Node node)) continue;
+			List<Id<Osm.Way>> from = relation.getMembers().stream()
+					.filter(e -> e instanceof Osm.Way && relation.getMemberRoles(e).contains("from"))
+					.map(e -> ((Osm.Way) e).getId()).distinct().toList();
+			List<Id<Osm.Way>> to = relation.getMembers().stream()
+					.filter(e -> e instanceof Osm.Way && relation.getMemberRoles(e).contains("to"))
+					.map(e -> ((Osm.Way) e).getId()).distinct().toList();
+			rules.add(new OsmTurnMovementLogic.UTurnRule(from, to, node.getId(), relation.getTags()));
+		}
+		return rules;
+	}
+
+	public Map<String, Long> getAdditionalTurnRestrictionCounts() { return additionalTurnRestrictionCounts; }
 
 	/**
 	 * reads the params from the config to different containers.
@@ -487,6 +543,7 @@ public class OsmMultimodalNetworkConverter {
 
 				network.addLink(l);
 				osmIds.put(l.getId(), way.getId());
+				linkForward.put(l.getId(), true);
 				geometryExporter.addLinkDefinition(linkId, new LinkDefinition(fromNode, toNode, way));
 				
 				// we might have dedicated lanes
@@ -534,6 +591,7 @@ public class OsmMultimodalNetworkConverter {
 
 					network.addLink(lBus);
 					osmIds.put(lBus.getId(), way.getId());
+				linkForward.put(lBus.getId(), true);
 					geometryExporter.addLinkDefinition(linkIdBus, new LinkDefinition(fromNode, toNode, way));
 				}
 				
@@ -561,6 +619,7 @@ public class OsmMultimodalNetworkConverter {
 
 				network.addLink(l);
 				osmIds.put(l.getId(), way.getId());
+				linkForward.put(l.getId(), false);
 				geometryExporter.addLinkDefinition(linkId, new LinkDefinition(toNode, fromNode, way));
 				
 				if (psvLanesBackward.count > 0 && modes.contains("car")) {
@@ -599,6 +658,7 @@ public class OsmMultimodalNetworkConverter {
 
 					network.addLink(lBus);
 					osmIds.put(lBus.getId(), way.getId());
+				linkForward.put(lBus.getId(), false);
 					geometryExporter.addLinkDefinition(linkIdBus, new LinkDefinition(fromNode, toNode, way));
 				}
 				this.id++;
