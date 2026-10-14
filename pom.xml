@@ -29,7 +29,7 @@
     </repositories>
 
     <properties>
-        <geotools.version>35.0</geotools.version>
+        <geotools.version>35.1</geotools.version>
         <jackson.version>2.22.3</jackson.version>
         <jts.version>1.20.0</jts.version>
         <log4j.version>2.26.1</log4j.version>
@@ -41,7 +41,7 @@
         <dependency>
             <groupId>org.matsim</groupId>
             <artifactId>matsim</artifactId>
-            <version>2027.0-2026w25</version>
+            <version>2027.0-2026w42</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -135,6 +135,11 @@
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
             <version>${commons.codec.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.15.0</version>
           </dependency>
         </dependencies>
       </dependencyManagement>
