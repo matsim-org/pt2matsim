@@ -105,8 +105,9 @@ class HafasConverterTest {
 		List<Departure> sourceDepartures = new ArrayList<>(sourceRoute.getDepartures().values());
 		sourceDepartures.sort(Comparator.comparing(dep -> dep.getId().toString()));
 
-		List<Departure> targetDepartures = new ArrayList<>(targetRoute.getDepartures().values());
-		targetDepartures.sort(Comparator.comparing(dep -> dep.getId().toString()));
+		List<Departure> targetDepartures = targetRoute.getDepartures().values().stream()
+			.filter(departure -> departure.getDepartureTime() >= 24 * 3600.0)
+			.toList();
 
 		Assertions.assertFalse(sourceDepartures.isEmpty(), "Source route should have departures");
 		Assertions.assertEquals(targetDepartures.size(), sourceDepartures.size(),
@@ -125,6 +126,58 @@ class HafasConverterTest {
 			Assertions.assertEquals(targetRoute.getId(), chainedDeparture.getChainedRouteId(), "Chained route id should point to trip 000002 route");
 			Assertions.assertEquals(targetDeparture.getId(), chainedDeparture.getChainedDepartureId(),
 				"Chained departure id should point to corresponding target departure");
+		}
+	}
+
+	@Test
+	void durchbindungenPreserveOvernightContinuation() {
+		TransitLine line = schedule.getTransitLines().get(Id.create("BRB", TransitLine.class));
+		TransitRoute sourceRoute = routeStartingWith(line, "000001_");
+		TransitRoute targetRoute = routeStartingWith(line, "000002_");
+		Departure source = sourceRoute.getDepartures().get(Id.create("000001", Departure.class));
+		Departure originalTarget = targetRoute.getDepartures().get(Id.create("000002", Departure.class));
+		Assertions.assertEquals(30 * 60.0, originalTarget.getDepartureTime(), 0.001);
+
+		ChainedDeparture chain = source.getChainedDepartures().getFirst();
+		Assertions.assertEquals(targetRoute.getId(), chain.getChainedRouteId());
+		Departure nextDayTarget = targetRoute.getDepartures().get(chain.getChainedDepartureId());
+		Assertions.assertNotNull(nextDayTarget);
+		Assertions.assertNotEquals(originalTarget.getId(), nextDayTarget.getId());
+		Assertions.assertEquals(24 * 3600.0 + 30 * 60.0, nextDayTarget.getDepartureTime(), 0.001);
+		Assertions.assertNotEquals(originalTarget.getVehicleId(), nextDayTarget.getVehicleId());
+		Assertions.assertTrue(vehicles.getVehicles().containsKey(nextDayTarget.getVehicleId()));
+		Assertions.assertEquals(2, targetRoute.getDepartures().size());
+
+		double sourceArrival = source.getDepartureTime() + sourceRoute.getStops().getLast().getArrivalOffset().seconds();
+		double chainedDeparture = nextDayTarget.getDepartureTime() + targetRoute.getStops().getFirst().getDepartureOffset().seconds();
+		Assertions.assertEquals(9 * 60.0, chainedDeparture - sourceArrival, 0.001);
+	}
+
+	@Test
+	void durchbindungenPreserveMultipleOvernightTargets(@TempDir Path tempDir) throws IOException {
+		Path hafasFixture = tempDir.resolve("hafas");
+		copyDirectory(Path.of("test/BrienzRothornBahn-HAFAS"), hafasFixture);
+		String fplan = Files.readString(hafasFixture.resolve("FPLAN"), StandardCharsets.ISO_8859_1);
+		String thirdTrip = fplan.substring(fplan.indexOf("*Z 000002"))
+			.replace("000002", "000003")
+			.replace("00031", "00034")
+			.replace("00102", "00105")
+			.replace("00130", "00133");
+		Files.writeString(hafasFixture.resolve("FPLAN"), fplan + thirdTrip, StandardCharsets.ISO_8859_1);
+		Files.writeString(hafasFixture.resolve("DURCHBI"), "*DURCHBI\n"
+			+ "000001 000104 8508352 000002 000104 003499\n"
+			+ "000001 000104 8508352 000003 000104 003499\n", StandardCharsets.ISO_8859_1);
+
+		TransitLine line = convertFixture(hafasFixture, List.of()).getTransitLines().get(Id.create("BRB", TransitLine.class));
+		Departure source = routeStartingWith(line, "000001_").getDepartures().get(Id.create("000001", Departure.class));
+		Assertions.assertEquals(2, source.getChainedDepartures().size());
+		for (ChainedDeparture chain : source.getChainedDepartures()) {
+			TransitRoute targetRoute = line.getRoutes().get(chain.getChainedRouteId());
+			Departure nextDayTarget = targetRoute.getDepartures().get(chain.getChainedDepartureId());
+			Assertions.assertNotNull(nextDayTarget);
+			Assertions.assertTrue(nextDayTarget.getDepartureTime() >= 24 * 3600.0);
+			Assertions.assertTrue(targetRoute.getDepartures().containsKey(Id.create("000002", Departure.class)));
+			Assertions.assertTrue(targetRoute.getDepartures().containsKey(Id.create("000003", Departure.class)));
 		}
 	}
 

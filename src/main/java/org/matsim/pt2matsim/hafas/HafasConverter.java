@@ -59,6 +59,7 @@ import org.matsim.pt2matsim.hafas.lib.OperatorReader;
 import org.matsim.pt2matsim.hafas.lib.StopReader;
 import org.matsim.pt2matsim.tools.VehicleTypeDefaults;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
+import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleCapacity;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
@@ -83,6 +84,7 @@ import java.io.File;
 public final class HafasConverter {
 
 	static Logger log = LogManager.getLogger(HafasConverter.class);
+	private static final double SECONDS_PER_DAY = 24 * 60 * 60;
 
     private HafasConverter() {
     }
@@ -220,7 +222,7 @@ public final class HafasConverter {
 		ScheduleCleaner.removeNotUsedMinimalTransferTimes(schedule);
 		ScheduleCleaner.combineIdenticalTransitRoutes(schedule);
 		ScheduleCleaner.cleanDepartures(schedule);
-		createChainedDepartures(schedule, durchbindungen, bitfeldNummern);
+		createChainedDepartures(schedule, vehicles, durchbindungen, bitfeldNummern);
 		ScheduleCleaner.cleanVehicles(schedule, vehicles);
 
 		log.info("Creating the schedule based on HAFAS... done.");
@@ -334,7 +336,7 @@ public final class HafasConverter {
 		}
 	}
 
-	private static void createChainedDepartures(TransitSchedule schedule, List<Durchbindung> durchbindungen, Set<Integer> bitfeldNummern) {
+	private static void createChainedDepartures(TransitSchedule schedule, Vehicles vehicles, List<Durchbindung> durchbindungen, Set<Integer> bitfeldNummern) {
 		if (durchbindungen.isEmpty()) {
 			return;
 		}
@@ -354,6 +356,7 @@ public final class HafasConverter {
 
 		int chainCount = 0;
 		Map<Departure, List<ChainedDeparture>> chainedByDeparture = new HashMap<>();
+		Map<DepartureLocation, Departure> nextDayTargets = new HashMap<>();
 
 		for (Durchbindung db : durchbindungen) {
 			if (!bitfeldNummern.isEmpty() && !bitfeldNummern.contains(db.operationDayBitfeldNumber())) {
@@ -398,8 +401,22 @@ public final class HafasConverter {
 			for (int i = 0; i < pairCount; i++) {
 				DepartureLocation src = sources.get(i);
 				DepartureLocation tgt = targets.get(i);
+				double sourceArrival = src.departure().getDepartureTime()
+					+ src.route().getStops().getLast().getArrivalOffset().seconds();
+				double targetDeparture = tgt.departure().getDepartureTime()
+					+ tgt.route().getStops().getFirst().getDepartureOffset().seconds();
+				Departure chainedTarget = tgt.departure();
+				if (targetDeparture < sourceArrival) {
+					if (targetDeparture + SECONDS_PER_DAY < sourceArrival) {
+						log.warn("Cannot create chronological durchbindung from {} to {}: source arrives at {}, target departs at {}",
+							src.departure().getId(), tgt.departure().getId(), sourceArrival, targetDeparture);
+						continue;
+					}
+					// Keep the early departure for this day and chain to a separate instance on the next day.
+					chainedTarget = nextDayTargets.computeIfAbsent(tgt, location -> createNextDayDeparture(schedule, vehicles, location));
+				}
 				chainedByDeparture.computeIfAbsent(src.departure(), k -> new ArrayList<>())
-					.add(new ChainedDepartureImpl(tgt.line().getId(), tgt.route().getId(), tgt.departure().getId()));
+					.add(new ChainedDepartureImpl(tgt.line().getId(), tgt.route().getId(), chainedTarget.getId()));
 				chainCount++;
 			}
 		}
@@ -408,7 +425,31 @@ public final class HafasConverter {
 			entry.getKey().setChainedDepartures(entry.getValue());
 		}
 
-		log.info("Created " + chainCount + " chained departures from DURCHBI relations");
+		log.info("Created {} chained departures from DURCHBI relations, including {} next-day departures", chainCount, nextDayTargets.size());
+	}
+
+	private static Departure createNextDayDeparture(TransitSchedule schedule, Vehicles vehicles, DepartureLocation target) {
+		Departure original = target.departure();
+		Vehicle originalVehicle = vehicles.getVehicles().get(original.getVehicleId());
+		if (originalVehicle == null) {
+			throw new IllegalStateException("No vehicle for next-day departure " + original.getId());
+		}
+
+		String suffix = "_nextDay";
+		int index = 2;
+		Id<Departure> departureId = Id.create(original.getId() + suffix, Departure.class);
+		Id<Vehicle> vehicleId = Id.create(originalVehicle.getId() + suffix, Vehicle.class);
+		while (target.route().getDepartures().containsKey(departureId) || vehicles.getVehicles().containsKey(vehicleId)) {
+			suffix = "_nextDay" + index++;
+			departureId = Id.create(original.getId() + suffix, Departure.class);
+			vehicleId = Id.create(originalVehicle.getId() + suffix, Vehicle.class);
+		}
+
+		Departure copy = schedule.getFactory().createDeparture(departureId, original.getDepartureTime() + SECONDS_PER_DAY);
+		copy.setVehicleId(vehicleId);
+		vehicles.addVehicle(vehicles.getFactory().createVehicle(vehicleId, originalVehicle.getType()));
+		target.route().addDeparture(copy);
+		return copy;
 	}
 
 	private static String extractTripNumber(String departureId) {
