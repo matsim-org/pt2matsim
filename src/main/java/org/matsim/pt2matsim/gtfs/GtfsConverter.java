@@ -298,7 +298,7 @@ public class GtfsConverter {
 	}
 
 	private int getServiceDateOffset(LocalDate serviceDate, LocalDate referenceDate) {
-		return (int) serviceDate.datesUntil(referenceDate).count() * 24 * 3600;
+		return (int) referenceDate.datesUntil(serviceDate).count() * 24 * 3600;
 	}
 
 	protected TransitRouteStop createTransitRouteStop(StopTime stopTime, Trip trip, Map<Id<TransitStopFacility>, TransitStopFacility> stopFacilities) {
