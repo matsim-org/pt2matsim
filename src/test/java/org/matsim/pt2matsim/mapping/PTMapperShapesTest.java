@@ -77,4 +77,42 @@ class PTMapperShapesTest {
 		}
 	}
 
+	/**
+	 * Equivalence test on the shapes-based mapping (uses {@link ScheduleRoutersGtfsShapes}
+	 * rather than the standard router). {@code boundedSearch=true} (the @BeforeEach default)
+	 * and {@code boundedSearch=false} must produce identical link sequences for every route.
+	 */
+	@Test
+	void boundedSearchEquivalence() throws InterruptedException, ExecutionException {
+		PublicTransitMappingConfigGroup ptmConfigUnbounded = initPTMConfig();
+		ptmConfigUnbounded.setBoundedSearch(false);
+
+		TransitSchedule scheduleUnbounded = ScheduleToolsTest.initUnmappedSchedule();
+		Network networkUnbounded = NetworkToolsTest.initNetwork();
+		Map<Id<RouteShape>, RouteShape> shapesUnbounded = ShapeToolsTest.initShapes();
+		ScheduleRoutersFactory factoryUnbounded = new ScheduleRoutersGtfsShapes.Factory(scheduleUnbounded,
+				networkUnbounded, shapesUnbounded, ptmConfigUnbounded.getTransportModeAssignment(),
+				PublicTransitMappingConfigGroup.TravelCostType.linkLength, 10.0, 99);
+
+		new PTMapper(scheduleUnbounded, networkUnbounded).run(ptmConfigUnbounded, null, factoryUnbounded);
+		ScheduleCleaner.removeNotUsedStopFacilities(scheduleUnbounded);
+
+		Assertions.assertEquals(schedule.getTransitLines().keySet(), scheduleUnbounded.getTransitLines().keySet());
+
+		for (TransitLine boundedLine : schedule.getTransitLines().values()) {
+			TransitLine unboundedLine = scheduleUnbounded.getTransitLines().get(boundedLine.getId());
+			Assertions.assertNotNull(unboundedLine);
+			Assertions.assertEquals(boundedLine.getRoutes().keySet(), unboundedLine.getRoutes().keySet(),
+					"route ids differ for line " + boundedLine.getId());
+
+			for (TransitRoute boundedRoute : boundedLine.getRoutes().values()) {
+				TransitRoute unboundedRoute = unboundedLine.getRoutes().get(boundedRoute.getId());
+				List<Id<Link>> boundedLinkIds = ScheduleTools.getTransitRouteLinkIds(boundedRoute);
+				List<Id<Link>> unboundedLinkIds = ScheduleTools.getTransitRouteLinkIds(unboundedRoute);
+				Assertions.assertEquals(unboundedLinkIds, boundedLinkIds,
+						"link sequence differs for line=" + boundedLine.getId() + " route=" + boundedRoute.getId());
+			}
+		}
+	}
+
 }

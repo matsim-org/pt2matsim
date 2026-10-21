@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +37,9 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.collections.MapUtils;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.misc.Counter;
+import org.matsim.pt2matsim.hafas.HafasFileConfig;
+import org.matsim.pt.transitSchedule.ChainedDepartureImpl;
+import org.matsim.pt.transitSchedule.api.ChainedDeparture;
 import org.matsim.pt.transitSchedule.api.Departure;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
@@ -46,6 +50,8 @@ import org.matsim.pt2matsim.hafas.filter.BoundingBoxStopFilter;
 import org.matsim.pt2matsim.hafas.filter.HafasFilter;
 import org.matsim.pt2matsim.hafas.filter.OperationDayFilter;
 import org.matsim.pt2matsim.hafas.filter.StopsFilter;
+import org.matsim.pt2matsim.hafas.lib.DurchbiReader;
+import org.matsim.pt2matsim.hafas.lib.DurchbiReader.Durchbindung;
 import org.matsim.pt2matsim.hafas.lib.FPLANReader;
 import org.matsim.pt2matsim.hafas.lib.FPLANRoute;
 import org.matsim.pt2matsim.hafas.lib.MinimalTransferTimesReader;
@@ -53,11 +59,22 @@ import org.matsim.pt2matsim.hafas.lib.OperatorReader;
 import org.matsim.pt2matsim.hafas.lib.StopReader;
 import org.matsim.pt2matsim.tools.VehicleTypeDefaults;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
+import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleCapacity;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 import org.matsim.vehicles.VehiclesFactory;
+import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.NetworkFactory;
+import org.matsim.api.core.v01.network.Node;
+import org.matsim.pt2matsim.hafas.lib.StreckenptReader;
+import org.matsim.pt2matsim.hafas.lib.KantenReader;
+import org.matsim.pt2matsim.tools.NetworkTools;
+import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.network.Link;
+import org.matsim.core.utils.geometry.CoordUtils;
+import java.io.File;
 
 /**
  * Converts hafas files to a matsim transit schedule.
@@ -67,48 +84,128 @@ import org.matsim.vehicles.VehiclesFactory;
 public final class HafasConverter {
 
 	static Logger log = LogManager.getLogger(HafasConverter.class);
+	private static final double SECONDS_PER_DAY = 24 * 60 * 60;
 
     private HafasConverter() {
     }
 
     public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles) throws IOException {
-		run(hafasFolder, schedule, transformation, vehicles, new ArrayList<>(), StandardCharsets.UTF_8, false);
+		run(hafasFolder, schedule, null, transformation, vehicles, new ArrayList<>(), StandardCharsets.UTF_8, false, 0.0, new HafasFileConfig());
 	}
 
-	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, List<HafasFilter> filters, Charset encodingCharset,
+	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, List<? extends HafasFilter> filters, Charset encodingCharset,
 		boolean keepStopsInFilter) throws IOException {
-		run(hafasFolder, schedule, transformation, vehicles, filters, encodingCharset, keepStopsInFilter, 0.0);
+		run(hafasFolder, schedule, null, transformation, vehicles, filters, encodingCharset, keepStopsInFilter, 0.0, new HafasFileConfig());
 	}
 
-	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, List<HafasFilter> filters, Charset encodingCharset,
+	public static void run(String hafasFolder, TransitSchedule schedule, CoordinateTransformation transformation, Vehicles vehicles, List<? extends HafasFilter> filters, Charset encodingCharset,
 		boolean keepStopsInFilter, double defaultMinTransferTime) throws IOException {
+		run(hafasFolder, schedule, null, transformation, vehicles, filters, encodingCharset, keepStopsInFilter, defaultMinTransferTime, new HafasFileConfig());
+	}
+
+	public static void run(String hafasFolder, TransitSchedule schedule, Network network, CoordinateTransformation transformation, Vehicles vehicles, List<? extends HafasFilter> filters, Charset encodingCharset,
+		boolean keepStopsInFilter, double defaultMinTransferTime) throws IOException {
+		run(hafasFolder, schedule, network, transformation, vehicles, filters, encodingCharset, keepStopsInFilter, defaultMinTransferTime, new HafasFileConfig());
+	}
+
+	public static void run(String hafasFolder, TransitSchedule schedule, Network network, CoordinateTransformation transformation, Vehicles vehicles, List<? extends HafasFilter> filters, Charset encodingCharset,
+		boolean keepStopsInFilter, double defaultMinTransferTime, HafasFileConfig fileConfig) throws IOException {
+		fileConfig = fileConfig != null ? fileConfig : new HafasFileConfig();
+		List<HafasFilter> resolvedFilters = new ArrayList<>(filters);
 		if(!hafasFolder.endsWith("/")) hafasFolder += "/";
 
 		log.info("Creating the schedule based on HAFAS...");
 
 		// 1. Read and create stop facilities
 		log.info("  Read transit stops...");
-		StopReader.run(schedule, transformation, hafasFolder + "BFKOORD_WGS", encodingCharset);
+		StopReader.run(schedule, transformation, hafasFolder + fileConfig.getBfkoordWgs(), encodingCharset);
 		log.info("  Read transit stops... done.");
 
-		// 1.a Read minimal transfer times
+		// 2. Read minimal transfer times
 		log.info("  Read minimal transfer times...");
-		MinimalTransferTimesReader.run(schedule, hafasFolder, "UMSTEIGB","METABHF", encodingCharset, defaultMinTransferTime);
+		MinimalTransferTimesReader.run(schedule, hafasFolder, fileConfig.getUmsteigb(), fileConfig.getMetabhf(), encodingCharset, defaultMinTransferTime);
 		log.info("  Read minimal transfer times... done.");
 
-		// 2. Read all operators from BETRIEB_DE
+		// 3. Generate MATSim Network from STRECKENPT and KANTEN
+		if (network != null) {
+			log.info("  Generating MATSim Network from HAFAS STRECKENPT and KANTEN...");
+			NetworkFactory netFactory = network.getFactory();
+			for (TransitStopFacility stop : schedule.getFacilities().values()) {
+				Id<Node> nodeId = Id.createNodeId(stop.getId());
+				if (!network.getNodes().containsKey(nodeId)) {
+					network.addNode(netFactory.createNode(nodeId, stop.getCoord()));
+				}
+			}
+
+			String streckenptFile = hafasFolder + fileConfig.getStreckenpt();
+			Map<String, Coord> streckenpunkte = StreckenptReader.readStreckenpt(streckenptFile, transformation, encodingCharset);
+
+			String kantenFile = hafasFolder + fileConfig.getKanten();
+			KantenReader.readKanten(kantenFile, streckenpunkte, network, encodingCharset);
+
+			log.info("  Connecting isolated station nodes with pseudo links and removing isolated geometry nodes...");
+			int pseudoLinkCount = 0;
+			int removedNodeCount = 0;
+			List<Node> isolatedNodes = new ArrayList<>();
+			for (Node node : network.getNodes().values()) {
+				if (node.getInLinks().isEmpty() && node.getOutLinks().isEmpty()) {
+					isolatedNodes.add(node);
+				}
+			}
+			for (Node node : isolatedNodes) {
+				Id<TransitStopFacility> stopId = Id.create(node.getId().toString(), TransitStopFacility.class);
+				if (schedule.getFacilities().containsKey(stopId)) {
+					Link nearestLink = NetworkTools.getNearestLink(network, node.getCoord(), 10000.0);
+					if (nearestLink != null) {
+						Node targetNode = nearestLink.getFromNode();
+						double distance = CoordUtils.calcEuclideanDistance(node.getCoord(), targetNode.getCoord());
+
+						// Create outgoing pseudo link
+						Id<Link> outId = Id.createLinkId("pseudo_" + node.getId() + "_" + targetNode.getId());
+						Link outLink = netFactory.createLink(outId, node, targetNode);
+						outLink.setAllowedModes(nearestLink.getAllowedModes());
+						outLink.setLength(distance);
+						outLink.setFreespeed(10.0);
+						outLink.setCapacity(9999);
+						network.addLink(outLink);
+
+						// Create incoming pseudo link
+						Id<Link> inId = Id.createLinkId("pseudo_" + targetNode.getId() + "_" + node.getId());
+						Link inLink = netFactory.createLink(inId, targetNode, node);
+						inLink.setAllowedModes(nearestLink.getAllowedModes());
+						inLink.setLength(distance);
+						inLink.setFreespeed(10.0);
+						inLink.setCapacity(9999);
+						network.addLink(inLink);
+
+						pseudoLinkCount++;
+					}
+				} else {
+					network.removeNode(node.getId());
+					removedNodeCount++;
+				}
+			}
+			log.info("  Connected " + pseudoLinkCount + " isolated station nodes with pseudo links.");
+			log.info("  Removed " + removedNodeCount + " isolated geometry nodes.");
+			log.info("  Generating MATSim Network from HAFAS STRECKENPT and KANTEN... done.");
+		}
+
+		// 4. Read all operators from BETRIEB_DE
 		log.info("  Read operators...");
-		Map<String, String> operators = OperatorReader.readOperators(hafasFolder + "BETRIEB_DE", encodingCharset);
+		Map<String, String> operators = OperatorReader.readOperators(hafasFolder + fileConfig.getBetriebDe(), encodingCharset);
 		log.info("  Read operators... done.");
 
-		// 4. Create all lines from HAFAS-Schedule
+		// 5. Read all lines from HAFAS-Schedule
 		log.info("  Read transit lines...");
 		// set schedule so fplanRoutes have stopfacilities available
 		FPLANRoute.setSchedule(schedule);
-		List<FPLANRoute> routes = FPLANReader.parseFPLAN(operators, hafasFolder + "FPLAN", filters, encodingCharset);
+		List<FPLANRoute> routes = FPLANReader.parseFPLAN(operators, hafasFolder + fileConfig.getFplan(), resolvedFilters, encodingCharset);
 		log.info("  Read transit lines... done.");
 
-		// TODO another important HAFAS-file is DURCHBI. This feature is not supported by MATSim yet (but in Switzerland, for example, locally very important.
+		// 6. Read durchbindungen (through-services) from DURCHBI file
+		log.info("  Read durchbindungen...");
+		List<Durchbindung> durchbindungen = DurchbiReader.readDurchbindungen(hafasFolder + fileConfig.getDurchbi(), encodingCharset);
+		log.info("  Read {} durchbindungen.", durchbindungen.size());
 
 		log.info("  Creating transit routes...");
 		OperationDayFilter operationDayFilter = (OperationDayFilter) filters.stream().filter(f -> f instanceof OperationDayFilter).findAny().orElse(null);
@@ -116,15 +213,16 @@ public final class HafasConverter {
 		createTransitRoutesFromFPLAN(routes, schedule, vehicles, bitfeldNummern);
 		log.info("  Creating transit routes... done.");
 
-		// 5. Clean schedule
+		// 7. Clean schedule
 		Set<Id<TransitStopFacility>> stopsToKeep = new HashSet<>();
 		if (keepStopsInFilter) {
-			stopsToKeep = getStopsFromFilters(schedule, filters);
+			stopsToKeep = getStopsFromFilters(schedule, resolvedFilters);
 		}
 		ScheduleCleaner.removeNotUsedStopFacilities(schedule, stopsToKeep);
 		ScheduleCleaner.removeNotUsedMinimalTransferTimes(schedule);
 		ScheduleCleaner.combineIdenticalTransitRoutes(schedule);
 		ScheduleCleaner.cleanDepartures(schedule);
+		createChainedDepartures(schedule, vehicles, durchbindungen, bitfeldNummern);
 		ScheduleCleaner.cleanVehicles(schedule, vehicles);
 
 		log.info("Creating the schedule based on HAFAS... done.");
@@ -146,6 +244,15 @@ public final class HafasConverter {
 			}
 		}
 		return stopsToKeep;
+	}
+
+	/**
+	 * Key for mapping trip number and operator to routes.
+	 */
+	private record TripOperatorKey(String tripNumber, String operator) {
+	}
+
+	private record DepartureLocation(TransitLine line, TransitRoute route, Departure departure) {
 	}
 
 	private static void createTransitRoutesFromFPLAN(List<FPLANRoute> routes, TransitSchedule schedule, Vehicles vehicles, Set<Integer> bitfeldNummern) {
@@ -211,7 +318,8 @@ public final class HafasConverter {
 
 				// create actual TransitRoute
 				TransitRoute transitRoute = scheduleFactory.createTransitRoute(routeId, null, fplanRoute.getTransitRouteStops(bitfeldNummern), fplanRoute.getMode());
-				for(Departure departure : fplanRoute.getDepartures()) {
+				List<Departure> departures = fplanRoute.getDepartures();
+				for(Departure departure : departures) {
 					transitRoute.addDeparture(departure);
 					try {
 						vehicles.addVehicle(vehicleFactory.createVehicle(departure.getVehicleId(), vehicleType));
@@ -226,6 +334,135 @@ public final class HafasConverter {
 				transitLine.addRoute(transitRoute);
 			}
 		}
+	}
+
+	private static void createChainedDepartures(TransitSchedule schedule, Vehicles vehicles, List<Durchbindung> durchbindungen, Set<Integer> bitfeldNummern) {
+		if (durchbindungen.isEmpty()) {
+			return;
+		}
+
+		// Build index: (tripNumber, operatorCode) -> DepartureLocations by scanning the cleaned-up schedule once
+		Map<TripOperatorKey, List<DepartureLocation>> index = new HashMap<>();
+		for (TransitLine line : schedule.getTransitLines().values()) {
+			String operatorCode = (String) line.getAttributes().getAttribute("operatorCode");
+			for (TransitRoute route : line.getRoutes().values()) {
+				for (Departure dep : route.getDepartures().values()) {
+					String tripNumber = extractTripNumber(dep.getId().toString());
+					index.computeIfAbsent(new TripOperatorKey(tripNumber, operatorCode), k -> new ArrayList<>())
+						.add(new DepartureLocation(line, route, dep));
+				}
+			}
+		}
+
+		int chainCount = 0;
+		Map<Departure, List<ChainedDeparture>> chainedByDeparture = new HashMap<>();
+		Map<DepartureLocation, Departure> nextDayTargets = new HashMap<>();
+
+		for (Durchbindung db : durchbindungen) {
+			if (!bitfeldNummern.isEmpty() && !bitfeldNummern.contains(db.operationDayBitfeldNumber())) {
+				log.debug("Skipping durchbindung {} / {} -> {} / {} because bitfeld {} is not selected",
+					db.firstTripNumber(), db.firstOperator(), db.secondTripNumber(), db.secondOperator(), db.operationDayBitfeldNumber());
+				continue;
+			}
+
+			List<DepartureLocation> sources = new ArrayList<>(
+				index.getOrDefault(new TripOperatorKey(db.firstTripNumber(), db.firstOperator()), List.of()));
+			List<DepartureLocation> targets = new ArrayList<>(
+				index.getOrDefault(new TripOperatorKey(db.secondTripNumber(), db.secondOperator()), List.of()));
+			if (sources.isEmpty() || targets.isEmpty()) {
+				log.debug("No routes found for durchbindung {} / {} -> {} / {}", db.firstTripNumber(), db.firstOperator(),
+					db.secondTripNumber(), db.secondOperator());
+				continue;
+			}
+
+			// Filter by connection stop if specified
+			String connectionStop = db.lastStopOfFirstTrip();
+			if (connectionStop != null && !connectionStop.isEmpty()) {
+				sources.removeIf(s -> !connectionStop.equals(lastStopId(s.route())));
+				targets.removeIf(t -> !connectionStop.equals(firstStopId(t.route())));
+				if (sources.isEmpty() || targets.isEmpty()) {
+					log.debug("No routes matching connection stop {} for durchbindung {} -> {}",
+						connectionStop, db.firstTripNumber(), db.secondTripNumber());
+					continue;
+				}
+			}
+
+			// Sort by departure time, pair 1:1
+			sources.sort(Comparator.comparingDouble(s -> s.departure().getDepartureTime()));
+			targets.sort(Comparator.comparingDouble(t -> t.departure().getDepartureTime()));
+
+			if (sources.size() != targets.size()) {
+				log.warn("Durchbindung {} / {} -> {} / {} has different departure counts ({} source, {} target).",
+					db.firstTripNumber(), db.firstOperator(), db.secondTripNumber(), db.secondOperator(),
+					sources.size(), targets.size());
+			}
+
+			int pairCount = Math.min(sources.size(), targets.size());
+			for (int i = 0; i < pairCount; i++) {
+				DepartureLocation src = sources.get(i);
+				DepartureLocation tgt = targets.get(i);
+				double sourceArrival = src.departure().getDepartureTime()
+					+ src.route().getStops().getLast().getArrivalOffset().seconds();
+				double targetDeparture = tgt.departure().getDepartureTime()
+					+ tgt.route().getStops().getFirst().getDepartureOffset().seconds();
+				Departure chainedTarget = tgt.departure();
+				if (targetDeparture < sourceArrival) {
+					if (targetDeparture + SECONDS_PER_DAY < sourceArrival) {
+						log.warn("Cannot create chronological durchbindung from {} to {}: source arrives at {}, target departs at {}",
+							src.departure().getId(), tgt.departure().getId(), sourceArrival, targetDeparture);
+						continue;
+					}
+					// Keep the early departure for this day and chain to a separate instance on the next day.
+					chainedTarget = nextDayTargets.computeIfAbsent(tgt, location -> createNextDayDeparture(schedule, vehicles, location));
+				}
+				chainedByDeparture.computeIfAbsent(src.departure(), k -> new ArrayList<>())
+					.add(new ChainedDepartureImpl(tgt.line().getId(), tgt.route().getId(), chainedTarget.getId()));
+				chainCount++;
+			}
+		}
+
+		for (Map.Entry<Departure, List<ChainedDeparture>> entry : chainedByDeparture.entrySet()) {
+			entry.getKey().setChainedDepartures(entry.getValue());
+		}
+
+		log.info("Created {} chained departures from DURCHBI relations, including {} next-day departures", chainCount, nextDayTargets.size());
+	}
+
+	private static Departure createNextDayDeparture(TransitSchedule schedule, Vehicles vehicles, DepartureLocation target) {
+		Departure original = target.departure();
+		Vehicle originalVehicle = vehicles.getVehicles().get(original.getVehicleId());
+		if (originalVehicle == null) {
+			throw new IllegalStateException("No vehicle for next-day departure " + original.getId());
+		}
+
+		String suffix = "_nextDay";
+		int index = 2;
+		Id<Departure> departureId = Id.create(original.getId() + suffix, Departure.class);
+		Id<Vehicle> vehicleId = Id.create(originalVehicle.getId() + suffix, Vehicle.class);
+		while (target.route().getDepartures().containsKey(departureId) || vehicles.getVehicles().containsKey(vehicleId)) {
+			suffix = "_nextDay" + index++;
+			departureId = Id.create(original.getId() + suffix, Departure.class);
+			vehicleId = Id.create(originalVehicle.getId() + suffix, Vehicle.class);
+		}
+
+		Departure copy = schedule.getFactory().createDeparture(departureId, original.getDepartureTime() + SECONDS_PER_DAY);
+		copy.setVehicleId(vehicleId);
+		vehicles.addVehicle(vehicles.getFactory().createVehicle(vehicleId, originalVehicle.getType()));
+		target.route().addDeparture(copy);
+		return copy;
+	}
+
+	private static String extractTripNumber(String departureId) {
+		int underscore = departureId.indexOf('_');
+		return underscore > 0 ? departureId.substring(0, underscore) : departureId;
+	}
+
+	private static String lastStopId(TransitRoute route) {
+		return route.getStops().getLast().getStopFacility().getId().toString();
+	}
+
+	private static String firstStopId(TransitRoute route) {
+		return route.getStops().getFirst().getStopFacility().getId().toString();
 	}
 
 	private static Id<TransitLine> createLineId(FPLANRoute route) {

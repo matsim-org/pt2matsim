@@ -10,7 +10,7 @@ There are multiple public transit schedule data formats, widely used formats are
 publicly available (see [mobilitydatabase.org](https://mobilitydatabase.org) or [transit.land](http://www.transit.land)), otherwise 
 these files have to be obtained from the public transit agency.[^1] 
 
-[^1]: The Swiss public transit schedule is available in GTFS and HAFAS format via [opentransportdata.swiss](https://opentransportdata.swiss).
+[^1]: The Swiss public transit schedule is available in GTFS and HAFAS format via [opentransportdata.swiss](https://opentransportdata.swiss). Note: only HAFAS currently supports chained trips (Durchbindungen).
 
 Public transit data feeds can be converted to unmapped transit schedules using the classes [`Gtfs2Transitschedule`](https://github.com/matsim-org/pt2matsim/wiki/Creating-an-unmapped-MATSim-transit-schedule#from-gtfs)
 or [`Hafas2TransitSchedule`](https://github.com/matsim-org/pt2matsim/wiki/Creating-an-unmapped-MATSim-transit-schedule#from-hafas).[^2] 
@@ -18,6 +18,8 @@ PT2MATSim also provides tools to create a multimodal network from OSM with [`Osm
 
 [^2]: It is possible to convert public transit information from OpenStreetMap files (_Osm2TransitSchedule_). 
 However, OSM currently does not contain any temporal information, the accuracy of the schedule data varies and is usually not sufficient to be used for simulations.
+
+The HAFAS converter can optionally convert the MATSim network directly from HRDF *Realgraph* files if they are provided in the source directory (`STRECKENPT` and `KANTEN`).
 
 Unmapped transit schedules lack information on the links used by vehicles and only contain the stop sequence
 for transit routes. Generating these links (i.e. the path a vehicle takes on a network) is called "mapping", a process
@@ -51,7 +53,7 @@ To include pt2matsim in your own maven project, add this snippet to your pom.xml
         <dependency>
             <groupId>org.matsim</groupId>
             <artifactId>pt2matsim</artifactId>
-            <version>26.4</version>
+            <version>26.10</version>
         </dependency>
     </dependencies>
 

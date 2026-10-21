@@ -2,6 +2,14 @@
 <!DOCTYPE config SYSTEM "http://www.matsim.org/files/dtd/config_v2.dtd">
 <config>
 	<module name="PublicTransitMapping" >
+		<!-- If true (default), each Dijkstra/ALT call between two link candidates is bounded by
+		[maxTravelCostFactor] * [minTravelCost]. Pairs whose shortest path exceeds
+		that bound return null quickly instead of exhausting the reachable mode subgraph,
+		dramatically reducing pseudoRouting wall-clock on disconnected networks. Output is
+		equivalent to the unbounded variant because any path with cost >= maxAllowedTravelCost
+		is already discarded downstream and replaced by an artificial link. Requires MATSim >=
+		2027 to take effect. -->
+		<param name="boundedSearch" value="true" />
 		<!-- After nLinkThreshold link candidates have been found, additional link 
 		candidates within [candidateDistanceMultiplier] * [distance to the Nth link] are added to the set.
 		Must be >= 1. -->
@@ -27,7 +35,11 @@
 		performance. Somewhere between 4 and 10 seems reasonable for bus stops, depending on the
 		accuracy of the stop facility coordinates and performance desires. Default: 6 -->
 		<param name="nLinkThreshold" value="6" />
-		<!-- The router that should be used. Possible options are: [SpeedyALT, AStarLandmarks] -->
+		<!-- The router that should be used. Possible options are: [SpeedyALT, AStarLandmarks, CHRouter].
+		CHRouter (Contraction Hierarchies) is typically ~2-3x faster per query than SpeedyALT on
+		larger networks, at the cost of a one-time preprocessing step per mode-filtered network
+		(seconds to minutes). Recommended for medium/large scenarios where the routing phase
+		dominates total mapping time. Requires MATSim >= 2027. -->
 		<param name="networkRouter" value="SpeedyALT" />
 		<!-- Defines the number of numOfThreads that should be used for pseudoRouting. Default: 2. -->
 		<param name="numOfThreads" value="2" />

@@ -44,6 +44,19 @@ public interface ScheduleRouters extends MapperModule {
 
 	LeastCostPathCalculator.Path calcLeastCostPath(Id<Link> fromLink, Id<Link> toLink, TransitLine transitLine, TransitRoute transitRoute);
 
+	/**
+	 * Bounded variant of {@link #calcLeastCostPath(LinkCandidate, LinkCandidate, TransitLine, TransitRoute)}.
+	 * Implementations may abort the search and return {@code null} as soon as it is provable that
+	 * no path with cost {@code <= maxCost} exists. {@link Double#POSITIVE_INFINITY} disables the cutoff.
+	 *
+	 * <p>The default implementation ignores {@code maxCost} and delegates to the unbounded overload,
+	 * preserving behaviour for implementations that do not yet support the cutoff.</p>
+	 */
+	default LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate,
+			TransitLine transitLine, TransitRoute transitRoute, double maxCost) {
+		return calcLeastCostPath(fromLinkCandidate, toLinkCandidate, transitLine, transitRoute);
+	}
+
 	double getMinimalTravelCost(TransitRouteStop fromTransitRouteStop, TransitRouteStop toTransitRouteStop, TransitLine transitLine, TransitRoute transitRoute);
 
 	double getLinkCandidateTravelCost(LinkCandidate linkCandidateCurrent);
@@ -61,6 +74,15 @@ public interface ScheduleRouters extends MapperModule {
 
 		synchronized LeastCostPathCalculator.Path calcPath(Link fromLink, Link toLink) {
 			return leastCostPathCalculator.calcLeastCostPath(fromLink, toLink, 0, null, null);
+		}
+
+		/**
+		 * Bounded variant of {@link #calcPath(Link, Link)}: requires MATSim's {@code LeastCostPathCalculator}
+		 * to provide the {@code maxCost} overload (added 2027.0). Implementations that do not honour the
+		 * cutoff will fall back to the unbounded search via the default method on the MATSim interface.
+		 */
+		synchronized LeastCostPathCalculator.Path calcPath(Link fromLink, Link toLink, double maxCost) {
+			return leastCostPathCalculator.calcLeastCostPath(fromLink, toLink, 0, null, null, maxCost);
 		}
 
 	}

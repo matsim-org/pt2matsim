@@ -24,6 +24,7 @@ package org.matsim.pt2matsim.hafas.lib;
 import java.nio.charset.Charset;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.matsim.pt2matsim.hafas.HafasFileConfig;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -59,8 +60,8 @@ public class BitfeldAnalyzer {
 				int bitfeldnummer = Integer.parseInt(newLine.substring(0, 6));
 				String bitfeld = newLine.substring(7, 103);
 				/* As we assume that the posMaxFVals describes a 4-day block with either Monday-Tuesday-Wednesday-Thursday or
-				Tuesday-Wednesday-Thursday-Friday and because we don't want a Monday to be the reference day, we select those
-				lines which have the second bit on one. The second stands for the 4 in the hexadecimal calculation, else we
+				Tuesday-Wednesday-Thursday-Friday block because all other blocks have at least one Weekend-Day and therefore are less like to produce an F (an F means traveling at all four days).
+				we select those lines which have the second bit on one. The second stands for the 4 in the hexadecimal calculation, else we
 				want all hexadecimal values which include a 4, that is 4, 5, 6, 7, 12 (C), 13 (D), 14 (E) and 15 (F).*/
 				int matches = (bitfeld.charAt(posMaxFVals) == '4')? 1 : 0;
 				matches += (bitfeld.charAt(posMaxFVals) == '5')? 1 : 0;
@@ -156,6 +157,10 @@ public class BitfeldAnalyzer {
 	}
 
 	public static Set<Integer> getBitfieldsAtValidDay(final int dayNr, final String hafasFolder, Charset encodingCharset) throws IOException {
+		return getBitfieldsAtValidDay(dayNr, hafasFolder, HafasFileConfig.DEFAULT_BITFELD, encodingCharset);
+	}
+
+	public static Set<Integer> getBitfieldsAtValidDay(final int dayNr, final String hafasFolder, String bitfeldFile, Charset encodingCharset) throws IOException {
         /*
         Spalte          Typ                 Bedeutung                                                       Hinweis
         1-6             INT32               Bitfeldnummer                                                   Nicht durchgehend nummeriert.
@@ -163,7 +168,8 @@ public class BitfeldAnalyzer {
          */
 		int offset_bitstring = 2; // number of bits to ignore at start of each bitfield
 		log.info("start: Read bitfields (BITFELD) at day: " + dayNr);
-		String pathFile = hafasFolder + "BITFELD";
+		String normalizedFolder = hafasFolder.endsWith("/") ? hafasFolder : hafasFolder + "/";
+		String pathFile = normalizedFolder + bitfeldFile;
 
 		Set<Integer> validBitfields = new HashSet<>();
 

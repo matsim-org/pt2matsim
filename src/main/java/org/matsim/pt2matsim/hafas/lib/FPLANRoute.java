@@ -336,6 +336,7 @@ public class FPLANRoute {
 		return isRailReplacementBus;
 	}
 
+
 	public void addLocalBitfeldNr(int localBitfeldnr, String startStopId, String endStopId) {
 		this.localBitfeldNummern.put(localBitfeldnr, new Tuple<>(startStopId, endStopId));
 	}

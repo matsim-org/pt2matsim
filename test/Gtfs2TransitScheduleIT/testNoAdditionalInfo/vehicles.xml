@@ -21,6 +21,25 @@
 		<flowEfficiencyFactor factor="1.0"/>
 	</vehicleType>
 
+	<vehicleType id="Other">
+		<attributes>
+			<attribute name="accessTimeInSecondsPerPerson" class="java.lang.Double">0.5</attribute>
+			<attribute name="doorOperationMode" class="org.matsim.vehicles.VehicleType$DoorOperationMode">serial</attribute>
+			<attribute name="egressTimeInSecondsPerPerson" class="java.lang.Double">0.5</attribute>
+		</attributes>
+		<capacity seats="50" standingRoomInPersons="0">
+
+		</capacity>
+		<length meter="10.0"/>
+		<width meter="2.5"/>
+		<costInformation>
+
+		</costInformation>
+		<passengerCarEquivalents pce="2.0"/>
+		<networkMode networkMode="other"/>
+		<flowEfficiencyFactor factor="1.0"/>
+	</vehicleType>
+
 	<vehicleType id="Tram">
 		<attributes>
 			<attribute name="accessTimeInSecondsPerPerson" class="java.lang.Double">0.25</attribute>
@@ -37,25 +56,6 @@
 		</costInformation>
 		<passengerCarEquivalents pce="5.2"/>
 		<networkMode networkMode="tram"/>
-		<flowEfficiencyFactor factor="1.0"/>
-	</vehicleType>
-
-	<vehicleType id="Unknown">
-		<attributes>
-			<attribute name="accessTimeInSecondsPerPerson" class="java.lang.Double">0.5</attribute>
-			<attribute name="doorOperationMode" class="org.matsim.vehicles.VehicleType$DoorOperationMode">serial</attribute>
-			<attribute name="egressTimeInSecondsPerPerson" class="java.lang.Double">0.5</attribute>
-		</attributes>
-		<capacity seats="50" standingRoomInPersons="0">
-
-		</capacity>
-		<length meter="10.0"/>
-		<width meter="2.5"/>
-		<costInformation>
-
-		</costInformation>
-		<passengerCarEquivalents pce="2.0"/>
-		<networkMode networkMode="other"/>
 		<flowEfficiencyFactor factor="1.0"/>
 	</vehicleType>
 

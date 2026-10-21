@@ -127,6 +127,20 @@ public class ScheduleRoutersGtfsShapes implements ScheduleRouters {
 	}
 
 	@Override
+	public LeastCostPathCalculator.Path calcLeastCostPath(LinkCandidate fromLinkCandidate, LinkCandidate toLinkCandidate, TransitLine transitLine, TransitRoute transitRoute, double maxCost) {
+		Network n = networks.get(transitLine).get(transitRoute);
+		if (n == null) {
+			return null;
+		}
+		Link fromLink = n.getLinks().get(fromLinkCandidate.getLink().getId());
+		Link toLink = n.getLinks().get(toLinkCandidate.getLink().getId());
+		if (fromLink == null || toLink == null) {
+			return null;
+		}
+		return pathCalculators.get(transitLine).get(transitRoute).calcPath(fromLink, toLink, maxCost);
+	}
+
+	@Override
 	public LeastCostPathCalculator.Path calcLeastCostPath(Id<Link> fromLinkId, Id<Link> toLinkId, TransitLine transitLine, TransitRoute transitRoute) {
 		Network n = networks.get(transitLine).get(transitRoute);
 		if (n == null) {

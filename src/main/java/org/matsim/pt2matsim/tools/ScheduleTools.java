@@ -191,16 +191,23 @@ public final class ScheduleTools {
 	 */
 	public static VehicleType createDefaultVehicleType(String id, String defaultVehicleType) {
 		String defVehType = defaultVehicleType.toUpperCase().replace(" ", "_");
-		VehiclesFactory vf = VehicleUtils.createVehiclesContainer().getFactory();
-		Id<VehicleType> vTypeId = Id.create(id, VehicleType.class);
 
-		// using default values for vehicle type
 		VehicleTypeDefaults.Type defaultValues = VehicleTypeDefaults.Type.OTHER;
 		try {
 			defaultValues = VehicleTypeDefaults.Type.valueOf(defVehType);
 		} catch (IllegalArgumentException e) {
 			log.warn("Vehicle category '" + defVehType + "' is unknown. Falling back to generic OTHER and adding to schedule.");
 		}
+
+		return createDefaultVehicleType(id, defaultValues);
+	}
+
+	/**
+	 * Creates a vehicle type with the given id and parameters from the provided {@link VehicleTypeDefaults.Type}.
+	 */
+	public static VehicleType createDefaultVehicleType(String id, VehicleTypeDefaults.Type defaultValues) {
+		VehiclesFactory vf = VehicleUtils.createVehiclesContainer().getFactory();
+		Id<VehicleType> vTypeId = Id.create(id, VehicleType.class);
 
 		VehicleType vehicleType = vf.createVehicleType(vTypeId);
 		vehicleType.setLength(defaultValues.length);
