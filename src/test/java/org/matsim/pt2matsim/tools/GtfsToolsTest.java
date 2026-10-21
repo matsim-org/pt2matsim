@@ -1,15 +1,16 @@
 package org.matsim.pt2matsim.tools;
 
+import java.io.File;
+import java.io.IOException;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
-
-import java.io.File;
-import java.io.IOException;
-import java.time.LocalDate;
 
 /**
  * @author polettif
@@ -35,12 +36,16 @@ class GtfsToolsTest {
 
 	@Test
 	void getDayWithMostServices() {
-		Assertions.assertEquals(LocalDate.of(2018, 10, 2), GtfsTools.getDayWithMostServices(gtfsFeed));
+		Assertions.assertEquals(LocalDate.of(2018, 10, 2), GtfsTools.getDayWithMostServices(gtfsFeed, null));
+		Assertions.assertEquals(LocalDate.of(2018, 10, 1), GtfsTools.getDayWithMostServices(gtfsFeed, DayOfWeek.MONDAY));
+		Assertions.assertEquals(LocalDate.of(2018, 10, 6), GtfsTools.getDayWithMostServices(gtfsFeed, DayOfWeek.SATURDAY));
 	}
 
 	@Test
 	void getDayWithMostTrips() {
-		Assertions.assertEquals(LocalDate.of(2018, 10, 5), GtfsTools.getDayWithMostTrips(gtfsFeed));
+		Assertions.assertEquals(LocalDate.of(2018, 10, 5), GtfsTools.getDayWithMostTrips(gtfsFeed, null));
+		Assertions.assertEquals(LocalDate.of(2018, 10, 1), GtfsTools.getDayWithMostTrips(gtfsFeed, DayOfWeek.MONDAY));
+		Assertions.assertEquals(LocalDate.of(2018, 10, 6), GtfsTools.getDayWithMostTrips(gtfsFeed, DayOfWeek.SATURDAY));
 	}
 
 	@AfterEach

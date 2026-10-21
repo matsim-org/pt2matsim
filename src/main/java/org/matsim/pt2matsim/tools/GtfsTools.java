@@ -19,6 +19,9 @@
 package org.matsim.pt2matsim.tools;
 
 import com.opencsv.CSVWriter;
+
+import jakarta.annotation.Nullable;
+
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.matsim.api.core.v01.Coord;
@@ -36,6 +39,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Stream;
@@ -63,14 +67,16 @@ public final class GtfsTools {
 	/**
 	 * @return the day of the feed on which the most trips occur
 	 */
-	public static LocalDate getDayWithMostTrips(GtfsFeed feed) {
+	public static LocalDate getDayWithMostTrips(GtfsFeed feed, @Nullable DayOfWeek weekday) {
 		LocalDate busiestDate = null;
 		int maxTrips = 0;
 
 		Map<LocalDate, Integer> nTripsOnDate = new TreeMap<>();
 		for(Service service : feed.getServices().values()) {
 			for(LocalDate day : service.getCoveredDays()) {
-				MapUtils.addToInteger(day, nTripsOnDate, 1, service.getTrips().size());
+				if (weekday == null || weekday.equals(day.getDayOfWeek())) {
+					MapUtils.addToInteger(day, nTripsOnDate, 1, service.getTrips().size());
+				}
 			}
 		}
 		for(Map.Entry<LocalDate, Integer> entry : nTripsOnDate.entrySet()) {
@@ -85,14 +91,16 @@ public final class GtfsTools {
 	/**
 	 * @return the day of the feed on which the most services occur
 	 */
-	public static LocalDate getDayWithMostServices(GtfsFeed feed) {
+	public static LocalDate getDayWithMostServices(GtfsFeed feed, @Nullable DayOfWeek weekday) {
 		LocalDate busiestDate = null;
 		int maxService = 0;
 
 		Map<LocalDate, Integer> nServicesOnDate = new TreeMap<>();
 		for(Service service : feed.getServices().values()) {
 			for(LocalDate day : service.getCoveredDays()) {
-				MapUtils.addToInteger(day, nServicesOnDate, 1, 1);
+				if (weekday == null || weekday.equals(day.getDayOfWeek())) {
+					MapUtils.addToInteger(day, nServicesOnDate, 1, 1);
+				}
 			}
 		}
 		for(Map.Entry<LocalDate, Integer> entry : nServicesOnDate.entrySet()) {
