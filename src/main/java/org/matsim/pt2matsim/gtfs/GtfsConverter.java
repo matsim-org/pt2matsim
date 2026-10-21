@@ -69,7 +69,6 @@ public class GtfsConverter {
 	protected int noStopTimeTrips;
 	protected int stopPairsWithoutOffset;
 
-	private boolean writeWeekdayForDepartures = false;
 	private boolean useStandingRoom = false;
 
 	public GtfsConverter(GtfsFeed gtfsFeed) {
@@ -210,6 +209,9 @@ public class GtfsConverter {
 		// info
 		log.info("    Creating TransitLines from routes and TransitRoutes from trips...");
 
+		// write dates into departures if we work with more than one day
+		boolean writeDepartureDate = !dateRange.getFirst().equals(dateRange.getSecond());
+
 		for(Route gtfsRoute : this.feed.getRoutes().values()) {
 			// create a MATSim TransitLine for each Route
 			TransitLine newTransitLine = createTransitLine(gtfsRoute);
@@ -222,7 +224,7 @@ public class GtfsConverter {
 					Set<LocalDate> serviceDates = GtfsTools.getMatchingServiceDates(dateRange, trip.getService());
 					if (serviceDates.size() > 0) {
 						LocalDate referenceDate = dateRange != null ? dateRange.getFirst() : serviceDates.iterator().next();
-						TransitRoute transitRoute = createTransitRoute(trip, schedule.getFacilities(), referenceDate, serviceDates);
+						TransitRoute transitRoute = createTransitRoute(trip, schedule.getFacilities(), referenceDate, serviceDates, writeDepartureDate);
 						if(transitRoute != null) {
 							newTransitLine.addRoute(transitRoute);
 						}
@@ -254,7 +256,7 @@ public class GtfsConverter {
 	/**
 	 * @return null if route should not be converted
 	 */
-	protected TransitRoute createTransitRoute(Trip trip, Map<Id<TransitStopFacility>, TransitStopFacility> stopFacilities, LocalDate referenceDate, Set<LocalDate> serviceDates) {
+	protected TransitRoute createTransitRoute(Trip trip, Map<Id<TransitStopFacility>, TransitStopFacility> stopFacilities, LocalDate referenceDate, Set<LocalDate> serviceDates, boolean writeDepartureDate) {
 		Id<RouteShape> shapeId = trip.getShape() != null ? trip.getShape().getId() : null;
 
 		if(trip.getStopTimes().size() <= 1) {
@@ -288,7 +290,7 @@ public class GtfsConverter {
 				for(int t = frequency.getStartTime(); t < frequency.getEndTime(); t += frequency.getHeadWaySecs()) {
 					for (LocalDate serviceDate : serviceDates) {
 						int serviceDateOffset = getServiceDateOffset(serviceDate, referenceDate);
-						Departure newDeparture = this.scheduleFactory.createDeparture(createDepartureId(transitRoute, t, serviceDate), t + serviceDateOffset);
+						Departure newDeparture = this.scheduleFactory.createDeparture(createDepartureId(transitRoute, t, serviceDate, writeDepartureDate), t + serviceDateOffset);
 						transitRoute.addDeparture(newDeparture);
 					}
 				}
@@ -301,7 +303,7 @@ public class GtfsConverter {
 			
 			for (LocalDate serviceDate : serviceDates) {
 				int serviceDateOffset = getServiceDateOffset(serviceDate, referenceDate);
-				Departure newDeparture = this.scheduleFactory.createDeparture(createDepartureId(transitRoute, routeStartTime, serviceDate), routeStartTime + serviceDateOffset);
+				Departure newDeparture = this.scheduleFactory.createDeparture(createDepartureId(transitRoute, routeStartTime, serviceDate, writeDepartureDate), routeStartTime + serviceDateOffset);
 				transitRoute.addDeparture(newDeparture);
 			}
 		}
@@ -371,17 +373,13 @@ public class GtfsConverter {
 		return Id.create(stop.getId(), TransitStopFacility.class);
 	}
 
-	protected Id<Departure> createDepartureId(TransitRoute route, int time, LocalDate date) {
-		String str = route.getId().toString() + "_" + writeDate(date) + "_" + Time.writeTime(time, "HH:mm:ss");
+	protected Id<Departure> createDepartureId(TransitRoute route, int time, LocalDate date, boolean writeDate) {
+		String str = route.getId().toString() + (writeDate ? "" : "_" + formatDate(date)) + "_" + Time.writeTime(time, "HH:mm:ss");
 		return Id.create(str, Departure.class);
 	}
 
-	private String writeDate(LocalDate date) {
-		if (writeWeekdayForDepartures) {
-			return String.format("%s-%04d-%02d-%02d", date.getDayOfWeek().name(), date.getYear(), date.getMonthValue(), date.getDayOfMonth());
-		} else {
-			return String.format("%04d-%02d-%02d", date.getYear(), date.getMonthValue(), date.getDayOfMonth());
-		}
+	private String formatDate(LocalDate date) {
+		return String.format("%04d-%02d-%02d", date.getYear(), date.getMonthValue(), date.getDayOfMonth());
 	}
 
 	protected void createVehicles(TransitSchedule schedule, Vehicles vehicles) {
@@ -531,9 +529,5 @@ public class GtfsConverter {
 		} catch (NumberFormatException e) {
 			throw new IllegalArgumentException("Invalid date format YYYYMMDD: " + date);
 		}
-	}
-
-	public void setWriteWeedayForDepartures(boolean writeWeekdayForDepartures) {
-		this.writeWeekdayForDepartures = writeWeekdayForDepartures;
 	}
 }

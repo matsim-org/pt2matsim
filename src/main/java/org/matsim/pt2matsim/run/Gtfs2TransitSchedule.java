@@ -86,11 +86,11 @@ public final class Gtfs2TransitSchedule {
 	 */
 	public static void main(final String[] args) {
 		if(args.length == 6) {
-			run(args[0], args[1], args[2], args[3], args[4], args[5], false, false);
+			run(args[0], args[1], args[2], args[3], args[4], args[5], false);
 		} else if(args.length == 5) {
-			run(args[0], args[1], args[2], args[3], args[4], null, false, false);
+			run(args[0], args[1], args[2], args[3], args[4], null, false);
 		} else if(args.length == 4) {
-			run(args[0], args[1], args[2], args[3], null, null, false, false);
+			run(args[0], args[1], args[2], args[3], null, null, false);
 		} else {
 			throw new IllegalArgumentException("Wrong number of input arguments.");
 		}
@@ -120,7 +120,7 @@ public final class Gtfs2TransitSchedule {
 	 *     				             	<li>output file path (.csv) -> will be written as specified csv file</li>
 	 *     				             	</ul>
 	 */
-	public static void run(String gtfsFolder, String sampleDayParam, String outputCoordinateSystem, String scheduleFile, String vehicleFile, String additionalLineInfoFile, boolean writeCrs, boolean writeWeekdayForDepartures) {
+	public static void run(String gtfsFolder, String sampleDayParam, String outputCoordinateSystem, String scheduleFile, String vehicleFile, String additionalLineInfoFile, boolean writeCrs) {
 		Configurator.setLevel(LogManager.getLogger(MGC.class).getName(), Level.ERROR);
 
 		// check sample day parameter
@@ -134,7 +134,6 @@ public final class Gtfs2TransitSchedule {
 
 		// convert to transit schedule
 		GtfsConverter converter = new GtfsConverter(gtfsFeed);
-		converter.setWriteWeedayForDepartures(writeWeekdayForDepartures);
 		converter.convert(param, outputCoordinateSystem);
 
 		if (additionalLineInfoFile != null && additionalLineInfoFile.equals(INFO_OUTPUT_OPTION_SCHEDULE)) {
