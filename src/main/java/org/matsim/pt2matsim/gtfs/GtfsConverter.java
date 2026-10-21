@@ -210,7 +210,7 @@ public class GtfsConverter {
 		log.info("    Creating TransitLines from routes and TransitRoutes from trips...");
 
 		// write dates into departures if we work with more than one day
-		boolean writeDepartureDate = !dateRange.getFirst().equals(dateRange.getSecond());
+		boolean writeDepartureDate = dateRange != null && !dateRange.getFirst().equals(dateRange.getSecond());
 
 		for(Route gtfsRoute : this.feed.getRoutes().values()) {
 			// create a MATSim TransitLine for each Route
