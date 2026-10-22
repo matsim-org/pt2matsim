@@ -16,6 +16,7 @@ import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
+import org.matsim.core.router.util.LeastCostPathUtils.NoPathBehavior;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
@@ -254,15 +255,23 @@ public class ScheduleRoutersStandard implements ScheduleRouters {
 		private static LeastCostPathCalculatorFactory createLcpFactory(RoutingAlgorithmType routerType,
 				int nThreads, int networkRoutingLandmarks) {
 			if (routerType.equals(RoutingAlgorithmType.SpeedyALT)) {
-				return new SpeedyALTFactory();
+				return reduceVerbosity(new SpeedyALTFactory());
 			} else if (routerType.equals(RoutingAlgorithmType.AStarLandmarks)) {
-				return new AStarLandmarksFactory(nThreads, networkRoutingLandmarks);
+				return reduceVerbosity(new AStarLandmarksFactory(nThreads, networkRoutingLandmarks));
 			} else if (routerType.equals(RoutingAlgorithmType.CHRouter)) {
 				GlobalConfigGroup global = new GlobalConfigGroup();
 				global.setNumberOfThreads(nThreads);
-				return new StaticCHRouterFactory(global);
+				return reduceVerbosity(new StaticCHRouterFactory(global));
 			}
 			throw new IllegalArgumentException("Unsupported routing algorithm: " + routerType);
+		}
+
+		private static LeastCostPathCalculatorFactory reduceVerbosity(LeastCostPathCalculatorFactory delegate) {
+			return (network, travelCosts, travelTimes) -> {
+				LeastCostPathCalculator instance = delegate.createPathCalculator(network, travelCosts, travelTimes);
+				instance.setNoPathBehavior(NoPathBehavior.none);
+				return instance;
+			};
 		}
 	}
 }
