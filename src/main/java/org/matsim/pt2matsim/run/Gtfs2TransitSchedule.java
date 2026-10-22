@@ -18,10 +18,25 @@
 
 package org.matsim.pt2matsim.run;
 
+import static org.matsim.pt2matsim.gtfs.GtfsConverter.ALL_SERVICE_IDS;
+import static org.matsim.pt2matsim.gtfs.GtfsConverter.DAY_WITH_MOST_SERVICES;
+import static org.matsim.pt2matsim.gtfs.GtfsConverter.DAY_WITH_MOST_TRIPS;
+import static org.matsim.pt2matsim.gtfs.GtfsConverter.WEEK_WITH_MOST_SERVICES;
+import static org.matsim.pt2matsim.gtfs.GtfsConverter.WEEK_WITH_MOST_TRIPS;
+import static org.matsim.pt2matsim.gtfs.GtfsConverter.WEEKDAYS;
+import static org.matsim.pt2matsim.gtfs.GtfsConverter.WEEKDAY_WITH_MOST_SERVICES_PATTERN;
+import static org.matsim.pt2matsim.gtfs.GtfsConverter.WEEKDAY_WITH_MOST_TRIPS_PATTERN;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.util.Map;
+
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.LogManager;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.scenario.ProjectionUtils;
 import org.matsim.core.utils.geometry.geotools.MGC;
@@ -32,16 +47,10 @@ import org.matsim.pt2matsim.gtfs.AdditionalTransitLineInfo;
 import org.matsim.pt2matsim.gtfs.GtfsConverter;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
+import org.matsim.pt2matsim.tools.GtfsTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
 
 import com.opencsv.CSVWriter;
-
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.time.LocalDate;
-import java.util.Map;
-
-import static org.matsim.pt2matsim.gtfs.GtfsConverter.*;
 
 /**
  * Contract class to read GTFS files and convert them to an unmapped MATSim Transit Schedule
@@ -125,7 +134,7 @@ public final class Gtfs2TransitSchedule {
 
 		// check sample day parameter
 		if(!isValidSampleDayParam(sampleDayParam)) {
-			throw new IllegalArgumentException("Sample day parameter not recognized! Allowed: date in format \"yyyymmdd\", or range in format \"yyyymmdd-yyyymmdd\", " + DAY_WITH_MOST_SERVICES + ", " + DAY_WITH_MOST_TRIPS + ", " + WEEK_WITH_MOST_SERVICES + ", " + WEEK_WITH_MOST_TRIPS + ", " + ALL_SERVICE_IDS);
+			throw new IllegalArgumentException("Sample day parameter not recognized! Allowed: date in format \"yyyymmdd\", or range in format \"yyyymmdd-yyyymmdd\", " + DAY_WITH_MOST_SERVICES + ", " + DAY_WITH_MOST_TRIPS + ", " + WEEK_WITH_MOST_SERVICES + ", " + WEEK_WITH_MOST_TRIPS + ", " + ALL_SERVICE_IDS + ". Selection by weekday (lowercase): " + WEEKDAY_WITH_MOST_SERVICES_PATTERN + ", " + WEEKDAY_WITH_MOST_TRIPS_PATTERN);
 		}
 		String param = sampleDayParam == null ? DAY_WITH_MOST_TRIPS : sampleDayParam;
 
@@ -158,6 +167,16 @@ public final class Gtfs2TransitSchedule {
 	 * @return true if <tt>check</tt> is a valid sample day parameter value.
 	 */
 	private static boolean isValidSampleDayParam(String check) {
+		for (String weekday : WEEKDAYS) {
+			if (check.equals(WEEKDAY_WITH_MOST_SERVICES_PATTERN.replace("{weekday}", weekday))) {
+				return true;
+			}
+
+			if (check.equals(WEEKDAY_WITH_MOST_TRIPS_PATTERN.replace("{weekday}", weekday))) {
+				return true;
+			}
+		}
+
 		if(!check.equals(ALL_SERVICE_IDS) && !check.equals(DAY_WITH_MOST_TRIPS) && !check.equals(DAY_WITH_MOST_SERVICES) && !check.equals(WEEK_WITH_MOST_SERVICES) && !check.equals(WEEK_WITH_MOST_TRIPS)) {
 			if (check.contains("-")) {
 				String[] parts = check.split("-");

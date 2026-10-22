@@ -34,6 +34,7 @@ import org.matsim.vehicles.*;
 
 import com.google.common.base.Verify;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,6 +58,10 @@ public class GtfsConverter {
 	public static final String DAY_WITH_MOST_SERVICES = "dayWithMostServices";
 	public static final String WEEK_WITH_MOST_TRIPS = "weekWithMostTrips";
 	public static final String WEEK_WITH_MOST_SERVICES = "weekWithMostServices";
+
+	public static final List<String> WEEKDAYS = List.of("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday");
+	public static final String WEEKDAY_WITH_MOST_SERVICES_PATTERN = "{weekday}WithMostServices";
+	public static final String WEEKDAY_WITH_MOST_TRIPS_PATTERN = "{weekday}WithMostServices";
 
 	protected static Logger log = LogManager.getLogger(GtfsConverter.class);
 	protected final GtfsFeed feed;
@@ -476,6 +481,20 @@ public class GtfsConverter {
 	 * @return The date from which services and thus trips should be extracted
 	 */
 	protected Tuple<LocalDate, LocalDate> getExtractDateRange(String param) {
+		for (String weekday : WEEKDAYS) {
+			if (param.equals(WEEKDAY_WITH_MOST_SERVICES_PATTERN.replace("{weekday}", weekday))) {
+				log.info("    Using service IDs of the " + weekday + " with the most services.");
+				LocalDate date = GtfsTools.getDayWithMostServices(feed, DayOfWeek.valueOf(weekday.toUpperCase()));
+				return Tuple.of(date, date); 
+			}
+
+			if (param.equals(WEEKDAY_WITH_MOST_TRIPS_PATTERN.replace("{weekday}", weekday))) {
+				log.info("    Using service IDs of the " + weekday + " with the most trips.");
+				LocalDate date = GtfsTools.getDayWithMostTrips(feed, DayOfWeek.valueOf(weekday.toUpperCase()));
+				return Tuple.of(date, date);
+			}
+		}
+
 		switch(param) {
 			case ALL_SERVICE_IDS: {
 				log.warn("    Using all trips is not recommended");
@@ -485,13 +504,13 @@ public class GtfsConverter {
 
 			case DAY_WITH_MOST_SERVICES: {
 				log.info("    Using service IDs of the day with the most services (" + DAY_WITH_MOST_SERVICES + ").");
-				LocalDate date = GtfsTools.getDayWithMostServices(feed);
+				LocalDate date = GtfsTools.getDayWithMostServices(feed, null);
 				return Tuple.of(date, date);
 			}
 
 			case DAY_WITH_MOST_TRIPS: {
 				log.info("    Using service IDs of the day with the most trips (" + DAY_WITH_MOST_TRIPS + ").");
-				LocalDate date = GtfsTools.getDayWithMostTrips(feed);
+				LocalDate date = GtfsTools.getDayWithMostTrips(feed, null);
 				return Tuple.of(date, date);
 			}
 
