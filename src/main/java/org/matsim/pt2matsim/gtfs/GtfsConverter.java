@@ -374,7 +374,7 @@ public class GtfsConverter {
 	}
 
 	protected Id<Departure> createDepartureId(TransitRoute route, int time, LocalDate date, boolean writeDate) {
-		String str = route.getId().toString() + (writeDate ? "" : "_" + formatDate(date)) + "_" + Time.writeTime(time, "HH:mm:ss");
+		String str = route.getId().toString() + (writeDate ? "_" + formatDate(date) : "") + "_" + Time.writeTime(time, "HH:mm:ss");
 		return Id.create(str, Departure.class);
 	}
 
