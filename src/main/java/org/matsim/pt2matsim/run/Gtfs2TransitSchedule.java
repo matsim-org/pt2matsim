@@ -21,6 +21,8 @@ package org.matsim.pt2matsim.run;
 import static org.matsim.pt2matsim.gtfs.GtfsConverter.ALL_SERVICE_IDS;
 import static org.matsim.pt2matsim.gtfs.GtfsConverter.DAY_WITH_MOST_SERVICES;
 import static org.matsim.pt2matsim.gtfs.GtfsConverter.DAY_WITH_MOST_TRIPS;
+import static org.matsim.pt2matsim.gtfs.GtfsConverter.WEEK_WITH_MOST_SERVICES;
+import static org.matsim.pt2matsim.gtfs.GtfsConverter.WEEK_WITH_MOST_TRIPS;
 import static org.matsim.pt2matsim.gtfs.GtfsConverter.WEEKDAYS;
 import static org.matsim.pt2matsim.gtfs.GtfsConverter.WEEKDAY_WITH_MOST_SERVICES_PATTERN;
 import static org.matsim.pt2matsim.gtfs.GtfsConverter.WEEKDAY_WITH_MOST_TRIPS_PATTERN;
@@ -132,7 +134,7 @@ public final class Gtfs2TransitSchedule {
 
 		// check sample day parameter
 		if(!isValidSampleDayParam(sampleDayParam)) {
-			throw new IllegalArgumentException("Sample day parameter not recognized! Allowed: date in format \"yyyymmdd\", " + DAY_WITH_MOST_SERVICES + ", " + DAY_WITH_MOST_TRIPS + ", " + ALL_SERVICE_IDS + ". Selection by weekday (lowercase): " + WEEKDAY_WITH_MOST_SERVICES_PATTERN + ", " + WEEKDAY_WITH_MOST_TRIPS_PATTERN);
+			throw new IllegalArgumentException("Sample day parameter not recognized! Allowed: date in format \"yyyymmdd\", or range in format \"yyyymmdd-yyyymmdd\", " + DAY_WITH_MOST_SERVICES + ", " + DAY_WITH_MOST_TRIPS + ", " + WEEK_WITH_MOST_SERVICES + ", " + WEEK_WITH_MOST_TRIPS + ", " + ALL_SERVICE_IDS + ". Selection by weekday (lowercase): " + WEEKDAY_WITH_MOST_SERVICES_PATTERN + ", " + WEEKDAY_WITH_MOST_TRIPS_PATTERN);
 		}
 		String param = sampleDayParam == null ? DAY_WITH_MOST_TRIPS : sampleDayParam;
 
@@ -175,13 +177,24 @@ public final class Gtfs2TransitSchedule {
 			}
 		}
 
-		if(!check.equals(ALL_SERVICE_IDS) && !check.equals(DAY_WITH_MOST_TRIPS) && !check.equals(DAY_WITH_MOST_SERVICES)) {
-			try {
-				LocalDate.of(Integer.parseInt(check.substring(0, 4)), Integer.parseInt(check.substring(4, 6)), Integer.parseInt(check.substring(6, 8)));
-			} catch (NumberFormatException e) {
-				return false;
+		if(!check.equals(ALL_SERVICE_IDS) && !check.equals(DAY_WITH_MOST_TRIPS) && !check.equals(DAY_WITH_MOST_SERVICES) && !check.equals(WEEK_WITH_MOST_SERVICES) && !check.equals(WEEK_WITH_MOST_TRIPS)) {
+			if (check.contains("-")) {
+				String[] parts = check.split("-");
+				return checkDate(parts[0]) && checkDate(parts[1]);
+			} else {
+				return checkDate(check);
 			}
 		}
+		return true;
+	}
+
+	private static boolean checkDate(String check) {
+		try {
+			LocalDate.of(Integer.parseInt(check.substring(0, 4)), Integer.parseInt(check.substring(4, 6)), Integer.parseInt(check.substring(6, 8)));
+		} catch (NumberFormatException e) {
+			return false;
+		}
+
 		return true;
 	}
 	

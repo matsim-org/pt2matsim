@@ -9,6 +9,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.matsim.core.utils.collections.Tuple;
 import org.matsim.pt2matsim.gtfs.GtfsFeed;
 import org.matsim.pt2matsim.gtfs.GtfsFeedImpl;
 
@@ -46,6 +47,23 @@ class GtfsToolsTest {
 		Assertions.assertEquals(LocalDate.of(2018, 10, 5), GtfsTools.getDayWithMostTrips(gtfsFeed, null));
 		Assertions.assertEquals(LocalDate.of(2018, 10, 1), GtfsTools.getDayWithMostTrips(gtfsFeed, DayOfWeek.MONDAY));
 		Assertions.assertEquals(LocalDate.of(2018, 10, 6), GtfsTools.getDayWithMostTrips(gtfsFeed, DayOfWeek.SATURDAY));
+	}
+
+
+	@Test
+	void getWeekWithMostServices() {
+		Assertions.assertEquals(Tuple.of(
+			LocalDate.of(2018, 10, 1),
+			LocalDate.of(2018, 10, 8)			
+		), GtfsTools.getWeekWithMostServices(gtfsFeed));
+	}
+
+	@Test
+	void getWeekWithMostTrips() {
+		Assertions.assertEquals(Tuple.of(
+			LocalDate.of(2018, 10, 1),
+			LocalDate.of(2018, 10, 8)			
+		), GtfsTools.getWeekWithMostTrips(gtfsFeed));
 	}
 
 	@AfterEach
