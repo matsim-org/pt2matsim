@@ -40,6 +40,11 @@ class GtfsConverterTest {
 	}
 
 	@Test
+	void convertSaturday() {
+		gtfsConverter.convert(GtfsConverter.WEEKDAY_WITH_MOST_SERVICES_PATTERN.replace("{weekday}", "saturday"), coordSystem);
+	}
+
+	@Test
 	void numberOfStopsAndRoutes() {
 		int nTransitRoutes = 0;
 		for(TransitLine transitLine : convertedSchedule.getTransitLines().values()) {
