@@ -13,6 +13,7 @@ import org.matsim.pt2matsim.osm.lib.OsmData;
 
 /** Shared turn-arrow matching and audited movement inference, extracted from the lanes converter. */
 final class OsmTurnMovementLogic {
+
     record UTurnRule(List<Id<Osm.Way>> from, List<Id<Osm.Way>> to, Id<Osm.Node> node, Map<String, String> tags) { }
     record Movements(List<Integer> physical, List<Set<Id<Link>>> destinations, List<Integer> motorPositions) { }
     private final Network network;
@@ -82,11 +83,16 @@ final class OsmTurnMovementLogic {
     }
     List<Integer> physical = physicalLanes(link, way);
     List<String> turnTags = turnTags(link, way, physical.size());
+    boolean atWayEnd = atWayEnd(link, way);
+    boolean junction = eligible.stream().map(out -> osmIds.get(out.getId())).distinct().count() > 1;
+    if (!atWayEnd && junction && turnTags != null) {
+        report.add("interiorWayArrowsDeferred", way.getId(), link.getId(),
+                "Interior junction: the way's downstream arrows do not uniquely identify movements here");
+        turnTags = null;
+    }
     Set<Id<Link>> onlyExitUTurns = new HashSet<>();
     eligible = applyInferredUTurnPolicy(link, way, eligible, physical, turnTags, onlyExitUTurns);
     List<Set<Id<Link>>> destinations = new ArrayList<>();
-    boolean junction = eligible.stream().map(out -> osmIds.get(out.getId())).distinct().count() > 1;
-    boolean atWayEnd = atWayEnd(link, way);
     boolean inferred = false;
     for (int i = 0; i < physical.size(); i++) {
         Set<Id<Link>> targets = new TreeSet<>();
@@ -131,6 +137,8 @@ final class OsmTurnMovementLogic {
         }
         destinations.add(targets);
     }
+    if (junction && !ambiguousPhysicalLanes.contains(link.getId())
+            && matchFork(link, way, eligible, physical, turnTags, destinations, atWayEnd)) inferred = true;
     // Shared lane destinations must retain an exit needed by a mode
     // whose other exits are prohibited, even if another mode matched an arrow.
     Set<Id<Link>> served = destinations.stream().flatMap(Set::stream).collect(Collectors.toSet());
@@ -377,6 +385,106 @@ final class OsmTurnMovementLogic {
     private boolean atWayEnd(Link link, Osm.Way way) {
         List<Id<Osm.Node>> nodes = geometry.get(way.getId());
         return link.getToNode().getId().toString().equals(nodes.get(linkForward.get(link.getId()) ? nodes.size() - 1 : 0).toString());
+    }
+
+    private boolean matchFork(Link link, Osm.Way way, List<Link> eligible, List<Integer> slots, List<String> tags,
+                              List<Set<Id<Link>>> destinations, boolean atWayEnd) {
+        if (!atWayEnd && (way.getRelations().values().stream().noneMatch(r -> "connectivity".equals(r.getValue("type")))
+                || link.getToNode().getInLinks().values().stream().filter(l -> way.getId().equals(osmIds.get(l.getId()))).count() != 1))
+            return false;
+        if (slots.size() < 2 || eligible.size() < 2 || eligible.size() > 3) return false;
+        List<OsmForkEvidence.Branch> branches = new ArrayList<>(2);
+        for (Link out : eligible) {
+            double angle = angle(link, out);
+            if (isReverseMovement(link, out, angle)) continue;
+            Osm.Way target = osmData.getWays().get(osmIds.get(out.getId()));
+            if (target == null) return false;
+            branches.add(new OsmForkEvidence.Branch(out, target, linkForward.get(out.getId()), angle));
+        }
+        if (branches.size() != 2) return false;
+        branches.sort(Comparator.comparingDouble(OsmForkEvidence.Branch::angle).reversed());
+        var left = branches.getFirst();
+        var right = branches.getLast();
+        if (left.way().equals(right.way()) || left.link().getToNode().equals(right.link().getToNode())) return false;
+        var both = Set.of(left.link().getId(), right.link().getId());
+        // Lane permissions are shared across modes. Leave any explicit or sole-exit U-turn on its lane.
+        if (destinations.stream().anyMatch(lane -> !both.containsAll(lane))) return false;
+
+        List<Set<Id<Link>>> assignment = OsmForkEvidence.connectivity(way, link.getToNode().getId().toString(), slots, branches);
+        String reason = "OSM connectivity";
+        if (!atWayEnd && assignment.isEmpty()) return false;
+        if (assignment.isEmpty()) {
+            int slotCount = tags != null ? tags.size() : slots.getLast() + 1;
+            assignment = OsmForkEvidence.signs(slots, slotCount, destinationLanes(link, way, "destination:lanes"),
+                    destinationLanes(link, way, "destination:ref:lanes"), branches);
+            if (!assignment.isEmpty() && tags != null && slots.stream().anyMatch(i -> tags.get(i).contains(";"))) {
+                var ordered = OsmForkEvidence.orderedArrows(slots.stream().map(tags::get).toList(), left, right);
+                for (int i = 0; i < slots.size(); i++) if (tags.get(slots.get(i)).contains(";")) {
+                    assignment.get(i).addAll(destinations.get(i));
+                    if (!ordered.isEmpty()) assignment.get(i).addAll(ordered.get(i));
+                }
+            }
+            reason = "lane destinations";
+        }
+        if (assignment.isEmpty()) {
+            if (tags == null || destinations.stream().flatMap(Set::stream).distinct().count() == 2) return false;
+            // At least one branch must be a plausible through exit. Ordinary crossings,
+            // sharp turns and turn-only approaches keep the existing indication matching.
+            if (Math.abs(left.angle()) >= 90 || Math.abs(right.angle()) >= 90
+                    || Math.min(Math.abs(left.angle()), Math.abs(right.angle())) > 60) return false;
+            List<String> arrows = slots.stream().map(i -> tags.get(i).strip()).toList();
+            assignment = OsmForkEvidence.orderedArrows(arrows, left, right);
+            reason = "ordered lane groups";
+            boolean bothStraight = arrows.stream().allMatch("through"::equals)
+                    && Math.max(Math.abs(left.angle()), Math.abs(right.angle())) <= 60;
+            if (assignment.isEmpty() && !bothStraight) return false;
+            if (bothStraight || left.angle() - right.angle() < 1e-6
+                    || downstreamAngle(link, left.link()) <= downstreamAngle(link, right.link()) + 1e-6) {
+                List<Set<Id<Link>>> continuation = OsmForkEvidence.roadContinuation(way, arrows, left, right);
+                if (continuation.isEmpty()) {
+                    assignment = Collections.nCopies(slots.size(), both);
+                    reason = "ambiguous fork; retain both branches";
+                } else {
+                    assignment = continuation;
+                    reason = "through road identity";
+                }
+            }
+        }
+        if (assignment.equals(destinations)) return false;
+        for (int i = 0; i < slots.size(); i++) destinations.set(i, new TreeSet<>(assignment.get(i)));
+        report.add("forkLaneAssignments", way.getId(), link.getId(), reason + ": " + assignment);
+        return true;
+    }
+
+    private String[] destinationLanes(Link link, Osm.Way way, String key) {
+        String value = directionalTag(way, key, linkForward.get(link.getId()));
+        return value == null ? new String[0] : value.split("\\|", -1);
+    }
+
+    // Confirm the side ordering along the outgoing road as well as at the first OSM segment.
+    private double downstreamAngle(Link from, Link out) {
+        List<Id<Osm.Node>> nodes = geometry.get(osmIds.get(out.getId()));
+        var origin = out.getFromNode().getCoord();
+        var end = origin;
+        double remaining = Math.min(30.0, out.getLength());
+        int i = nodes.indexOf(Id.create(out.getFromNode().getId().toString(), Osm.Node.class));
+        int step = linkForward.get(out.getId()) ? 1 : -1;
+        double dx = 0, dy = 0;
+        while (i >= 0 && i + step >= 0 && i + step < nodes.size() && remaining > 0) {
+            i += step;
+            var next = osmData.getNodes().get(nodes.get(i)).getCoord();
+            double x = next.getX() - end.getX(), y = next.getY() - end.getY(), length = Math.hypot(x, y);
+            if (length > 0) {
+                double fraction = Math.min(1, remaining / length);
+                dx += x * fraction;
+                dy += y * fraction;
+                remaining -= length;
+            }
+            end = next;
+            if (nodes.get(i).toString().equals(out.getToNode().getId().toString())) break;
+        }
+        double[] incoming = tangent(from, true);
+        return Math.toDegrees(Math.atan2(incoming[0] * dy - incoming[1] * dx, incoming[0] * dx + incoming[1] * dy));
     }
 
     private List<Link> matchTurn(Link link, List<Link> eligible, String indication) {

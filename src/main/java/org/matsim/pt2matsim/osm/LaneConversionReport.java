@@ -16,7 +16,7 @@ public final class LaneConversionReport {
     private final Map<String, Long> counts = new TreeMap<>();
 
     public LaneConversionReport() {
-        for (String key : List.of("inferredLaneMovements", "linksWithInferredConnections", "ambiguousTurnMatches",
+        for (String key : List.of("inferredLaneMovements", "linksWithInferredConnections", "ambiguousTurnMatches", "forkLaneAssignments", "interiorWayArrowsDeferred",
                 "inferredReservedLanePositions", "laneTagCountMismatches", "deadEndLinks", "unservedLegalMovements",
                 "linksWithLanes", "assumedLaneLengths", "restrictionRelationsApplied", "linksRemovedByCleaning",
                 "missingFromWays", "relationsWithoutRepresentedApproach", "unavailableProhibitedPathMembers",
