@@ -60,6 +60,15 @@ public interface Stop {
 	 */
 	String getParentStationId();
 
+	/**
+	 * [optional] Platform identifier for a platform stop (a stop belonging to a station), e.g. "G" or "3".
+	 *
+	 * @return <tt>null</tt> when not defined
+	 */
+	default String getPlatformCode() {
+		return null;
+	}
+
 	Collection<Trip> getTrips();
 
 	Coord getCoord();

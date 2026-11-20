@@ -31,6 +31,7 @@ public class StopImpl implements Stop {
 	private final String id;
 	private final String name;
 	private String parentStationId;
+	private String platformCode;
 	private final GtfsDefinitions.LocationType locationType;
 	
 	private double lon;
@@ -83,6 +84,15 @@ public class StopImpl implements Stop {
 	@Override
 	public String getParentStationId() {
 		return parentStationId;
+	}
+
+	@Override
+	public String getPlatformCode() {
+		return platformCode;
+	}
+
+	public void setPlatformCode(String platformCode) {
+		this.platformCode = platformCode;
 	}
 
 	@Override

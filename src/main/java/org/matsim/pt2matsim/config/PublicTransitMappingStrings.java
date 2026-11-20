@@ -40,4 +40,10 @@ public final class PublicTransitMappingStrings {
 	static final public String SPACE_REPLACEMENT = ":::";
 	public static final String DESCR_SHAPE_ID_PREFIX = "shapeId:";
 
+	/**
+	 * Stop facility attribute containing the platform/track code (e.g. GTFS platform_code), used by
+	 * {@link org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorPlatform}.
+	 */
+	public static final String STOP_FACILITY_ATTRIBUTE_PLATFORM_CODE = "platformCode";
+
 }

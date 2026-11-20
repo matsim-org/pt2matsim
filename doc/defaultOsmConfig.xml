@@ -9,6 +9,10 @@
 		cases generate extremely long links (e.g. for motorways with only a few ramps every few kilometers).
 		Defaults to <code>false</code>. -->
 		<param name="keepPaths" value="false" />
+		<!-- If true: OSM rail stop positions (railway=stop, or public_transport=stop_position with train=yes) are always kept
+		as network nodes (also if keepPaths=false) and get the node attributes osm:node:railway:stop,
+		osm:node:local_ref (platform/track number) and osm:node:name. Default: false. -->
+		<param name="keepRailStopPositions" value="false" />
 		<!-- If true: The osm tags for ways and containing relations are saved as link attributes in the network.
 		Increases filesize. Default: true. -->
 		<param name="keepTagsAsAttributes" value="true" />

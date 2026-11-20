@@ -50,6 +50,24 @@
 		<!-- Path to the output car only network file. The input multimodal map is filtered. 
 		Not needed if PTMapper is used within another class. -->
 		<param name="outputStreetNetworkFile" value="" />
+		<!-- Schedule transport modes (e.g. "rail") whose stops are mapped onto the OSM stop position of their
+		platform track: the stop facility attribute "platformCode" is matched against the
+		local_ref of OSM stop positions (requires a network converted with keepRailStopPositions=true).
+		Stops without platform code or matching stop position use the standard link candidates.
+		These modes are also excluded from pullChildStopFacilitiesExcludedModes. Separated by comma. Default: empty. -->
+		<param name="platformModes" value="" />
+		<!-- Maximal distance [meter] between a stop facility and the OSM stop position of its platform. Default: 500. -->
+		<param name="platformSearchRadius" value="500.0" />
+		<!-- Which link of the OSM stop position is used as stop link for platformModes. Vehicles usually halt with
+		their head at the end of the stop link. inLink: links ending at the stop position (head at the
+		stop position). outLink: links starting at the stop position (head at the next node after
+		the stop position, typically the switch at the end of the platform track). Default: inLink. -->
+		<param name="platformStopLink" value="inLink" />
+		<!-- After routing, child stop facilities are moved to the link of the route that is closest to the stop
+		coordinate. Transit routes with a schedule transport mode in this set are excluded from this step and
+		keep the link chosen by the link candidate creator (e.g. "rail" if candidates are platform-specific).
+		Separated by comma. Default: empty. -->
+		<param name="pullChildStopFacilitiesExcludedModes" value="" />
 		<!-- If true, stop facilities that are not used by any transit route are removed from the schedule. Default: true -->
 		<param name="removeNotUsedStopFacilities" value="true" />
 		<!-- The travel cost of a link candidate can be increased according to its distance to the

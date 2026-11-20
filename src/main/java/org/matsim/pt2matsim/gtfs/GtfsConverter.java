@@ -24,6 +24,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.gtfs.lib.*;
 import org.matsim.pt2matsim.tools.GtfsTools;
 import org.matsim.pt2matsim.tools.ScheduleTools;
@@ -206,6 +207,9 @@ public class GtfsConverter {
 		stopFacility.setName(stop.getName());
 		if(stop.getParentStationId() != null) {
 			stopFacility.setStopAreaId(Id.create(stop.getParentStationId(), TransitStopArea.class));
+		}
+		if(stop.getPlatformCode() != null) {
+			stopFacility.getAttributes().putAttribute(PublicTransitMappingStrings.STOP_FACILITY_ATTRIBUTE_PLATFORM_CODE, stop.getPlatformCode());
 		}
 		return stopFacility;
 	}

@@ -78,6 +78,11 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 
 	private static final String BOUNDED_SEARCH = "boundedSearch";
 
+	private static final String PULL_CHILD_STOP_FACILITIES_EXCLUDED_MODES = "pullChildStopFacilitiesExcludedModes";
+	private static final String PLATFORM_MODES = "platformModes";
+	private static final String PLATFORM_SEARCH_RADIUS = "platformSearchRadius";
+	private static final String PLATFORM_STOP_LINK = "platformStopLink";
+
 	// default values
 	private Map<String, Set<String>> transportModeAssignment = new HashMap<>();
 	private Map<String, TransportModeParameterSet> parameterSetsForMode = new HashMap<>();
@@ -87,6 +92,12 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private int numOfThreads = 2;
 	private int chunkSize = 100;
 	private boolean removeNotUsedStopFacilities = true;
+	private Set<String> pullChildStopFacilitiesExcludedModes = new HashSet<>();
+	private Set<String> platformModes = new HashSet<>();
+	private double platformSearchRadius = 500.0;
+	private PlatformStopLink platformStopLink = PlatformStopLink.inLink;
+
+	public enum PlatformStopLink {inLink, outLink}
 
 	/**
 	 * If true, each {@code calcLeastCostPath} call between two link candidates passes
@@ -194,6 +205,24 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 		map.put(OUTPUT_SCHEDULE_FILE, "Path to the output schedule file. Not needed if PTMapper is used within another class.");
 		map.put(REMOVE_NOT_USED_STOP_FACILITIES,
 				"If true, stop facilities that are not used by any transit route are removed from the schedule. Default: true");
+		map.put(PULL_CHILD_STOP_FACILITIES_EXCLUDED_MODES,
+				"After routing, child stop facilities are moved to the link of the route that is closest to the stop\n" +
+				"\t\tcoordinate. Transit routes with a schedule transport mode in this set are excluded from this step and\n" +
+				"\t\tkeep the link chosen by the link candidate creator (e.g. \"rail\" if candidates are platform-specific).\n" +
+				"\t\tSeparated by comma. Default: empty.");
+		map.put(PLATFORM_MODES,
+				"Schedule transport modes (e.g. \"rail\") whose stops are mapped onto the OSM stop position of their\n" +
+				"\t\tplatform track: the stop facility attribute \"" + PublicTransitMappingStrings.STOP_FACILITY_ATTRIBUTE_PLATFORM_CODE + "\" is matched against the\n" +
+				"\t\tlocal_ref of OSM stop positions (requires a network converted with keepRailStopPositions=true).\n" +
+				"\t\tStops without platform code or matching stop position use the standard link candidates.\n" +
+				"\t\tThese modes are also excluded from " + PULL_CHILD_STOP_FACILITIES_EXCLUDED_MODES + ". Separated by comma. Default: empty.");
+		map.put(PLATFORM_SEARCH_RADIUS,
+				"Maximal distance [meter] between a stop facility and the OSM stop position of its platform. Default: 500.");
+		map.put(PLATFORM_STOP_LINK,
+				"Which link of the OSM stop position is used as stop link for " + PLATFORM_MODES + ". Vehicles usually halt with\n" +
+				"\t\ttheir head at the end of the stop link. " + PlatformStopLink.inLink + ": links ending at the stop position (head at the\n" +
+				"\t\tstop position). " + PlatformStopLink.outLink + ": links starting at the stop position (head at the next node after\n" +
+				"\t\tthe stop position, typically the switch at the end of the platform track). Default: " + PlatformStopLink.inLink + ".");
 		map.put(ROUTING_WITH_CANDIDATE_DISTANCE,
 				"The travel cost of a link candidate can be increased according to its distance to the\n" +
 				"\t\tstop facility x2. This tends to give more accurate results. If "+ TRAVEL_COST_TYPE +" is "+ travelTime +", freespeed on \n" +
@@ -342,6 +371,68 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	@StringSetter(BOUNDED_SEARCH)
 	public void setBoundedSearch(boolean v) {
 		this.boundedSearch = v;
+	}
+
+	/**
+	 * Schedule transport modes whose transit routes are skipped when pulling child stop facilities together.
+	 */
+	public Set<String> getPullChildStopFacilitiesExcludedModes() {
+		return pullChildStopFacilitiesExcludedModes;
+	}
+
+	public void setPullChildStopFacilitiesExcludedModes(Set<String> modes) {
+		this.pullChildStopFacilitiesExcludedModes = modes;
+	}
+
+	@StringGetter(PULL_CHILD_STOP_FACILITIES_EXCLUDED_MODES)
+	private String getPullChildStopFacilitiesExcludedModesStr() {
+		return CollectionUtils.setToString(pullChildStopFacilitiesExcludedModes);
+	}
+
+	@StringSetter(PULL_CHILD_STOP_FACILITIES_EXCLUDED_MODES)
+	private void setPullChildStopFacilitiesExcludedModesStr(String modes) {
+		this.pullChildStopFacilitiesExcludedModes = modes == null ? new HashSet<>() : CollectionUtils.stringToSet(modes);
+	}
+
+	/**
+	 * Schedule transport modes whose stops are mapped onto OSM platform stop positions.
+	 */
+	public Set<String> getPlatformModes() {
+		return platformModes;
+	}
+
+	public void setPlatformModes(Set<String> modes) {
+		this.platformModes = modes;
+	}
+
+	@StringGetter(PLATFORM_MODES)
+	private String getPlatformModesStr() {
+		return CollectionUtils.setToString(platformModes);
+	}
+
+	@StringSetter(PLATFORM_MODES)
+	private void setPlatformModesStr(String modes) {
+		this.platformModes = modes == null ? new HashSet<>() : CollectionUtils.stringToSet(modes);
+	}
+
+	@StringGetter(PLATFORM_SEARCH_RADIUS)
+	public double getPlatformSearchRadius() {
+		return platformSearchRadius;
+	}
+
+	@StringSetter(PLATFORM_SEARCH_RADIUS)
+	public void setPlatformSearchRadius(double radius) {
+		this.platformSearchRadius = radius;
+	}
+
+	@StringGetter(PLATFORM_STOP_LINK)
+	public PlatformStopLink getPlatformStopLink() {
+		return platformStopLink;
+	}
+
+	@StringSetter(PLATFORM_STOP_LINK)
+	public void setPlatformStopLink(PlatformStopLink platformStopLink) {
+		this.platformStopLink = platformStopLink;
 	}
 
 	/**

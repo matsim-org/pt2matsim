@@ -102,9 +102,22 @@ public final class PTMapperTools {
 	 * @return the number of child stop facilities pulled
 	 */
 	public static int pullChildStopFacilitiesTogether(TransitSchedule schedule, Network network) {
+		return pullChildStopFacilitiesTogether(schedule, network, Collections.emptySet());
+	}
+
+	/**
+	 * Same as {@link #pullChildStopFacilitiesTogether(TransitSchedule, Network)}, but transit routes whose
+	 * transport mode is contained in <tt>excludedModes</tt> are ignored.
+	 *
+	 * @return the number of child stop facilities pulled
+	 */
+	public static int pullChildStopFacilitiesTogether(TransitSchedule schedule, Network network, Set<String> excludedModes) {
 		int nPulled = 0;
 		for(TransitLine line : schedule.getTransitLines().values()) {
 			for(TransitRoute transitRoute : line.getRoutes().values()) {
+				if(excludedModes.contains(transitRoute.getTransportMode())) {
+					continue;
+				}
 				boolean hasStopLoop = ScheduleTools.routeHasStopSequenceLoop(transitRoute);
 				if(transitRoute.getRoute() != null && !hasStopLoop) {
 					TransitRouteStop currentStop;

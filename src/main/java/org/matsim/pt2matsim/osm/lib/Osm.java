@@ -124,6 +124,8 @@ public final class Osm {
 	public static final class Key {
 
 		public static final String NAME = "name";
+		public static final String LOCAL_REF = "local_ref";
+		public static final String TRAIN = "train";
 		public static final String ROUTE = "route";
 		public static final String ROUTE_MASTER = "route_master";
 

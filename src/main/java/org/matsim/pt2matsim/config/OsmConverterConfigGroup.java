@@ -42,6 +42,9 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	public static final String LINK_ATTRIBUTE_WAY_PREFIX = "osm:way:";
 	public static final String LINK_ATTRIBUTE_RELATION_ROUTE = "osm:relation:route";
 	public static final String LINK_ATTRIBUTE_RELATION_ROUTE_MASTER = "osm:relation:route_master";
+	public static final String NODE_ATTRIBUTE_RAIL_STOP_POSITION = "osm:node:railway:stop";
+	public static final String NODE_ATTRIBUTE_LOCAL_REF = "osm:node:local_ref";
+	public static final String NODE_ATTRIBUTE_NAME = "osm:node:name";
 
 	// actual config values
 	public static final String GROUP_NAME = "OsmConverter";
@@ -74,6 +77,12 @@ public class OsmConverterConfigGroup extends ReflectiveConfigGroup {
 	@Parameter
 	@Comment("Defines whether to write the CRS attribute to the generated network")
 	private boolean writeCRS = false;
+
+	@Parameter
+	@Comment("If true: OSM rail stop positions (railway=stop, or public_transport=stop_position with train=yes) are always kept\n" +
+			"\t\tas network nodes (also if keepPaths=false) and get the node attributes " + NODE_ATTRIBUTE_RAIL_STOP_POSITION + ",\n" +
+			"\t\t" + NODE_ATTRIBUTE_LOCAL_REF + " (platform/track number) and " + NODE_ATTRIBUTE_NAME + ". Default: false.")
+	public boolean keepRailStopPositions = false;
 
 	public OsmConverterConfigGroup() {
 		super(GROUP_NAME);

@@ -49,6 +49,7 @@ public final class GtfsDefinitions {
 	public static final String PARENT_STATION = "parent_station";
 	public static final String STOP_TIMEZONE = "stop_timezone";
 	public static final String WHEELCHAIR_BOARDING = "wheelchair_boarding";
+	public static final String PLATFORM_CODE = "platform_code";
 
 	public static final String STOP_NAME = "stop_name";
 	public static final String STOP_ID = "stop_id";
@@ -113,7 +114,7 @@ public final class GtfsDefinitions {
 		
 		STOPS("Stop", "stops.txt",
 				new String[]{STOP_ID, STOP_LON, STOP_LAT, STOP_NAME},
-				new String[]{STOP_CODE, STOP_DESC, ZONE_ID, STOP_URL, LOCATION_TYPE, PARENT_STATION, STOP_TIMEZONE, WHEELCHAIR_BOARDING}),
+				new String[]{STOP_CODE, STOP_DESC, ZONE_ID, STOP_URL, LOCATION_TYPE, PARENT_STATION, STOP_TIMEZONE, WHEELCHAIR_BOARDING, PLATFORM_CODE}),
 
 		CALENDAR("Calendar",
 				"calendar.txt",
