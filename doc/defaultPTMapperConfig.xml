@@ -63,6 +63,13 @@
 		stop position). outLink: links starting at the stop position (head at the next node after
 		the stop position, typically the switch at the end of the platform track). Default: inLink. -->
 		<param name="platformStopLink" value="inLink" />
+		<!-- Only with platformStopLink=outLink. If the network keeps the detailed geometry
+		(keepPaths=true), the link starting at the stop position often ends after a few meters. After mapping, the
+		stop link of platformModes is moved forward along the track (the network is not changed) until the
+		next switch, the next stop position or this maximal distance [meter] from the stop position, whatever comes
+		first. It is only moved as far as all transit routes using the stop follow the track. Transit routes
+		ending (starting) at the stop are extended (shortened). Default: 0 (disabled). -->
+		<param name="platformStopLinkMaxExtension" value="0.0" />
 		<!-- After routing, child stop facilities are moved to the link of the route that is closest to the stop
 		coordinate. Transit routes with a schedule transport mode in this set are excluded from this step and
 		keep the link chosen by the link candidate creator (e.g. "rail" if candidates are platform-specific).

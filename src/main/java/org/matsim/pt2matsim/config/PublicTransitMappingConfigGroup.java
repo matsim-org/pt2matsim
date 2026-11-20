@@ -82,6 +82,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private static final String PLATFORM_MODES = "platformModes";
 	private static final String PLATFORM_SEARCH_RADIUS = "platformSearchRadius";
 	private static final String PLATFORM_STOP_LINK = "platformStopLink";
+	private static final String PLATFORM_STOP_LINK_MAX_EXTENSION = "platformStopLinkMaxExtension";
 
 	// default values
 	private Map<String, Set<String>> transportModeAssignment = new HashMap<>();
@@ -96,6 +97,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private Set<String> platformModes = new HashSet<>();
 	private double platformSearchRadius = 500.0;
 	private PlatformStopLink platformStopLink = PlatformStopLink.inLink;
+	private double platformStopLinkMaxExtension = 0.0;
 
 	public enum PlatformStopLink {inLink, outLink}
 
@@ -223,6 +225,13 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 				"\t\ttheir head at the end of the stop link. " + PlatformStopLink.inLink + ": links ending at the stop position (head at the\n" +
 				"\t\tstop position). " + PlatformStopLink.outLink + ": links starting at the stop position (head at the next node after\n" +
 				"\t\tthe stop position, typically the switch at the end of the platform track). Default: " + PlatformStopLink.inLink + ".");
+		map.put(PLATFORM_STOP_LINK_MAX_EXTENSION,
+				"Only with " + PLATFORM_STOP_LINK + "=" + PlatformStopLink.outLink + ". If the network keeps the detailed geometry\n" +
+				"\t\t(keepPaths=true), the link starting at the stop position often ends after a few meters. After mapping, the\n" +
+				"\t\tstop link of " + PLATFORM_MODES + " is moved forward along the track (the network is not changed) until the\n" +
+				"\t\tnext switch, the next stop position or this maximal distance [meter] from the stop position, whatever comes\n" +
+				"\t\tfirst. It is only moved as far as all transit routes using the stop follow the track. Transit routes\n" +
+				"\t\tending (starting) at the stop are extended (shortened). Default: 0 (disabled).");
 		map.put(ROUTING_WITH_CANDIDATE_DISTANCE,
 				"The travel cost of a link candidate can be increased according to its distance to the\n" +
 				"\t\tstop facility x2. This tends to give more accurate results. If "+ TRAVEL_COST_TYPE +" is "+ travelTime +", freespeed on \n" +
@@ -433,6 +442,16 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	@StringSetter(PLATFORM_STOP_LINK)
 	public void setPlatformStopLink(PlatformStopLink platformStopLink) {
 		this.platformStopLink = platformStopLink;
+	}
+
+	@StringGetter(PLATFORM_STOP_LINK_MAX_EXTENSION)
+	public double getPlatformStopLinkMaxExtension() {
+		return platformStopLinkMaxExtension;
+	}
+
+	@StringSetter(PLATFORM_STOP_LINK_MAX_EXTENSION)
+	public void setPlatformStopLinkMaxExtension(double maxExtension) {
+		this.platformStopLinkMaxExtension = maxExtension;
 	}
 
 	/**
