@@ -42,6 +42,7 @@ import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.pt2matsim.config.OsmConverterConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
+import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup.PlatformStopLink;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 
 /**
@@ -50,8 +51,10 @@ import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
  * For transit routes whose schedule transport mode is in {@code platformModes} (typically {@code rail}), the platform
  * code of the stop facility is matched against the {@code local_ref} of OSM stop positions within
  * {@code searchRadius} (network converted with {@link OsmConverterConfigGroup#keepRailStopPositions}). The link
- * candidates are the links ending at the closest matching stop position node, which forces the route over the correct
- * platform track.
+ * candidates are the links ending ({@link PlatformStopLink#inLink}) or starting ({@link PlatformStopLink#outLink}) at the
+ * closest matching stop position node, which forces the route over the correct platform track. Since vehicles halt
+ * with their head at the end of the stop link, {@code outLink} places the head at the next node after the stop
+ * position, typically the switch at the end of the platform track.
  * <p>
  * For all other routes, or if no platform code or no matching stop position is found, the candidates of the delegate
  * (usually {@link LinkCandidateCreatorStandard}) are used.
@@ -69,7 +72,8 @@ public class LinkCandidateCreatorPlatform implements LinkCandidateCreator {
 	public LinkCandidateCreatorPlatform(LinkCandidateCreator delegate, TransitSchedule schedule, Network network,
 			PublicTransitMappingConfigGroup config) {
 		this(delegate, schedule, network, config.getTransportModeAssignment(), config.getPlatformModes(),
-				LinkCandidateCreatorPlatform::platformCodeFromAttribute, config.getPlatformSearchRadius());
+				LinkCandidateCreatorPlatform::platformCodeFromAttribute, config.getPlatformSearchRadius(),
+				config.getPlatformStopLink());
 	}
 
 	/**
@@ -77,10 +81,12 @@ public class LinkCandidateCreatorPlatform implements LinkCandidateCreator {
 	 * @param platformModes         schedule transport modes for which platform-specific candidates are created
 	 * @param platformCodeExtractor returns the platform code of a stop facility, or {@code null}
 	 * @param searchRadius          maximal distance [m] between stop facility and OSM stop position
+	 * @param stopLink              whether the links ending or starting at the OSM stop position are candidates
 	 */
 	public LinkCandidateCreatorPlatform(LinkCandidateCreator delegate, TransitSchedule schedule, Network network,
 			Map<String, Set<String>> modeAssignments, Set<String> platformModes,
-			Function<TransitStopFacility, String> platformCodeExtractor, double searchRadius) {
+			Function<TransitStopFacility, String> platformCodeExtractor, double searchRadius,
+			PlatformStopLink stopLink) {
 		this.delegate = delegate;
 
 		List<Node> stopNodes = new ArrayList<>();
@@ -103,7 +109,7 @@ public class LinkCandidateCreatorPlatform implements LinkCandidateCreator {
 				for (TransitRouteStop routeStop : route.getStops()) {
 					TransitStopFacility facility = routeStop.getStopFacility();
 					List<Link> links = linksCache.computeIfAbsent(facility.getId() + "|" + networkModes,
-							k -> stopLinks(facility, networkModes, stopNodes, platformCodeExtractor, searchRadius));
+							k -> stopLinks(facility, networkModes, stopNodes, platformCodeExtractor, searchRadius, stopLink));
 					if (links.isEmpty()) {
 						nFallback++;
 						continue;
@@ -138,7 +144,8 @@ public class LinkCandidateCreatorPlatform implements LinkCandidateCreator {
 	}
 
 	private static List<Link> stopLinks(TransitStopFacility facility, Set<String> networkModes, List<Node> stopNodes,
-			Function<TransitStopFacility, String> platformCodeExtractor, double searchRadius) {
+			Function<TransitStopFacility, String> platformCodeExtractor, double searchRadius,
+			PlatformStopLink stopLink) {
 		String code = platformCodeExtractor.apply(facility);
 		if (code == null) {
 			return Collections.emptyList();
@@ -159,7 +166,7 @@ public class LinkCandidateCreatorPlatform implements LinkCandidateCreator {
 			return Collections.emptyList();
 		}
 		List<Link> links = new ArrayList<>();
-		for (Link l : best.getInLinks().values()) {
+		for (Link l : (stopLink == PlatformStopLink.outLink ? best.getOutLinks() : best.getInLinks()).values()) {
 			if (!Collections.disjoint(l.getAllowedModes(), networkModes)) {
 				links.add(l);
 			}

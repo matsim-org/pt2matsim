@@ -136,6 +136,14 @@ class LinkCandidateCreatorPlatformTest {
 		Assertions.assertEquals(List.of(Id.createLinkId("2_0_1"), Id.createLinkId("2_1_2")), mappedStopLinks());
 	}
 
+	@Test
+	void ptMapperUsesOutLinksOfStopPositions() throws Exception {
+		PublicTransitMappingConfigGroup config = config(Set.of("rail"));
+		config.setPlatformStopLink(PublicTransitMappingConfigGroup.PlatformStopLink.outLink);
+		new PTMapper(schedule, network).run(config);
+		Assertions.assertEquals(List.of(Id.createLinkId("2_1_2"), Id.createLinkId("2_2_3")), mappedStopLinks());
+	}
+
 	private List<Id<Link>> mappedStopLinks() {
 		TransitRoute mapped = schedule.getTransitLines().get(line.getId()).getRoutes().get(route.getId());
 		return mapped.getStops().stream().map(s -> s.getStopFacility().getLinkId()).toList();
