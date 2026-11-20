@@ -171,6 +171,7 @@ public class OsmMultimodalNetworkConverter {
 		}
 		cleanNetwork();
 		if(config.getKeepTagsAsAttributes()) addAttributes();
+		if(config.keepRailStopPositions) addRailStopPositionAttributes();
 
 		if (this.config.getOutputDetailedLinkGeometryFile() != null) {
 			try {
@@ -303,6 +304,9 @@ public class OsmMultimodalNetworkConverter {
 		}
 
 		// create the required nodes and add them to the network
+		if(config.keepRailStopPositions) {
+			nodesToIgnore.removeIf(OsmMultimodalNetworkConverter::isRailStopPosition);
+		}
 		log.info("Creating nodes...");
 		for(Osm.Node node : nodes.values()) {
 			if(!nodesToIgnore.contains(node)) {
@@ -920,6 +924,43 @@ public class OsmMultimodalNetworkConverter {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Marks network nodes that correspond to OSM rail stop positions and copies their platform/track
+	 * number ({@code local_ref}) and name as node attributes.
+	 */
+	protected void addRailStopPositionAttributes() {
+		int n = 0;
+		for(Node node : this.network.getNodes().values()) {
+			Osm.Node osmNode = osmData.getNodes().get(Id.create(node.getId().toString(), Osm.Node.class));
+			if(osmNode == null || !isRailStopPosition(osmNode)) {
+				continue;
+			}
+			node.getAttributes().putAttribute(OsmConverterConfigGroup.NODE_ATTRIBUTE_RAIL_STOP_POSITION, true);
+			String localRef = osmNode.getValue(Osm.Key.LOCAL_REF);
+			if(localRef != null) {
+				node.getAttributes().putAttribute(OsmConverterConfigGroup.NODE_ATTRIBUTE_LOCAL_REF, localRef);
+			}
+			String name = osmNode.getValue(Osm.Key.NAME);
+			if(name != null) {
+				node.getAttributes().putAttribute(OsmConverterConfigGroup.NODE_ATTRIBUTE_NAME, name);
+			}
+			n++;
+		}
+		log.info("Rail stop positions added as node attributes: " + n);
+	}
+
+	/**
+	 * @return true if the OSM node is tagged as a rail stop position
+	 * ({@code railway=stop}, or {@code public_transport=stop_position} with {@code train=yes})
+	 */
+	public static boolean isRailStopPosition(Osm.Node node) {
+		if(Osm.Value.STOP.equals(node.getValue(Osm.Key.RAILWAY))) {
+			return true;
+		}
+		return Osm.Value.STOP_POSITION.equals(node.getValue(Osm.Key.PUBLIC_TRANSPORT))
+				&& "yes".equals(node.getValue(Osm.Key.TRAIN));
 	}
 
 	/**

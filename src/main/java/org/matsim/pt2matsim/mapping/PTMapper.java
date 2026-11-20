@@ -22,6 +22,7 @@ import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
+import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorPlatform;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorStandard;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRouters;
 import org.matsim.pt2matsim.mapping.networkRouter.ScheduleRoutersFactory;
@@ -35,6 +36,8 @@ import org.matsim.pt2matsim.tools.ScheduleTools;
 import org.matsim.pt2matsim.tools.debug.ScheduleCleaner;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -62,6 +65,7 @@ public class PTMapper {
 	private final PseudoSchedule pseudoSchedule = new PseudoScheduleImpl();
 	private Network network;
 	private TransitSchedule schedule;
+	private Set<String> pullChildStopFacilitiesExcludedModes = Collections.emptySet();
 
 	public static void mapScheduleToNetwork(TransitSchedule schedule, Network network,
 			PublicTransitMappingConfigGroup config) throws InterruptedException, ExecutionException {
@@ -93,6 +97,14 @@ public class PTMapper {
 	}
 
 	/**
+	 * Transit routes with a transport mode in this set are skipped when pulling child stop facilities together
+	 * after routing. Set automatically by {@link #run(PublicTransitMappingConfigGroup, LinkCandidateCreator, ScheduleRoutersFactory)}.
+	 */
+	public void setPullChildStopFacilitiesExcludedModes(Set<String> modes) {
+		this.pullChildStopFacilitiesExcludedModes = modes == null ? Collections.emptySet() : modes;
+	}
+
+	/**
 	 * Maps the schedule to the network with parameters defined in config
 	 * 
 	 * @throws ExecutionException
@@ -104,11 +116,18 @@ public class PTMapper {
 		if (linkCandidateCreator == null) {
 			linkCandidateCreator = new LinkCandidateCreatorStandard(schedule, network,
 					config);
+			if (!config.getPlatformModes().isEmpty()) {
+				linkCandidateCreator = new LinkCandidateCreatorPlatform(linkCandidateCreator, schedule, network, config);
+			}
 		}
 
 		if (scheduleRoutersFactory == null) {
 			scheduleRoutersFactory = new ScheduleRoutersStandard.Factory(schedule, network, config);
 		}
+
+		Set<String> pullExcludedModes = new HashSet<>(config.getPullChildStopFacilitiesExcludedModes());
+		pullExcludedModes.addAll(config.getPlatformModes());
+		setPullChildStopFacilitiesExcludedModes(pullExcludedModes);
 
 		run(linkCandidateCreator,
 				scheduleRoutersFactory,
@@ -258,7 +277,8 @@ public class PTMapper {
 		int nPulled = 1;
 		int pullPasses = 0;
 		while (nPulled != 0) {
-			nPulled = PTMapperTools.pullChildStopFacilitiesTogether(this.schedule, this.network);
+			nPulled = PTMapperTools.pullChildStopFacilitiesTogether(this.schedule, this.network,
+					this.pullChildStopFacilitiesExcludedModes);
 			pullPasses++;
 		}
 		log.info(String.format("PullChildStopFacilities: %d fixpoint passes", pullPasses));

@@ -280,6 +280,10 @@ public class GtfsFeedImpl implements GtfsFeed {
 				}
 				
 				StopImpl stop = new StopImpl(stopId, line[col.get(GtfsDefinitions.STOP_NAME)], locationType, parentStation);
+
+				if (col.containsKey(GtfsDefinitions.PLATFORM_CODE) && !line[col.get(GtfsDefinitions.PLATFORM_CODE)].isEmpty()) {
+					stop.setPlatformCode(line[col.get(GtfsDefinitions.PLATFORM_CODE)]);
+				}
 				
 				if (col.containsKey(GtfsDefinitions.STOP_LON) && col.containsKey(GtfsDefinitions.STOP_LAT) && !line[col.get(GtfsDefinitions.STOP_LON)].isEmpty() && !line[col.get(GtfsDefinitions.STOP_LAT)].isEmpty()) {
 					stop.setLocation(Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LON)]), Double.parseDouble(line[col.get(GtfsDefinitions.STOP_LAT)]));
