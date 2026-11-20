@@ -20,6 +20,7 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup;
+import org.matsim.pt2matsim.config.PublicTransitMappingConfigGroup.PlatformStopLink;
 import org.matsim.pt2matsim.config.PublicTransitMappingStrings;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreator;
 import org.matsim.pt2matsim.mapping.linkCandidateCreation.LinkCandidateCreatorPlatform;
@@ -66,6 +67,8 @@ public class PTMapper {
 	private Network network;
 	private TransitSchedule schedule;
 	private Set<String> pullChildStopFacilitiesExcludedModes = Collections.emptySet();
+	private Set<String> platformStopLinkExtensionModes = Collections.emptySet();
+	private double platformStopLinkMaxExtension = 0.0;
 
 	public static void mapScheduleToNetwork(TransitSchedule schedule, Network network,
 			PublicTransitMappingConfigGroup config) throws InterruptedException, ExecutionException {
@@ -105,6 +108,17 @@ public class PTMapper {
 	}
 
 	/**
+	 * After routing, the stop links of transit routes with a transport mode in {@code modes} are moved forward along
+	 * the track by at most {@code maxDistance}, see {@link PlatformStopLinkExtender}. Disabled if {@code maxDistance}
+	 * is not positive. Set automatically by
+	 * {@link #run(PublicTransitMappingConfigGroup, LinkCandidateCreator, ScheduleRoutersFactory)}.
+	 */
+	public void setPlatformStopLinkExtension(Set<String> modes, double maxDistance) {
+		this.platformStopLinkExtensionModes = modes == null ? Collections.emptySet() : modes;
+		this.platformStopLinkMaxExtension = maxDistance;
+	}
+
+	/**
 	 * Maps the schedule to the network with parameters defined in config
 	 * 
 	 * @throws ExecutionException
@@ -128,6 +142,9 @@ public class PTMapper {
 		Set<String> pullExcludedModes = new HashSet<>(config.getPullChildStopFacilitiesExcludedModes());
 		pullExcludedModes.addAll(config.getPlatformModes());
 		setPullChildStopFacilitiesExcludedModes(pullExcludedModes);
+		if (config.getPlatformStopLink() == PlatformStopLink.outLink) {
+			setPlatformStopLinkExtension(config.getPlatformModes(), config.getPlatformStopLinkMaxExtension());
+		}
 
 		run(linkCandidateCreator,
 				scheduleRoutersFactory,
@@ -290,6 +307,14 @@ public class PTMapper {
 		long phase5Start = System.nanoTime();
 		PTMapperTools.addTransfersForChildStopFacilities(this.schedule);
 		logPhase("AddTransfersForChildStopFacilities", System.nanoTime() - phase5Start);
+
+		if (platformStopLinkMaxExtension > 0 && !platformStopLinkExtensionModes.isEmpty()) {
+			log.info("====================================");
+			log.info("Extending platform stop links...");
+			long phaseStart = System.nanoTime();
+			PlatformStopLinkExtender.run(schedule, network, platformStopLinkExtensionModes, platformStopLinkMaxExtension);
+			logPhase("ExtendPlatformStopLinks", System.nanoTime() - phaseStart);
+		}
 
 		/*
 		 * [6] After all lines are created, clean the schedule and network. Removing not used transit links includes
