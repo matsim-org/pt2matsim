@@ -56,6 +56,12 @@
 		Stops without platform code or matching stop position use the standard link candidates.
 		These modes are also excluded from pullChildStopFacilitiesExcludedModes. Separated by comma. Default: empty. -->
 		<param name="platformModes" value="" />
+		<!-- The pseudo routing does not penalize reversing. At the last stop of a transit route, this may result in a
+		stop link in the opposite direction: the vehicle passes the stop, reverses and halts. If true, transit routes
+		of platformModes are cut after the opposite link of their last stop link, if the route contains it,
+		and the last stop is moved onto it (the network is not changed). Useful for simulations that cannot reverse
+		at the end of a route (e.g. railsim). Default: false. -->
+		<param name="platformRemoveTerminalReversal" value="false" />
 		<!-- Maximal distance [meter] between a stop facility and the OSM stop position of its platform. Default: 500. -->
 		<param name="platformSearchRadius" value="500.0" />
 		<!-- Which link of the OSM stop position is used as stop link for platformModes. Vehicles usually halt with

@@ -69,6 +69,7 @@ public class PTMapper {
 	private Set<String> pullChildStopFacilitiesExcludedModes = Collections.emptySet();
 	private Set<String> platformStopLinkExtensionModes = Collections.emptySet();
 	private double platformStopLinkMaxExtension = 0.0;
+	private Set<String> terminalReversalModes = Collections.emptySet();
 
 	public static void mapScheduleToNetwork(TransitSchedule schedule, Network network,
 			PublicTransitMappingConfigGroup config) throws InterruptedException, ExecutionException {
@@ -119,6 +120,15 @@ public class PTMapper {
 	}
 
 	/**
+	 * After routing, the reversal before the last stop of transit routes with a transport mode in {@code modes} is
+	 * removed, see {@link TerminalStopReversalRemover}. Disabled if {@code modes} is empty. Set automatically by
+	 * {@link #run(PublicTransitMappingConfigGroup, LinkCandidateCreator, ScheduleRoutersFactory)}.
+	 */
+	public void setTerminalReversalRemoval(Set<String> modes) {
+		this.terminalReversalModes = modes == null ? Collections.emptySet() : modes;
+	}
+
+	/**
 	 * Maps the schedule to the network with parameters defined in config
 	 * 
 	 * @throws ExecutionException
@@ -144,6 +154,9 @@ public class PTMapper {
 		setPullChildStopFacilitiesExcludedModes(pullExcludedModes);
 		if (config.getPlatformStopLink() == PlatformStopLink.outLink) {
 			setPlatformStopLinkExtension(config.getPlatformModes(), config.getPlatformStopLinkMaxExtension());
+		}
+		if (config.getPlatformRemoveTerminalReversal()) {
+			setTerminalReversalRemoval(config.getPlatformModes());
 		}
 
 		run(linkCandidateCreator,
@@ -314,6 +327,14 @@ public class PTMapper {
 			long phaseStart = System.nanoTime();
 			PlatformStopLinkExtender.run(schedule, network, platformStopLinkExtensionModes, platformStopLinkMaxExtension);
 			logPhase("ExtendPlatformStopLinks", System.nanoTime() - phaseStart);
+		}
+
+		if (!terminalReversalModes.isEmpty()) {
+			log.info("=========================================");
+			log.info("Removing reversals before last stops...");
+			long phaseStart = System.nanoTime();
+			TerminalStopReversalRemover.run(schedule, network, terminalReversalModes);
+			logPhase("RemoveTerminalReversals", System.nanoTime() - phaseStart);
 		}
 
 		/*
