@@ -83,6 +83,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private static final String PLATFORM_SEARCH_RADIUS = "platformSearchRadius";
 	private static final String PLATFORM_STOP_LINK = "platformStopLink";
 	private static final String PLATFORM_STOP_LINK_MAX_EXTENSION = "platformStopLinkMaxExtension";
+	private static final String PLATFORM_REMOVE_TERMINAL_REVERSAL = "platformRemoveTerminalReversal";
 
 	// default values
 	private Map<String, Set<String>> transportModeAssignment = new HashMap<>();
@@ -98,6 +99,7 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	private double platformSearchRadius = 500.0;
 	private PlatformStopLink platformStopLink = PlatformStopLink.inLink;
 	private double platformStopLinkMaxExtension = 0.0;
+	private boolean platformRemoveTerminalReversal = false;
 
 	public enum PlatformStopLink {inLink, outLink}
 
@@ -232,6 +234,12 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 				"\t\tnext switch, the next stop position or this maximal distance [meter] from the stop position, whatever comes\n" +
 				"\t\tfirst. It is only moved as far as all transit routes using the stop follow the track. Transit routes\n" +
 				"\t\tending (starting) at the stop are extended (shortened). Default: 0 (disabled).");
+		map.put(PLATFORM_REMOVE_TERMINAL_REVERSAL,
+				"The pseudo routing does not penalize reversing. At the last stop of a transit route, this may result in a\n" +
+				"\t\tstop link in the opposite direction: the vehicle passes the stop, reverses and halts. If true, transit routes\n" +
+				"\t\tof " + PLATFORM_MODES + " are cut after the opposite link of their last stop link, if the route contains it,\n" +
+				"\t\tand the last stop is moved onto it (the network is not changed). Useful for simulations that cannot reverse\n" +
+				"\t\tat the end of a route (e.g. railsim). Default: false.");
 		map.put(ROUTING_WITH_CANDIDATE_DISTANCE,
 				"The travel cost of a link candidate can be increased according to its distance to the\n" +
 				"\t\tstop facility x2. This tends to give more accurate results. If "+ TRAVEL_COST_TYPE +" is "+ travelTime +", freespeed on \n" +
@@ -452,6 +460,16 @@ public class PublicTransitMappingConfigGroup extends ReflectiveConfigGroup {
 	@StringSetter(PLATFORM_STOP_LINK_MAX_EXTENSION)
 	public void setPlatformStopLinkMaxExtension(double maxExtension) {
 		this.platformStopLinkMaxExtension = maxExtension;
+	}
+
+	@StringGetter(PLATFORM_REMOVE_TERMINAL_REVERSAL)
+	public boolean getPlatformRemoveTerminalReversal() {
+		return platformRemoveTerminalReversal;
+	}
+
+	@StringSetter(PLATFORM_REMOVE_TERMINAL_REVERSAL)
+	public void setPlatformRemoveTerminalReversal(boolean remove) {
+		this.platformRemoveTerminalReversal = remove;
 	}
 
 	/**
